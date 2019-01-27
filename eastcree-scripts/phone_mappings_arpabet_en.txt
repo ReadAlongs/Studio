@@ -1,0 +1,66 @@
+# Approximate phoneme mappings from NLTK Unicode table to ARPABET for
+# force alignment of East Cree (note that the Unicode table has
+# Inuktitut phonemes in it, we map those to Cree phonemes here too)
+# Cree phones in "dictionary" order are at the top, others below
+aI	    EH1
+i	    IH0
+i:	    IY1
+u	    UH1
+u:	    UW1
+A	    AH1
+A:	    AA1
+p	    P
+pw	    P W
+t	    T
+tw	    T W
+k	    K
+kw	    K W
+G	    CH
+Gw	    CH W
+m	    M
+mw	    M W
+n	    N
+nw	    N W
+l	    L
+lw	    L W
+s	    S
+sw	    S W
+S	    SH
+Sw	    SH W
+j	    Y
+jw	    Y W
+h	    HH
+w	    W
+?	    HH
+# Not Cree sounds but we might encounter them
+r	    R
+rw	    R W
+v	    V
+vw	    V W
+o:	    OW1
+e:	    EY1
+e	    EY2
+o	    OW2
+a	    AH0
+d	    D
+eh	    EH1 HH
+ih	    IH1 HH
+oh	    OW2 HH
+ah	    AA2 HH
+D	    DH
+mh	    M HH
+N	    NG
+nh	    N HH
+cw	    T S W
+Dw	    DH W
+tj	    T Y
+q	    K
+th	    T HH
+hl	    HH L
+b	    B
+Gh	    CH HH
+hw	    HH W
+kh	    K HH
+z	    Z
+dz	    D Z
+ts	    T S
