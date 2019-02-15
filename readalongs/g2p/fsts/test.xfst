@@ -1,0 +1,13 @@
+#################################
+#
+# FST converting from kwk-ipa to engipa
+#
+# Based on a mapping by Patrick Littell 
+# created 2019-02-13
+# last modified 2019-02-15
+#
+#################################
+
+define LETTER [{p}:{p}|{t}:{t}|{t͡s}:{ts}|{t͡ɬ}:{ts}|{k}:{k}|{kʷ}:{kw}|{q}:{k}|{qʷ}:{kw}|{ɬ}:{s}|{s}:{s}|{x}:{k}|{xʷ}:{kw}|{χ}:{ʃ}|{χʷ}:{ʃw}|{pʼ}:{p}|{tʼ}:{t}|{tʼ͡s}:{ts}|{tʼ͡ɬ}:{ts}|{kʼ}:{k}|{kʼʷ}:{kw}|{qʼ}:{k}|{qʼʷ}:{kw}|{ʔ}:{ʔ}|{b}:{b}|{d}:{d}|{d͡z}:{dz}|{d͡ɬ}:{ds}|{ɡ}:{ɡ}|{ɡʷ}:{ɡw}|{ɢ}:{ɡ}|{ɢʷ}:{ɡw}|{ʔm}:{ʔm}|{ʔn}:{ʔn}|{ʔl}:{ʔl}|{ʔw}:{ʔw}|{ʔj}:{ʔj}|{h}:{h}|{m}:{m}|{n}:{n}|{l}:{l}|{w}:{w}|{j}:{j}] ;
+define WORD LETTER* ; 
+push WORD

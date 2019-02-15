@@ -1,5 +1,8 @@
 {
    "type": "mapping",
+   "authors": ["Patrick Littell"],
+   "created": "2019-02-13",
+   "last_modified": "2019-02-15",
    "in_metadata": {
       "lang": "kwk",
       "orth": "napa",
@@ -54,6 +57,12 @@
       { "in": "n",	"out": "n" },
       { "in": "l",	"out": "l" },
       { "in": "w",	"out": "w" },
-      { "in": "y",	"out": "j" }
+      { "in": "y",	"out": "j" },
+      { "in": "a",	"out": "a" },
+      { "in": "e",	"out": "ej" },
+      { "in": "i",	"out": "i" },
+      { "in": "o",	"out": "ow" },
+      { "in": "u",	"out": "u" },
+      { "in": "ə",	"out": "ə" }
    ]
 }
