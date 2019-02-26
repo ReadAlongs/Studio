@@ -1,6 +1,6 @@
 #################################
 #
-# FST converting from kwk-ipa to engipa
+# FST converting from kwk-napa to kwk-ipa
 #
 # Based on a mapping by Patrick Littell 
 # created 2019-02-13
@@ -8,6 +8,5 @@
 #
 #################################
 
-define LETTER [{p}:{p}|{t}:{t}|{t͡s}:{ts}|{t͡ɬ}:{ts}|{k}:{k}|{kʷ}:{kw}|{q}:{k}|{qʷ}:{kw}|{ɬ}:{s}|{s}:{s}|{x}:{k}|{xʷ}:{kw}|{χ}:{ʃ}|{χʷ}:{ʃw}|{pʼ}:{p}|{tʼ}:{t}|{tʼ͡s}:{ts}|{tʼ͡ɬ}:{ts}|{kʼ}:{k}|{kʼʷ}:{kw}|{qʼ}:{k}|{qʼʷ}:{kw}|{ʔ}:{ʔ}|{b}:{b}|{d}:{d}|{d͡z}:{dz}|{d͡ɬ}:{ds}|{ɡ}:{ɡ}|{ɡʷ}:{ɡw}|{ɢ}:{ɡ}|{ɢʷ}:{ɡw}|{ʔm}:{ʔm}|{ʔn}:{ʔn}|{ʔl}:{ʔl}|{ʔw}:{ʔw}|{ʔj}:{ʔj}|{h}:{h}|{m}:{m}|{n}:{n}|{l}:{l}|{w}:{w}|{j}:{j}] ;
-define WORD LETTER* ; 
-push WORD
+define KwkNapaToKwkIpa [{p}:{p}|{t}:{t}|{c}:{t͡s}|{ƛ}:{t͡ɬ}|{k}:{k}|{kʷ}:{kʷ}|{q}:{q}|{qʷ}:{qʷ}|{ɬ}:{ɬ}|{s}:{s}|{x}:{x}|{xʷ}:{xʷ}|{x̌}:{χ}|{x̌ʷ}:{χʷ}|{pʼ}:{pʼ}|{tʼ}:{tʼ}|{cʼ}:{tʼ͡s}|{ƛʼ}:{tʼ͡ɬ}|{kʼ}:{kʼ}|{kʼʷ}:{kʼʷ}|{qʼ}:{qʼ}|{qʼʷ}:{qʼʷ}|{ʔ}:{ʔ}|{b}:{b}|{d}:{d}|{dᶻ}:{d͡z}|{λ}:{d͡ɬ}|{g}:{ɡ}|{gʷ}:{ɡʷ}|{ǧ}:{ɢ}|{ǧʷ}:{ɢʷ}|{mʼ}:{ʔm}|{nʼ}:{ʔn}|{lʼ}:{ʔl}|{wʼ}:{ʔw}|{yʼ}:{ʔj}|{h}:{h}|{m}:{m}|{n}:{n}|{l}:{l}|{w}:{w}|{y}:{j}|{a}:{a}|{e}:{ej}|{i}:{i}|{o}:{ow}|{u}:{u}|{ə}:{ə}]* ;
+push KwkNapaToKwkIpa

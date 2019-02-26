@@ -26,13 +26,23 @@ def make_header_comments(mapping):
 def escape_xfst_specials(s):
     return s.replace("-","%-").replace("0","%0").replace("|","%|").replace(":","%:")
 
+def camelize(s):
+    return s[0].upper() + s[1:].lower()
+
+def get_identifier_prefix(mapping):
+    return
+
 def compile_correspondences(mapping):
     lines = []
-    corrs = [ (escape_xfst_specials(x["in"]), escape_xfst_specials(x["out"])) for x in mapping["map"]]
+    corrs = [ (escape_xfst_specials(x["in"]), escape_xfst_specials(x["out"]))
+                                            for x in mapping["map"]]
     corrs = [ "{%s}:{%s}" % (x,y) for x,y in corrs ]
-    lines.append( "define LETTER [" + "|".join(corrs) + "] ;" )
-    lines.append( "define WORD LETTER* ; " )
-    lines.append( "push WORD" )
+    identifier = camelize(mapping["in_metadata"]["lang"]) + \
+           camelize(mapping["in_metadata"]["orth"]) + "To" + \
+           camelize(mapping["out_metadata"]["lang"]) + \
+           camelize(mapping["out_metadata"]["orth"])
+    lines.append( "define " + identifier + " [" + "|".join(corrs) + "]* ;" )
+    lines.append( "push " + identifier )
     return lines
 
 def go(mapping_filename, output_filename):
