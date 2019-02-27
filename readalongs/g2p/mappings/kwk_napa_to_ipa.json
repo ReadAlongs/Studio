@@ -7,13 +7,15 @@
       "lang": "kwk",
       "orth": "napa",
       "prefix": "",
-      "suffix": ""
+      "suffix": "",
+      "delimiter": ""
    },
    "out_metadata": {
       "lang": "kwk",
       "orth": "ipa",
       "prefix": "",
-      "suffix": ""
+      "suffix": "",
+      "delimiter": ""
    },
    "map": [
       { "in": "p",	"out": "p" },

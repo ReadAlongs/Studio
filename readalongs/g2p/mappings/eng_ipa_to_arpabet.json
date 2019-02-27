@@ -7,13 +7,15 @@
       "lang": "eng",
       "orth": "ipa",
       "prefix": "",
-      "suffix": ""
+      "suffix": "",
+      "delimiter": ""
    },
    "out_metadata": {
       "lang": "eng",
       "orth": "arpabet",
-      "prefix": "_",
-      "suffix": ""
+      "prefix": "",
+      "suffix": "",
+      "delimiter": "_"
    },
    "map": [
       { "in": "ɑ",	"out": "AA" },

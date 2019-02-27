@@ -7,7 +7,8 @@
         "lang": "eng",
         "prefix": "",
         "suffix": "",
-        "orth": "ipa"
+        "orth": "ipa",
+        "delimiter": ""
     },
     "map": [
         {
@@ -183,6 +184,7 @@
         "lang": "kwk",
         "prefix": "",
         "suffix": "",
-        "orth": "ipa"
+        "orth": "ipa",
+        "delimiter": ""
     }
 }
