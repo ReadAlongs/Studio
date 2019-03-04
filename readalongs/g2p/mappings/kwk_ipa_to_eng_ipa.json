@@ -4,10 +4,7 @@
     "created": "2019-02-13",
     "last_modified": "2019-02-15",
     "out_metadata": {
-        "lang": "eng",
-        "prefix": "",
-        "suffix": "",
-        "orth": "ipa",
+        "lang": "eng-ipa",
         "delimiter": ""
     },
     "map": [
@@ -178,13 +175,35 @@
         {
             "out": "j",
             "in": "j"
+        },
+        {
+            "out": "ɑ",
+            "in": "a"
+
+        },
+        {
+            "in": "eɪ",
+            "out": "ej"
+        },
+        {
+            "out": "i",
+            "in": "i"
+        },
+        {
+            "in": "ow",
+            "out": "oʊ"
+        },
+        {
+            "out": "u",
+            "in": "u"
+        },
+        {
+            "in": "ə",
+            "out": "ʌ"
         }
     ],
     "in_metadata": {
-        "lang": "kwk",
-        "prefix": "",
-        "suffix": "",
-        "orth": "ipa",
+        "lang": "kwk-ipa",
         "delimiter": ""
     }
 }

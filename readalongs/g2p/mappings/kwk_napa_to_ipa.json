@@ -4,17 +4,11 @@
    "created": "2019-02-13",
    "last_modified": "2019-02-15",
    "in_metadata": {
-      "lang": "kwk",
-      "orth": "napa",
-      "prefix": "",
-      "suffix": "",
+      "lang": "kwk-napa",
       "delimiter": ""
    },
    "out_metadata": {
-      "lang": "kwk",
-      "orth": "ipa",
-      "prefix": "",
-      "suffix": "",
+      "lang": "kwk-ipa",
       "delimiter": ""
    },
    "map": [

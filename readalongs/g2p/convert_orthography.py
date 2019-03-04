@@ -3,7 +3,7 @@
 
 from __future__ import print_function, unicode_literals, division
 from io import open
-import logging, json, os, re, argparse
+import logging, json, os, re, argparse, glob
 
 OPEN_BRACKET = "⦕"
 CLOSED_BRACKET = "⦖"
@@ -16,9 +16,11 @@ def make_bracketed_num(num):
 
 class Converter:
 
-    def __init__(self, filename):
-        with open(filename, "r", encoding="utf-8") as fin:
-            self.mapping = json.load(fin)
+    def __init__(self, mapping):
+        self.mapping = mapping
+        self.in_lang = self.mapping["in_metadata"]["lang"]
+        self.out_lang = self.mapping["out_metadata"]["lang"]
+        self.output_delimiter = self.mapping["out_metadata"]["delimiter"]
 
         # gather replacements
         self.replacements = {}
@@ -38,7 +40,8 @@ class Converter:
         self.regex = re.compile(pattern)
 
     def convert_and_tokenize(self, text):
-        results = []
+        result_str = ''
+        result_indices = []
         current_index = 0
         matches = self.regex.findall(text)
         for s in matches:
@@ -53,10 +56,15 @@ class Converter:
             else:
                 result = self.replacements[s_without_digits]
 
-            results.append({ "index": current_index,
-                             "text": result })
+            result_indices.append((current_index, len(result_str)))
+            if result_str:
+                result_str += self.output_delimiter + result
+            else:
+                result_str = result
 
-        return results
+        result_indices.append((current_index, len(result_str)))
+        return result_str, result_indices
+
 
     def convert(self, text):
         text_with_nums = make_bracketed_num(0)
@@ -65,6 +73,95 @@ class Converter:
             text_with_nums += make_bracketed_num(i+1)
         return self.convert_and_tokenize(text_with_nums)
 
+
+
+class CompositeConverter:
+
+    def __init__(self, converter1, converter2):
+        if converter1.out_lang != converter2.in_lang:
+            logging.error("Cannot compose converter %s->%s and converter %s->%s" %
+                            (converter1.in_lang, converter1.out_lang,
+                            converter2.in_lang, converter2.out_lang))
+        self.converter1 = converter1
+        self.converter2 = converter2
+        self.in_lang = self.converter1.in_lang
+        self.out_lang = self.converter2.out_lang
+
+    def compose_indices(self, i1, i2):
+        if i1 == None:
+            return i2
+        i2_dict = dict(i2)
+        i2_idx = 0
+        results = []
+        for i1_in, i1_out in i1:
+            highest_i2_found = -1
+            while i2_idx <= i1_out:
+                if i2_idx in i2_dict and i2_dict[i2_idx] > highest_i2_found:
+                    highest_i2_found = i2_dict[i2_idx]
+                i2_idx += 1
+            results.append((i1_in, highest_i2_found))
+        return results
+
+    def convert(self, text):
+        c1_text, c1_indices = self.converter1.convert(text)
+        c2_text, c2_indices = self.converter2.convert(c1_text)
+        final_indices = self.compose_indices(c1_indices, c2_indices)
+        return c2_text, final_indices
+
+
+class ConverterLibrary:
+
+    def __init__(self, mappings_dir):
+
+        self.converters = {}
+
+        mappings_path = os.path.join(mappings_dir, "*.json")
+        for mapping_filename in glob.glob(mappings_path):
+            with open(mapping_filename, "r", encoding="utf-8") as fin:
+                mapping = json.load(fin)
+                if type(mapping) != type({}):
+                    logging.error("File %s is not a JSON dictionary" % mapping_filename)
+                    continue
+                if mapping["type"] != "mapping":
+                    logging.error("File %s is not a mapping file" % mapping_filename)
+                    continue
+                converter = Converter(mapping)
+                if converter.in_lang == converter.out_lang:
+                    logging.error("Cannot load reflexive (%s->%s) mapping from file %s" %
+                        (converter.in_lang, converter.out_lang, mapping_filename))
+                    continue
+                self.add_converter(converter)
+
+    def add_converter(self, converter):
+
+        logging.debug("Adding converter between %s and %s" % (converter.in_lang, converter.out_lang))
+        self.converters[(converter.in_lang, converter.out_lang)] = converter
+
+        composites = []
+        for (in_lang, out_lang), other_converter in self.converters.items():
+            if converter.out_lang == in_lang and \
+               converter.in_lang != out_lang and \
+               (converter.in_lang, out_lang) not in self.converters:
+               composite = CompositeConverter(converter, other_converter)
+               self.add_converter(composite)
+            elif converter.in_lang == out_lang and \
+                 converter.out_lang != in_lang and \
+                 (in_lang, converter.out_lang) not in self.converters:
+                 composite = CompositeConverter(other_converter, converter)
+                 self.add_converter(composite)
+
+    def convert(self, text, in_lang, out_lang):
+        if (in_lang, out_lang) not in self.converters:
+            logging.error("No conversion found between %s and %s." % (in_lang, out_lang))
+            return None, None
+        converter = self.converters[(in_lang, out_lang)]
+        return converter.convert(text)
+
+if __name__ == '__main__':
+    library = ConverterLibrary("mappings")
+    result = library.convert("ƛʼiƛʼinʼa", "kwk-napa", "eng-arpabet")
+    with open("test_output.json", "w", encoding="utf-8") as fout:
+        fout.write(json.dumps(result, ensure_ascii=False, indent=4))
 
 # if __name__ == '__main__':
 #     parser = argparse.ArgumentParser(description='Convert XML to another orthography while preserving tags')

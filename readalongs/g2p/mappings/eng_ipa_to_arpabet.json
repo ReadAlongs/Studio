@@ -4,18 +4,12 @@
    "created": "2019-02-13",
    "last_modified": "2019-02-15",
    "in_metadata": {
-      "lang": "eng",
-      "orth": "ipa",
-      "prefix": "",
-      "suffix": "",
+      "lang": "eng-ipa",
       "delimiter": ""
    },
    "out_metadata": {
-      "lang": "eng",
-      "orth": "arpabet",
-      "prefix": "",
-      "suffix": "",
-      "delimiter": "_"
+      "lang": "eng-arpabet",
+      "delimiter": " "
    },
    "map": [
       { "in": "ɑ",	"out": "AA" },

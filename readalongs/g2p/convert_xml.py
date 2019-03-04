@@ -4,6 +4,7 @@
 from __future__ import print_function, unicode_literals, division
 from io import open
 import logging, argparse
+from lxml import etree
 
 try:
     unicode()
@@ -53,8 +54,8 @@ def get_same_language_units(element):
             "text": current_subword})
     return same_language_units
 
-def convert_words(tree, mapping):
-    for word in utterance.xpath(".//w"):
+def convert_words(tree):
+    for word in tree.xpath(".//w"):
         # only convert text within words
         same_language_units = get_same_language_units(word)
         if not same_language_units:
@@ -64,16 +65,14 @@ def convert_words(tree, mapping):
         same_language_units[-1]["text"] += "#"
         print(same_language_units)
 
-def go(mapping_filename, input_filename, output_filename):
-    converter = Converter(mapping_filename)
+def go(input_filename, output_filename):
     with open(input_filename, "r", encoding="utf-8") as fin:
         tree = etree.fromstring(fin.read())
         convert_words(tree)
 
-# if __name__ == '__main__':
-#     parser = argparse.ArgumentParser(description='Convert XML to another orthography while preserving tags')
-#     parser.add_argument('mapping', type=str, help='Mapping filename')
-#     parser.add_argument('input', type=str, help='Input XML')
-#     parser.add_argument('output', type=str, help='Output XML')
-#     args = parser.parse_args()
-#     go(args.mapping, args.input, args.output)
+if __name__ == '__main__':
+     parser = argparse.ArgumentParser(description='Convert XML to another orthography while preserving tags')
+     parser.add_argument('input', type=str, help='Input XML')
+     parser.add_argument('output', type=str, help='Output XML')
+     args = parser.parse_args()
+     go(args.input, args.output)
