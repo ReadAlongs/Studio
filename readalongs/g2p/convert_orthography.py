@@ -3,7 +3,7 @@
 
 from __future__ import print_function, unicode_literals, division
 from io import open
-import logging, json, os, re, argparse, glob
+import logging, json, os, re, argparse, glob, copy
 
 OPEN_BRACKET = "⦕"
 CLOSED_BRACKET = "⦖"
@@ -13,6 +13,47 @@ digit_finder_regex = re.compile(DIGIT_FINDER)
 
 def make_bracketed_num(num):
     return OPEN_BRACKET + str(num).zfill(ZFILL_AMT) + CLOSED_BRACKET
+
+def compose_indices(i1, i2):
+    if not i1:
+        return i2
+    i2_dict = dict(i2)
+    i2_idx = 0
+    results = []
+    for i1_in, i1_out in i1:
+        highest_i2_found = -1
+        while i2_idx <= i1_out:
+            if i2_idx in i2_dict and i2_dict[i2_idx] > highest_i2_found:
+                highest_i2_found = i2_dict[i2_idx]
+            i2_idx += 1
+        results.append((i1_in, highest_i2_found))
+    return results
+
+def concat_indices(i1, i2):
+    if not i1:
+        return i2
+    results = copy.deepcopy(i1)
+    offset1, offset2 = results[-1]
+    for i1, i2 in i2[1:]:
+        results.append((i1+offset1, i2+offset2))
+    return results
+
+def offset_indices(idxs, n1, n2):
+    return [ (i1+n1,i2+n2) for i1, i2 in idxs ]
+
+def trim_indices(idxs):
+    result = []
+    for i1, i2 in idxs:
+        i1 = max(i1, 0)
+        i2 = max(i2, 0)
+        if (i1, i2) in result:
+            continue
+        result.append((i1,i2))
+    return result
+
+
+
+
 
 class Converter:
 
@@ -74,7 +115,6 @@ class Converter:
         return self.convert_and_tokenize(text_with_nums)
 
 
-
 class CompositeConverter:
 
     def __init__(self, converter1, converter2):
@@ -87,25 +127,11 @@ class CompositeConverter:
         self.in_lang = self.converter1.in_lang
         self.out_lang = self.converter2.out_lang
 
-    def compose_indices(self, i1, i2):
-        if i1 == None:
-            return i2
-        i2_dict = dict(i2)
-        i2_idx = 0
-        results = []
-        for i1_in, i1_out in i1:
-            highest_i2_found = -1
-            while i2_idx <= i1_out:
-                if i2_idx in i2_dict and i2_dict[i2_idx] > highest_i2_found:
-                    highest_i2_found = i2_dict[i2_idx]
-                i2_idx += 1
-            results.append((i1_in, highest_i2_found))
-        return results
 
     def convert(self, text):
         c1_text, c1_indices = self.converter1.convert(text)
         c2_text, c2_indices = self.converter2.convert(c1_text)
-        final_indices = self.compose_indices(c1_indices, c2_indices)
+        final_indices = compose_indices(c1_indices, c2_indices)
         return c2_text, final_indices
 
 
@@ -161,7 +187,10 @@ if __name__ == '__main__':
     library = ConverterLibrary("mappings")
     result = library.convert("ƛʼiƛʼinʼa", "kwk-napa", "eng-arpabet")
     with open("test_output.json", "w", encoding="utf-8") as fout:
-        fout.write(json.dumps(result, ensure_ascii=False, indent=4))
+        fout.write(json.dumps(result,
+                            ensure_ascii=False,
+                            indent=4,
+                            default=lambda o:o.to_json()))
 
 # if __name__ == '__main__':
 #     parser = argparse.ArgumentParser(description='Convert XML to another orthography while preserving tags')
