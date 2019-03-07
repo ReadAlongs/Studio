@@ -6,7 +6,6 @@ from io import open
 import logging, argparse
 from lxml import etree
 from convert_orthography import *
-from collections import defaultdict
 
 try:
     unicode()
@@ -56,31 +55,31 @@ def get_same_language_units(element):
             "text": current_subword})
     return same_language_units
 
-def add_word_boundaries(word):
-    # add word boundaries
-    word.text = '#' + (word.text if word.text else '')
-    if word.getchildren():
-        last_child = word[-1]
-        last_child.tail = '#' + (last_child.tail if last_child.tail else '')
-    else:
-        word.text += '#'
+def add_word_boundaries(xml):
+    for word in xml.xpath(".//w"):
+        word.text = '#' + (word.text if word.text else '')
+        if word.getchildren():
+            last_child = word[-1]
+            last_child.tail = '#' + (last_child.tail if last_child.tail else '')
+        else:
+            word.text += '#'
 
-def remove_word_boundaries(word):
-    if word.text and word.text.startswith("#"):
-        word.text = word.text[1:]
-    if word.getchildren():
-        last_child = word[-1]
-        if last_child.tail and last_child.tail.endswith('#'):
-            last_child.tail = last_child.tail[:-1]
+def remove_word_boundaries(xml):
+    for word in xml.xpath(".//w"):
+        if word.text and word.text.startswith("#"):
+            word.text = word.text[1:]
+        if word.getchildren():
+            last_child = word[-1]
+            if last_child.tail and last_child.tail.endswith('#'):
+                last_child.tail = last_child.tail[:-1]
 
-def convert_words(tree, converter):
-    pronouncing_dictionary = defaultdict(list)
-    for word in tree.xpath(".//w"):
-        add_word_boundaries(word)
+def convert_words(xml, converter):
+    for word in xml.xpath(".//w"):
+        #add_word_boundaries(word)
         # only convert text within words
         same_language_units = get_same_language_units(word)
         if not same_language_units:
-            continue
+            return
         #same_language_units[0]["text"] = "#" + same_language_units[0]["text"]
         #same_language_units[-1]["text"] += "#"
         all_text = ''
@@ -90,16 +89,11 @@ def convert_words(tree, converter):
             all_text += text
             all_indices = concat_indices(all_indices, indices)
         replace_text_in_node(word, all_text, all_indices)
-        remove_word_boundaries(word)
+        #remove_word_boundaries(word)
 
-        for morph in word.xpath(".//m"):
-            key = morph.attrib["id"] if "id" in morph.attrib else morph.attrib["orig"]
-            pronouncing_dictionary[key].append(morph.text)
-
-    return pronouncing_dictionary
+    return xml
 
 def replace_text_in_node(word, text, indices):
-    print("Text: ", text, ", indices: ", indices)
     old_text = ''
     new_text = ''
     new_indices = indices
@@ -111,10 +105,9 @@ def replace_text_in_node(word, text, indices):
                 old_text = word.text[:i1]
                 new_text = text[:i2]
                 text = text[i2:]
-                print("Replacing text [%s] with [%s]" % ([old_text], [new_text]))
                 new_indices = offset_indices(indices, -len(old_text), -len(new_text))
                 new_indices = trim_indices(new_indices)
-                word.attrib["orig"] = old_text
+                #word.attrib["orig"] = old_text
                 word.text = new_text
                 break
 
@@ -126,7 +119,6 @@ def replace_text_in_node(word, text, indices):
                     old_text = child.tail[:i1]
                     new_text = text[:i2]
                     text = text[i2:]
-                    print("Replacing text [%s] with [%s]" % ([old_text], [new_text]))
                     new_indices = offset_indices(indices, -len(old_text), -len(new_text))
                     new_indices = trim_indices(new_indices)
                     child.tail = new_text
@@ -134,18 +126,16 @@ def replace_text_in_node(word, text, indices):
 
     return text, new_indices
 
-def save_pronouncing_dictionary(dict_filename, dictionary):
-    with open(dict_filename, 'w', encoding='utf-8') as fout:
-        for key, values in dictionary.items():
-            for value in values:
-                fout.write("%s\t%s\n" % (key.strip(), value.strip()))
 
 def go(mapping_dir, input_filename, output_filename):
     converter = ConverterLibrary(mapping_dir)
     with open(input_filename, "r", encoding="utf-8") as fin:
         tree = etree.fromstring(fin.read())
-        pronouncing_dictionary = convert_words(tree, converter)
-        save_pronouncing_dictionary(output_filename, pronouncing_dictionary)
+        add_word_boundaries(tree)
+        convert_words(tree, converter)
+        remove_word_boundaries(tree)
+        with open(output_filename, "w", encoding="utf-8") as fout:
+            fout.write(etree.tostring(tree, encoding="unicode"))
 
 if __name__ == '__main__':
      parser = argparse.ArgumentParser(description='Convert XML to another orthography while preserving tags')
