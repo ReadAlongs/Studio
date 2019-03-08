@@ -1,6 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+######################################################################
+#
+# create_ipa_mapping.py
+#
+# Given two IPA inventories in JSON (either as dedicated inventory
+# files or the input/output sides of mapping files), map the first
+# onto the second by use of panphon's phonetic distance calculators.
+#
+# The resulting mappings are used just like other mappings: to make
+# converters and pipelines of converters in convert_orthography.py
+#
+######################################################################
+
 from __future__ import print_function, unicode_literals, division
 from io import open
 import argparse, json, itertools, logging

@@ -1,6 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+########################################################
+#
+# Transpile mapping to FST source
+#
+# We're not currently using this module, but
+# once we have index-preserving finite-state G2P,
+# this will take the mapping files and turn them into
+# FSTs.
+#
+########################################################
+
 from __future__ import print_function, unicode_literals, division
 from io import open
 import argparse, json, itertools, logging

@@ -1,6 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+#################################################################
+#
+# create_inv_from_map.py
+#
+# A convenience module for when you need an inventory JSON
+# but only have a mapping one (as is usually the case so far).
+#
+# This is called by create_ipa_mapping.py when it needs an
+# intermediate mapping between a grapheme2ipa mapping
+# and an ipa2arpabet mapping, for example.  It needs two inventories,
+# and so uses this to extract the output vocabulary of the first
+# and the input vocabulary of the second.
+#
+# This is implemented as its own module so that you can also
+# call it yourself on the command line, if you
+# need that actual JSON file for something.
+#
+###################################################################
+
 from __future__ import print_function, unicode_literals, division
 from io import open
 import argparse, json, itertools, logging
@@ -16,7 +35,7 @@ def create_inventory_from_mapping(mapping, in_or_out):
       "metadata": metadata,
       "inventory": inventory
    }
- 
+
 def go(mapping_filename, in_or_out, output_filename):
    with open(mapping_filename, "r", encoding="utf-8") as fin:
       mapping = json.load(fin)

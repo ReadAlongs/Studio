@@ -1,6 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+#######################################################################
+#
+# convert_orthography.py
+#
+# This module has two pieces of functionality.
+#
+# First, it has a simple converter object (e.g. for G2P mappings)
+# that preserves indices between the input and the output.  That
+# is important for the convert_xml.py module, which stitches converted
+# text back into potentially complex XML markup.
+#
+# It also has functionality for composing converters into pipelines, e.g.
+# composing Kwak'wala-orthography-to-IPA, Kwak'wala-IPA-to-English-IPA, and
+# English-IPA-to-ARPABET to make a Kwak'wala-orthography-to-ARPABET converter.
+#
+# The system looks inside a mapping directory to see what converters and
+# converter pipelines it can make, and greedily makes all it can.  (Converters
+# are cheap to make; we might as well make all of them ahead of time rather
+# than search through a possibility graph at the point of need.)
+#
+######################################################################
+
 from __future__ import print_function, unicode_literals, division
 from io import open
 import logging, json, os, re, argparse, glob, copy

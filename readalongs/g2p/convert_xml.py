@@ -1,6 +1,39 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+##############################################################
+#
+# convert_xml.py
+#
+# This takes an XML file with xml:lang attributes and text in
+# some orthography, and converts it to use English ARPABET symbols
+# for speech processing.  (Provided, of course, that a conversion
+# pipeline for it is available through convert_orthography.py.)
+# This XML file preserves complex markup, even within words
+# (e.g. even if you have morpheme tags within words, it
+# can perform phonological rules across those tags).
+#
+# Language attributes can be added at any level, even below the level of
+# the word.  Like say I need to convert "Patrickƛən" (my name is Patrick)
+# in Kwak'wala; I can mark that up as:
+#
+#  <w><m xml:lang="eng">Patrick</m><m xml:lang="kwk-napa">ƛən</m></w>
+#
+# to send the first part to the English conversion pipeline and the
+# second part to the Kwak'wala pipeline.
+#
+# The only assumption made by this module about the structure of the XML
+# is that it has word tags (using <w>, the convention used by TEI formats.)
+# The reason for this is that the word is the domain over which phonological
+# rules apply, and we particularly need to know it to be able to perform
+# phonological rules at word boundaries.  We also only convert text that
+# is part of words (i.e. we don't bother sending whitespace or punctuation
+# through the G2P).
+#
+# So, if the XML file doesn't have word elements, tokenize it and add them.
+#
+##########################################################################3
+
 from __future__ import print_function, unicode_literals, division
 from io import open
 import logging, argparse

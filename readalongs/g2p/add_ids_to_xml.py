@@ -1,6 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+###################################################
+#
+# add_ids_to_xml.py
+#
+# In order to tell visualization systems, "highlight this
+# thing at this time", the document has to be able to identify
+# particular elements.  If the original document does NOT have
+# id tags on its elements, this module adds some.
+#
+# The module does not expect any particular kind of markup,
+
+The auto-generated IDs have formats like "s0w2m1" meaning
+# "sentence 0, word 2, morpheme 1".  But it's flexible if some elements
+# already have ids, or if the markup uses different tags than a TEI document.
+#
+###################################################
+
 from __future__ import print_function, unicode_literals, division
 from io import open
 import logging, argparse, copy
@@ -37,8 +54,9 @@ def add_ids_aux(element, parent_id='', ids=defaultdict(lambda:0)):
     return ids
 
 def add_ids(tree):
+    ids=defaultdict(lambda:0)
     for child in tree:    # don't bother with the root element
-        add_ids_aux(child)
+        ids = add_ids_aux(child, ids)
     return tree
 
 def go(input_filename, output_filename):

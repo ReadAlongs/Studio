@@ -1,6 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+##################################################
+#
+# make_fsg_and_dict.py
+#
+# This module takes a text file, marked up with
+# units (e.g. w for word, m for morpheme) and ids
+# and converted to IPA, and outputs the FSG and
+# .dict files for processing by PocketSphinx.
+#
+##################################################
+
+
 from __future__ import print_function, unicode_literals, division
 from io import open
 import logging, argparse, os
