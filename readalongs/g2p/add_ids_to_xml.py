@@ -10,9 +10,7 @@
 # particular elements.  If the original document does NOT have
 # id tags on its elements, this module adds some.
 #
-# The module does not expect any particular kind of markup,
-
-The auto-generated IDs have formats like "s0w2m1" meaning
+# The auto-generated IDs have formats like "s0w2m1" meaning
 # "sentence 0, word 2, morpheme 1".  But it's flexible if some elements
 # already have ids, or if the markup uses different tags than a TEI document.
 #
@@ -23,6 +21,7 @@ from io import open
 import logging, argparse, copy
 from lxml import etree
 from collections import defaultdict
+from util import *
 
 TAG_TO_ID = {
     'p': 'p',
@@ -32,7 +31,7 @@ TAG_TO_ID = {
     'm': 'm'
 }
 
-def add_ids_aux(element, parent_id='', ids=defaultdict(lambda:0)):
+def add_ids_aux(element, ids=defaultdict(lambda:0), parent_id=''):
     if "id" not in element.attrib:
         if element.tag in TAG_TO_ID:
             id = TAG_TO_ID[element.tag]
@@ -50,7 +49,7 @@ def add_ids_aux(element, parent_id='', ids=defaultdict(lambda:0)):
         ids[id] += 1
     new_ids = copy.deepcopy(ids)
     for child in element:
-        new_ids = add_ids_aux(child, full_id, new_ids)
+        new_ids = add_ids_aux(child, new_ids, full_id)
     return ids
 
 def add_ids(tree):
@@ -60,11 +59,9 @@ def add_ids(tree):
     return tree
 
 def go(input_filename, output_filename):
-    with open(input_filename, "r", encoding="utf-8") as fin:
-        tree = etree.fromstring(fin.read())
-        add_ids(tree)
-        with open(output_filename, "w", encoding="utf-8") as fout:
-            fout.write(etree.tostring(tree, encoding="unicode"))
+    xml = load_xml(input_filename)
+    add_ids(xml)
+    save_xml(output_filename, xml)
 
 if __name__ == '__main__':
      parser = argparse.ArgumentParser(description='Convert XML to another orthography while preserving tags')

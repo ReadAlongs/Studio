@@ -19,58 +19,72 @@ import logging, argparse, os
 from lxml import etree
 from convert_orthography import *
 from collections import defaultdict
+import mustache
+from util import *
 
 try:
     unicode()
 except:
     unicode = str
 
+FSG_TEMPLATE = '''FSG BEGIN {{name}}
+NUM_STATES {{num_states}}
+START STATE 0
+FINAL_STATE {{final_state}}
+
+{{#states}}
+TRANSITION {{current}} {{next}} 1.0 {{id}}
+{{/states}}
+FSG_END
+'''
+
+DICT_TEMPLATE = '''{{#items}}
+{{id}}\t{{pronunciation}}
+{{/items}}
+'''
+
 def make_fsg(xml, filename, unit="m"):
-    name = os.path.basename(filename)
-    name = os.path.splitext(name)[0]
+    data = {
+        "name": os.path.splitext(os.path.basename(filename))[0],
+        "states": [],
+        "num_states": 0
+    }
 
-    result = "FSG_BEGIN %s\n" % name
-
-    states = []
-    xpath_query = ".//" + unit
-    for e in xml.xpath(xpath_query):
+    for e in xml.xpath(".//" + unit):
         if "id" not in e.attrib:
             continue
-        states.append(e.attrib["id"])
+        data["states"].append({
+            "id": e.attrib["id"],
+            "current": data["num_states"],
+            "next": data["num_states"] + 1
+        })
+        data["num_states"] += 1
 
-    result += "NUM_STATES %s\n" % (len(states) + 1)
-    result += "START_STATE 0\n"
-    result += "FINAL_STATE %s\n\n" % len(states)
+    data["final_state"] = data["num_states"]
+    data["num_states"] += 1
 
-    for i, id in enumerate(states):
-        result += "TRANSITION %s %s 1.0 %s\n" % (i, i+1, id)
-
-    result += "FSG_END\n"
-
-    return result
+    return mustache.render(FSG_TEMPLATE, data)
 
 
-def make_dict(xml, unit="m"):
-    pronouncing_dictionary = defaultdict(list)  # although IDs should be unique, this helps just in case they aren't.
-    xpath_query = ".//" + unit
-    for e in xml.xpath(xpath_query):
-        key = e.attrib["id"] if "id" in e.attrib else e.attrib["orig"]
-        pronouncing_dictionary[key].append(e.text)
-    lines = []
-    for key, values in pronouncing_dictionary.items():
-        for value in values:
-            lines.append("%s\t%s\n" % (key.strip(), value.strip()))
-    return "".join(lines)
+def make_dict(xml, input_filename, unit="m"):
+    data = { "items": [] }
+    for e in xml.xpath(".//" + unit):
+        if "id" not in e.attrib:
+            logging.error("%s-type element without id in file %s" % (unit, input_filename))
+        data["items"].append({
+            "id": e.attrib["id"],
+            "pronunciation": e.text
+        })
 
-def go(input_filename, output_fsg_filename, output_dict_filename, unit):
-    with open(input_filename, "r", encoding="utf-8") as fin:
-        xml = etree.fromstring(fin.read())
-        fsg = make_fsg(xml, input_filename, unit)
-        pronouncing_dictionary = make_dict(xml, unit)
-        with open(output_fsg_filename, "w", encoding="utf-8") as fout:
-            fout.write(fsg)
-        with open(output_dict_filename, "w", encoding="utf-8") as fout:
-            fout.write(pronouncing_dictionary)
+    return mustache.render(DICT_TEMPLATE, data)
+
+
+def make_fst_and_dict(input_filename, output_fsg_filename, output_dict_filename, unit):
+    xml = load_xml(input_filename)
+    fsg = make_fsg(xml, input_filename, unit)
+    dct = make_dict(xml, input_filename, unit)
+    save_txt(output_fsg_filename, fsg)
+    save_txt(output_dict_filename, dct)
 
 if __name__ == '__main__':
      parser = argparse.ArgumentParser(description='Convert XML to another orthography while preserving tags')
@@ -79,4 +93,4 @@ if __name__ == '__main__':
      parser.add_argument('output_dict', type=str, help='Output .dict file')
      parser.add_argument('--unit', type=str, default='m', help='XML tag of the unit of analysis (e.g. "w" for word, "m" for morpheme)')
      args = parser.parse_args()
-     go(args.input, args.output_fsg, args.output_dict, args.unit)
+     make_fst_and_dict(args.input, args.output_fsg, args.output_dict, args.unit)

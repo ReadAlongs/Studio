@@ -15,7 +15,8 @@
 #
 # Language attributes can be added at any level, even below the level of
 # the word.  Like say I need to convert "Patrickƛən" (my name is Patrick)
-# in Kwak'wala; I can mark that up as:
+# in Kwak'wala; neither an English nor Kwak'wala pipeline could appropriately
+# convert this word.  I can mark that up as:
 #
 #  <w><m xml:lang="eng">Patrick</m><m xml:lang="kwk-napa">ƛən</m></w>
 #
@@ -39,6 +40,7 @@ from io import open
 import logging, argparse
 from lxml import etree
 from convert_orthography import *
+from util import *
 
 try:
     unicode()
@@ -159,16 +161,18 @@ def replace_text_in_node(word, text, indices):
 
     return text, new_indices
 
+def convert_xml(mapping_dir, xml):
+    converter = ConverterLibrary(mapping_dir)
+    xml_copy = copy.deepcopy(xml)
+    add_word_boundaries(xml_copy)
+    convert_words(xml_copy, converter)
+    remove_word_boundaries(xml_copy)
+    return xml_copy
 
 def go(mapping_dir, input_filename, output_filename):
-    converter = ConverterLibrary(mapping_dir)
-    with open(input_filename, "r", encoding="utf-8") as fin:
-        tree = etree.fromstring(fin.read())
-        add_word_boundaries(tree)
-        convert_words(tree, converter)
-        remove_word_boundaries(tree)
-        with open(output_filename, "w", encoding="utf-8") as fout:
-            fout.write(etree.tostring(tree, encoding="unicode"))
+    xml = load_xml(input_filename)
+    converted_xml = convert_xml(mapping_dir, xml)
+    save_xml(output_filename, converted_xml)
 
 if __name__ == '__main__':
      parser = argparse.ArgumentParser(description='Convert XML to another orthography while preserving tags')

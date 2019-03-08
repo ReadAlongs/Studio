@@ -204,20 +204,12 @@ class ConverterLibrary:
             return None, None
         converter = self.converters[(in_lang, out_lang)]
         return converter.convert(text)
-
-if __name__ == '__main__':
-    library = ConverterLibrary("mappings")
-    result = library.convert("ƛʼiƛʼinʼa", "kwk-napa", "eng-arpabet")
-    with open("test_output.json", "w", encoding="utf-8") as fout:
-        fout.write(json.dumps(result,
-                            ensure_ascii=False,
-                            indent=4,
-                            default=lambda o:o.to_json()))
-
+#
 # if __name__ == '__main__':
-#     parser = argparse.ArgumentParser(description='Convert XML to another orthography while preserving tags')
-#     parser.add_argument('mapping', type=str, help='Mapping filename')
-#     parser.add_argument('input', type=str, help='Input XML')
-#     parser.add_argument('output', type=str, help='Output XML')
-#     args = parser.parse_args()
-#     go(args.mapping, args.input, args.output)
+#     library = ConverterLibrary("mappings")
+#     result = library.convert("ƛʼiƛʼinʼa", "kwk-napa", "eng-arpabet")
+#     with open("test_output.json", "w", encoding="utf-8") as fout:
+#         fout.write(json.dumps(result,
+#                             ensure_ascii=False,
+#                             indent=4,
+#                             default=lambda o:o.to_json()))
