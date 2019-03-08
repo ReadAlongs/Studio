@@ -11,17 +11,42 @@
 
 from __future__ import print_function, unicode_literals, division
 from io import open
-import logging, argparse
-from copy import deepcopy
 from lxml import etree
-
-from add_ids_to_xml import add_ids
-from make_fsg_and_dict import make_fsg, make_dict
+from copy import deepcopy
 
 try:
     unicode()
 except:
     unicode = str
+
+def get_lang_attrib(element):
+    lang_path = element.xpath('./@xml:lang')
+    if not lang_path and "lang" in element.attrib:
+        lang_path = element.attrib["lang"]
+    if not lang_path and element.getparent() is not None:
+        return get_lang_attrib(element.getparent())
+    if not lang_path:
+        return None
+    return lang_path[0]
+
+def merge_if_same_label(lst_of_dicts, text_key, label_key):
+    results = []
+    current_item = None
+    for dct in lst_of_dicts:
+        if label_key not in dct:
+            dct[label_key] = None
+        if not current_item:
+            current_item = deepcopy(dct)
+            continue
+        if dct[label_key] == current_item[label_key]:
+            current_item[text_key] += dct[text_key]
+        else:
+            results.append(current_item)
+            current_item = deepcopy(dct)
+    if current_item:
+        results.append(current_item)
+    return results
+
 
 
 def load_xml(input_filename):

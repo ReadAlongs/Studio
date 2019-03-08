@@ -18,7 +18,8 @@
 
 from __future__ import print_function, unicode_literals, division
 from io import open
-import logging, argparse, copy
+import logging, argparse
+from copy import deepcopy
 from lxml import etree
 from collections import defaultdict
 from util import *
@@ -44,23 +45,24 @@ def add_ids_aux(element, ids=defaultdict(lambda:0), parent_id=''):
             id = element.tag
         if id not in ids:
             ids[id] = 0
-        full_id = parent_id + id + str(ids[id])
-        element.attrib["id"] = full_id
+        element.attrib["id"] = parent_id + id + str(ids[id])
         ids[id] += 1
-    new_ids = copy.deepcopy(ids)
+    full_id = element.attrib["id"]
+    new_ids = deepcopy(ids)
     for child in element:
         new_ids = add_ids_aux(child, new_ids, full_id)
     return ids
 
-def add_ids(tree):
+def add_ids(xml):
+    xml = deepcopy(xml)
     ids=defaultdict(lambda:0)
-    for child in tree:    # don't bother with the root element
+    for child in xml:    # don't bother with the root element
         ids = add_ids_aux(child, ids)
-    return tree
+    return xml
 
 def go(input_filename, output_filename):
     xml = load_xml(input_filename)
-    add_ids(xml)
+    xml = add_ids(xml)
     save_xml(output_filename, xml)
 
 if __name__ == '__main__':

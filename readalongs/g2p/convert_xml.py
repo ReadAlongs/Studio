@@ -47,15 +47,6 @@ try:
 except:
     unicode = str
 
-def get_lang_attrib(element):
-    lang_path = element.xpath('./@xml:lang')
-    if not lang_path and "lang" in element.attrib:
-        lang_path = element.attrib["lang"]
-    if not lang_path and element.getparent() is not None:
-        return get_lang_attrib(element.getparent())
-    if not lang_path:
-        return None
-    return lang_path[0]
 
 
 def iterate_over_text(element):
@@ -103,28 +94,30 @@ def remove_word_boundaries(xml):
     for word in xml.xpath(".//w"):
         if word.text and word.text.startswith("#"):
             word.text = word.text[1:]
+        if word.text and word.text.endswith("#"):
+            word.text = word.text[:-1]
         if word.getchildren():
             last_child = word[-1]
             if last_child.tail and last_child.tail.endswith('#'):
                 last_child.tail = last_child.tail[:-1]
 
-def convert_words(xml, converter):
+def convert_words(xml, converter, output_orthography="eng-arpabet"):
     for word in xml.xpath(".//w"):
         #add_word_boundaries(word)
         # only convert text within words
         same_language_units = get_same_language_units(word)
         if not same_language_units:
             return
-        #same_language_units[0]["text"] = "#" + same_language_units[0]["text"]
-        #same_language_units[-1]["text"] += "#"
         all_text = ''
         all_indices = []
         for unit in same_language_units:
-            text, indices = converter.convert(unit["text"], unit["lang"], "eng-arpabet")
+            text, indices = converter.convert(
+                unit["text"],
+                unit["lang"],
+                output_orthography )
             all_text += text
             all_indices = concat_indices(all_indices, indices)
         replace_text_in_node(word, all_text, all_indices)
-        #remove_word_boundaries(word)
 
     return xml
 
@@ -161,17 +154,17 @@ def replace_text_in_node(word, text, indices):
 
     return text, new_indices
 
-def convert_xml(mapping_dir, xml):
+def convert_xml(mapping_dir, xml, output_orthography="eng-arpabet"):
     converter = ConverterLibrary(mapping_dir)
     xml_copy = copy.deepcopy(xml)
     add_word_boundaries(xml_copy)
-    convert_words(xml_copy, converter)
+    convert_words(xml_copy, converter, output_orthography)
     remove_word_boundaries(xml_copy)
     return xml_copy
 
-def go(mapping_dir, input_filename, output_filename):
+def go(mapping_dir, input_filename, output_filename, output_orthography="eng-arpabet"):
     xml = load_xml(input_filename)
-    converted_xml = convert_xml(mapping_dir, xml)
+    converted_xml = convert_xml(mapping_dir, xml, output_orthography)
     save_xml(output_filename, converted_xml)
 
 if __name__ == '__main__':
@@ -179,5 +172,6 @@ if __name__ == '__main__':
      parser.add_argument('mapping_dir', type=str, help="Directory containing orthography mappings")
      parser.add_argument('input', type=str, help='Input XML')
      parser.add_argument('output', type=str, help='Output XML')
+     parser.add_argument('--out_orth', type=str, default="eng-arpabet", help='Output orthography (default: "eng-arpabet")')
      args = parser.parse_args()
-     go(args.mapping_dir, args.input, args.output)
+     go(args.mapping_dir, args.input, args.output, args.out_orth)
