@@ -5,10 +5,12 @@
   "last_modified": "2019-03-07",
   "in_metadata": {
     "lang": "atj",
+    "format": "custom",
     "delimiter": ""
   },
   "out_metadata": {
     "lang": "atj-ipa",
+    "format": "ipa",
     "delimiter": ""
   },
   "map": [

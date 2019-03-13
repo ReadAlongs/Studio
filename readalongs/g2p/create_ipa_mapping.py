@@ -56,9 +56,9 @@ def create_mapping(inv_l1, inv_l2):
         inv_l1 = create_inventory_from_mapping(inv_l1, "out")
     if inv_l2["type"] == "mapping":
         inv_l2 = create_inventory_from_mapping(inv_l2, "in")
-    if inv_l1["metadata"]["orth"] != "ipa":
+    if inv_l1["metadata"]["format"] != "ipa":
         logging.warning("Orthography of inventory 1 is not 'ipa'.")
-    if inv_l2["metadata"]["orth"] != "ipa":
+    if inv_l2["metadata"]["format"] != "ipa":
         logging.warning("Orthography of inventory 2 is not 'ipa'.")
     mapping = align_inventories(inv_l1["inventory"], inv_l2["inventory"])
     output_mapping = {

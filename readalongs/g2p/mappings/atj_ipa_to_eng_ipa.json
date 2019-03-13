@@ -1,0 +1,91 @@
+{
+    "out_metadata": {
+        "lang": "eng-ipa", 
+        "delimiter": "", 
+        "format": "ipa"
+    }, 
+    "in_metadata": {
+        "lang": "atj-ipa", 
+        "delimiter": "", 
+        "format": "ipa"
+    }, 
+    "type": "mapping", 
+    "map": [
+        {
+            "out": "b", 
+            "in": "b"
+        }, 
+        {
+            "out": "d", 
+            "in": "d"
+        }, 
+        {
+            "out": "ɡ", 
+            "in": "ɡ"
+        }, 
+        {
+            "out": "s", 
+            "in": "s"
+        }, 
+        {
+            "out": "ʃ", 
+            "in": "ʃ"
+        }, 
+        {
+            "out": "ts", 
+            "in": "t͡s"
+        }, 
+        {
+            "out": "m", 
+            "in": "m"
+        }, 
+        {
+            "out": "n", 
+            "in": "n"
+        }, 
+        {
+            "out": "ɾ", 
+            "in": "r"
+        }, 
+        {
+            "out": "h", 
+            "in": "h"
+        }, 
+        {
+            "out": "w", 
+            "in": "w"
+        }, 
+        {
+            "out": "ɑ", 
+            "in": "a"
+        }, 
+        {
+            "out": "ɛ", 
+            "in": "eː"
+        }, 
+        {
+            "out": "i", 
+            "in": "i"
+        }, 
+        {
+            "out": "u", 
+            "in": "u"
+        }, 
+        {
+            "out": "ɑ", 
+            "in": "aː"
+        }, 
+        {
+            "out": "ɛ", 
+            "in": "eː"
+        }, 
+        {
+            "out": "i", 
+            "in": "iː"
+        }, 
+        {
+            "out": "u", 
+            "in": "uː"
+        }
+    ]
+}

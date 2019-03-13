@@ -8,11 +8,10 @@ RUN apt-get update -y && \
 COPY ./requirements.txt /app/requirements.txt
 
 WORKDIR /app
+RUN mkdir /data
 
 RUN pip install -r requirements.txt
 
 COPY . /app
-
-ENTRYPOINT [ "python" ]
 
 CMD [ "app.py" ]

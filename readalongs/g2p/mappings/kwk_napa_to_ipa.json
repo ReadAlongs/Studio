@@ -5,10 +5,12 @@
    "last_modified": "2019-02-15",
    "in_metadata": {
       "lang": "kwk-napa",
+      "format": "custom",
       "delimiter": ""
    },
    "out_metadata": {
       "lang": "kwk-ipa",
+      "format": "ipa",
       "delimiter": ""
    },
    "map": [

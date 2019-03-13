@@ -5,6 +5,7 @@
     "last_modified": "2019-02-15",
     "out_metadata": {
         "lang": "eng-ipa",
+        "format": "ipa",
         "delimiter": ""
     },
     "map": [
@@ -204,6 +205,7 @@
     ],
     "in_metadata": {
         "lang": "kwk-ipa",
+        "format": "ipa",
         "delimiter": ""
     }
 }

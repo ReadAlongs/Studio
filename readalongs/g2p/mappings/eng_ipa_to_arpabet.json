@@ -5,10 +5,12 @@
    "last_modified": "2019-02-15",
    "in_metadata": {
       "lang": "eng-ipa",
+      "format": "ipa",
       "delimiter": ""
    },
    "out_metadata": {
       "lang": "eng-arpabet",
+      "format": "arpabet",
       "delimiter": " "
    },
    "map": [
