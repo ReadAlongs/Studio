@@ -57,6 +57,10 @@ def save_xml(output_filename, xml):
     with open(output_filename, "w", encoding="utf-8") as fout:
         fout.write(etree.tostring(xml, encoding="unicode"))
 
+def load_txt(input_filename):
+    with open(input_filename, "r", encoding="utf-8") as fin:
+        return fin.read()
+        
 def save_txt(output_filename, txt):
     with open(output_filename, "w", encoding="utf-8") as fout:
         fout.write(txt)

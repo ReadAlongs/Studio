@@ -26,9 +26,9 @@ except:
     unicode = str
 
 
-FSG_TEMPLATE = '''FSG BEGIN {{name}}
+FSG_TEMPLATE = '''FSG_BEGIN {{name}}
 NUM_STATES {{num_states}}
-START STATE 0
+START_STATE 0
 FINAL_STATE {{final_state}}
 
 {{#states}}
