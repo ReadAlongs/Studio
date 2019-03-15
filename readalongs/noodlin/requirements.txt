@@ -1,0 +1,4 @@
+pocketsphinx==0.1.15
+mustache==0.1.4
+lxml==4.3.0
+Flask==1.0.2
