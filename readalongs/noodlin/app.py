@@ -11,7 +11,6 @@ from io import open
 import logging, argparse, os
 from lxml import etree
 import mustache
-
 import webbrowser
 
 try:

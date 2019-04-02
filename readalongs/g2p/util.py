@@ -13,11 +13,20 @@ from __future__ import print_function, unicode_literals, division
 from io import open
 from lxml import etree
 from copy import deepcopy
+import os, json
+from collections import OrderedDict
 
 try:
     unicode()
 except:
     unicode = str
+
+def ensure_dirs(path):
+    dirname = os.path.dirname(path)
+    if not dirname:
+        return
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
 
 def get_lang_attrib(element):
     lang_path = element.xpath('./@xml:lang')
@@ -48,19 +57,40 @@ def merge_if_same_label(lst_of_dicts, text_key, label_key):
     return results
 
 
-
-def load_xml(input_filename):
-    with open(input_filename, "r", encoding="utf-8") as fin:
+def load_xml(input_path):
+    with open(input_path, "r", encoding="utf-8") as fin:
         return etree.fromstring(fin.read())
 
-def save_xml(output_filename, xml):
-    with open(output_filename, "w", encoding="utf-8") as fout:
+def save_xml(output_path, xml):
+    ensure_dirs(output_path)
+    with open(output_path, "w", encoding="utf-8") as fout:
         fout.write(etree.tostring(xml, encoding="unicode"))
 
-def load_txt(input_filename):
-    with open(input_filename, "r", encoding="utf-8") as fin:
+def load_txt(input_path):
+    with open(input_path, "r", encoding="utf-8") as fin:
         return fin.read()
-        
-def save_txt(output_filename, txt):
-    with open(output_filename, "w", encoding="utf-8") as fout:
+
+def save_txt(output_path, txt):
+    ensure_dirs(output_path)
+    with open(output_path, "w", encoding="utf-8") as fout:
         fout.write(txt)
+
+def load_json(input_path):
+    with open(input_path, "r", encoding="utf-8") as fin:
+        return json.load(fin, object_pairs_hook=OrderedDict)
+
+def save_json(output_path, obj):
+    ensure_dirs(output_path)
+    with open(output_path, "w", encoding="utf-8") as fout:
+        fout.write(json.dumps(obj, ensure_ascii=False, indent=4))
+
+def load_tsv(input_path, labels):
+    results = []
+    with open(input_path, "r", encoding="utf-8") as fin:
+        for i, line in enumerate(fin, start=1):
+            pieces = line.strip("\n").strip(" ").split("\t")
+            if len(pieces) > len(labels):
+                logging.error("More columns than labels on line %s" % i)
+                continue
+            results.append(OrderedDict(zip(labels, pieces)))
+    return results

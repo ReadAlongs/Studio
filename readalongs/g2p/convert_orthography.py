@@ -120,6 +120,9 @@ class Converter:
                 result = self.replacements[s_without_digits]
 
             result_indices.append((current_index, len(result_str)))
+
+            if not result:
+                continue
             if result_str:
                 result_str += self.output_delimiter + result
             else:

@@ -36,9 +36,12 @@ def make_dict(xml, input_filename, unit="m"):
     for e in xml.xpath(".//" + unit):
         if "id" not in e.attrib:
             logging.error("%s-type element without id in file %s" % (unit, input_filename))
+        text = e.text.strip()
+        if not text:
+            continue
         data["items"].append({
             "id": e.attrib["id"],
-            "pronunciation": e.text.strip()
+            "pronunciation": text
         })
 
     return mustache.render(DICT_TEMPLATE, data)
@@ -49,7 +52,7 @@ def go(input_filename, output_filename, unit):
     save_txt(output_filename, dct)
 
 if __name__ == '__main__':
-     parser = argparse.ArgumentParser(description='Convert XML to another orthography while preserving tags')
+     parser = argparse.ArgumentParser(description="Make a pronunciation dictionary from a G2P'd XML file")
      parser.add_argument('input', type=str, help='Input XML')
      parser.add_argument('output', type=str, help='Output .dict file')
      parser.add_argument('--unit', type=str, default='m', help='XML tag of the unit of analysis (e.g. "w" for word, "m" for morpheme)')
