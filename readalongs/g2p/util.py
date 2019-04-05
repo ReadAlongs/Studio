@@ -82,7 +82,7 @@ def load_json(input_path):
 def save_json(output_path, obj):
     ensure_dirs(output_path)
     with open(output_path, "w", encoding="utf-8") as fout:
-        fout.write(json.dumps(obj, ensure_ascii=False, indent=4))
+        fout.write(unicode(json.dumps(obj, ensure_ascii=False, indent=4)))
 
 def load_tsv(input_path, labels):
     results = []
