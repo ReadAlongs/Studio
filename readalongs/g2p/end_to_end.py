@@ -67,7 +67,10 @@ if __name__ == '__main__':
      parser.add_argument('output_dict', type=str, help='Output .dict file')
      parser.add_argument('--unit', type=str, default='m', help='XML tag of the unit of analysis (e.g. "w" for word, "m" for morpheme)')
      parser.add_argument('--out_orth', type=str, default="eng-arpabet", help='Output orthography (default: "eng-arpabet")')
+     parser.add_argument('--debug', action='store_true', help='Enable debugging output')
      args = parser.parse_args()
+     if args.debug:
+         logging.basicConfig(level=logging.DEBUG)
      go(args.input,
         args.mapping_dir,
         args.output_xml,
