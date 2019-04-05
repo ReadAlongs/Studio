@@ -12,7 +12,7 @@ from __future__ import print_function, unicode_literals, division
 from io import open
 import logging, argparse, os
 from lxml import etree
-import mustache
+import pystache
 from util import *
 
 try:
@@ -65,7 +65,7 @@ def make_smil(seg_path, text_path, audio_path):
     data = parse_hypseg(seg_text)
     data["text_path"] = text_path
     data["audio_path"] = audio_path
-    return mustache.render(SMIL_TEMPLATE, data)
+    return pystache.render(SMIL_TEMPLATE, data)
 
 def go(seg_path, text_path, audio_path, output_path):
     results = make_smil(seg_path, text_path, audio_path)

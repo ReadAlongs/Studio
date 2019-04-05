@@ -17,7 +17,7 @@ from __future__ import print_function, unicode_literals, division
 from io import open
 import logging, argparse, os
 from lxml import etree
-import mustache
+import pystache
 from util import *
 
 try:
@@ -61,7 +61,7 @@ def make_fsg(xml, filename, unit="m"):
     data["final_state"] = data["num_states"]
     data["num_states"] += 1
 
-    return mustache.render(FSG_TEMPLATE, data)
+    return pystache.render(FSG_TEMPLATE, data)
 
 
 def go(input_filename, output_filename, unit):

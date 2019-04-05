@@ -17,7 +17,7 @@ from __future__ import print_function, unicode_literals, division
 from io import open
 import logging, argparse
 from lxml import etree
-import mustache
+import pystache
 from util import *
 
 try:
@@ -44,7 +44,7 @@ def make_dict(xml, input_filename, unit="m"):
             "pronunciation": text
         })
 
-    return mustache.render(DICT_TEMPLATE, data)
+    return pystache.render(DICT_TEMPLATE, data)
 
 def go(input_filename, output_filename, unit):
     xml = load_xml(input_filename)

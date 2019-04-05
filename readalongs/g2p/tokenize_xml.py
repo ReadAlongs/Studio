@@ -35,7 +35,6 @@ from io import open
 import logging, argparse, os, glob, json, re
 from lxml import etree
 from copy import deepcopy
-import mustache
 from create_inv_from_map import create_inventory_from_mapping
 from util import *
 

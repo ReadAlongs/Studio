@@ -17,7 +17,7 @@ from __future__ import print_function, unicode_literals, division
 from io import open
 import logging, argparse, os, datetime
 from lxml import etree
-import mustache
+import pystache
 from util import *
 
 try:
@@ -58,7 +58,7 @@ def make_jsgf(xml, filename, unit="m"):
             "id": id
         })
 
-    return mustache.render(JSGF_TEMPLATE, data)
+    return pystache.render(JSGF_TEMPLATE, data)
 
 def go(input_filename, output_filename, unit):
     xml = load_xml(input_filename)

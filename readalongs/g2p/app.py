@@ -4,7 +4,7 @@
 from __future__ import print_function, unicode_literals, division
 from io import open
 import logging, json, os
-from mustache import render
+from pystache import render
 
 from flask import Flask, request
 app = Flask(__name__)

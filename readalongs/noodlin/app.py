@@ -20,7 +20,6 @@ except:
 
 import datetime
 import flask
-import redis
 import time
 
 from os import environ, path
