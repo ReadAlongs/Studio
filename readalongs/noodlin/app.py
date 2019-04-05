@@ -10,7 +10,7 @@ from __future__ import print_function, division
 from io import open
 import logging, argparse, os
 from lxml import etree
-import mustache
+import pystache
 import webbrowser
 
 try:
@@ -21,7 +21,6 @@ except:
 import datetime
 import flask
 import redis
-import mustache
 import time
 
 from os import environ, path
@@ -39,7 +38,7 @@ def event_stream(decoder):
 
     for id in speech_to_id_stream(decoder):
         data = { "data": id }
-        yield mustache.render(SSE_TEMPLATE, data)
+        yield pystache.render(SSE_TEMPLATE, data)
 
 def speech_to_id_stream(decoder):
 
@@ -100,7 +99,7 @@ page_data = {}
 
 @app.route('/')
 def home():
-    return mustache.render(TEMPLATE, page_data)
+    return pystache.render(TEMPLATE, page_data)
 
 def go(xml_path, fsg_path, dct_path):
     global decoder, page_data
