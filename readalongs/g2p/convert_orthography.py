@@ -189,7 +189,7 @@ class ConverterLibrary:
         self.converters[(converter.in_lang, converter.out_lang)] = converter
 
         composites = []
-        for (in_lang, out_lang), other_converter in self.converters.items():
+        for (in_lang, out_lang), other_converter in list(self.converters.items()):
             if converter.out_lang == in_lang and \
                converter.in_lang != out_lang and \
                (converter.in_lang, out_lang) not in self.converters:
