@@ -19,6 +19,7 @@ from io import open
 import argparse, json, itertools, logging
 from create_inv_from_map import create_inventory_from_mapping
 import panphon.distance
+from tqdm import tdqm
 
 dst = panphon.distance.Distance()
 
@@ -71,10 +72,10 @@ def create_mapping(inv_l1, inv_l2):
 
 def align_inventories(inventory_l1, inventory_l2):
     mapping = []
-    inventory_l2_expanded = itertools.product(inventory_l2, inventory_l2)
+    inventory_l2_expanded = itertools.product(inventory_l2, inventory_l2, inventory_l2)
     inventory_l2_expanded = list(x + y for x,y in inventory_l2_expanded)
     inventory_l2_expanded = inventory_l2 + inventory_l2_expanded
-    for i1, p1 in enumerate(split_characters(inventory_l1)):
+    for i1, p1 in tqdm(enumerate(split_characters(inventory_l1))):
         # we enumerate the strings because we want to save the original string
         # (e.g., 'kʷ') to the mapping, not the processed one (e.g. 'kw')
         best_match = None
