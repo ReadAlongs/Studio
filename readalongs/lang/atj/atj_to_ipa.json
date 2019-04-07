@@ -19,7 +19,7 @@
     { "in": "k",	"out": "ɡ" },
     { "in": "s",	"out": "s" },
     { "in": "c",	"out": "ʃ" },
-    { "in": "tc",	"out": "t͡s" },
+    { "in": "tc",	"out": "d͡ʒ" },
     { "in": "m",	"out": "m" },
     { "in": "n",	"out": "n" },
     { "in": "r",	"out": "r" },
@@ -33,5 +33,9 @@
     { "in": "ê",	"out": "eː" },
     { "in": "î",	"out": "iː" },
     { "in": "ô",	"out": "uː" }
-  ]
+  ],
+    "comments": [
+	"c: Not ʒ because that is rare in English",
+	"tc: Is often pronounced t͡s"
+    ]
 }
