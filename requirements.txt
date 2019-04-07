@@ -1,0 +1,4 @@
+panphon==0.14
+pystache==0.5.4
+Flask==1.0.2
+lxml==4.3.0
