@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
-import readalong_studio
+import readalongs
 
 setup(
     name='ReadAlong-Studio',
     python_requires='>=3.6',
-    version=readalong_studio.VERSION,
+    version=readalongs.VERSION,
     long_description='ReadAlong Studio',
     packages=find_packages(),
     # packages=['readalong_studio'],
