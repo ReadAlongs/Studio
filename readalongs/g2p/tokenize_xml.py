@@ -30,13 +30,13 @@
 ##################################################
 
 
-from __future__ import print_function, unicode_literals, division
+from __future__ import print_function, unicode_literals, division, absolute_import
 from io import open
 import logging, argparse, os, glob, json, re
 from lxml import etree
 from copy import deepcopy
-from create_inv_from_map import create_inventory_from_mapping
-from util import *
+from .create_inv_from_map import create_inventory_from_mapping
+from .util import *
 
 try:
     unicode()
@@ -95,21 +95,25 @@ class Tokenizer(DefaultTokenizer):
 
 
 class TokenizerLibrary:
-
     def __init__(self, inventory_dir):
         self.tokenizers = { None: DefaultTokenizer() }
-        inv_path = os.path.join(inventory_dir, "*.json")
-        for inv_filename in glob.glob(inv_path):
-            with open(inv_filename, "r", encoding="utf-8") as fin:
-                inv = json.load(fin)
-                if type(inv) != type({}):
-                    logging.error("File %s is not a JSON dictionary" % inv_filename)
+        for root, dirs, files in os.walk(inventory_dir):
+            for inv_filename in files:
+                if not inv_filename.endswith('json'):
                     continue
-                if inv["type"] not in ["inventory", "mapping"]:
-                    logging.error("File %s is not an inventory or mapping file" % inv_filename)
-                    continue
-                tokenizer = Tokenizer(inv)
-                self.tokenizers[tokenizer.lang] = tokenizer
+                inv_filename = os.path.join(root, inv_filename)
+                with open(inv_filename, "r", encoding="utf-8") as fin:
+                    inv = json.load(fin)
+                    if type(inv) != type({}):
+                        logging.error("File %s is not a JSON dictionary",
+                                      inv_filename)
+                        continue
+                    if inv["type"] not in ["inventory", "mapping"]:
+                        logging.error("File %s is not an inventory or mapping file",
+                                      inv_filename)
+                        continue
+                    tokenizer = Tokenizer(inv)
+                    self.tokenizers[tokenizer.lang] = tokenizer
 
     def add_word_children(self, element):
         if element.tag == 'w':   # don't do anything to existing words!

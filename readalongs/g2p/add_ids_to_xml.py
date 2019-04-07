@@ -16,13 +16,13 @@
 #
 ###################################################
 
-from __future__ import print_function, unicode_literals, division
+from __future__ import print_function, unicode_literals, division, absolute_import
 from io import open
 import logging, argparse
 from copy import deepcopy
 from lxml import etree
 from collections import defaultdict
-from util import *
+from .util import *
 
 TAG_TO_ID = {
     'p': 'p',

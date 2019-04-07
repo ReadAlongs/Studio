@@ -84,6 +84,8 @@ class Converter:
         self.in_lang = self.mapping["in_metadata"]["lang"]
         self.out_lang = self.mapping["out_metadata"]["lang"]
         self.output_delimiter = self.mapping["out_metadata"]["delimiter"]
+        self.case_insensitive = self.mapping["in_metadata"].get(
+            "case_insensitive", False)
 
         # gather replacements
         self.replacements = {}
@@ -92,6 +94,8 @@ class Converter:
             inp, outp = io_pair["in"], io_pair["out"]
             #inp = self.mapping["in_metadata"]["prefix"] + inp + self.mapping["in_metadata"]["suffix"]
             #outp = self.mapping["out_metadata"]["prefix"] + outp + self.mapping["out_metadata"]["suffix"]
+            if self.case_insensitive:
+                inp = inp.lower()
             self.replacements[inp] = outp
             inp_with_digits = DIGIT_FINDER.join(c for c in inp)
             self.regex_pieces.append(inp_with_digits)
@@ -100,7 +104,10 @@ class Converter:
         self.regex_pieces = sorted(self.regex_pieces, key = lambda s:-len(s))
         pattern = "|".join(self.regex_pieces + ['.'])
         pattern = "(" + pattern + ")"
-        self.regex = re.compile(pattern)
+        flags = 0
+        if self.case_insensitive:
+            flags |= re.I
+        self.regex = re.compile(pattern, flags)
 
     def convert_and_tokenize(self, text):
         result_str = ''
@@ -108,6 +115,8 @@ class Converter:
         current_index = 0
         matches = self.regex.findall(text)
         for s in matches:
+            if self.case_insensitive:
+                s = s.lower()
             s_without_digits = digit_finder_regex.sub('', s)
             if not s_without_digits:
                 # it's a number index
@@ -166,26 +175,33 @@ class ConverterLibrary:
 
         self.converters = {}
 
-        mappings_path = os.path.join(mappings_dir, "*.json")
-        for mapping_filename in glob.glob(mappings_path):
-            with open(mapping_filename, "r", encoding="utf-8") as fin:
-                mapping = json.load(fin)
-                if type(mapping) != type({}):
-                    logging.error("File %s is not a JSON dictionary" % mapping_filename)
+        for root, dirs, files in os.walk(mappings_dir):
+            for mapping_filename in files:
+                if not mapping_filename.endswith('json'):
                     continue
-                if mapping["type"] != "mapping":
-                    logging.error("File %s is not a mapping file" % mapping_filename)
-                    continue
-                converter = Converter(mapping)
-                if converter.in_lang == converter.out_lang:
-                    logging.error("Cannot load reflexive (%s->%s) mapping from file %s" %
-                        (converter.in_lang, converter.out_lang, mapping_filename))
-                    continue
-                self.add_converter(converter)
+                mapping_filename = os.path.join(root, mapping_filename)
+                with open(mapping_filename, "r", encoding="utf-8") as fin:
+                    mapping = json.load(fin)
+                    if type(mapping) != type({}):
+                        logging.error("File %s is not a JSON dictionary",
+                                      mapping_filename)
+                        continue
+                    if mapping["type"] != "mapping":
+                        logging.error("File %s is not a mapping file",
+                                      mapping_filename)
+                        continue
+                    converter = Converter(mapping)
+                    if converter.in_lang == converter.out_lang:
+                        logging.error("Cannot load reflexive (%s->%s) "
+                                      "mapping from file %s",
+                                      converter.in_lang, converter.out_lang,
+                                      mapping_filename)
+                        continue
+                    self.add_converter(converter)
 
     def add_converter(self, converter):
-
-        logging.debug("Adding converter between %s and %s" % (converter.in_lang, converter.out_lang))
+        logging.debug("Adding converter between %s and %s",
+                      converter.in_lang, converter.out_lang)
         self.converters[(converter.in_lang, converter.out_lang)] = converter
 
         composites = []
@@ -203,7 +219,8 @@ class ConverterLibrary:
 
     def convert(self, text, in_lang, out_lang):
         if (in_lang, out_lang) not in self.converters:
-            logging.error("No conversion found between %s and %s." % (in_lang, out_lang))
+            logging.error("No conversion found between %s and %s.",
+                          in_lang, out_lang)
             return None, None
         converter = self.converters[(in_lang, out_lang)]
         return converter.convert(text)

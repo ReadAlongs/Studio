@@ -4,12 +4,12 @@
   "created": "2019-04-07",
   "last_modified": "2019-04-07",
   "in_metadata": {
-    "lang": "crl",
+    "lang": "crj",
     "format": "custom",
     "delimiter": ""
   },
   "out_metadata": {
-    "lang": "crl-ipa",
+    "lang": "crj-ipa",
     "format": "ipa",
     "delimiter": ""
   },
@@ -108,7 +108,7 @@
       { "in": "ᓛ", "out": "laː" },
       { "in": "ᐧᓛ", "out": "lʷaː" },
       { "in": "ᓪ", "out": "l" },
-      ,
+
       { "in": "ᐧᓭ", "out": "sʷeː" },
       { "in": "ᓭ", "out": "seː" },
       { "in": "ᓯ", "out": "si" },

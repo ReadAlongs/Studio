@@ -23,19 +23,19 @@
 #
 ##########################################################################
 
-from __future__ import print_function, unicode_literals, division
+from __future__ import print_function, unicode_literals, division, absolute_import
 from io import open
 import logging, argparse
 from copy import deepcopy
 from lxml import etree
 
-from util import *
-from add_ids_to_xml import add_ids
-from tokenize_xml import tokenize_xml
-from convert_xml import convert_xml
-from make_fsg import make_fsg
-from make_jsgf import make_jsgf
-from make_dict import make_dict
+from .util import *
+from .add_ids_to_xml import add_ids
+from .tokenize_xml import tokenize_xml
+from .convert_xml import convert_xml
+from .make_fsg import make_fsg
+from .make_jsgf import make_jsgf
+from .make_dict import make_dict
 
 try:
     unicode()
