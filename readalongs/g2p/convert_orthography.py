@@ -84,6 +84,8 @@ class Converter:
         self.in_lang = self.mapping["in_metadata"]["lang"]
         self.out_lang = self.mapping["out_metadata"]["lang"]
         self.output_delimiter = self.mapping["out_metadata"]["delimiter"]
+        self.case_insensitive = self.mapping["in_metadata"].get(
+            "case_insensitive", False)
 
         # gather replacements
         self.replacements = {}
@@ -92,6 +94,8 @@ class Converter:
             inp, outp = io_pair["in"], io_pair["out"]
             #inp = self.mapping["in_metadata"]["prefix"] + inp + self.mapping["in_metadata"]["suffix"]
             #outp = self.mapping["out_metadata"]["prefix"] + outp + self.mapping["out_metadata"]["suffix"]
+            if self.case_insensitive:
+                inp = inp.lower()
             self.replacements[inp] = outp
             inp_with_digits = DIGIT_FINDER.join(c for c in inp)
             self.regex_pieces.append(inp_with_digits)
@@ -100,7 +104,10 @@ class Converter:
         self.regex_pieces = sorted(self.regex_pieces, key = lambda s:-len(s))
         pattern = "|".join(self.regex_pieces + ['.'])
         pattern = "(" + pattern + ")"
-        self.regex = re.compile(pattern)
+        flags = 0
+        if self.case_insensitive:
+            flags |= re.I
+        self.regex = re.compile(pattern, flags)
 
     def convert_and_tokenize(self, text):
         result_str = ''
@@ -108,6 +115,8 @@ class Converter:
         current_index = 0
         matches = self.regex.findall(text)
         for s in matches:
+            if self.case_insensitive:
+                s = s.lower()
             s_without_digits = digit_finder_regex.sub('', s)
             if not s_without_digits:
                 # it's a number index
