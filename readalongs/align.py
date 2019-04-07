@@ -3,9 +3,12 @@ Alignment for audiobooks
 """
 
 import pocketsphinx
+import argparse
 import logging
+import pystache
 import wave
 import os
+import io
 from lxml import etree
 from tempfile import NamedTemporaryFile
 
@@ -14,20 +17,17 @@ from .g2p.add_ids_to_xml import add_ids
 from .g2p.convert_xml import convert_xml
 from .g2p.make_fsg import make_fsg
 from .g2p.make_dict import make_dict
+from .g2p.make_smil import make_smil
 from . import mapping_dir
-
-def do_g2p(xml):
-    """Tokenize and convert words to phone sequences in an XML file."""
-    xml = tokenize_xml(xml, mapping_dir)
-    xml = add_ids(xml)
-    xml = convert_xml(mapping_dir, xml)
-    return xml
 
 def align_audio(xml_path, wav_path, unit='w'):
     """End-to-end alignment of a single audio file."""
+    results = { "words": [] }
     # First do G2P
     xml = etree.parse(xml_path).getroot()
-    xml = do_g2p(xml)
+    xml = tokenize_xml(xml, mapping_dir)
+    results['tokenized'] = xml = add_ids(xml)
+    xml = convert_xml(mapping_dir, xml)
     # Now generate dictionary and FSG
     dict_data = make_dict(xml, xml_path, unit=unit)
     dict_file = NamedTemporaryFile(prefix='readalongs_dict_')
@@ -62,7 +62,6 @@ def align_audio(xml_path, wav_path, unit='w'):
         ps.start_utt()
         ps.process_raw(raw_data, no_search=False, full_utt=True)
         ps.end_utt()
-    results = { "words": [] }
     for seg in ps.seg():
         if seg.word in ('<sil>', '[NOISE]'):
             continue
@@ -76,3 +75,61 @@ def align_audio(xml_path, wav_path, unit='w'):
         logging.info("Segment: %s (%.3f : %.3f)",
                      seg.word, start, end)
     return results
+
+def make_argparse():
+    """Hey! This function makes the argparse!"""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('inputfile', type=str, help='Input file (XML or text)')
+    parser.add_argument('wavfile', type=str, help='Input audio file')
+    parser.add_argument('outputfile', type=str, help='Base name for output files')
+    parser.add_argument('-f', '--force-overwrite',
+                        action='store_true',
+                        help='Force overwriting existing output files')
+    parser.add_argument('--text-input', action='store_true',
+                        help='Input is plain text (assume one sentence per line)')
+    parser.add_argument('--text-language', type=str,
+                        help='Set language for plain text input')
+    return parser
+
+XML_TEMPLATE = """<document>
+{{#sentences}}
+<s xml:lang="{{lang}}">{{text}}</s>
+{{/sentences}}
+</document>
+"""
+
+def main(argv=None):
+    """Hey! This function is named main!"""
+    parser = make_argparse()
+    args = parser.parse_args(argv)
+    if args.text_input:
+        if args.text_language is None:
+            parser.error("--text-input requires --text-language")
+        tempfile = NamedTemporaryFile(prefix='readalongs_xml_')
+        with io.open(args.inputfile) as fin:
+            data = { "sentences":
+                     [{ "text":text, "lang":args.text_language}
+                      for text in fin if text.strip() != ""] }
+            xml = pystache.render(XML_TEMPLATE, data)
+            tempfile.write(xml.encode('utf-8'))
+            tempfile.flush()
+        args.inputfile = tempfile.name
+
+    tokenized_xml_path = args.outputfile + '.xml'
+    if os.path.exists(tokenized_xml_path) and not args.force_overwrite:
+        parser.error("Output file %s exists already, did you mean to do that?"
+                     % tokenized_xml_path)
+    smil_path = args.outputfile + '.smil'
+    if os.path.exists(smil_path) and not args.force_overwrite:
+        parser.error("Output file %s exists already, did you mean to do that?"
+                     % smil_path)
+
+    results = align_audio(args.inputfile, args.wavfile)
+    with io.open(tokenized_xml_path, 'w', encoding='utf-8') as fout:
+        fout.write(etree.tounicode(results['tokenized']))
+    smil = make_smil(args.inputfile, args.wavfile, results)
+    with io.open(smil_path, 'w', encoding='utf-8') as fout:
+        fout.write(smil)
+
+if __name__ == '__main__':
+    main()
