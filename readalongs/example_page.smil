@@ -1,4 +1,4 @@
-<smil version="3.0">
+<smil xmlns="http://www.w3.org/ns/SMIL" version="3.0">
     <body>
         <par id="par-s0w0">
             <text src="example_page.xml#s0w0"/>
