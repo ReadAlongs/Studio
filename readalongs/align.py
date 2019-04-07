@@ -13,13 +13,13 @@ import io
 from lxml import etree
 from tempfile import NamedTemporaryFile
 
-from .g2p.tokenize_xml import tokenize_xml
-from .g2p.add_ids_to_xml import add_ids
-from .g2p.convert_xml import convert_xml
-from .g2p.make_fsg import make_fsg
-from .g2p.make_dict import make_dict
-from .g2p.make_smil import make_smil
-from . import mapping_dir
+from readalongs.g2p.tokenize_xml import tokenize_xml
+from readalongs.g2p.add_ids_to_xml import add_ids
+from readalongs.g2p.convert_xml import convert_xml
+from readalongs.g2p.make_fsg import make_fsg
+from readalongs.g2p.make_dict import make_dict
+from readalongs.g2p.make_smil import make_smil
+from readalongs import mapping_dir
 
 def align_audio(xml_path, wav_path, unit='w'):
     """End-to-end alignment of a single audio file."""
@@ -124,15 +124,17 @@ def main(argv=None):
     if os.path.exists(smil_path) and not args.force_overwrite:
         parser.error("Output file %s exists already, did you mean to do that?"
                      % smil_path)
+    wav_path = args.outputfile + '.wav'
+    if os.path.exists(wav_path) and not args.force_overwrite:
+        parser.error("Output file %s exists already, did you mean to do that?"
+                     % wav_path)
 
     results = align_audio(args.inputfile, args.wavfile)
     with io.open(tokenized_xml_path, 'w', encoding='utf-8') as fout:
         fout.write(etree.tounicode(results['tokenized']))
     smil = make_smil(os.path.basename(tokenized_xml_path),
-                     os.path.basename(args.wavfile), results)
-    shutil.copy(args.wavfile,
-                os.path.join(os.path.dirname(smil_path),
-                             os.path.basename(args.wavfile)))
+                     os.path.basename(wav_path), results)
+    shutil.copy(args.wavfile, wav_path)
     with io.open(smil_path, 'w', encoding='utf-8') as fout:
         fout.write(smil)
 
