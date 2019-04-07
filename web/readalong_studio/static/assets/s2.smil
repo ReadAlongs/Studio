@@ -1,0 +1,96 @@
+<smil version="3.0">
+    <body>
+        <par id="par-s0w0">
+            <text src="s2.xml#s0w0"/>
+            <audio src="s2.wav" clipBegin="0.52" clipEnd="1.05"/>
+        </par>
+        <par id="par-s0w1">
+            <text src="s2.xml#s0w1"/>
+            <audio src="s2.wav" clipBegin="2.14" clipEnd="2.89"/>
+        </par>
+        <par id="par-s0w2">
+            <text src="s2.xml#s0w2"/>
+            <audio src="s2.wav" clipBegin="2.89" clipEnd="3.41"/>
+        </par>
+        <par id="par-s0w3">
+            <text src="s2.xml#s0w3"/>
+            <audio src="s2.wav" clipBegin="3.41" clipEnd="3.72"/>
+        </par>
+        <par id="par-s0w4">
+            <text src="s2.xml#s0w4"/>
+            <audio src="s2.wav" clipBegin="3.72" clipEnd="4.93"/>
+        </par>
+        <par id="par-s0w5">
+            <text src="s2.xml#s0w5"/>
+            <audio src="s2.wav" clipBegin="6.24" clipEnd="6.5"/>
+        </par>
+        <par id="par-s0w6">
+            <text src="s2.xml#s0w6"/>
+            <audio src="s2.wav" clipBegin="6.5" clipEnd="7.59"/>
+        </par>
+        <par id="par-s0w7">
+            <text src="s2.xml#s0w7"/>
+            <audio src="s2.wav" clipBegin="7.59" clipEnd="8.31"/>
+        </par>
+        <par id="par-s0w8">
+            <text src="s2.xml#s0w8"/>
+            <audio src="s2.wav" clipBegin="8.31" clipEnd="8.95"/>
+        </par>
+        <par id="par-s0w9">
+            <text src="s2.xml#s0w9"/>
+            <audio src="s2.wav" clipBegin="8.99" clipEnd="9.31"/>
+        </par>
+        <par id="par-s0w10">
+            <text src="s2.xml#s0w10"/>
+            <audio src="s2.wav" clipBegin="9.31" clipEnd="10.85"/>
+        </par>
+        <par id="par-s0w11">
+            <text src="s2.xml#s0w11"/>
+            <audio src="s2.wav" clipBegin="12.2" clipEnd="12.54"/>
+        </par>
+        <par id="par-s0w12">
+            <text src="s2.xml#s0w12"/>
+            <audio src="s2.wav" clipBegin="12.54" clipEnd="13.04"/>
+        </par>
+        <par id="par-s0w13">
+            <text src="s2.xml#s0w13"/>
+            <audio src="s2.wav" clipBegin="13.04" clipEnd="13.3"/>
+        </par>
+        <par id="par-s0w14">
+            <text src="s2.xml#s0w14"/>
+            <audio src="s2.wav" clipBegin="13.3" clipEnd="13.68"/>
+        </par>
+        <par id="par-s0w15">
+            <text src="s2.xml#s0w15"/>
+            <audio src="s2.wav" clipBegin="13.68" clipEnd="13.99"/>
+        </par>
+        <par id="par-s0w16">
+            <text src="s2.xml#s0w16"/>
+            <audio src="s2.wav" clipBegin="13.99" clipEnd="15.01"/>
+        </par>
+        <par id="par-s0w17">
+            <text src="s2.xml#s0w17"/>
+            <audio src="s2.wav" clipBegin="15.68" clipEnd="16.03"/>
+        </par>
+        <par id="par-s0w18">
+            <text src="s2.xml#s0w18"/>
+            <audio src="s2.wav" clipBegin="16.03" clipEnd="16.2"/>
+        </par>
+        <par id="par-s0w19">
+            <text src="s2.xml#s0w19"/>
+            <audio src="s2.wav" clipBegin="16.2" clipEnd="16.55"/>
+        </par>
+        <par id="par-s0w20">
+            <text src="s2.xml#s0w20"/>
+            <audio src="s2.wav" clipBegin="16.55" clipEnd="16.68"/>
+        </par>
+        <par id="par-s0w21">
+            <text src="s2.xml#s0w21"/>
+            <audio src="s2.wav" clipBegin="16.68" clipEnd="17.19"/>
+        </par>
+        <par id="par-s0w22">
+            <text src="s2.xml#s0w22"/>
+            <audio src="s2.wav" clipBegin="17.81" clipEnd="18.74"/>
+        </par>
+    </body>
+</smil>
