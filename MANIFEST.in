@@ -1,0 +1,7 @@
+recursive-include readalongs/templates *
+recursive-include readalongs/static *
+include MANIFEST.in
+exclude .gitignore
+recursive-exclude * *.py[co]
+recursive-exclude * *~ 
+recursive-exclude * *.orig

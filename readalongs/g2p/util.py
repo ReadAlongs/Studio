@@ -119,7 +119,6 @@ def save_json_zip(zip_path, output_path, obj):
     with zipfile.ZipFile(zip_path, "a") as fout_zip:
         fout_zip.writestr(output_path, txt.encode("utf-8"))
 
-
 def load_tsv(input_path, labels):
     results = []
     with open(input_path, "r", encoding="utf-8") as fin:
