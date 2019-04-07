@@ -6,6 +6,7 @@ import pocketsphinx
 import argparse
 import logging
 import pystache
+import shutil
 import wave
 import os
 import io
@@ -127,7 +128,11 @@ def main(argv=None):
     results = align_audio(args.inputfile, args.wavfile)
     with io.open(tokenized_xml_path, 'w', encoding='utf-8') as fout:
         fout.write(etree.tounicode(results['tokenized']))
-    smil = make_smil(args.inputfile, args.wavfile, results)
+    smil = make_smil(os.path.basename(tokenized_xml_path),
+                     os.path.basename(args.wavfile), results)
+    shutil.copy(args.wavfile,
+                os.path.join(os.path.dirname(smil_path),
+                             os.path.basename(args.wavfile)))
     with io.open(smil_path, 'w', encoding='utf-8') as fout:
         fout.write(smil)
 
