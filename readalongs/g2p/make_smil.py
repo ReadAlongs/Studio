@@ -21,7 +21,7 @@ except:
     unicode = str
 
 
-SMIL_TEMPLATE = '''<smil xmlns="http://www.w3.org/ns/SMIL" version="3.0">
+SMIL_TEMPLATE = '''<smil version="3.0">
     <body>
         {{#words}}
         <par id="par-{{id}}">
