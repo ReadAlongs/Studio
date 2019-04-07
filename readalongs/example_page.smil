@@ -92,5 +92,5 @@
             <text src="example_page.xml#s4w0"/>
             <audio src="test_atj_sample.wav" clipBegin="17.81" clipEnd="18.740000000000002"/>
         </par>
-    </body>
+    <body>
 </smil>

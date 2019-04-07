@@ -29,7 +29,7 @@ SMIL_TEMPLATE = '''<smil version="3.0">
             <audio src="{{audio_path}}" clipBegin="{{start}}" clipEnd="{{end}}"/>
         </par>
         {{/words}}
-    </body>
+    <body>
 </smil>
 '''
 
