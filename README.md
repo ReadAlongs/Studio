@@ -32,3 +32,10 @@ Optionally a book can be generated as a standalone HTML page or
   - Single page (image, audio, text)
   - Select language (crl or atj for now)
   - Run alignment and launch read-along app with output
+
+# running the web app
+
+1. `pip install -e .`
+2. `python`
+3. `>>> from readalongs.app import app`
+4. `app.run()`
