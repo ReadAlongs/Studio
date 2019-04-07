@@ -46,7 +46,6 @@ def align_audio(xml_path, wav_path, unit='w'):
     cfg.set_string('-hmm', os.path.join(model_path, 'en-us'))
     cfg.set_string('-dict', dict_file.name)
     cfg.set_string('-fsg', fsg_file.name)
-    cfg.set_string('-fsg', fsg_file.name)
     ps = pocketsphinx.Decoder(cfg)
     lmath = ps.get_logmath()
     frame_size = 1.0 / cfg.get_int('-frate')
@@ -63,12 +62,17 @@ def align_audio(xml_path, wav_path, unit='w'):
         ps.start_utt()
         ps.process_raw(raw_data, no_search=False, full_utt=True)
         ps.end_utt()
-    words = []
+    results = { "words": [] }
     for seg in ps.seg():
         if seg.word in ('<sil>', '[NOISE]'):
             continue
         start = frames_to_time(seg.start_frame)
         end = frames_to_time(seg.end_frame + 1)
-        words.append((seg.word, start, end))
+        results["words"].append({
+            "id": seg.word,
+            "start": start,
+            "end": end
+        })
         logging.info("Segment: %s (%.3f : %.3f)",
                      seg.word, start, end)
+    return results
