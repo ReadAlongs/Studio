@@ -13,12 +13,12 @@
 ##################################################
 
 
-from __future__ import print_function, unicode_literals, division
+from __future__ import print_function, unicode_literals, division, absolute_import
 from io import open
 import logging, argparse
 from lxml import etree
 import pystache
-from util import *
+from .util import *
 
 try:
     unicode()
