@@ -24,11 +24,7 @@ import pystache
 from lxml import etree
 import librosa
 from collections import OrderedDict
-
-def ensure_dirs(path):
-    dirname = os.path.dirname(path)
-    if dirname and not os.path.exists(dirname):
-        os.makedirs(dirname)
+from audio_util import *
 
 FMIN = 80
 FMAX = 1000
