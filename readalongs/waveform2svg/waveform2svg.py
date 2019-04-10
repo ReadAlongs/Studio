@@ -29,14 +29,9 @@ def ensure_dirs(path):
     if not os.path.exists(dirname):
         os.makedirs(dirname)
 
-<<<<<<< HEAD
-SVG_TEMPLATE = '''<svg height="{{height}}" width="{{width}}">
-    <polygon points="{{#points}}{{x}},{{y}} {{/points}}" />
-=======
 
 SVG_TEMPLATE = '''<svg id='wave' preserveAspectRatio='none' viewBox="0 0 512 100" xmlns="http://www.w3.org/2000/svg" height="{{height}}" width="{{width}}">
     <polygon points="{{#points}}{{x}},{{y}} {{/points}}"></polygon>
->>>>>>> ad103a46c43545d940a42dc0bd73c42f48f816e6
 </svg>
 '''
 
