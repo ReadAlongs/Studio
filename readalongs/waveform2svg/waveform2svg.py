@@ -28,7 +28,7 @@ def ensure_dirs(path):
     if not os.path.exists(dirname):
         os.makedirs(dirname)
 
-SVG_TEMPLATE = '''<svg id='wave' preserveAspectRatio='none' viewBox="0 0 512 100" xmlns="http://www.w3.org/2000/svg" height="{{height}}" width="{{width}}">
+SVG_TEMPLATE = '''<svg id='wave' preserveAspectRatio='none' viewBox="0 0 {{width}} {{height}}" xmlns="http://www.w3.org/2000/svg" height="{{height}}" width="{{width}}">
     <polygon points="{{#points}}{{x}},{{y}} {{/points}}"></polygon>
 </svg>
 '''
@@ -65,13 +65,13 @@ def render_svg(max_amps, min_amps, num_buckets, include_negative=True, width=512
             data["points"].append({"x": x, "y": y})
     return pystache.render(SVG_TEMPLATE, data)
 
-def make_svg(input_path, num_buckets, include_neg=True):
+def make_waveform_svg(input_path, num_buckets=512, include_neg=True):
     waveform = load_wav_or_smil(input_path)
     max_amps, min_amps = get_max_and_min(waveform, num_buckets)
     return render_svg(max_amps, min_amps, num_buckets, include_neg)
 
 def main(input_path, output_path, num_buckets=512, include_neg=True):
-    svg = make_svg(input_path, num_buckets, include_neg)
+    svg = make_waveform_svg(input_path, num_buckets, include_neg)
     save_txt(output_path, svg)
 
 if __name__ == '__main__':

@@ -30,7 +30,7 @@ FMIN = 80
 FMAX = 1000
 THRESHOLD = 0.75
 
-SVG_TEMPLATE = '''<svg id='units' preserveAspectRatio='none' viewBox="0 0 {{total_width}} {{total_height}}" xmlns="http://www.w3.org/2000/svg" height="{{height}}" width="{{width}}">
+SVG_TEMPLATE = '''<svg id='units' preserveAspectRatio='none' viewBox="0 0 {{total_width}} {{total_height}}" xmlns="http://www.w3.org/2000/svg" height="{{total_height}}" width="{{total_width}}">
   {{#rects}}
     <rect x="{{x}}" y="0" rx="{{radius}}" ry="{{radius}}" width="{{width}}" height="{{total_height}}"></rect>
   {{/rects}}
@@ -100,12 +100,12 @@ def parse_smil(input_path):
         data["duration"] = data["audio_files"][last_audio]["end"]
     return data
 
-def make_svg(input_path, width=512, height=100):
+def make_units_svg(input_path, width=512, height=100):
     data = parse_smil(input_path)
     return render_svg(data, width, height)
 
 def main(input_path, output_path):
-    svg = make_svg(input_path)
+    svg = make_units_svg(input_path)
     ensure_dirs(input_path)
     with open(output_path, "w", encoding="utf-8") as fout:
         fout.write(svg)
