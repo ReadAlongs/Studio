@@ -191,6 +191,7 @@ function __importDefault(mod) {
 function isFunction(x) {
     return typeof x === 'function';
 }
+//# sourceMappingURL=isFunction.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
 var _enable_super_gross_mode_that_will_cause_bad_things = false;
@@ -210,11 +211,13 @@ var config = {
         return _enable_super_gross_mode_that_will_cause_bad_things;
     },
 };
+//# sourceMappingURL=config.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
 function hostReportError(err) {
     setTimeout(function () { throw err; });
 }
+//# sourceMappingURL=hostReportError.js.map
 
 /** PURE_IMPORTS_START _config,_util_hostReportError PURE_IMPORTS_END */
 var empty = {
@@ -230,14 +233,17 @@ var empty = {
     },
     complete: function () { }
 };
+//# sourceMappingURL=Observer.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
 var isArray = Array.isArray || (function (x) { return x && typeof x.length === 'number'; });
+//# sourceMappingURL=isArray.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
 function isObject(x) {
     return x !== null && typeof x === 'object';
 }
+//# sourceMappingURL=isObject.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
 function UnsubscriptionErrorImpl(errors) {
@@ -250,6 +256,7 @@ function UnsubscriptionErrorImpl(errors) {
 }
 UnsubscriptionErrorImpl.prototype = /*@__PURE__*/ Object.create(Error.prototype);
 var UnsubscriptionError = UnsubscriptionErrorImpl;
+//# sourceMappingURL=UnsubscriptionError.js.map
 
 /** PURE_IMPORTS_START _util_isArray,_util_isObject,_util_isFunction,_util_UnsubscriptionError PURE_IMPORTS_END */
 var Subscription = /*@__PURE__*/ (function () {
@@ -388,12 +395,14 @@ var Subscription = /*@__PURE__*/ (function () {
 function flattenUnsubscriptionErrors(errors) {
     return errors.reduce(function (errs, err) { return errs.concat((err instanceof UnsubscriptionError) ? err.errors : err); }, []);
 }
+//# sourceMappingURL=Subscription.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
 var rxSubscriber = typeof Symbol === 'function'
     ? /*@__PURE__*/ Symbol('rxSubscriber')
     : '@@rxSubscriber_' + /*@__PURE__*/ Math.random();
 var $$rxSubscriber = rxSubscriber;
+//# sourceMappingURL=rxSubscriber.js.map
 
 /** PURE_IMPORTS_START tslib,_util_isFunction,_Observer,_Subscription,_internal_symbol_rxSubscriber,_config,_util_hostReportError PURE_IMPORTS_END */
 var Subscriber = /*@__PURE__*/ (function (_super) {
@@ -620,6 +629,7 @@ var SafeSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return SafeSubscriber;
 }(Subscriber));
+//# sourceMappingURL=Subscriber.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 var OuterSubscriber = /*@__PURE__*/ (function (_super) {
@@ -638,6 +648,7 @@ var OuterSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return OuterSubscriber;
 }(Subscriber));
+//# sourceMappingURL=OuterSubscriber.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 var InnerSubscriber = /*@__PURE__*/ (function (_super) {
@@ -663,6 +674,7 @@ var InnerSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return InnerSubscriber;
 }(Subscriber));
+//# sourceMappingURL=InnerSubscriber.js.map
 
 /** PURE_IMPORTS_START _Subscriber PURE_IMPORTS_END */
 function canReportError(observer) {
@@ -680,6 +692,7 @@ function canReportError(observer) {
     }
     return true;
 }
+//# sourceMappingURL=canReportError.js.map
 
 /** PURE_IMPORTS_START _Subscriber,_symbol_rxSubscriber,_Observer PURE_IMPORTS_END */
 function toSubscriber(nextOrObserver, error, complete) {
@@ -696,12 +709,15 @@ function toSubscriber(nextOrObserver, error, complete) {
     }
     return new Subscriber(nextOrObserver, error, complete);
 }
+//# sourceMappingURL=toSubscriber.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
 var observable = typeof Symbol === 'function' && Symbol.observable || '@@observable';
+//# sourceMappingURL=observable.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
 function noop() { }
+//# sourceMappingURL=noop.js.map
 
 /** PURE_IMPORTS_START _noop PURE_IMPORTS_END */
 function pipe() {
@@ -722,6 +738,7 @@ function pipeFromArray(fns) {
         return fns.reduce(function (prev, fn) { return fn(prev); }, input);
     };
 }
+//# sourceMappingURL=pipe.js.map
 
 /** PURE_IMPORTS_START _util_canReportError,_util_toSubscriber,_internal_symbol_observable,_util_pipe,_config PURE_IMPORTS_END */
 var Observable = /*@__PURE__*/ (function () {
@@ -832,6 +849,7 @@ function getPromiseCtor(promiseCtor) {
     }
     return promiseCtor;
 }
+//# sourceMappingURL=Observable.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
 var subscribeToArray = function (array) {
@@ -844,6 +862,7 @@ var subscribeToArray = function (array) {
         }
     };
 };
+//# sourceMappingURL=subscribeToArray.js.map
 
 /** PURE_IMPORTS_START _hostReportError PURE_IMPORTS_END */
 var subscribeToPromise = function (promise) {
@@ -858,6 +877,7 @@ var subscribeToPromise = function (promise) {
         return subscriber;
     };
 };
+//# sourceMappingURL=subscribeToPromise.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
 function getSymbolIterator() {
@@ -868,6 +888,7 @@ function getSymbolIterator() {
 }
 var iterator = /*@__PURE__*/ getSymbolIterator();
 var $$iterator = iterator;
+//# sourceMappingURL=iterator.js.map
 
 /** PURE_IMPORTS_START _symbol_iterator PURE_IMPORTS_END */
 var subscribeToIterable = function (iterable) {
@@ -894,6 +915,7 @@ var subscribeToIterable = function (iterable) {
         return subscriber;
     };
 };
+//# sourceMappingURL=subscribeToIterable.js.map
 
 /** PURE_IMPORTS_START _symbol_observable PURE_IMPORTS_END */
 var subscribeToObservable = function (obj) {
@@ -907,14 +929,17 @@ var subscribeToObservable = function (obj) {
         }
     };
 };
+//# sourceMappingURL=subscribeToObservable.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
 var isArrayLike = (function (x) { return x && typeof x.length === 'number' && typeof x !== 'function'; });
+//# sourceMappingURL=isArrayLike.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
 function isPromise(value) {
     return !!value && typeof value.subscribe !== 'function' && typeof value.then === 'function';
 }
+//# sourceMappingURL=isPromise.js.map
 
 /** PURE_IMPORTS_START _Observable,_subscribeToArray,_subscribeToPromise,_subscribeToIterable,_subscribeToObservable,_isArrayLike,_isPromise,_isObject,_symbol_iterator,_symbol_observable PURE_IMPORTS_END */
 var subscribeTo = function (result) {
@@ -949,6 +974,7 @@ var subscribeTo = function (result) {
         throw new TypeError(msg);
     }
 };
+//# sourceMappingURL=subscribeTo.js.map
 
 /** PURE_IMPORTS_START _InnerSubscriber,_subscribeTo PURE_IMPORTS_END */
 function subscribeToResult(outerSubscriber, result, outerValue, outerIndex, destination) {
@@ -960,6 +986,7 @@ function subscribeToResult(outerSubscriber, result, outerValue, outerIndex, dest
     }
     return subscribeTo(result)(destination);
 }
+//# sourceMappingURL=subscribeToResult.js.map
 
 /** PURE_IMPORTS_START tslib,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 function audit(durationSelector) {
@@ -1026,6 +1053,7 @@ var AuditSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return AuditSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=audit.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscription PURE_IMPORTS_END */
 var Action = /*@__PURE__*/ (function (_super) {
@@ -1041,6 +1069,7 @@ var Action = /*@__PURE__*/ (function (_super) {
     };
     return Action;
 }(Subscription));
+//# sourceMappingURL=Action.js.map
 
 /** PURE_IMPORTS_START tslib,_Action PURE_IMPORTS_END */
 var AsyncAction = /*@__PURE__*/ (function (_super) {
@@ -1133,6 +1162,7 @@ var AsyncAction = /*@__PURE__*/ (function (_super) {
     };
     return AsyncAction;
 }(Action));
+//# sourceMappingURL=AsyncAction.js.map
 
 var Scheduler = /*@__PURE__*/ (function () {
     function Scheduler(SchedulerAction, now) {
@@ -1151,6 +1181,7 @@ var Scheduler = /*@__PURE__*/ (function () {
     Scheduler.now = function () { return Date.now(); };
     return Scheduler;
 }());
+//# sourceMappingURL=Scheduler.js.map
 
 /** PURE_IMPORTS_START tslib,_Scheduler PURE_IMPORTS_END */
 var AsyncScheduler = /*@__PURE__*/ (function (_super) {
@@ -1206,19 +1237,23 @@ var AsyncScheduler = /*@__PURE__*/ (function (_super) {
     };
     return AsyncScheduler;
 }(Scheduler));
+//# sourceMappingURL=AsyncScheduler.js.map
 
 /** PURE_IMPORTS_START _AsyncAction,_AsyncScheduler PURE_IMPORTS_END */
 var async = /*@__PURE__*/ new AsyncScheduler(AsyncAction);
+//# sourceMappingURL=async.js.map
 
 /** PURE_IMPORTS_START _isArray PURE_IMPORTS_END */
 function isNumeric(val) {
     return !isArray(val) && (val - parseFloat(val) + 1) >= 0;
 }
+//# sourceMappingURL=isNumeric.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
 function isScheduler(value) {
     return value && typeof value.schedule === 'function';
 }
+//# sourceMappingURL=isScheduler.js.map
 
 /** PURE_IMPORTS_START _Observable,_scheduler_async,_util_isNumeric,_util_isScheduler PURE_IMPORTS_END */
 function timer(dueTime, periodOrScheduler, scheduler) {
@@ -1256,6 +1291,7 @@ function dispatch(state) {
     state.index = index + 1;
     this.schedule(state, period);
 }
+//# sourceMappingURL=timer.js.map
 
 /** PURE_IMPORTS_START _scheduler_async,_audit,_observable_timer PURE_IMPORTS_END */
 function auditTime(duration, scheduler) {
@@ -1264,6 +1300,7 @@ function auditTime(duration, scheduler) {
     }
     return audit(function () { return timer(duration, scheduler); });
 }
+//# sourceMappingURL=auditTime.js.map
 
 /** PURE_IMPORTS_START tslib,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 function buffer(closingNotifier) {
@@ -1298,6 +1335,7 @@ var BufferSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return BufferSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=buffer.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 function bufferCount(bufferSize, startBufferEvery) {
@@ -1386,6 +1424,7 @@ var BufferSkipCountSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return BufferSkipCountSubscriber;
 }(Subscriber));
+//# sourceMappingURL=bufferCount.js.map
 
 /** PURE_IMPORTS_START tslib,_scheduler_async,_Subscriber,_util_isScheduler PURE_IMPORTS_END */
 function bufferTime(bufferTimeSpan) {
@@ -1530,6 +1569,7 @@ function dispatchBufferClose(arg) {
     var subscriber = arg.subscriber, context = arg.context;
     subscriber.closeContext(context);
 }
+//# sourceMappingURL=bufferTime.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscription,_util_subscribeToResult,_OuterSubscriber PURE_IMPORTS_END */
 function bufferToggle(openings, closingSelector) {
@@ -1633,6 +1673,7 @@ var BufferToggleSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return BufferToggleSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=bufferToggle.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscription,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 function bufferWhen(closingSelector) {
@@ -1711,6 +1752,7 @@ var BufferWhenSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return BufferWhenSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=bufferWhen.js.map
 
 /** PURE_IMPORTS_START tslib,_OuterSubscriber,_InnerSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 function catchError(selector) {
@@ -1755,6 +1797,7 @@ var CatchSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return CatchSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=catchError.js.map
 
 /** PURE_IMPORTS_START _Observable,_Subscription,_util_subscribeToArray PURE_IMPORTS_END */
 function fromArray(input, scheduler) {
@@ -1779,6 +1822,7 @@ function fromArray(input, scheduler) {
         });
     }
 }
+//# sourceMappingURL=fromArray.js.map
 
 /** PURE_IMPORTS_START tslib,_util_isScheduler,_util_isArray,_OuterSubscriber,_util_subscribeToResult,_fromArray PURE_IMPORTS_END */
 var NONE = {};
@@ -1872,21 +1916,25 @@ var CombineLatestSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return CombineLatestSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=combineLatest.js.map
 
 /** PURE_IMPORTS_START _observable_combineLatest PURE_IMPORTS_END */
 function combineAll(project) {
     return function (source) { return source.lift(new CombineLatestOperator(project)); };
 }
+//# sourceMappingURL=combineAll.js.map
 
 /** PURE_IMPORTS_START _symbol_observable PURE_IMPORTS_END */
 function isInteropObservable(input) {
     return input && typeof input[observable] === 'function';
 }
+//# sourceMappingURL=isInteropObservable.js.map
 
 /** PURE_IMPORTS_START _symbol_iterator PURE_IMPORTS_END */
 function isIterable(input) {
     return input && typeof input[iterator] === 'function';
 }
+//# sourceMappingURL=isIterable.js.map
 
 /** PURE_IMPORTS_START _Observable,_Subscription,_util_subscribeToPromise PURE_IMPORTS_END */
 function fromPromise(input, scheduler) {
@@ -1910,6 +1958,7 @@ function fromPromise(input, scheduler) {
         });
     }
 }
+//# sourceMappingURL=fromPromise.js.map
 
 /** PURE_IMPORTS_START _Observable,_Subscription,_symbol_iterator,_util_subscribeToIterable PURE_IMPORTS_END */
 function fromIterable(input, scheduler) {
@@ -1958,6 +2007,7 @@ function fromIterable(input, scheduler) {
         });
     }
 }
+//# sourceMappingURL=fromIterable.js.map
 
 /** PURE_IMPORTS_START _Observable,_Subscription,_symbol_observable,_util_subscribeToObservable PURE_IMPORTS_END */
 function fromObservable(input, scheduler) {
@@ -1979,6 +2029,7 @@ function fromObservable(input, scheduler) {
         });
     }
 }
+//# sourceMappingURL=fromObservable.js.map
 
 /** PURE_IMPORTS_START _Observable,_util_isPromise,_util_isArrayLike,_util_isInteropObservable,_util_isIterable,_fromArray,_fromPromise,_fromIterable,_fromObservable,_util_subscribeTo PURE_IMPORTS_END */
 function from(input, scheduler) {
@@ -2004,6 +2055,7 @@ function from(input, scheduler) {
     }
     throw new TypeError((input !== null && typeof input || input) + ' is not observable');
 }
+//# sourceMappingURL=from.js.map
 
 /** PURE_IMPORTS_START _util_isArray,_observable_combineLatest,_observable_from PURE_IMPORTS_END */
 var none = {};
@@ -2021,6 +2073,7 @@ function combineLatest$1() {
     }
     return function (source) { return source.lift.call(from([source].concat(observables)), new CombineLatestOperator(project)); };
 }
+//# sourceMappingURL=combineLatest.js.map
 
 /** PURE_IMPORTS_START _Observable PURE_IMPORTS_END */
 var EMPTY = /*@__PURE__*/ new Observable(function (subscriber) { return subscriber.complete(); });
@@ -2030,6 +2083,7 @@ function empty$1(scheduler) {
 function emptyScheduled(scheduler) {
     return new Observable(function (subscriber) { return scheduler.schedule(function () { return subscriber.complete(); }); });
 }
+//# sourceMappingURL=empty.js.map
 
 /** PURE_IMPORTS_START _Observable PURE_IMPORTS_END */
 function scalar(value) {
@@ -2041,6 +2095,7 @@ function scalar(value) {
     result.value = value;
     return result;
 }
+//# sourceMappingURL=scalar.js.map
 
 /** PURE_IMPORTS_START _util_isScheduler,_fromArray,_empty,_scalar PURE_IMPORTS_END */
 function of() {
@@ -2064,6 +2119,7 @@ function of() {
             return fromArray(args, scheduler);
     }
 }
+//# sourceMappingURL=of.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 function map(project, thisArg) {
@@ -2106,6 +2162,7 @@ var MapSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return MapSubscriber;
 }(Subscriber));
+//# sourceMappingURL=map.js.map
 
 /** PURE_IMPORTS_START tslib,_util_subscribeToResult,_OuterSubscriber,_InnerSubscriber,_map,_observable_from PURE_IMPORTS_END */
 function mergeMap(project, resultSelector, concurrent) {
@@ -2198,11 +2255,13 @@ var MergeMapSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return MergeMapSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=mergeMap.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
 function identity(x) {
     return x;
 }
+//# sourceMappingURL=identity.js.map
 
 /** PURE_IMPORTS_START _mergeMap,_util_identity PURE_IMPORTS_END */
 function mergeAll(concurrent) {
@@ -2211,11 +2270,13 @@ function mergeAll(concurrent) {
     }
     return mergeMap(identity, concurrent);
 }
+//# sourceMappingURL=mergeAll.js.map
 
 /** PURE_IMPORTS_START _mergeAll PURE_IMPORTS_END */
 function concatAll() {
     return mergeAll(1);
 }
+//# sourceMappingURL=concatAll.js.map
 
 /** PURE_IMPORTS_START _of,_operators_concatAll PURE_IMPORTS_END */
 function concat() {
@@ -2225,6 +2286,7 @@ function concat() {
     }
     return concatAll()(of.apply(void 0, observables));
 }
+//# sourceMappingURL=concat.js.map
 
 /** PURE_IMPORTS_START _observable_concat PURE_IMPORTS_END */
 function concat$1() {
@@ -2234,16 +2296,19 @@ function concat$1() {
     }
     return function (source) { return source.lift.call(concat.apply(void 0, [source].concat(observables))); };
 }
+//# sourceMappingURL=concat.js.map
 
 /** PURE_IMPORTS_START _mergeMap PURE_IMPORTS_END */
 function concatMap(project, resultSelector) {
     return mergeMap(project, resultSelector, 1);
 }
+//# sourceMappingURL=concatMap.js.map
 
 /** PURE_IMPORTS_START _concatMap PURE_IMPORTS_END */
 function concatMapTo(innerObservable, resultSelector) {
     return concatMap(function () { return innerObservable; }, resultSelector);
 }
+//# sourceMappingURL=concatMapTo.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 function count(predicate) {
@@ -2296,6 +2361,7 @@ var CountSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return CountSubscriber;
 }(Subscriber));
+//# sourceMappingURL=count.js.map
 
 /** PURE_IMPORTS_START tslib,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 function debounce(durationSelector) {
@@ -2369,6 +2435,7 @@ var DebounceSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return DebounceSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=debounce.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber,_scheduler_async PURE_IMPORTS_END */
 function debounceTime(dueTime, scheduler) {
@@ -2430,6 +2497,7 @@ var DebounceTimeSubscriber = /*@__PURE__*/ (function (_super) {
 function dispatchNext(subscriber) {
     subscriber.debouncedNext();
 }
+//# sourceMappingURL=debounceTime.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 function defaultIfEmpty(defaultValue) {
@@ -2467,11 +2535,13 @@ var DefaultIfEmptySubscriber = /*@__PURE__*/ (function (_super) {
     };
     return DefaultIfEmptySubscriber;
 }(Subscriber));
+//# sourceMappingURL=defaultIfEmpty.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
 function isDate(value) {
     return value instanceof Date && !isNaN(+value);
 }
+//# sourceMappingURL=isDate.js.map
 
 /** PURE_IMPORTS_START _Observable PURE_IMPORTS_END */
 function throwError(error, scheduler) {
@@ -2486,6 +2556,7 @@ function dispatch$1(_a) {
     var error = _a.error, subscriber = _a.subscriber;
     subscriber.error(error);
 }
+//# sourceMappingURL=throwError.js.map
 
 /** PURE_IMPORTS_START _observable_empty,_observable_of,_observable_throwError PURE_IMPORTS_END */
 var NotificationKind;
@@ -2558,6 +2629,7 @@ var Notification = /*@__PURE__*/ (function () {
     Notification.undefinedValueNotification = new Notification("N", undefined);
     return Notification;
 }());
+//# sourceMappingURL=Notification.js.map
 
 /** PURE_IMPORTS_START tslib,_scheduler_async,_util_isDate,_Subscriber,_Notification PURE_IMPORTS_END */
 function delay(delay, scheduler) {
@@ -2646,6 +2718,7 @@ var DelayMessage = /*@__PURE__*/ (function () {
     }
     return DelayMessage;
 }());
+//# sourceMappingURL=delay.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber,_Observable,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 function delayWhen(delayDurationSelector, subscriptionDelay) {
@@ -2773,6 +2846,7 @@ var SubscriptionDelaySubscriber = /*@__PURE__*/ (function (_super) {
     };
     return SubscriptionDelaySubscriber;
 }(Subscriber));
+//# sourceMappingURL=delayWhen.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 function dematerialize() {
@@ -2798,6 +2872,7 @@ var DeMaterializeSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return DeMaterializeSubscriber;
 }(Subscriber));
+//# sourceMappingURL=dematerialize.js.map
 
 /** PURE_IMPORTS_START tslib,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 function distinct(keySelector, flushes) {
@@ -2859,6 +2934,7 @@ var DistinctSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return DistinctSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=distinct.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 function distinctUntilChanged(compare, keySelector) {
@@ -2917,11 +2993,13 @@ var DistinctUntilChangedSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return DistinctUntilChangedSubscriber;
 }(Subscriber));
+//# sourceMappingURL=distinctUntilChanged.js.map
 
 /** PURE_IMPORTS_START _distinctUntilChanged PURE_IMPORTS_END */
 function distinctUntilKeyChanged(key, compare) {
     return distinctUntilChanged(function (x, y) { return compare ? compare(x[key], y[key]) : x[key] === y[key]; });
 }
+//# sourceMappingURL=distinctUntilKeyChanged.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
 function ArgumentOutOfRangeErrorImpl() {
@@ -2932,6 +3010,7 @@ function ArgumentOutOfRangeErrorImpl() {
 }
 ArgumentOutOfRangeErrorImpl.prototype = /*@__PURE__*/ Object.create(Error.prototype);
 var ArgumentOutOfRangeError = ArgumentOutOfRangeErrorImpl;
+//# sourceMappingURL=ArgumentOutOfRangeError.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 function filter(predicate, thisArg) {
@@ -2973,6 +3052,7 @@ var FilterSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return FilterSubscriber;
 }(Subscriber));
+//# sourceMappingURL=filter.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber,_util_noop,_util_isFunction PURE_IMPORTS_END */
 function tap(nextOrObserver, error, complete) {
@@ -3044,6 +3124,7 @@ var TapSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return TapSubscriber;
 }(Subscriber));
+//# sourceMappingURL=tap.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
 function EmptyErrorImpl() {
@@ -3054,6 +3135,7 @@ function EmptyErrorImpl() {
 }
 EmptyErrorImpl.prototype = /*@__PURE__*/ Object.create(Error.prototype);
 var EmptyError = EmptyErrorImpl;
+//# sourceMappingURL=EmptyError.js.map
 
 /** PURE_IMPORTS_START _tap,_util_EmptyError PURE_IMPORTS_END */
 var throwIfEmpty = function (errorFactory) {
@@ -3073,6 +3155,7 @@ var throwIfEmpty = function (errorFactory) {
 function defaultErrorFactory() {
     return new EmptyError();
 }
+//# sourceMappingURL=throwIfEmpty.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber,_util_ArgumentOutOfRangeError,_observable_empty PURE_IMPORTS_END */
 function take(count) {
@@ -3118,6 +3201,7 @@ var TakeSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return TakeSubscriber;
 }(Subscriber));
+//# sourceMappingURL=take.js.map
 
 /** PURE_IMPORTS_START _util_ArgumentOutOfRangeError,_filter,_throwIfEmpty,_defaultIfEmpty,_take PURE_IMPORTS_END */
 function elementAt(index, defaultValue) {
@@ -3131,6 +3215,7 @@ function elementAt(index, defaultValue) {
             : throwIfEmpty(function () { return new ArgumentOutOfRangeError(); }));
     };
 }
+//# sourceMappingURL=elementAt.js.map
 
 /** PURE_IMPORTS_START _observable_fromArray,_observable_scalar,_observable_empty,_observable_concat,_util_isScheduler PURE_IMPORTS_END */
 function endWith() {
@@ -3158,6 +3243,7 @@ function endWith() {
         }
     };
 }
+//# sourceMappingURL=endWith.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 function every(predicate, thisArg) {
@@ -3207,6 +3293,7 @@ var EverySubscriber = /*@__PURE__*/ (function (_super) {
     };
     return EverySubscriber;
 }(Subscriber));
+//# sourceMappingURL=every.js.map
 
 /** PURE_IMPORTS_START tslib,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 function exhaust() {
@@ -3249,6 +3336,7 @@ var SwitchFirstSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return SwitchFirstSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=exhaust.js.map
 
 /** PURE_IMPORTS_START tslib,_OuterSubscriber,_InnerSubscriber,_util_subscribeToResult,_map,_observable_from PURE_IMPORTS_END */
 function exhaustMap(project, resultSelector) {
@@ -3325,6 +3413,7 @@ var ExhaustMapSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return ExhaustMapSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=exhaustMap.js.map
 
 /** PURE_IMPORTS_START tslib,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 function expand(project, concurrent, scheduler) {
@@ -3425,6 +3514,7 @@ var ExpandSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return ExpandSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=expand.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber,_Subscription PURE_IMPORTS_END */
 function finalize(callback) {
@@ -3448,6 +3538,7 @@ var FinallySubscriber = /*@__PURE__*/ (function (_super) {
     }
     return FinallySubscriber;
 }(Subscriber));
+//# sourceMappingURL=finalize.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 function find(predicate, thisArg) {
@@ -3503,17 +3594,20 @@ var FindValueSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return FindValueSubscriber;
 }(Subscriber));
+//# sourceMappingURL=find.js.map
 
 /** PURE_IMPORTS_START _operators_find PURE_IMPORTS_END */
 function findIndex(predicate, thisArg) {
     return function (source) { return source.lift(new FindValueOperator(predicate, source, true, thisArg)); };
 }
+//# sourceMappingURL=findIndex.js.map
 
 /** PURE_IMPORTS_START _util_EmptyError,_filter,_take,_defaultIfEmpty,_throwIfEmpty,_util_identity PURE_IMPORTS_END */
 function first(predicate, defaultValue) {
     var hasDefaultValue = arguments.length >= 2;
     return function (source) { return source.pipe(predicate ? filter(function (v, i) { return predicate(v, i, source); }) : identity, take(1), hasDefaultValue ? defaultIfEmpty(defaultValue) : throwIfEmpty(function () { return new EmptyError(); })); };
 }
+//# sourceMappingURL=first.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
 function ObjectUnsubscribedErrorImpl() {
@@ -3524,6 +3618,7 @@ function ObjectUnsubscribedErrorImpl() {
 }
 ObjectUnsubscribedErrorImpl.prototype = /*@__PURE__*/ Object.create(Error.prototype);
 var ObjectUnsubscribedError = ObjectUnsubscribedErrorImpl;
+//# sourceMappingURL=ObjectUnsubscribedError.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscription PURE_IMPORTS_END */
 var SubjectSubscription = /*@__PURE__*/ (function (_super) {
@@ -3553,6 +3648,7 @@ var SubjectSubscription = /*@__PURE__*/ (function (_super) {
     };
     return SubjectSubscription;
 }(Subscription));
+//# sourceMappingURL=SubjectSubscription.js.map
 
 /** PURE_IMPORTS_START tslib,_Observable,_Subscriber,_Subscription,_util_ObjectUnsubscribedError,_SubjectSubscription,_internal_symbol_rxSubscriber PURE_IMPORTS_END */
 var SubjectSubscriber = /*@__PURE__*/ (function (_super) {
@@ -3701,6 +3797,7 @@ var AnonymousSubject = /*@__PURE__*/ (function (_super) {
     };
     return AnonymousSubject;
 }(Subject));
+//# sourceMappingURL=Subject.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber,_Subscription,_Observable,_Subject PURE_IMPORTS_END */
 function groupBy(keySelector, elementSelector, durationSelector, subjectSelector) {
@@ -3877,6 +3974,7 @@ var InnerRefCountSubscription = /*@__PURE__*/ (function (_super) {
     };
     return InnerRefCountSubscription;
 }(Subscription));
+//# sourceMappingURL=groupBy.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 function ignoreElements() {
@@ -3901,6 +3999,7 @@ var IgnoreElementsSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return IgnoreElementsSubscriber;
 }(Subscriber));
+//# sourceMappingURL=ignoreElements.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 function isEmpty() {
@@ -3932,6 +4031,7 @@ var IsEmptySubscriber = /*@__PURE__*/ (function (_super) {
     };
     return IsEmptySubscriber;
 }(Subscriber));
+//# sourceMappingURL=isEmpty.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber,_util_ArgumentOutOfRangeError,_observable_empty PURE_IMPORTS_END */
 function takeLast(count) {
@@ -3992,12 +4092,14 @@ var TakeLastSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return TakeLastSubscriber;
 }(Subscriber));
+//# sourceMappingURL=takeLast.js.map
 
 /** PURE_IMPORTS_START _util_EmptyError,_filter,_takeLast,_throwIfEmpty,_defaultIfEmpty,_util_identity PURE_IMPORTS_END */
 function last(predicate, defaultValue) {
     var hasDefaultValue = arguments.length >= 2;
     return function (source) { return source.pipe(predicate ? filter(function (v, i) { return predicate(v, i, source); }) : identity, takeLast(1), hasDefaultValue ? defaultIfEmpty(defaultValue) : throwIfEmpty(function () { return new EmptyError(); })); };
 }
+//# sourceMappingURL=last.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 function mapTo(value) {
@@ -4024,6 +4126,7 @@ var MapToSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return MapToSubscriber;
 }(Subscriber));
+//# sourceMappingURL=mapTo.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber,_Notification PURE_IMPORTS_END */
 function materialize() {
@@ -4059,6 +4162,7 @@ var MaterializeSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return MaterializeSubscriber;
 }(Subscriber));
+//# sourceMappingURL=materialize.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 function scan(accumulator, seed) {
@@ -4128,6 +4232,7 @@ var ScanSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return ScanSubscriber;
 }(Subscriber));
+//# sourceMappingURL=scan.js.map
 
 /** PURE_IMPORTS_START _scan,_takeLast,_defaultIfEmpty,_util_pipe PURE_IMPORTS_END */
 function reduce(accumulator, seed) {
@@ -4140,6 +4245,7 @@ function reduce(accumulator, seed) {
         return pipe(scan(function (acc, value, index) { return accumulator(acc, value, index + 1); }), takeLast(1))(source);
     };
 }
+//# sourceMappingURL=reduce.js.map
 
 /** PURE_IMPORTS_START _reduce PURE_IMPORTS_END */
 function max(comparer) {
@@ -4148,6 +4254,7 @@ function max(comparer) {
         : function (x, y) { return x > y ? x : y; };
     return reduce(max);
 }
+//# sourceMappingURL=max.js.map
 
 /** PURE_IMPORTS_START _Observable,_util_isScheduler,_operators_mergeAll,_fromArray PURE_IMPORTS_END */
 function merge() {
@@ -4172,6 +4279,7 @@ function merge() {
     }
     return mergeAll(concurrent)(fromArray(observables, scheduler));
 }
+//# sourceMappingURL=merge.js.map
 
 /** PURE_IMPORTS_START _observable_merge PURE_IMPORTS_END */
 function merge$1() {
@@ -4181,6 +4289,7 @@ function merge$1() {
     }
     return function (source) { return source.lift.call(merge.apply(void 0, [source].concat(observables))); };
 }
+//# sourceMappingURL=merge.js.map
 
 /** PURE_IMPORTS_START _mergeMap PURE_IMPORTS_END */
 function mergeMapTo(innerObservable, resultSelector, concurrent) {
@@ -4195,6 +4304,7 @@ function mergeMapTo(innerObservable, resultSelector, concurrent) {
     }
     return mergeMap(function () { return innerObservable; }, concurrent);
 }
+//# sourceMappingURL=mergeMapTo.js.map
 
 /** PURE_IMPORTS_START tslib,_util_subscribeToResult,_OuterSubscriber,_InnerSubscriber PURE_IMPORTS_END */
 function mergeScan(accumulator, seed, concurrent) {
@@ -4286,6 +4396,7 @@ var MergeScanSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return MergeScanSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=mergeScan.js.map
 
 /** PURE_IMPORTS_START _reduce PURE_IMPORTS_END */
 function min(comparer) {
@@ -4294,6 +4405,7 @@ function min(comparer) {
         : function (x, y) { return x < y ? x : y; };
     return reduce(min);
 }
+//# sourceMappingURL=min.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 function refCount() {
@@ -4350,6 +4462,7 @@ var RefCountSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return RefCountSubscriber;
 }(Subscriber));
+//# sourceMappingURL=refCount.js.map
 
 /** PURE_IMPORTS_START tslib,_Subject,_Observable,_Subscriber,_Subscription,_operators_refCount PURE_IMPORTS_END */
 var ConnectableObservable = /*@__PURE__*/ (function (_super) {
@@ -4486,6 +4599,7 @@ var RefCountSubscriber$1 = /*@__PURE__*/ (function (_super) {
     };
     return RefCountSubscriber;
 }(Subscriber));
+//# sourceMappingURL=ConnectableObservable.js.map
 
 /** PURE_IMPORTS_START _observable_ConnectableObservable PURE_IMPORTS_END */
 function multicast(subjectOrSubjectFactory, selector) {
@@ -4522,6 +4636,7 @@ var MulticastOperator = /*@__PURE__*/ (function () {
     };
     return MulticastOperator;
 }());
+//# sourceMappingURL=multicast.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber,_Notification PURE_IMPORTS_END */
 function observeOn(scheduler, delay) {
@@ -4585,6 +4700,7 @@ var ObserveOnMessage = /*@__PURE__*/ (function () {
     }
     return ObserveOnMessage;
 }());
+//# sourceMappingURL=observeOn.js.map
 
 /** PURE_IMPORTS_START tslib,_observable_from,_util_isArray,_OuterSubscriber,_InnerSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 function onErrorResumeNext() {
@@ -4654,6 +4770,7 @@ var OnErrorResumeNextSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return OnErrorResumeNextSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=onErrorResumeNext.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 function pairwise() {
@@ -4685,6 +4802,7 @@ var PairwiseSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return PairwiseSubscriber;
 }(Subscriber));
+//# sourceMappingURL=pairwise.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
 function not(pred, thisArg) {
@@ -4695,6 +4813,7 @@ function not(pred, thisArg) {
     notPred.thisArg = thisArg;
     return notPred;
 }
+//# sourceMappingURL=not.js.map
 
 /** PURE_IMPORTS_START _util_not,_filter PURE_IMPORTS_END */
 function partition(predicate, thisArg) {
@@ -4705,6 +4824,7 @@ function partition(predicate, thisArg) {
         ];
     };
 }
+//# sourceMappingURL=partition.js.map
 
 /** PURE_IMPORTS_START _map PURE_IMPORTS_END */
 function pluck() {
@@ -4734,6 +4854,7 @@ function plucker(props, length) {
     };
     return mapper;
 }
+//# sourceMappingURL=pluck.js.map
 
 /** PURE_IMPORTS_START _Subject,_multicast PURE_IMPORTS_END */
 function publish(selector) {
@@ -4741,6 +4862,7 @@ function publish(selector) {
         multicast(function () { return new Subject(); }, selector) :
         multicast(new Subject());
 }
+//# sourceMappingURL=publish.js.map
 
 /** PURE_IMPORTS_START tslib,_Subject,_util_ObjectUnsubscribedError PURE_IMPORTS_END */
 var BehaviorSubject = /*@__PURE__*/ (function (_super) {
@@ -4780,11 +4902,13 @@ var BehaviorSubject = /*@__PURE__*/ (function (_super) {
     };
     return BehaviorSubject;
 }(Subject));
+//# sourceMappingURL=BehaviorSubject.js.map
 
 /** PURE_IMPORTS_START _BehaviorSubject,_multicast PURE_IMPORTS_END */
 function publishBehavior(value) {
     return function (source) { return multicast(new BehaviorSubject(value))(source); };
 }
+//# sourceMappingURL=publishBehavior.js.map
 
 /** PURE_IMPORTS_START tslib,_Subject,_Subscription PURE_IMPORTS_END */
 var AsyncSubject = /*@__PURE__*/ (function (_super) {
@@ -4828,11 +4952,13 @@ var AsyncSubject = /*@__PURE__*/ (function (_super) {
     };
     return AsyncSubject;
 }(Subject));
+//# sourceMappingURL=AsyncSubject.js.map
 
 /** PURE_IMPORTS_START _AsyncSubject,_multicast PURE_IMPORTS_END */
 function publishLast() {
     return function (source) { return multicast(new AsyncSubject())(source); };
 }
+//# sourceMappingURL=publishLast.js.map
 
 /** PURE_IMPORTS_START tslib,_AsyncAction PURE_IMPORTS_END */
 var QueueAction = /*@__PURE__*/ (function (_super) {
@@ -4871,6 +4997,7 @@ var QueueAction = /*@__PURE__*/ (function (_super) {
     };
     return QueueAction;
 }(AsyncAction));
+//# sourceMappingURL=QueueAction.js.map
 
 /** PURE_IMPORTS_START tslib,_AsyncScheduler PURE_IMPORTS_END */
 var QueueScheduler = /*@__PURE__*/ (function (_super) {
@@ -4880,9 +5007,11 @@ var QueueScheduler = /*@__PURE__*/ (function (_super) {
     }
     return QueueScheduler;
 }(AsyncScheduler));
+//# sourceMappingURL=QueueScheduler.js.map
 
 /** PURE_IMPORTS_START _QueueAction,_QueueScheduler PURE_IMPORTS_END */
 var queue = /*@__PURE__*/ new QueueScheduler(QueueAction);
+//# sourceMappingURL=queue.js.map
 
 /** PURE_IMPORTS_START tslib,_Subject,_scheduler_queue,_Subscription,_operators_observeOn,_util_ObjectUnsubscribedError,_SubjectSubscription PURE_IMPORTS_END */
 var ReplaySubject = /*@__PURE__*/ (function (_super) {
@@ -4992,6 +5121,7 @@ var ReplayEvent = /*@__PURE__*/ (function () {
     }
     return ReplayEvent;
 }());
+//# sourceMappingURL=ReplaySubject.js.map
 
 /** PURE_IMPORTS_START _ReplaySubject,_multicast PURE_IMPORTS_END */
 function publishReplay(bufferSize, windowTime, selectorOrScheduler, scheduler) {
@@ -5002,6 +5132,7 @@ function publishReplay(bufferSize, windowTime, selectorOrScheduler, scheduler) {
     var subject = new ReplaySubject(bufferSize, windowTime, scheduler);
     return function (source) { return multicast(function () { return subject; }, selector)(source); };
 }
+//# sourceMappingURL=publishReplay.js.map
 
 /** PURE_IMPORTS_START tslib,_util_isArray,_fromArray,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 function race() {
@@ -5073,6 +5204,7 @@ var RaceSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return RaceSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=race.js.map
 
 /** PURE_IMPORTS_START _util_isArray,_observable_race PURE_IMPORTS_END */
 function race$1() {
@@ -5087,6 +5219,7 @@ function race$1() {
         return source.lift.call(race.apply(void 0, [source].concat(observables)));
     };
 }
+//# sourceMappingURL=race.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber,_observable_empty PURE_IMPORTS_END */
 function repeat(count) {
@@ -5137,6 +5270,7 @@ var RepeatSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return RepeatSubscriber;
 }(Subscriber));
+//# sourceMappingURL=repeat.js.map
 
 /** PURE_IMPORTS_START tslib,_Subject,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 function repeatWhen(notifier) {
@@ -5216,6 +5350,7 @@ var RepeatWhenSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return RepeatWhenSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=repeatWhen.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 function retry(count) {
@@ -5256,6 +5391,7 @@ var RetrySubscriber = /*@__PURE__*/ (function (_super) {
     };
     return RetrySubscriber;
 }(Subscriber));
+//# sourceMappingURL=retry.js.map
 
 /** PURE_IMPORTS_START tslib,_Subject,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 function retryWhen(notifier) {
@@ -5327,6 +5463,7 @@ var RetryWhenSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return RetryWhenSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=retryWhen.js.map
 
 /** PURE_IMPORTS_START tslib,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 function sample(notifier) {
@@ -5369,6 +5506,7 @@ var SampleSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return SampleSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=sample.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber,_scheduler_async PURE_IMPORTS_END */
 function sampleTime(period, scheduler) {
@@ -5414,6 +5552,7 @@ function dispatchNotification(state) {
     subscriber.notifyNext();
     this.schedule(state, period);
 }
+//# sourceMappingURL=sampleTime.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 function sequenceEqual(compareTo, comparator) {
@@ -5520,6 +5659,7 @@ var SequenceEqualCompareToSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return SequenceEqualCompareToSubscriber;
 }(Subscriber));
+//# sourceMappingURL=sequenceEqual.js.map
 
 /** PURE_IMPORTS_START _multicast,_refCount,_Subject PURE_IMPORTS_END */
 function shareSubjectFactory() {
@@ -5528,6 +5668,7 @@ function shareSubjectFactory() {
 function share() {
     return function (source) { return refCount()(multicast(shareSubjectFactory)(source)); };
 }
+//# sourceMappingURL=share.js.map
 
 /** PURE_IMPORTS_START _ReplaySubject PURE_IMPORTS_END */
 function shareReplay(configOrBufferSize, windowTime, scheduler) {
@@ -5581,6 +5722,7 @@ function shareReplayOperator(_a) {
         });
     };
 }
+//# sourceMappingURL=shareReplay.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber,_util_EmptyError PURE_IMPORTS_END */
 function single(predicate) {
@@ -5646,6 +5788,7 @@ var SingleSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return SingleSubscriber;
 }(Subscriber));
+//# sourceMappingURL=single.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 function skip(count) {
@@ -5675,6 +5818,7 @@ var SkipSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return SkipSubscriber;
 }(Subscriber));
+//# sourceMappingURL=skip.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber,_util_ArgumentOutOfRangeError PURE_IMPORTS_END */
 function skipLast(count) {
@@ -5722,6 +5866,7 @@ var SkipLastSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return SkipLastSubscriber;
 }(Subscriber));
+//# sourceMappingURL=skipLast.js.map
 
 /** PURE_IMPORTS_START tslib,_OuterSubscriber,_InnerSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 function skipUntil(notifier) {
@@ -5762,6 +5907,7 @@ var SkipUntilSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return SkipUntilSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=skipUntil.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 function skipWhile(predicate) {
@@ -5805,6 +5951,7 @@ var SkipWhileSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return SkipWhileSubscriber;
 }(Subscriber));
+//# sourceMappingURL=skipWhile.js.map
 
 /** PURE_IMPORTS_START _observable_fromArray,_observable_scalar,_observable_empty,_observable_concat,_util_isScheduler PURE_IMPORTS_END */
 function startWith() {
@@ -5832,6 +5979,7 @@ function startWith() {
         }
     };
 }
+//# sourceMappingURL=startWith.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
 var nextHandle = 1;
@@ -5853,6 +6001,7 @@ var Immediate = {
         delete tasksByHandle[handle];
     },
 };
+//# sourceMappingURL=Immediate.js.map
 
 /** PURE_IMPORTS_START tslib,_util_Immediate,_AsyncAction PURE_IMPORTS_END */
 var AsapAction = /*@__PURE__*/ (function (_super) {
@@ -5888,6 +6037,7 @@ var AsapAction = /*@__PURE__*/ (function (_super) {
     };
     return AsapAction;
 }(AsyncAction));
+//# sourceMappingURL=AsapAction.js.map
 
 /** PURE_IMPORTS_START tslib,_AsyncScheduler PURE_IMPORTS_END */
 var AsapScheduler = /*@__PURE__*/ (function (_super) {
@@ -5918,9 +6068,11 @@ var AsapScheduler = /*@__PURE__*/ (function (_super) {
     };
     return AsapScheduler;
 }(AsyncScheduler));
+//# sourceMappingURL=AsapScheduler.js.map
 
 /** PURE_IMPORTS_START _AsapAction,_AsapScheduler PURE_IMPORTS_END */
 var asap = /*@__PURE__*/ new AsapScheduler(AsapAction);
+//# sourceMappingURL=asap.js.map
 
 /** PURE_IMPORTS_START tslib,_Observable,_scheduler_asap,_util_isNumeric PURE_IMPORTS_END */
 var SubscribeOnObservable = /*@__PURE__*/ (function (_super) {
@@ -5967,6 +6119,7 @@ var SubscribeOnObservable = /*@__PURE__*/ (function (_super) {
     };
     return SubscribeOnObservable;
 }(Observable));
+//# sourceMappingURL=SubscribeOnObservable.js.map
 
 /** PURE_IMPORTS_START _observable_SubscribeOnObservable PURE_IMPORTS_END */
 function subscribeOn(scheduler, delay) {
@@ -5987,6 +6140,7 @@ var SubscribeOnOperator = /*@__PURE__*/ (function () {
     };
     return SubscribeOnOperator;
 }());
+//# sourceMappingURL=subscribeOn.js.map
 
 /** PURE_IMPORTS_START tslib,_OuterSubscriber,_InnerSubscriber,_util_subscribeToResult,_map,_observable_from PURE_IMPORTS_END */
 function switchMap(project, resultSelector) {
@@ -6057,16 +6211,19 @@ var SwitchMapSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return SwitchMapSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=switchMap.js.map
 
 /** PURE_IMPORTS_START _switchMap,_util_identity PURE_IMPORTS_END */
 function switchAll() {
     return switchMap(identity);
 }
+//# sourceMappingURL=switchAll.js.map
 
 /** PURE_IMPORTS_START _switchMap PURE_IMPORTS_END */
 function switchMapTo(innerObservable, resultSelector) {
     return resultSelector ? switchMap(function () { return innerObservable; }, resultSelector) : switchMap(function () { return innerObservable; });
 }
+//# sourceMappingURL=switchMapTo.js.map
 
 /** PURE_IMPORTS_START tslib,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 function takeUntil(notifier) {
@@ -6102,6 +6259,7 @@ var TakeUntilSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return TakeUntilSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=takeUntil.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber PURE_IMPORTS_END */
 function takeWhile(predicate, inclusive) {
@@ -6157,6 +6315,7 @@ var TakeWhileSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return TakeWhileSubscriber;
 }(Subscriber));
+//# sourceMappingURL=takeWhile.js.map
 
 /** PURE_IMPORTS_START tslib,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 var defaultThrottleConfig = {
@@ -6245,6 +6404,7 @@ var ThrottleSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return ThrottleSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=throttle.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber,_scheduler_async,_throttle PURE_IMPORTS_END */
 function throttleTime(duration, scheduler, config) {
@@ -6322,6 +6482,7 @@ function dispatchNext$1(arg) {
     var subscriber = arg.subscriber;
     subscriber.clearThrottle();
 }
+//# sourceMappingURL=throttleTime.js.map
 
 /** PURE_IMPORTS_START _Observable,_from,_empty PURE_IMPORTS_END */
 function defer(observableFactory) {
@@ -6338,6 +6499,7 @@ function defer(observableFactory) {
         return source.subscribe(subscriber);
     });
 }
+//# sourceMappingURL=defer.js.map
 
 /** PURE_IMPORTS_START _scheduler_async,_scan,_observable_defer,_map PURE_IMPORTS_END */
 function timeInterval(scheduler) {
@@ -6363,6 +6525,7 @@ var TimeInterval = /*@__PURE__*/ (function () {
     }
     return TimeInterval;
 }());
+//# sourceMappingURL=timeInterval.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
 function TimeoutErrorImpl() {
@@ -6373,6 +6536,7 @@ function TimeoutErrorImpl() {
 }
 TimeoutErrorImpl.prototype = /*@__PURE__*/ Object.create(Error.prototype);
 var TimeoutError = TimeoutErrorImpl;
+//# sourceMappingURL=TimeoutError.js.map
 
 /** PURE_IMPORTS_START tslib,_scheduler_async,_util_isDate,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 function timeoutWith(due, withObservable, scheduler) {
@@ -6436,6 +6600,7 @@ var TimeoutWithSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return TimeoutWithSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=timeoutWith.js.map
 
 /** PURE_IMPORTS_START _scheduler_async,_util_TimeoutError,_timeoutWith,_observable_throwError PURE_IMPORTS_END */
 function timeout(due, scheduler) {
@@ -6444,6 +6609,7 @@ function timeout(due, scheduler) {
     }
     return timeoutWith(due, throwError(new TimeoutError()), scheduler);
 }
+//# sourceMappingURL=timeout.js.map
 
 /** PURE_IMPORTS_START _scheduler_async,_map PURE_IMPORTS_END */
 function timestamp(scheduler) {
@@ -6459,6 +6625,7 @@ var Timestamp = /*@__PURE__*/ (function () {
     }
     return Timestamp;
 }());
+//# sourceMappingURL=timestamp.js.map
 
 /** PURE_IMPORTS_START _reduce PURE_IMPORTS_END */
 function toArrayReducer(arr, item, index) {
@@ -6471,6 +6638,7 @@ function toArrayReducer(arr, item, index) {
 function toArray() {
     return reduce(toArrayReducer, []);
 }
+//# sourceMappingURL=toArray.js.map
 
 /** PURE_IMPORTS_START tslib,_Subject,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 function window$1(windowBoundaries) {
@@ -6534,6 +6702,7 @@ var WindowSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return WindowSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=window.js.map
 
 /** PURE_IMPORTS_START tslib,_Subscriber,_Subject PURE_IMPORTS_END */
 function windowCount(windowSize, startWindowEvery) {
@@ -6609,6 +6778,7 @@ var WindowCountSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return WindowCountSubscriber;
 }(Subscriber));
+//# sourceMappingURL=windowCount.js.map
 
 /** PURE_IMPORTS_START tslib,_Subject,_scheduler_async,_Subscriber,_util_isNumeric,_util_isScheduler PURE_IMPORTS_END */
 function windowTime(windowTimeSpan) {
@@ -6758,6 +6928,7 @@ function dispatchWindowClose(state) {
     }
     subscriber.closeWindow(window);
 }
+//# sourceMappingURL=windowTime.js.map
 
 /** PURE_IMPORTS_START tslib,_Subject,_Subscription,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 function windowToggle(openings, closingSelector) {
@@ -6882,6 +7053,7 @@ var WindowToggleSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return WindowToggleSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=windowToggle.js.map
 
 /** PURE_IMPORTS_START tslib,_Subject,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 function windowWhen(closingSelector) {
@@ -6962,6 +7134,7 @@ var WindowSubscriber$1 = /*@__PURE__*/ (function (_super) {
     };
     return WindowSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=windowWhen.js.map
 
 /** PURE_IMPORTS_START tslib,_OuterSubscriber,_util_subscribeToResult PURE_IMPORTS_END */
 function withLatestFrom() {
@@ -7042,6 +7215,7 @@ var WithLatestFromSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return WithLatestFromSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=withLatestFrom.js.map
 
 /** PURE_IMPORTS_START tslib,_fromArray,_util_isArray,_Subscriber,_OuterSubscriber,_util_subscribeToResult,_.._internal_symbol_iterator PURE_IMPORTS_END */
 function zip() {
@@ -7251,6 +7425,7 @@ var ZipBufferIterator = /*@__PURE__*/ (function (_super) {
     };
     return ZipBufferIterator;
 }(OuterSubscriber));
+//# sourceMappingURL=zip.js.map
 
 /** PURE_IMPORTS_START _observable_zip PURE_IMPORTS_END */
 function zip$1() {
@@ -7262,13 +7437,16 @@ function zip$1() {
         return source.lift.call(zip.apply(void 0, [source].concat(observables)));
     };
 }
+//# sourceMappingURL=zip.js.map
 
 /** PURE_IMPORTS_START _observable_zip PURE_IMPORTS_END */
 function zipAll(project) {
     return function (source) { return source.lift(new ZipOperator(project)); };
 }
+//# sourceMappingURL=zipAll.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
+//# sourceMappingURL=index.js.map
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -10462,6 +10640,7 @@ var AnimationFrameAction = /*@__PURE__*/ (function (_super) {
     };
     return AnimationFrameAction;
 }(AsyncAction));
+//# sourceMappingURL=AnimationFrameAction.js.map
 
 /** PURE_IMPORTS_START tslib,_AsyncScheduler PURE_IMPORTS_END */
 var AnimationFrameScheduler = /*@__PURE__*/ (function (_super) {
@@ -10492,9 +10671,11 @@ var AnimationFrameScheduler = /*@__PURE__*/ (function (_super) {
     };
     return AnimationFrameScheduler;
 }(AsyncScheduler));
+//# sourceMappingURL=AnimationFrameScheduler.js.map
 
 /** PURE_IMPORTS_START _AnimationFrameAction,_AnimationFrameScheduler PURE_IMPORTS_END */
 var animationFrame = /*@__PURE__*/ new AnimationFrameScheduler(AnimationFrameAction);
+//# sourceMappingURL=animationFrame.js.map
 
 /** PURE_IMPORTS_START tslib,_AsyncAction,_AsyncScheduler PURE_IMPORTS_END */
 var VirtualTimeScheduler = /*@__PURE__*/ (function (_super) {
@@ -10600,11 +10781,13 @@ var VirtualAction = /*@__PURE__*/ (function (_super) {
     };
     return VirtualAction;
 }(AsyncAction));
+//# sourceMappingURL=VirtualTimeScheduler.js.map
 
 /** PURE_IMPORTS_START _Observable PURE_IMPORTS_END */
 function isObservable(obj) {
     return !!obj && (obj instanceof Observable || (typeof obj.lift === 'function' && typeof obj.subscribe === 'function'));
 }
+//# sourceMappingURL=isObservable.js.map
 
 /** PURE_IMPORTS_START _Observable,_AsyncSubject,_operators_map,_util_canReportError,_util_isArray,_util_isScheduler PURE_IMPORTS_END */
 function bindCallback(callbackFunc, resultSelector, scheduler) {
@@ -10704,6 +10887,7 @@ function dispatchError(state) {
     var err = state.err, subject = state.subject;
     subject.error(err);
 }
+//# sourceMappingURL=bindCallback.js.map
 
 /** PURE_IMPORTS_START _Observable,_AsyncSubject,_operators_map,_util_canReportError,_util_isScheduler,_util_isArray PURE_IMPORTS_END */
 function bindNodeCallback(callbackFunc, resultSelector, scheduler) {
@@ -10811,6 +10995,7 @@ function dispatchError$1(arg) {
     var err = arg.err, subject = arg.subject;
     subject.error(err);
 }
+//# sourceMappingURL=bindNodeCallback.js.map
 
 /** PURE_IMPORTS_START tslib,_Observable,_util_isArray,_empty,_util_subscribeToResult,_OuterSubscriber,_operators_map PURE_IMPORTS_END */
 function forkJoin() {
@@ -10878,6 +11063,7 @@ var ForkJoinSubscriber = /*@__PURE__*/ (function (_super) {
     };
     return ForkJoinSubscriber;
 }(OuterSubscriber));
+//# sourceMappingURL=forkJoin.js.map
 
 /** PURE_IMPORTS_START _Observable,_util_isArray,_util_isFunction,_operators_map PURE_IMPORTS_END */
 var toString = Object.prototype.toString;
@@ -10937,6 +11123,7 @@ function isJQueryStyleEventEmitter(sourceObj) {
 function isEventTarget(sourceObj) {
     return sourceObj && typeof sourceObj.addEventListener === 'function' && typeof sourceObj.removeEventListener === 'function';
 }
+//# sourceMappingURL=fromEvent.js.map
 
 /** PURE_IMPORTS_START _Observable,_util_isArray,_util_isFunction,_operators_map PURE_IMPORTS_END */
 function fromEventPattern(addHandler, removeHandler, resultSelector) {
@@ -10965,6 +11152,7 @@ function fromEventPattern(addHandler, removeHandler, resultSelector) {
         return function () { return removeHandler(handler, retValue); };
     });
 }
+//# sourceMappingURL=fromEventPattern.js.map
 
 /** PURE_IMPORTS_START _Observable,_util_identity,_util_isScheduler PURE_IMPORTS_END */
 function generate(initialStateOrOptions, condition, iterate, resultSelectorOrObservable, scheduler) {
@@ -11087,6 +11275,7 @@ function dispatch$4(state) {
     }
     return this.schedule(state);
 }
+//# sourceMappingURL=generate.js.map
 
 /** PURE_IMPORTS_START _defer,_empty PURE_IMPORTS_END */
 function iif(condition, trueResult, falseResult) {
@@ -11098,6 +11287,7 @@ function iif(condition, trueResult, falseResult) {
     }
     return defer(function () { return condition() ? trueResult : falseResult; });
 }
+//# sourceMappingURL=iif.js.map
 
 /** PURE_IMPORTS_START _Observable,_scheduler_async,_util_isNumeric PURE_IMPORTS_END */
 function interval(period, scheduler) {
@@ -11123,12 +11313,14 @@ function dispatch$5(state) {
     subscriber.next(counter);
     this.schedule({ subscriber: subscriber, counter: counter + 1, period: period }, period);
 }
+//# sourceMappingURL=interval.js.map
 
 /** PURE_IMPORTS_START _Observable,_util_noop PURE_IMPORTS_END */
 var NEVER = /*@__PURE__*/ new Observable(noop);
 function never() {
     return NEVER;
 }
+//# sourceMappingURL=never.js.map
 
 /** PURE_IMPORTS_START _Observable,_from,_util_isArray,_empty PURE_IMPORTS_END */
 function onErrorResumeNext$1() {
@@ -11152,6 +11344,7 @@ function onErrorResumeNext$1() {
         });
     });
 }
+//# sourceMappingURL=onErrorResumeNext.js.map
 
 /** PURE_IMPORTS_START _Observable,_Subscription PURE_IMPORTS_END */
 function pairs(obj, scheduler) {
@@ -11189,6 +11382,7 @@ function dispatch$6(state) {
         }
     }
 }
+//# sourceMappingURL=pairs.js.map
 
 /** PURE_IMPORTS_START _Observable PURE_IMPORTS_END */
 function range(start, count, scheduler) {
@@ -11236,6 +11430,7 @@ function dispatch$7(state) {
     state.start = start + 1;
     this.schedule(state);
 }
+//# sourceMappingURL=range.js.map
 
 /** PURE_IMPORTS_START _Observable,_from,_empty PURE_IMPORTS_END */
 function using(resourceFactory, observableFactory) {
@@ -11266,8 +11461,10 @@ function using(resourceFactory, observableFactory) {
         };
     });
 }
+//# sourceMappingURL=using.js.map
 
 /** PURE_IMPORTS_START  PURE_IMPORTS_END */
+//# sourceMappingURL=index.js.map
 
 /**
  * Gets XML from path
@@ -11285,13 +11482,24 @@ function getXML(path) {
  * @param {Document} xml - the xml to evaluate
  */
 function getElementByXpath(xpath, xml) {
+    let xmlns = xml.lookupNamespaceURI(null);
+    if (xmlns === null) {
+        console.log("Your XML file is missing an XML namespace.");
+    }
+    function nsResolver(prefix) {
+        var ns = {
+            'i': xmlns
+        };
+        return ns[prefix] || null;
+    }
     let result_container = [];
-    let results = xml.evaluate(xpath, xml, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
+    let results = xml.evaluate(xpath, xml, nsResolver, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
     let node = results.iterateNext();
     while (node) {
         result_container.push(node);
         node = results.iterateNext();
     }
+    // console.log(result_container)
     return result_container;
 }
 /**
@@ -11311,7 +11519,7 @@ function parseTEI(path) {
     let xmlDocument = getXML(path);
     let parser = new DOMParser();
     let xml_text = parser.parseFromString(xmlDocument, "text/xml");
-    let word_ids = getElementByXpath('/document/s/w/@id', xml_text).map(x => "s2.xml#" + x['value']);
+    let word_ids = getElementByXpath('/document/s/w/@id', xml_text).map(x => x['value']);
     let word_vals = getElementByXpath('document/s/w', xml_text).map(x => x['innerHTML']);
     let result = zip$2([word_ids, word_vals]);
     return result;
@@ -11324,9 +11532,13 @@ function parseSMIL(path) {
     let xmlDocument = getXML(path);
     let parser = new DOMParser();
     let xml_text = parser.parseFromString(xmlDocument, "text/xml");
-    let text = getElementByXpath('/smil/body/par/text/@src', xml_text).map(x => x['value']);
-    let audio_begin = getElementByXpath('/smil/body/par/audio/@clipBegin', xml_text).map(x => x['value'] * 1000);
-    let audio_end = getElementByXpath('/smil/body/par/audio/@clipEnd', xml_text).map(x => x['value'] * 1000);
+    let text = getElementByXpath('/i:smil/i:body/i:par/i:text/@src', xml_text).map(x => {
+        let split = x['value'].split('#');
+        return split[split.length - 1];
+    });
+    console.log(text);
+    let audio_begin = getElementByXpath('/i:smil/i:body/i:par/i:audio/@clipBegin', xml_text).map(x => x['value'] * 1000);
+    let audio_end = getElementByXpath('/i:smil/i:body/i:par/i:audio/@clipEnd', xml_text).map(x => x['value'] * 1000);
     let audio_duration = [];
     for (var i = 0; i < audio_begin.length; i++) {
         let duration = audio_end[i] - audio_begin[i];
@@ -11620,7 +11832,6 @@ class ReadAlongComponent {
     goBack(s) {
         if (this.play_id) {
             this.audio_howl_sprites.goBack(this.play_id, s);
-            this.highlightClosestTo(s);
         }
     }
     /**

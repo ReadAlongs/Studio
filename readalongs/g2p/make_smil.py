@@ -29,7 +29,7 @@ SMIL_TEMPLATE = '''<smil xmlns="http://www.w3.org/ns/SMIL" version="3.0">
             <audio src="{{audio_path}}" clipBegin="{{start}}" clipEnd="{{end}}"/>
         </par>
         {{/words}}
-    <body>
+    </body>
 </smil>
 '''
 
@@ -60,15 +60,13 @@ def parse_hypseg(text):
         i += WORD_SPAN
     return results
 
-def make_smil(seg_path, text_path, audio_path):
-    seg_text = load_txt(seg_path)
-    data = parse_hypseg(seg_text)
-    data["text_path"] = text_path
-    data["audio_path"] = audio_path
-    return pystache.render(SMIL_TEMPLATE, data)
+def make_smil(text_path, audio_path, results):
+    results["text_path"] = text_path
+    results["audio_path"] = audio_path
+    return pystache.render(SMIL_TEMPLATE, results)
 
 def go(seg_path, text_path, audio_path, output_path):
-    results = make_smil(seg_path, text_path, audio_path)
+    results = make_smil(text_path, audio_path, parse_hypseg(seg_path))
     save_txt(output_path, results)
 
 
