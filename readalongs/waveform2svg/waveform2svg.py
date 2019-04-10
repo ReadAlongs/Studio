@@ -27,7 +27,7 @@ def ensure_dirs(path):
         os.makedirs(dirname)
 
 SVG_TEMPLATE = '''<svg height="{{height}}" width="{{width}}">
-    <polygon points="{{#points}}{{x}},{{y}} {{/points}}">
+    <polygon points="{{#points}}{{x}},{{y}} {{/points}}" />
 </svg>
 '''
 
