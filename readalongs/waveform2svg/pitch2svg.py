@@ -38,7 +38,7 @@ SVG_TEMPLATE = '''<svg id='pitch' preserveAspectRatio='none' viewBox="0 0 512 10
 </svg>
 '''
 
-def render_svg(pitches, , width=512, height=100):
+def render_svg(pitches, width=512, height=100):
     data = { "height": height, "width": width, "points": [] }
     data["points"].append({"x":0.0, "y": float(height)})
     for i, pitch in enumerate(pitches):
@@ -71,7 +71,7 @@ def extract_pitches(input_path, nbuckets=512):
 
 def make_svg(input_path, nbuckets=512, height=100, width=512):
     pitches = extract_pitches(input_path, nbuckets)
-    return render_svg(pitches, height, width)
+    return render_svg(pitches, width, height)
 
 def go(input_path, output_path, nbuckets=512):
     svg = make_svg(input_path, nbuckets)
@@ -81,7 +81,7 @@ def go(input_path, output_path, nbuckets=512):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='Convert a WAV file to a SVG file of its waveform')
+        description='Convert a WAV file to a SVG file of its pitch trace')
     parser.add_argument('input', type=str, help='Input WAV file')
     parser.add_argument('output', type=str, help='Output SVG file')
     parser.add_argument('--nbuckets', type=int, default=512,

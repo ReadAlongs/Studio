@@ -49,7 +49,7 @@ def read_wav(input_path, num_buckets):
     return max_amps, min_amps
 
 
-def make_svg(input_path, num_buckets, include_negative=True, height=100, width=512):
+def make_svg(input_path, num_buckets, include_negative=True, width=512, height=100):
     max_amps, min_amps = read_wav(input_path, num_buckets)
     data = {"height": height, "width": width, "points": []}
     data["points"].append({"x": 0.0, "y": height / 2})
