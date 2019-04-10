@@ -56,7 +56,6 @@ def merge_if_same_label(lst_of_dicts, text_key, label_key):
         results.append(current_item)
     return results
 
-
 def load_xml(input_path):
     with open(input_path, "r", encoding="utf-8") as fin:
         return etree.fromstring(fin.read())
