@@ -37,10 +37,10 @@ SVG_TEMPLATE = '''<svg id='units' preserveAspectRatio='none' viewBox="0 0 {{tota
 </svg>
 '''
 
-def render_svg(data, width=512, height=100):
+def render_svg(data, width=512, height=100, radius=4):
     result = { "total_width": width,
                "total_height": height,
-               "radius": height / 25,
+               "radius": radius,
                "rects": [] }
     total_duration = data["duration"]
     for src, audio in data["audio_files"].items():
@@ -100,12 +100,12 @@ def parse_smil(input_path):
         data["duration"] = data["audio_files"][last_audio]["end"]
     return data
 
-def make_units_svg(input_path, width=512, height=100):
+def make_units_svg(input_path, width=512, height=100, radius=4):
     data = parse_smil(input_path)
-    return render_svg(data, width, height)
+    return render_svg(data, width, height, radius)
 
-def main(input_path, output_path, width=512, height=100):
-    svg = make_units_svg(input_path, width, height)
+def main(input_path, output_path, width=512, height=100, radius=4):
+    svg = make_units_svg(input_path, width, height, radius)
     save_txt(output_path, svg)
 
 if __name__ == '__main__':
@@ -113,5 +113,12 @@ if __name__ == '__main__':
         description='Convert a SMIL file to a SVG file indicating sub-unit durations')
     parser.add_argument('input', type=str, help='Input SMIL file')
     parser.add_argument('output', type=str, help='Output SVG file')
+    parser.add_argument('--width', type=int, default=512, help='Width of output SVG (default: 512)')
+    parser.add_argument('--height', type=int, default=100, help='Height of output SVG (default: 100)')
+    parser.add_argument('--radius', type=int, default=100, help='Radius of rounded rectangles (default: 4)')
     args = parser.parse_args()
-    main(args.input, args.output)
+    main(args.input,
+        args.output,
+        args.width,
+        args.height,
+        args.radius)

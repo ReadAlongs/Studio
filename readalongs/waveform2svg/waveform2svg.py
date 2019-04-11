@@ -69,13 +69,13 @@ def render_svg(max_amps, min_amps, num_buckets, include_negative=True, width=512
         data["points"].append({"x": 0.0, "y": (height + zero_height) / 2})
     return pystache.render(SVG_TEMPLATE, data)
 
-def make_waveform_svg(input_path, num_buckets=512, include_neg=True):
+def make_waveform_svg(input_path, num_buckets=512, include_neg=True, width=512, height=100, zero_height=5):
     waveform = load_wav_or_smil(input_path)
     max_amps, min_amps = get_max_and_min(waveform, num_buckets)
-    return render_svg(max_amps, min_amps, num_buckets, include_neg)
+    return render_svg(max_amps, min_amps, num_buckets, include_neg, width, height, zero_height)
 
-def main(input_path, output_path, num_buckets=512, include_neg=True):
-    svg = make_waveform_svg(input_path, num_buckets, include_neg)
+def main(input_path, output_path, num_buckets=512, include_neg=True, width=512, height=100, zero_height=5):
+    svg = make_waveform_svg(input_path, num_buckets, include_neg, width, height, zero_height)
     save_txt(output_path, svg)
 
 if __name__ == '__main__':
@@ -87,5 +87,14 @@ if __name__ == '__main__':
                         help='Number of sample buckets (default: 256)')
     parser.add_argument('--include_neg', type=bool, default=True,
                         help='Include negative values? (default: True')
+    parser.add_argument('--width', type=int, default=512, help='Width of output SVG (default: 512)')
+    parser.add_argument('--height', type=int, default=100, help='Height of output SVG (default: 100)')
+    parser.add_argument('--zero_height', type=int, default=5, help='Padding around zero (default: 5)')
     args = parser.parse_args()
-    main(args.input, args.output, args.nbuckets, args.include_neg)
+    main(args.input,
+        args.output,
+        args.nbuckets,
+        args.include_neg,
+        args.width,
+        args.height,
+        args.zero_height)
