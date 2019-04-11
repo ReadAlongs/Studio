@@ -23,9 +23,7 @@ except:
 
 def ensure_dirs(path):
     dirname = os.path.dirname(path)
-    if not dirname:
-        return
-    if not os.path.exists(dirname):
+    if dirname and not os.path.exists(dirname):
         os.makedirs(dirname)
 
 def get_lang_attrib(element):

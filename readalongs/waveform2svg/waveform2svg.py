@@ -17,10 +17,9 @@ import logging
 import argparse
 import os
 import numpy as np
-import soundfile as sf
 from math import ceil
 import pystache
-
+from audio_util import *
 
 def ensure_dirs(path):
     dirname = os.path.dirname(path)
@@ -29,28 +28,26 @@ def ensure_dirs(path):
     if not os.path.exists(dirname):
         os.makedirs(dirname)
 
-
-SVG_TEMPLATE = '''<svg id='wave' preserveAspectRatio='none' viewBox="0 0 512 100" xmlns="http://www.w3.org/2000/svg" height="{{height}}" width="{{width}}">
+SVG_TEMPLATE = '''<svg id='wave' preserveAspectRatio='none' viewBox="0 0 {{width}} {{height}}" xmlns="http://www.w3.org/2000/svg" height="{{height}}" width="{{width}}">
     <polygon points="{{#points}}{{x}},{{y}} {{/points}}"></polygon>
 </svg>
 '''
 
+SAMPLE_RATE = 16000
 
-def read_wav(input_path, num_buckets):
-    data, samplerate = sf.read(input_path, always_2d=True)
-    data = data.max(axis=1)  # max along each channel
+def get_max_and_min(data, nbuckets):
     data /= np.abs(data).max(axis=0)  # normalize
     num_samples = data.shape[0]
-    samples_per_bucket = int(ceil(num_samples / num_buckets))
+    samples_per_bucket = int(ceil(num_samples / nbuckets))
     max_amps, min_amps = [], []
     for i in range(0, num_samples, samples_per_bucket):
         max_amps.append(data[i:i+256].max())
         min_amps.append(data[i:i+256].min())
+    max_amps = list(smooth(max_amps, window_size=int(floor(nbuckets/100))))
+    min_amps = list(smooth(min_amps, window_size=int(floor(nbuckets/100))))
     return max_amps, min_amps
 
-
-def make_svg(input_path, num_buckets, include_negative=True, height=100, width=512):
-    max_amps, min_amps = read_wav(input_path, num_buckets)
+def render_svg(max_amps, min_amps, num_buckets, include_negative=True, width=512, height=100):
     data = {"height": height, "width": width, "points": []}
     data["points"].append({"x": 0.0, "y": height / 2})
     for i, max_amp in enumerate(max_amps):
@@ -68,13 +65,14 @@ def make_svg(input_path, num_buckets, include_negative=True, height=100, width=5
             data["points"].append({"x": x, "y": y})
     return pystache.render(SVG_TEMPLATE, data)
 
+def make_waveform_svg(input_path, num_buckets=512, include_neg=True):
+    waveform = load_wav_or_smil(input_path)
+    max_amps, min_amps = get_max_and_min(waveform, num_buckets)
+    return render_svg(max_amps, min_amps, num_buckets, include_neg)
 
-def go(input_path, output_path, num_buckets=512, include_neg=True):
-    svg = make_svg(input_path, num_buckets, include_neg)
-    ensure_dirs(input_path)
-    with open(output_path, "w", encoding="utf-8") as fout:
-        fout.write(svg)
-
+def main(input_path, output_path, num_buckets=512, include_neg=True):
+    svg = make_waveform_svg(input_path, num_buckets, include_neg)
+    save_txt(output_path, svg)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -86,4 +84,4 @@ if __name__ == '__main__':
     parser.add_argument('--include_neg', type=bool, default=True,
                         help='Include negative values? (default: True')
     args = parser.parse_args()
-    go(args.input, args.output, args.nbuckets, args.include_neg)
+    main(args.input, args.output, args.nbuckets, args.include_neg)
