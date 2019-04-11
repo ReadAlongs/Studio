@@ -38,7 +38,7 @@ SVG_TEMPLATE = '''<svg id='pitch' preserveAspectRatio='none' viewBox="0 0 512 10
 </svg>
 '''
 
-def render_svg(pitches, , width=512, height=100):
+def render_svg(pitches, width=512, height=100):
     data = { "height": height, "width": width, "points": [] }
     data["points"].append({"x":0.0, "y": float(height)})
     for i, pitch in enumerate(pitches):
