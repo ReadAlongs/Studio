@@ -104,11 +104,9 @@ def make_units_svg(input_path, width=512, height=100):
     data = parse_smil(input_path)
     return render_svg(data, width, height)
 
-def main(input_path, output_path):
-    svg = make_units_svg(input_path)
-    ensure_dirs(input_path)
-    with open(output_path, "w", encoding="utf-8") as fout:
-        fout.write(svg)
+def main(input_path, output_path, width=512, height=100):
+    svg = make_units_svg(input_path, width, height)
+    save_txt(output_path, svg)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(

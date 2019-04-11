@@ -34,14 +34,16 @@ SVG_TEMPLATE = '''<svg id='pitch' preserveAspectRatio='none' viewBox="0 0 {{widt
 </svg>
 '''
 
-def render_svg(pitches, width=512, height=100):
+def render_svg(pitches, width=512, height=100, zero_height=5):
     data = { "height": height, "width": width, "points": [] }
     data["points"].append({"x":0.0, "y": float(height)})
+    data["points"].append({"x":0.0, "y": float(height - zero_height)})
     for i, pitch in enumerate(pitches):
         x = i + 0.5
-        y = (1.0 - pitch) * height
+        y = (1.0 - pitch) * (height - zero_height)
         y = "%.2f" % y
         data["points"].append({"x": x, "y": y})
+    data["points"].append({"x":float(width), "y": float(height - zero_height)})
     data["points"].append({"x":float(width), "y": float(height)})
     return pystache.render(SVG_TEMPLATE, data)
 
@@ -55,16 +57,14 @@ def extract_pitches(waveform, nbuckets=512):
     pitches /= pitches.max()
     return smooth(pitches, window_size=int(floor(nbuckets/40)))
 
-def make_pitch_svg(input_path, nbuckets=512, height=100, width=512):
+def make_pitch_svg(input_path, nbuckets=512, height=100, width=512, zero_height=5):
     waveform = load_wav_or_smil(input_path)
     pitches = extract_pitches(waveform, nbuckets)
-    return render_svg(pitches, width, height)
+    return render_svg(pitches, width, height, zero_height)
 
-def main(input_path, output_path, nbuckets=512):
-    svg = make_pitch_svg(input_path, nbuckets)
-    ensure_dirs(input_path)
-    with open(output_path, "w", encoding="utf-8") as fout:
-        fout.write(svg)
+def main(input_path, output_path, nbuckets=512, width=512, height=100, zero_height=5):
+    svg = make_pitch_svg(input_path, nbuckets, width, height, zero_height)
+    save_txt(output_path, svg)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -73,5 +73,13 @@ if __name__ == '__main__':
     parser.add_argument('output', type=str, help='Output SVG file')
     parser.add_argument('--nbuckets', type=int, default=512,
                         help='Number of sample buckets (default: 256)')
+    parser.add_argument('--width', type=int, default=512, help='Width of output SVG (default: 512)')
+    parser.add_argument('--height', type=int, default=100, help='Height of output SVG (default: 100)')
+    parser.add_argument('--zero_height', type=int, default=5, help='Padding around zero (default: 5)')
     args = parser.parse_args()
-    main(args.input, args.output, args.nbuckets)
+    main(args.input,
+        args.output,
+        args.nbuckets,
+        args.width,
+        args.height,
+        args.zero_height)

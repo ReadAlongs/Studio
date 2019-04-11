@@ -47,22 +47,26 @@ def get_max_and_min(data, nbuckets):
     min_amps = list(smooth(min_amps, window_size=int(floor(nbuckets/100))))
     return max_amps, min_amps
 
-def render_svg(max_amps, min_amps, num_buckets, include_negative=True, width=512, height=100):
+def render_svg(max_amps, min_amps, num_buckets, include_negative=True, width=512, height=100, zero_height=5):
     data = {"height": height, "width": width, "points": []}
     data["points"].append({"x": 0.0, "y": height / 2})
+    data["points"].append({"x": 0.0, "y": (height - zero_height) / 2})
     for i, max_amp in enumerate(max_amps):
-        y = (1.0 - max_amp) * (height / 2)
+        y = (1.0 - max_amp) * ((height - zero_height) / 2)
         y = "%.2f" % y
         x = i / num_buckets * width + 0.5
         data["points"].append({"x": x, "y": y})
+    data["points"].append({"x": float(width), "y": (height - zero_height) / 2})
     data["points"].append({"x": float(width), "y": height / 2})
     if include_negative:
+        data["points"].append({"x": float(width), "y": (height + zero_height) / 2})
         min_amps.reverse()
         for i, min_amp in enumerate(min_amps):
-            y = (1.0 - min_amp) * (height / 2)
+            y = (1.0 - min_amp) * ((height + zero_height) / 2)
             y = "%.2f" % y
             x = width - (i / num_buckets * width + 0.5)
             data["points"].append({"x": x, "y": y})
+        data["points"].append({"x": 0.0, "y": (height + zero_height) / 2})
     return pystache.render(SVG_TEMPLATE, data)
 
 def make_waveform_svg(input_path, num_buckets=512, include_neg=True):
