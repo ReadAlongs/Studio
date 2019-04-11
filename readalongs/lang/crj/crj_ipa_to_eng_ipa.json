@@ -1,5 +1,6 @@
 {
     "type": "mapping",
+    "format": "simple_mapping",
     "in_metadata": {
         "lang": "crj-ipa",
         "format": "ipa",

@@ -109,8 +109,6 @@ class TokenizerLibrary:
                                       inv_filename)
                         continue
                     if inv["type"] not in ["inventory", "mapping"]:
-                        logging.error("File %s is not an inventory or mapping file",
-                                      inv_filename)
                         continue
                     tokenizer = Tokenizer(inv)
                     self.tokenizers[tokenizer.lang] = tokenizer
@@ -125,10 +123,8 @@ class TokenizerLibrary:
             new_element.attrib[key] = value
 
         lang = get_lang_attrib(element)
-        if lang not in self.tokenizers and (element.text or element.tail):
-            logging.error("No tokenizer available for language %s" % lang)
-            return
-        tokenizer = self.tokenizers[lang]
+        tokenizer = self.tokenizers[lang] if lang in self.tokenizers else self.tokenizers[None]
+        
         if element.text:
             new_element.text = ''
             for unit in tokenizer.tokenize_text(element.text):
