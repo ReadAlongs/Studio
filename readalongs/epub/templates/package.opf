@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id">
+	<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+		<dc:identifier id="id">{{book_id}}</dc:identifier>
+		<meta property="dcterms:modified">2010-02-17T04:39:13Z</meta>
+
+		<dc:title id="t1">{{title}}</dc:title>
+		<meta refines="#t1" property="title-type">main</meta>
+		<meta refines="#t1" property="display-seq">1</meta>
+
+      {{#subtitle}}
+		<dc:title id="t2">{{subtitle}}</dc:title>
+		<meta refines="#t2" property="title-type">subtitle</meta>
+		<meta refines="#t2" property="display-seq">2</meta>
+      {{/subtitle}}
+
+      {{#authors}}
+		<dc:creator id="{{id}}">{{firstnames}} {{lastname}}</dc:creator>
+		<meta property="file-as" refines="#{{id}}">{{lastname}}, {{firstnames}}</meta>
+      {{/authors}}
+
+		<dc:language>{{lang}}</dc:language>
+		<dc:date>{{date}}</dc:date>
+      <dc:rights>All rights reserved.</dc:rights>
+
+	</metadata>
+	<manifest>
+      {{#css}}
+		<item href="{{dest_path}}" id="css_{{id}}" media-type="{{mimetype}}"/>
+      {{/css}}
+      {{#wav}}
+      <item href="{{dest_path}}" id="audio_{{id}}" media-type="{{mimetype}}"/>
+      {{/wav}}
+		{{#smil}}
+		<item href="{{dest_path}}" id="smil_{{id}}" media-type="{{mimetype}}"/>
+		{{/smil}}
+      <item href="cover.xhtml" id="cover" media-type="application/xhtml+xml"/>
+      {{#xhtml}}
+      <item href="{{dest_path}}" id="{{id}}" media-type="{{mimetype}}"/>
+      {{/xhtml}}
+		<item href="nav.xhtml" id="nav" media-type="application/xhtml+xml" properties="nav scripted"/>
+		<item href="toc.ncx" id="ncx" media-type="application/x-dtbncx+xml"/>
+	</manifest>
+	<spine toc="ncx">
+		<itemref idref="cover"/>
+		<itemref idref="nav"/>
+      {{#xhtml}}
+		<itemref idref="{{id}}"/>
+      {{/xhtml}}
+   </spine>
+</package>
