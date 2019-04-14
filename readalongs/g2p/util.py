@@ -64,6 +64,10 @@ def load_xml_zip(zip_path, input_path):
             fin_utf8 = TextIOWrapper(fin, encoding='utf-8')
             return etree.fromstring(fin_utf8.read())
 
+def load_xml_with_encoding(input_path):
+    ''' etree.fromstring messes up on declared encodings '''
+    return etree.parse(input_path)
+
 def save_xml(output_path, xml):
     ensure_dirs(output_path)
     with open(output_path, "w", encoding="utf-8") as fout:
