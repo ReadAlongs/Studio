@@ -27,7 +27,7 @@ from __future__ import print_function, unicode_literals, division
 from io import open
 import logging, os
 from collections import defaultdict
-from util import *
+from .util import *
 
 def sphinx_lexicon_loader(input_path):
     txt = load_txt(input_path)
@@ -58,7 +58,7 @@ class LexiconG2P:
 
         self.entries = defaultdict(list)
         if "src_format" not in self.metadata:
-            loggin_error("File %s lacking a source format ('src_format') attribute" % metadata_path)
+            logging.error("File %s lacking a source format ('src_format') attribute" % metadata_path)
             return
 
         if self.metadata["src_format"] not in LEXICON_LOADERS:

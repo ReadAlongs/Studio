@@ -13,7 +13,7 @@ from __future__ import print_function, unicode_literals, division
 from io import open, TextIOWrapper
 from lxml import etree
 from copy import deepcopy
-import os, json, zipfile
+import logging, os, json, zipfile
 from collections import OrderedDict
 
 try:

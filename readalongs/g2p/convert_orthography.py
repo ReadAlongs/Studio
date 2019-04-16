@@ -26,8 +26,8 @@
 from __future__ import print_function, unicode_literals, division
 from io import open
 import logging, json, os, re, argparse, glob, copy
-from lexicon_g2p import LexiconG2P
-from simple_mapping_g2p import SimpleMappingG2P
+from .lexicon_g2p import LexiconG2P
+from .simple_mapping_g2p import SimpleMappingG2P
 
 
 def compose_indices(i1, i2):
