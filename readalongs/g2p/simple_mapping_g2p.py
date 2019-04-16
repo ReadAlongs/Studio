@@ -13,7 +13,7 @@
 from __future__ import print_function, unicode_literals, division
 from io import open
 import logging, json, os, re, argparse, glob, copy
-from util import *
+from .util import *
 
 OPEN_BRACKET = "⦕"
 CLOSED_BRACKET = "⦖"
