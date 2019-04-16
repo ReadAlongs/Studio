@@ -28,6 +28,7 @@ from io import open
 import logging, os
 from collections import defaultdict
 from .util import *
+from unicodedata import normalize
 
 def sphinx_lexicon_loader(input_path):
     txt = load_txt(input_path)
@@ -35,7 +36,9 @@ def sphinx_lexicon_loader(input_path):
         parts = line.strip().split("\t")
         if len(parts) < 2:
             continue
-        yield parts[0], parts[1]
+        key = normalize("NFKC", parts[0])
+        value = normalize("NFKC", parts[1])
+        yield key, value
 
 
 LEXICON_LOADERS = {

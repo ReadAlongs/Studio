@@ -1,103 +1,103 @@
 {
     "out_metadata": {
-        "lang": "eng-ipa",
-        "delimiter": "",
+        "lang": "eng-ipa", 
+        "delimiter": "", 
         "format": "ipa"
-    },
+    }, 
     "in_metadata": {
-        "lang": "moh-ipa",
-        "delimiter": "",
+        "lang": "moh-ipa", 
+        "delimiter": "", 
         "format": "ipa"
-    },
-    "type": "mapping",
+    }, 
+    "type": "mapping", 
     "map": [
         {
-            "out": "ɑ",
-            "in": "a"
-        },
-        {
-            "out": "ɑ:",
-            "in": "a:"
-        },
-        {
-            "out": "e",
-            "in": "e"
-        },
-        {
-            "out": "e",
-            "in": "ẽ"
-        },
-        {
-            "out": "e:",
-            "in": "e:"
-        },
-        {
-            "out": "e:",
-            "in": "ẽ:"
-        },
-        {
-            "out": "i",
-            "in": "i"
-        },
-        {
-            "out": "i:",
-            "in": "i:"
-        },
-        {
-            "out": "k",
-            "in": "k"
-        },
-        {
-            "out": "n",
-            "in": "n"
-        },
-        {
-            "out": "o",
-            "in": "o"
-        },
-        {
-            "out": "o",
-            "in": "õ"
-        },
-        {
-            "out": "o",
-            "in": "o"
-        },
-        {
-            "out": "o:",
-            "in": "o:"
-        },
-        {
-            "out": "o:",
-            "in": "õ:"
-        },
-        {
-            "out": "ɾ",
-            "in": "r"
-        },
-        {
-            "out": "t",
-            "in": "t"
-        },
-        {
-            "out": "s",
-            "in": "s"
-        },
-        {
-            "out": "dʒ",
-            "in": "d͡ʒ"
-        },
-        {
-            "out": "w",
-            "in": "w"
-        },
-        {
-            "out": "y",
-            "in": "y"
-        },
-        {
-            "out": "ʔ",
+            "out": "ʔ", 
             "in": "ʔ"
+        }, 
+        {
+            "out": "ĩ", 
+            "in": "ẽː"
+        }, 
+        {
+            "out": "i", 
+            "in": "iː"
+        }, 
+        {
+            "out": "ɑ", 
+            "in": "aː"
+        }, 
+        {
+            "out": "dʒ", 
+            "in": "d͡ʒ"
+        }, 
+        {
+            "out": "ĩ", 
+            "in": "ẽ"
+        }, 
+        {
+            "out": "eː", 
+            "in": "eː"
+        }, 
+        {
+            "out": "ĩ", 
+            "in": "õː"
+        }, 
+        {
+            "out": "eː", 
+            "in": "e:"
+        }, 
+        {
+            "out": "oː", 
+            "in": "oː"
+        }, 
+        {
+            "out": "ɑ", 
+            "in": "a"
+        }, 
+        {
+            "out": "eː", 
+            "in": "e"
+        }, 
+        {
+            "out": "i", 
+            "in": "i"
+        }, 
+        {
+            "out": "k", 
+            "in": "k"
+        }, 
+        {
+            "out": "j", 
+            "in": "j"
+        }, 
+        {
+            "out": "oː", 
+            "in": "o"
+        }, 
+        {
+            "out": "n", 
+            "in": "n"
+        }, 
+        {
+            "out": "s", 
+            "in": "s"
+        }, 
+        {
+            "out": "ɾ", 
+            "in": "r"
+        }, 
+        {
+            "out": "ĩ", 
+            "in": "õ"
+        }, 
+        {
+            "out": "t", 
+            "in": "t"
+        }, 
+        {
+            "out": "w", 
+            "in": "w"
         }
     ]
 }

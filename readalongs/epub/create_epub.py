@@ -42,7 +42,7 @@ def process_src_attrib(src_text, id_prefix, mimetypes):
     entry = {
         "origin_path": filename,
         "dest_path": filename,
-        "ext": ext,
+        "ext": ext.lower(),
         "id": id_prefix + os.path.basename(filename_without_ext),
         "mimetype": mimetypes[ext]
     }
@@ -51,16 +51,10 @@ def process_src_attrib(src_text, id_prefix, mimetypes):
 
 def extract_files_from_SMIL(input_path):
     smil = load_xml(input_path)
-    found_files = defaultdict(list)
+    found_files = {}
     dirname = os.path.dirname(input_path)
 
-    found_files["smil"].append({
-        "origin_path": input_path,
-        "dest_path": os.path.basename(input_path),
-        "id": "main",
-        "mimetype": "application/smil+xml"
-    })
-
+    # add media referenced in the SMIL file itself
     queries = [
         { "xpath": ".//i:text/@src",
           "id_prefix": "",
@@ -78,9 +72,10 @@ def extract_files_from_SMIL(input_path):
     for query in queries:
         for src_text in xpath_default(smil, query["xpath"]):
             entry = process_src_attrib(src_text, query["id_prefix"], query["mimetypes"])
-            if entry is not None and entry not in found_files[entry["ext"]]:
-                found_files[entry["ext"]].append(entry)
+            if entry is not None and entry["origin_path"] not in found_files:
+                found_files[entry["origin_path"]] = entry
 
+    # add media referenced within the xhtml files (e.g. imgs)
     within_xhtml_queries = [
         { "xpath": ".//i:img/@src",
           "id_prefix": "img-",
@@ -91,15 +86,29 @@ def extract_files_from_SMIL(input_path):
             "gif": "image/gif"
         }}
     ]
-    for entry in found_files["xhtml"]:
+
+    SEARCHABLE_EXTENSIONS = [ "xhtml" ]
+    for entry in found_files.values():
+        if entry["ext"] not in SEARCHABLE_EXTENSIONS:
+            continue
         origin_path = os.path.join(dirname, entry["origin_path"])
         xhtml = load_xml_with_encoding(origin_path)
         for query in within_xhtml_queries:
             for src_text in xpath_default(xhtml, query["xpath"] ):
                 entry = process_src_attrib(src_text, query["id_prefix"], query["mimetypes"])
-                if entry is not None and entry not in found_files[entry["ext"]]:
-                    found_files[entry["ext"]].append(entry)
-    return found_files
+                if entry is not None and entry["origin_path"] not in found_files:
+                    found_files[entry["origin_path"]] = entry
+
+    # add this file
+    found_files[input_path] = {
+        "origin_path": input_path,
+        "dest_path": os.path.basename(input_path),
+        "id": "main",
+        "mimetype": "application/smil+xml",
+        "ext": "smil"
+    }
+
+    return found_files.values()
 
 
 def main(input_path, output_path):
@@ -119,17 +128,16 @@ def main(input_path, output_path):
     # the SMIL and all the files referenced in the SMIL
     found_files = extract_files_from_SMIL(input_path)
     package_template = load_txt(PACKAGE_ORIGIN_PATH)
-    package_txt = pystache.render(package_template, found_files)
+    package_txt = pystache.render(package_template, media=found_files)
     save_txt_zip(output_path, PACKAGE_DEST_PATH, package_txt)
 
-    for ext, entries in found_files.items():
-        for entry in entries:
-            origin_path = os.path.join(input_dirname, entry["origin_path"])
-            if not os.path.exists(origin_path):
-                logging.warning("Cannot find file %s to copy into EPUB file", origin_path)
-                continue
-            dest_path = os.path.join(OEBPS_PATH, entry["dest_path"])
-            copy_file_to_zip(output_path, origin_path, dest_path)
+    for entry in found_files:
+        origin_path = os.path.join(input_dirname, entry["origin_path"])
+        if not os.path.exists(origin_path):
+            logging.warning("Cannot find file %s to copy into EPUB file", origin_path)
+            continue
+        dest_path = os.path.join(OEBPS_PATH, entry["dest_path"])
+        copy_file_to_zip(output_path, origin_path, dest_path)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Convert SMIL document to an EPUB with a Media Overlay')

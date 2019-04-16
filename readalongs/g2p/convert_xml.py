@@ -41,6 +41,7 @@ import logging, argparse
 from lxml import etree
 from .convert_orthography import *
 from .util import *
+from unicodedata import normalize
 
 try:
     unicode()
@@ -52,12 +53,12 @@ except:
 def iterate_over_text(element):
     lang = get_lang_attrib(element)
     if element.text:
-        yield (lang, element.text)
+        yield (lang, unicode(element.text))
     for child in element:
         for subchild in iterate_over_text(child):
             yield subchild
         if child.tail:
-            yield (lang, child.tail)
+            yield (lang, unicode(child.tail))
 
 def get_same_language_units(element):
     character_counter = 0
@@ -111,8 +112,9 @@ def convert_words(xml, converter, word_unit="w", output_orthography="eng-arpabet
         all_text = ''
         all_indices = []
         for unit in same_language_units:
+            text = normalize("NFKC", unit["text"])
             text, indices = converter.convert(
-                unit["text"],
+                text,
                 unit["lang"],
                 output_orthography )
             all_text += text
