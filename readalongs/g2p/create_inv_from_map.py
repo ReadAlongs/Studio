@@ -30,7 +30,7 @@ def create_inventory_from_mapping(mapping, in_or_out):
       logging.error("Parameter in_or_out must be 'in' or 'out'")
       return {}
    inventory = [ x[in_or_out] for x in mapping["map"] ]
-   inventory = [ normalize("NFKC", x) for x in inventory ]
+   inventory = [ normalize("NFKD", x) for x in inventory ]
    metadata = mapping["in_metadata"] if in_or_out == 'in' else mapping["out_metadata"]
    return {
       "type": "inventory",

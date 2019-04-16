@@ -112,7 +112,7 @@ def convert_words(xml, converter, word_unit="w", output_orthography="eng-arpabet
         all_text = ''
         all_indices = []
         for unit in same_language_units:
-            text = normalize("NFKC", unit["text"])
+            text = normalize("NFKD", unit["text"])
             text, indices = converter.convert(
                 text,
                 unit["lang"],

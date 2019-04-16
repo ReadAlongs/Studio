@@ -41,8 +41,8 @@ class SimpleMappingG2P:
         self.regex_pieces = [DIGIT_FINDER]
         for io_pair in self.mapping["map"]:
             inp, outp = io_pair["in"], io_pair["out"]
-            inp = normalize("NFKC", inp)
-            outp = normalize("NFKC", outp)
+            inp = normalize("NFKD", inp)
+            outp = normalize("NFKD", outp)
             #inp = self.mapping["in_metadata"]["prefix"] + inp + self.mapping["in_metadata"]["suffix"]
             #outp = self.mapping["out_metadata"]["prefix"] + outp + self.mapping["out_metadata"]["suffix"]
             if self.case_insensitive:
