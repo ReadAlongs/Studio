@@ -47,6 +47,7 @@ def end_to_end(mapping_dir, xml, input_filename, unit, word_unit, out_orth):
     xml = tokenize_xml(xml, mapping_dir)
     xml = add_ids(xml)
     converted_xml = convert_xml(mapping_dir, xml, word_unit, out_orth)
+    save_xml("test.xml", converted_xml)
     jsgf = make_jsgf(converted_xml, input_filename, unit)
     pronouncing_dictionary = make_dict(converted_xml, input_filename, unit)
     return xml, jsgf, pronouncing_dictionary

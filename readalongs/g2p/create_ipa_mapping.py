@@ -73,7 +73,7 @@ def create_mapping(inv_l1, inv_l2):
 def align_inventories(inventory_l1, inventory_l2):
     mapping = []
     inventory_l2_expanded = itertools.product(inventory_l2, inventory_l2, inventory_l2)
-    inventory_l2_expanded = list(x + y for x,y in inventory_l2_expanded)
+    inventory_l2_expanded = list(x + y + z for x,y,z in inventory_l2_expanded)
     inventory_l2_expanded = inventory_l2 + inventory_l2_expanded
     for i1, p1 in tqdm(enumerate(split_characters(inventory_l1))):
         # we enumerate the strings because we want to save the original string

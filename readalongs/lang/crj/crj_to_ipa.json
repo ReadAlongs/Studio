@@ -1,5 +1,6 @@
 {
   "type": "mapping",
+  "format": "simple_mapping",
   "authors": ["David Huggins Daines", "Patrick Littell"],
   "created": "2019-04-07",
   "last_modified": "2019-04-07",

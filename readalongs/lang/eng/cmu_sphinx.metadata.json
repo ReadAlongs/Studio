@@ -1,0 +1,18 @@
+{
+   "type": "lexicon",
+   "authors": ["CMU Sphinx team"],
+   "created": "2019-04-11",
+   "last_modified": "2019-04-11",
+   "in_metadata": {
+      "lang": "eng",
+      "format": "custom",
+      "delimiter": ""
+   },
+   "out_metadata": {
+      "lang": "eng-arpabet",
+      "format": "arpabet",
+      "delimiter": " "
+   },
+   "src": "cmudict_SPHINX_40.txt",
+   "src_format": "sphinx"
+}
