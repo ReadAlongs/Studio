@@ -21,8 +21,34 @@ from readalongs.g2p.make_dict import make_dict
 from readalongs.g2p.make_smil import make_smil
 from readalongs import mapping_dir
 
+####
+# Based on http://web.mit.edu/jgross/Public/21M.065/sound.py 9-24-2017
+####
+
+def _trivial__enter__(self):
+    return self
+def _self_close__exit__(self, exc_type, exc_value, traceback):
+    self.close()
+if not hasattr(wave.Wave_read, "__exit__"):
+    wave.Wave_read.__exit__ = _self_close__exit__
+if not hasattr(wave.Wave_write, "__exit__"):
+    wave.Wave_write.__exit__ = _self_close__exit__
+if not hasattr(wave.Wave_read, "__enter__"):
+    wave.Wave_read.__enter__ = _trivial__enter__
+if not hasattr(wave.Wave_write, "__enter__"):
+    wave.Wave_write.__enter__ = _trivial__enter__
+
+
 def align_audio(xml_path, wav_path, unit='w'):
-    """End-to-end alignment of a single audio file."""
+
+    with wave.open(wav_path) as wav:
+        # FIXME: Obvs need to convert/downsample as needed
+        logging.info("Read %s: %d frames (%f seconds) audio"
+                     % (wav_path, wav.getnframes(), wav.getnframes()
+                        / wav.getframerate()))
+        raw_data = wav.readframes(wav.getnframes())
+        print(type(raw_data))
+
     results = { "words": [] }
     # First do G2P
     xml = etree.parse(xml_path).getroot()
