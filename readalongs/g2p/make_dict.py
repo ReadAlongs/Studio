@@ -18,7 +18,7 @@ from io import open
 import logging, argparse
 from lxml import etree
 import pystache
-from .util import *
+from readalongs.g2p.util import *
 
 try:
     unicode()

@@ -22,7 +22,7 @@ import logging, argparse
 from copy import deepcopy
 from lxml import etree
 from collections import defaultdict
-from .util import *
+from readalongs.g2p.util import *
 
 TAG_TO_ID = {
     'p': 'p',

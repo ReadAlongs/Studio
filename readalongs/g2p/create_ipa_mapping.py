@@ -19,7 +19,7 @@ from io import open
 import argparse, json, itertools, logging
 from create_inv_from_map import create_inventory_from_mapping
 import panphon.distance
-from tqdm import tdqm
+from tqdm import tqdm
 
 dst = panphon.distance.Distance()
 
