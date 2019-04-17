@@ -19,6 +19,7 @@ from io import open
 import argparse, json, itertools, logging
 from create_inv_from_map import create_inventory_from_mapping
 import panphon.distance
+from panphon.xsampa import XSampa
 from tqdm import tqdm
 
 dst = panphon.distance.Distance()
@@ -36,12 +37,15 @@ dst = panphon.distance.Distance()
 # or rounded consonants, are treated as two characters rather than one.
 #
 #################################
+xsampa_converter = XSampa()
 
-def split_character(p):
+def process_character(p, is_xsampa=False):
+    if is_xsampa:
+        p = xsampa_converter.convert(p)
     return p.replace("ʷ","w").replace("ʲ","j").replace("͡","")
 
-def split_characters(inv):
-    return [ split_character(p) for p in inv ]
+def process_characters(inv, is_xsampa=False):
+    return [ process_character(p, is_xsampa) for p in inv ]
 
 ##################################
 #
@@ -57,11 +61,16 @@ def create_mapping(inv_l1, inv_l2):
         inv_l1 = create_inventory_from_mapping(inv_l1, "out")
     if inv_l2["type"] == "mapping":
         inv_l2 = create_inventory_from_mapping(inv_l2, "in")
-    if inv_l1["metadata"]["format"] != "ipa":
-        logging.warning("Orthography of inventory 1 is not 'ipa'.")
-    if inv_l2["metadata"]["format"] != "ipa":
-        logging.warning("Orthography of inventory 2 is not 'ipa'.")
-    mapping = align_inventories(inv_l1["inventory"], inv_l2["inventory"])
+    if inv_l1["metadata"]["format"].lower() not in ["ipa", "x-sampa", "xsampa"]:
+        logging.warning("Orthography of inventory 1 is not 'ipa' or 'x-sampa'.")
+    if inv_l2["metadata"]["format"].lower() not in ["ipa", "x-sampa", "xsampa"]:
+        logging.warning("Orthography of inventory 2 is not 'ipa' or 'x-sampa'.")
+    l1_is_xsampa, l2_is_xsampa = False, False
+    if inv_l1["metadata"]["format"].lower() in ["x-sampa", "xsampa"]:
+        l1_is_xsampa = True
+    if inv_l2["metadata"]["format"].lower() in ["x-sampa", "xsampa"]:
+        l2_is_xsampa = True
+    mapping = align_inventories(inv_l1["inventory"], inv_l2["inventory"], l1_is_xsampa, l2_is_xsampa)
     output_mapping = {
         "type": "mapping",
         "in_metadata": inv_l1["metadata"],
@@ -70,18 +79,19 @@ def create_mapping(inv_l1, inv_l2):
     }
     return output_mapping
 
-def align_inventories(inventory_l1, inventory_l2):
+def align_inventories(inventory_l1, inventory_l2, l1_is_xsampa=False, l2_is_xsampa=False):
     mapping = []
     inventory_l1, inventory_l2 = list(set(inventory_l1)), list(set(inventory_l2))
     inventory_l2_expanded = itertools.product(inventory_l2, inventory_l2)
     inventory_l2_expanded = list(x + y for x,y in inventory_l2_expanded)
     inventory_l2_expanded = inventory_l2 + inventory_l2_expanded
-    for i1, p1 in enumerate(tqdm(split_characters(inventory_l1))):
+    print(inventory_l1)
+    for i1, p1 in enumerate(tqdm(process_characters(inventory_l1, l1_is_xsampa))):
         # we enumerate the strings because we want to save the original string
         # (e.g., 'kʷ') to the mapping, not the processed one (e.g. 'kw')
         best_match = None
         best_match_distance = 1000000000
-        for i2, p2 in enumerate(split_characters(inventory_l2_expanded)):
+        for i2, p2 in enumerate(process_characters(inventory_l2_expanded, l2_is_xsampa)):
             distance = dst.weighted_feature_edit_distance(p1, p2)
             if distance < best_match_distance:
                 best_match = inventory_l2_expanded[i2]

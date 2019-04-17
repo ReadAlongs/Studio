@@ -5,131 +5,135 @@
         "format": "ipa"
     }, 
     "in_metadata": {
-        "lang": "kwk-ipa", 
-        "delimiter": "", 
-        "format": "ipa"
+        "lang": "kwk-xsampa", 
+        "delimiter": " ", 
+        "format": "x-sampa"
     }, 
     "type": "mapping", 
     "map": [
-        {
-            "out": "j", 
-            "in": "j"
-        }, 
-        {
-            "out": "ts", 
-            "in": "t͡s"
-        }, 
-        {
-            "out": "l", 
-            "in": "l"
-        }, 
-        {
-            "out": "ə", 
-            "in": "ə"
-        }, 
-        {
-            "out": "ɡw", 
-            "in": "ɢʷ"
-        }, 
-        {
-            "out": "ʔ", 
-            "in": "ʔ"
-        }, 
-        {
-            "out": "ts", 
-            "in": "t͡ɬ"
-        }, 
-        {
-            "out": "ʃw", 
-            "in": "χʷ"
-        }, 
-        {
-            "out": "kj", 
-            "in": "kʼʲ"
-        }, 
-        {
-            "out": "kw", 
-            "in": "qʷ"
-        }, 
-        {
-            "out": "ɡ", 
-            "in": "ɢ"
-        }, 
         {
             "out": "ej", 
             "in": "ej"
         }, 
         {
-            "out": "k", 
-            "in": "qʼ"
+            "out": "ɡw", 
+            "in": "g_w"
         }, 
         {
-            "out": "kj", 
-            "in": "kʲ"
+            "out": "ɡj", 
+            "in": "g_j"
+        }, 
+        {
+            "out": "ts", 
+            "in": "ts_>"
         }, 
         {
             "out": "kw", 
-            "in": "kʷ"
+            "in": "q_w"
+        }, 
+        {
+            "out": "kw", 
+            "in": "x_w"
+        }, 
+        {
+            "out": "ts", 
+            "in": "tK"
+        }, 
+        {
+            "out": "ʃ", 
+            "in": "X"
         }, 
         {
             "out": "u", 
             "in": "u"
         }, 
         {
-            "out": "kw", 
-            "in": "kʼʷ"
-        }, 
-        {
-            "out": "ʃ", 
-            "in": "χ"
-        }, 
-        {
-            "out": "ds", 
-            "in": "d͡ɬ"
-        }, 
-        {
             "out": "ʔw", 
-            "in": "ʔw"
-        }, 
-        {
-            "out": "ʔn", 
-            "in": "ʔn"
-        }, 
-        {
-            "out": "ʔl", 
-            "in": "ʔl"
-        }, 
-        {
-            "out": "ɡj", 
-            "in": "ɡʲ"
-        }, 
-        {
-            "out": "ʔj", 
-            "in": "ʔj"
+            "in": "? w"
         }, 
         {
             "out": "ɡw", 
-            "in": "ɡʷ"
+            "in": "G_w"
         }, 
         {
-            "out": "kj", 
-            "in": "xʲ"
+            "out": "ts", 
+            "in": "ts"
+        }, 
+        {
+            "out": "ʃw", 
+            "in": "X_w"
         }, 
         {
             "out": "kw", 
-            "in": "xʷ"
+            "in": "k_w_>"
+        }, 
+        {
+            "out": "ts", 
+            "in": "tK_>"
+        }, 
+        {
+            "out": "kw", 
+            "in": "q_w_>"
+        }, 
+        {
+            "out": "ʔl", 
+            "in": "? l"
+        }, 
+        {
+            "out": "ʔm", 
+            "in": "? m"
+        }, 
+        {
+            "out": "ʔn", 
+            "in": "? n"
+        }, 
+        {
+            "out": "j", 
+            "in": "ʔ j"
+        }, 
+        {
+            "out": "ʔ", 
+            "in": "?"
+        }, 
+        {
+            "out": "ə", 
+            "in": "@"
+        }, 
+        {
+            "out": "ɡ", 
+            "in": "G"
+        }, 
+        {
+            "out": "kj", 
+            "in": "x_j"
+        }, 
+        {
+            "out": "s", 
+            "in": "K"
+        }, 
+        {
+            "out": "p", 
+            "in": "p_>"
         }, 
         {
             "out": "dz", 
-            "in": "d͡z"
+            "in": "dz"
+        }, 
+        {
+            "out": "kj", 
+            "in": "k_j_>"
+        }, 
+        {
+            "out": "k", 
+            "in": "q_>"
+        }, 
+        {
+            "out": "ds", 
+            "in": "dK"
         }, 
         {
             "out": "ɑ", 
             "in": "a"
-        }, 
-        {
-            "out": "t", 
-            "in": "tʼ"
         }, 
         {
             "out": "b", 
@@ -148,20 +152,20 @@
             "in": "h"
         }, 
         {
-            "out": "ts", 
-            "in": "tʼ͡ɬ"
+            "out": "j", 
+            "in": "j"
         }, 
         {
             "out": "m", 
             "in": "m"
         }, 
         {
-            "out": "s", 
-            "in": "ɬ"
+            "out": "l", 
+            "in": "l"
         }, 
         {
-            "out": "p", 
-            "in": "pʼ"
+            "out": "kw", 
+            "in": "k_w"
         }, 
         {
             "out": "n", 
@@ -180,12 +184,12 @@
             "in": "s"
         }, 
         {
-            "out": "ʔm", 
-            "in": "ʔm"
+            "out": "kj", 
+            "in": "k_j"
         }, 
         {
-            "out": "ts", 
-            "in": "tʼ͡s"
+            "out": "t", 
+            "in": "t_>"
         }, 
         {
             "out": "t", 
@@ -198,10 +202,6 @@
         {
             "out": "ow", 
             "in": "ow"
-        }, 
-        {
-            "out": "kw", 
-            "in": "qʼʷ"
         }
     ]
 }

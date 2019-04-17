@@ -32,6 +32,7 @@ class SimpleMappingG2P:
         self.mapping = load_json(mapping_path)
         self.in_lang = self.mapping["in_metadata"]["lang"]
         self.out_lang = self.mapping["out_metadata"]["lang"]
+        self.input_delimiter = self.mapping["in_metadata"]["delimiter"]
         self.output_delimiter = self.mapping["out_metadata"]["delimiter"]
         self.case_insensitive = self.mapping["in_metadata"].get(
             "case_insensitive", False)
@@ -41,21 +42,24 @@ class SimpleMappingG2P:
         self.regex_pieces = [DIGIT_FINDER]
         for io_pair in self.mapping["map"]:
             inp, outp = io_pair["in"], io_pair["out"]
-            inp = normalize("NFKD", inp)
-            outp = normalize("NFKD", outp)
+            inp = normalize("NFD", inp)
+            outp = normalize("NFD", outp)
             #inp = self.mapping["in_metadata"]["prefix"] + inp + self.mapping["in_metadata"]["suffix"]
             #outp = self.mapping["out_metadata"]["prefix"] + outp + self.mapping["out_metadata"]["suffix"]
             if self.case_insensitive:
                 inp = inp.lower()
             self.replacements[inp] = outp
-            inp_with_digits = DIGIT_FINDER.join(c for c in inp)
+            inp_with_digits = DIGIT_FINDER.join(re.escape(c) for c in inp)
             self.regex_pieces.append(inp_with_digits)
 
         # create regex
         self.regex_pieces = sorted(self.regex_pieces, key = lambda s:-len(s))
-        pattern = "|".join(self.regex_pieces + ['.'])
+        self.regex_pieces += '.'
+        if self.input_delimiter:
+            self.regex_pieces += self.input_delimiter
+        pattern = "|".join(self.regex_pieces)
         pattern = "(" + pattern + ")"
-        flags = 0
+        flags = re.DOTALL
         if self.case_insensitive:
             flags |= re.I
         self.regex = re.compile(pattern, flags)
@@ -76,17 +80,19 @@ class SimpleMappingG2P:
                 continue
             if s_without_digits not in self.replacements:
                 result = s_without_digits
+            elif s_without_digits == self.input_delimiter:
+                result = self.output_delimiter
             else:
                 result = self.replacements[s_without_digits]
 
             result_indices.append((current_index, len(result_str)))
 
-            if not result:
+            if not result.strip():
                 continue
-            if result_str:
+            if result_str and not result_str.endswith(self.output_delimiter):
                 result_str += self.output_delimiter + result
             else:
-                result_str = result
+                result_str += result
 
         result_indices.append((current_index, len(result_str)))
         return result_str, result_indices

@@ -48,15 +48,15 @@ def end_to_end(mapping_dir, xml, input_filename, unit, word_unit, out_orth):
     xml = add_ids(xml)
     converted_xml = convert_xml(mapping_dir, xml, word_unit, out_orth)
     save_xml("test.xml", converted_xml)
-    jsgf = make_jsgf(converted_xml, input_filename, unit)
+    fsg = make_fsg(converted_xml, input_filename, unit)
     pronouncing_dictionary = make_dict(converted_xml, input_filename, unit)
-    return xml, jsgf, pronouncing_dictionary
+    return xml, fsg, pronouncing_dictionary
 
-def go(input_filename, mapping_dir, output_xml_filename, output_jsgf_filename, output_dict_filename, unit, word_unit, out_orth):
+def go(input_filename, mapping_dir, output_xml_filename, output_fsg_filename, output_dict_filename, unit, word_unit, out_orth):
     xml = load_xml(input_filename)
-    xml, jsgf, dct = end_to_end(mapping_dir, xml, input_filename, unit, word_unit, out_orth)
+    xml, fsg, dct = end_to_end(mapping_dir, xml, input_filename, unit, word_unit, out_orth)
     save_xml(output_xml_filename, xml)
-    save_txt(output_jsgf_filename, jsgf)
+    save_txt(output_fsg_filename, fsg)
     save_txt(output_dict_filename, dct)
 
 if __name__ == '__main__':
@@ -64,7 +64,7 @@ if __name__ == '__main__':
      parser.add_argument('input', type=str, help='Input XML')
      parser.add_argument('mapping_dir', type=str, help="Directory containing orthography mappings")
      parser.add_argument('output_xml', type=str, help="Output XML file")
-     parser.add_argument('output_jsgf', type=str, help='Output .jsgf file')
+     parser.add_argument('output_fsg', type=str, help='Output .jsgf file')
      parser.add_argument('output_dict', type=str, help='Output .dict file')
      parser.add_argument('--unit', type=str, default='w', help='XML tag of the unit of analysis (e.g. "w" for word, "m" for morpheme)')
      parser.add_argument('--word_unit', type=str, default="w", help='XML element that represents a word (default: "w")')
@@ -76,7 +76,7 @@ if __name__ == '__main__':
      go(args.input,
         args.mapping_dir,
         args.output_xml,
-        args.output_jsgf,
+        args.output_fsg,
         args.output_dict,
         args.unit,
         args.word_unit,

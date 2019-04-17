@@ -112,7 +112,7 @@ def convert_words(xml, converter, word_unit="w", output_orthography="eng-arpabet
         all_text = ''
         all_indices = []
         for unit in same_language_units:
-            text = normalize("NFKD", unit["text"])
+            text = normalize("NFD", unit["text"])
             text, indices = converter.convert(
                 text,
                 unit["lang"],
@@ -137,7 +137,7 @@ def replace_text_in_node(word, text, indices):
                 text = text[i2:]
                 new_indices = offset_indices(indices, -len(old_text), -len(new_text))
                 new_indices = trim_indices(new_indices)
-                #word.attrib["orig"] = old_text
+                word.attrib["orig"] = old_text
                 word.text = new_text
                 break
 

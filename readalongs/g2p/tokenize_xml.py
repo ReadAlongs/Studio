@@ -81,14 +81,20 @@ class Tokenizer(DefaultTokenizer):
         self.inventory = inventory["inventory"]
         self.lang = inventory["metadata"]["lang"]
         self.delim = inventory["metadata"]["delimiter"]
-
+        self.case_insensitive = inventory["metadata"].get(
+            "case_insensitive", False)
         # create regex
+
         regex_pieces = sorted(self.inventory, key = lambda s:-len(s))
+        regex_pieces = [ re.escape(p) for p in regex_pieces ]
         if self.delim:
             regex_pieces.append(self.delim)
         pattern = "|".join(regex_pieces + ['.'])
         pattern = "(" + pattern + ")"
-        self.regex = re.compile(pattern, flags=re.DOTALL)
+        flags=re.DOTALL
+        if self.case_insensitive:
+            flags |= re.I
+        self.regex = re.compile(pattern, flags)
 
     def tokenize_aux(self, text):
         return self.regex.findall(text)
@@ -124,7 +130,7 @@ class TokenizerLibrary:
 
         lang = get_lang_attrib(element)
         tokenizer = self.tokenizers[lang] if lang in self.tokenizers else self.tokenizers[None]
-        
+
         if element.text:
             new_element.text = ''
             for unit in tokenizer.tokenize_text(element.text):
