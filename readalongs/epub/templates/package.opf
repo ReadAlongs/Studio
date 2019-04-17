@@ -26,21 +26,12 @@
 
 	</metadata>
 	<manifest>
-      {{#css}}
-		<item href="{{dest_path}}" id="css_{{id}}" media-type="{{mimetype}}"/>
-      {{/css}}
-      {{#wav}}
-      <item href="{{dest_path}}" id="audio_{{id}}" media-type="{{mimetype}}"/>
-      {{/wav}}
-		{{#smil}}
-		<item href="{{dest_path}}" id="smil_{{id}}" media-type="{{mimetype}}"/>
-		{{/smil}}
       <item href="cover.xhtml" id="cover" media-type="application/xhtml+xml"/>
-      {{#xhtml}}
-      <item href="{{dest_path}}" id="{{id}}" media-type="{{mimetype}}"/>
-      {{/xhtml}}
 		<item href="nav.xhtml" id="nav" media-type="application/xhtml+xml" properties="nav scripted"/>
 		<item href="toc.ncx" id="ncx" media-type="application/x-dtbncx+xml"/>
+		{{#media}}
+		<item href="{{dest_path}}" id="{{id}}" media-type="{{mimetype}}"/>
+		{{/media}}
 	</manifest>
 	<spine toc="ncx">
 		<itemref idref="cover"/>

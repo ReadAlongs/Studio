@@ -14,6 +14,7 @@ from __future__ import print_function, unicode_literals, division
 from io import open
 import logging, json, os, re, argparse, glob, copy
 from .util import *
+from unicodedata import normalize
 
 OPEN_BRACKET = "⦕"
 CLOSED_BRACKET = "⦖"
@@ -40,6 +41,8 @@ class SimpleMappingG2P:
         self.regex_pieces = [DIGIT_FINDER]
         for io_pair in self.mapping["map"]:
             inp, outp = io_pair["in"], io_pair["out"]
+            inp = normalize("NFKD", inp)
+            outp = normalize("NFKD", outp)
             #inp = self.mapping["in_metadata"]["prefix"] + inp + self.mapping["in_metadata"]["suffix"]
             #outp = self.mapping["out_metadata"]["prefix"] + outp + self.mapping["out_metadata"]["suffix"]
             if self.case_insensitive:
