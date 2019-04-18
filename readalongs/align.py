@@ -12,6 +12,7 @@ import os
 import io
 from lxml import etree
 from tempfile import NamedTemporaryFile
+import librosa
 
 from readalongs.g2p.tokenize_xml import tokenize_xml
 from readalongs.g2p.add_ids_to_xml import add_ids
@@ -22,6 +23,11 @@ from readalongs.g2p.make_smil import make_smil
 from readalongs import mapping_dir
 
 ####
+#
+# Some distros (Python2, Python3 on Windows it seems) don't have the WAV
+# reading methods being context managers; the following checks whether the
+# necessary methods are present and if not, add thems.
+#
 # Based on http://web.mit.edu/jgross/Public/21M.065/sound.py 9-24-2017
 ####
 
@@ -40,14 +46,6 @@ if not hasattr(wave.Wave_write, "__enter__"):
 
 
 def align_audio(xml_path, wav_path, unit='w'):
-
-    with wave.open(wav_path) as wav:
-        # FIXME: Obvs need to convert/downsample as needed
-        logging.info("Read %s: %d frames (%f seconds) audio"
-                     % (wav_path, wav.getnframes(), wav.getnframes()
-                        / wav.getframerate()))
-        raw_data = wav.readframes(wav.getnframes())
-        print(type(raw_data))
 
     results = { "words": [] }
     # First do G2P
