@@ -29,12 +29,12 @@ from __future__ import division, absolute_import
 import logging
 import argparse
 
-from .add_ids_to_xml import add_ids
-from .tokenize_xml import tokenize_xml
-from .convert_xml import convert_xml
-from .make_fsg import make_fsg
-from .make_dict import make_dict
-from .util import save_xml, load_xml, save_txt
+from readalongs.g2p.add_ids_to_xml import add_ids
+from readalongs.g2p.tokenize_xml import tokenize_xml
+from readalongs.g2p.convert_xml import convert_xml
+from readalongs.g2p.make_fsg import make_fsg
+from readalongs.g2p.make_dict import make_dict
+from readalongs.g2p.util import save_xml, load_xml, save_txt
 
 try:
     unicode()
