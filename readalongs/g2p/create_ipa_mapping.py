@@ -134,7 +134,6 @@ def find_good_match(p1, inventory_l2, l2_is_xsampa=False):
                       i, best_input, inventory_l2[best_output])
         good_match.append(inventory_l2[best_output])
         i += len(best_input)  # greedy!
-        print()
     return ''.join(good_match)
 
 
