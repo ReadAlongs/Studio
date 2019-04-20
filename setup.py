@@ -9,5 +9,10 @@ setup(
     packages=find_packages(exclude=['test']),
     include_package_data=True,
     zip_safe=False,
-    install_requires=['flask', 'flask_restful', 'flask_cors']
+    install_requires=['flask', 'flask_restful', 'flask_cors'],
+    entry_points={
+        'console_scripts': [
+            'readalongs_align = readalongs.align:main',
+        ]
+    },
 )
