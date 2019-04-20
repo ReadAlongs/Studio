@@ -156,7 +156,9 @@ def replace_text_in_node(word, text, indices):
 
     return text, new_indices
 
-def convert_xml(mapping_dir, xml, word_unit="w", output_orthography="eng-arpabet"):
+
+def convert_xml(xml, word_unit="w",
+                output_orthography="eng-arpabet", mapping_dir=None):
     converter = ConverterLibrary(mapping_dir)
     xml_copy = copy.deepcopy(xml)
     add_word_boundaries(xml_copy, word_unit)
@@ -164,17 +166,28 @@ def convert_xml(mapping_dir, xml, word_unit="w", output_orthography="eng-arpabet
     remove_word_boundaries(xml_copy, word_unit)
     return xml_copy
 
-def go(mapping_dir, input_filename, output_filename, word_unit="w", output_orthography="eng-arpabet"):
+
+def go(input_filename, output_filename, word_unit="w",
+       output_orthography="eng-arpabet", mapping_dir=None):
     xml = load_xml(input_filename)
-    converted_xml = convert_xml(mapping_dir, xml, word_unit, output_orthography)
+    converted_xml = convert_xml(xml, word_unit, output_orthography,
+                                mapping_dir=mapping_dir)
     save_xml(output_filename, converted_xml)
 
+
 if __name__ == '__main__':
-     parser = argparse.ArgumentParser(description='Convert XML to another orthography while preserving tags')
-     parser.add_argument('mapping_dir', type=str, help="Directory containing orthography mappings")
-     parser.add_argument('input', type=str, help='Input XML')
-     parser.add_argument('output', type=str, help='Output XML')
-     parser.add_argument('--word_unit', type=str, default="w", help='XML element that represents a word (default: "w")')
-     parser.add_argument('--out_orth', type=str, default="eng-arpabet", help='Output orthography (default: "eng-arpabet")')
-     args = parser.parse_args()
-     go(args.mapping_dir, args.input, args.output, args.word_unit, args.out_orth)
+    parser = argparse.ArgumentParser(
+        description='Convert XML to another orthography while preserving tags')
+    parser.add_argument('input', type=str, help='Input XML')
+    parser.add_argument('output', type=str, help='Output XML')
+    parser.add_argument('--mapping-dir',
+                        type=str, help="Alternate directory containing "
+                        "orthography mappings")
+    parser.add_argument('--word_unit', type=str, default="w",
+                        help='XML element that '
+                        'represents a word (default: "w")')
+    parser.add_argument('--out_orth', type=str, default="eng-arpabet",
+                        help='Output orthography (default: "eng-arpabet")')
+    args = parser.parse_args()
+    go(args.input, args.output, args.word_unit, args.out_orth,
+       mapping_dir=args.mapping_dir)

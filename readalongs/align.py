@@ -12,7 +12,6 @@ import os
 import io
 from lxml import etree
 from tempfile import NamedTemporaryFile
-import librosa
 
 from readalongs.g2p.tokenize_xml import tokenize_xml
 from readalongs.g2p.add_ids_to_xml import add_ids
@@ -20,7 +19,6 @@ from readalongs.g2p.convert_xml import convert_xml
 from readalongs.g2p.make_fsg import make_fsg
 from readalongs.g2p.make_dict import make_dict
 from readalongs.g2p.make_smil import make_smil
-from readalongs import mapping_dir
 
 ####
 #
@@ -50,9 +48,9 @@ def align_audio(xml_path, wav_path, unit='w'):
     results = { "words": [] }
     # First do G2P
     xml = etree.parse(xml_path).getroot()
-    xml = tokenize_xml(xml, mapping_dir)
+    xml = tokenize_xml(xml)
     results['tokenized'] = xml = add_ids(xml)
-    xml = convert_xml(mapping_dir, xml)
+    xml = convert_xml(xml)
     # Now generate dictionary and FSG
     dict_data = make_dict(xml, xml_path, unit=unit)
     dict_file = NamedTemporaryFile(prefix='readalongs_dict_')

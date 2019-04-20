@@ -131,24 +131,30 @@ class ConverterLibrary:
                                       mapping_filename)
                         continue
                     self.add_converter(converter)
+        self.transitive_closure()
 
     def add_converter(self, converter):
         logging.debug("Adding converter between %s and %s",
                       converter.in_lang, converter.out_lang)
         self.converters[(converter.in_lang, converter.out_lang)] = converter
 
-        converters = list(self.converters.items())
-        for (in_lang, out_lang), other_converter in converters:
-            if (converter.out_lang == in_lang and
-                    converter.in_lang != out_lang and
-                    (converter.in_lang, out_lang) not in self.converters):
-                composite = CompositeConverter(converter, other_converter)
-                self.add_converter(composite)
-            elif (converter.in_lang == out_lang and
-                  converter.out_lang != in_lang and
-                  (in_lang, converter.out_lang) not in self.converters):
-                composite = CompositeConverter(other_converter, converter)
-                self.add_converter(composite)
+    def transitive_closure(self):
+        n_converters = -1
+        while len(self.converters) != n_converters:
+            for converter in list(self.converters.values()):
+                converters = list(self.converters.items())
+                for (in_lang, out_lang), other_converter in converters:
+                    if (converter.out_lang == in_lang and
+                            converter.in_lang != out_lang and
+                            (converter.in_lang, out_lang) not in self.converters):
+                        composite = CompositeConverter(converter, other_converter)
+                        self.add_converter(composite)
+                    elif (converter.in_lang == out_lang and
+                          converter.out_lang != in_lang and
+                          (in_lang, converter.out_lang) not in self.converters):
+                        composite = CompositeConverter(other_converter, converter)
+                        self.add_converter(composite)
+            n_converters = len(self.converters)
 
     def convert(self, text, in_lang, out_lang):
         if (in_lang, out_lang) not in self.converters:

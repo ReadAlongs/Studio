@@ -31,22 +31,29 @@
 
 
 from __future__ import print_function, unicode_literals, division, absolute_import
+
 from io import open
-import logging, argparse, os, glob, json, re
 from lxml import etree
 from copy import deepcopy
-from readalongs.g2p.create_inv_from_map import create_inventory_from_mapping
-from readalongs.g2p.util import *
+import logging
+import argparse
+import os
+import glob
+import json
+import re
+
+from .create_inv_from_map import create_inventory_from_mapping
+from .util import get_lang_attrib, merge_if_same_label
+from .. import lang
 
 try:
     unicode()
 except:
     unicode = str
 
+
 class DefaultTokenizer:
-
     def __init__(self):
-
         self.inventory = []
         self.delim = ''
 
@@ -63,19 +70,15 @@ class DefaultTokenizer:
         return False
 
     def tokenize_text(self, text):
-        current_word = ''
-        in_word = False
-        results = []
         matches = self.tokenize_aux(text)
-        units = [ { "text": m, "is_word": self.is_word_charcter(m) }
-                    for m in matches ]
+        units = [{"text": m, "is_word": self.is_word_charcter(m)}
+                 for m in matches]
         units = merge_if_same_label(units, "text", "is_word")
         return units
 
+
 class Tokenizer(DefaultTokenizer):
-
     def __init__(self, inventory):
-
         if inventory["type"] == "mapping":
             inventory = create_inventory_from_mapping(inventory, "in")
         self.inventory = inventory["inventory"]
@@ -85,13 +88,13 @@ class Tokenizer(DefaultTokenizer):
             "case_insensitive", False)
         # create regex
 
-        regex_pieces = sorted(self.inventory, key = lambda s:-len(s))
-        regex_pieces = [ re.escape(p) for p in regex_pieces ]
+        regex_pieces = sorted(self.inventory, key=lambda s: -len(s))
+        regex_pieces = [re.escape(p) for p in regex_pieces]
         if self.delim:
             regex_pieces.append(self.delim)
         pattern = "|".join(regex_pieces + ['.'])
         pattern = "(" + pattern + ")"
-        flags=re.DOTALL
+        flags = re.DOTALL
         if self.case_insensitive:
             flags |= re.I
         self.regex = re.compile(pattern, flags)
@@ -101,20 +104,21 @@ class Tokenizer(DefaultTokenizer):
 
 
 class TokenizerLibrary:
-    def __init__(self, inventory_dir):
-        self.tokenizers = { None: DefaultTokenizer() }
-        for root, dirs, files in os.walk(inventory_dir):
-            for inv_filename in files:
+    def __init__(self, inventory_dir=None):
+        self.tokenizers = {None: DefaultTokenizer()}
+        for _, langdir in lang.lang_dirs(inventory_dir):
+            for inv_filename in os.listdir(langdir):
                 if not inv_filename.endswith('json'):
                     continue
-                inv_filename = os.path.join(root, inv_filename)
+                inv_filename = os.path.join(langdir, inv_filename)
                 with open(inv_filename, "r", encoding="utf-8") as fin:
                     inv = json.load(fin)
-                    if type(inv) != type({}):
+                    if not isinstance(inv, dict):
                         logging.error("File %s is not a JSON dictionary",
                                       inv_filename)
                         continue
-                    if inv["type"] not in ["inventory", "mapping"]:
+                    if ("type" not in inv
+                            or inv["type"] not in ["inventory", "mapping"]):
                         continue
                     tokenizer = Tokenizer(inv)
                     self.tokenizers[tokenizer.lang] = tokenizer
@@ -129,7 +133,8 @@ class TokenizerLibrary:
             new_element.attrib[key] = value
 
         lang = get_lang_attrib(element)
-        tokenizer = self.tokenizers[lang] if lang in self.tokenizers else self.tokenizers[None]
+        tokenizer = self.tokenizers.get(lang,
+                                        self.tokenizers[None])
 
         if element.text:
             new_element.text = ''
@@ -150,7 +155,7 @@ class TokenizerLibrary:
             new_child_element = self.add_word_children(child)
             new_element.append(new_child_element)
             if child.tail:
-                #new_element.tail = ''  # in case it's a copy
+                # new_element.tail = ''  # in case it's a copy
                 for unit in tokenizer.tokenize_text(child.tail):
                     if unit["is_word"]:
                         new_child_element = etree.Element("w")
@@ -163,15 +168,18 @@ class TokenizerLibrary:
 
         return new_element
 
-def tokenize_xml(xml, inventory_dir):
+
+def tokenize_xml(xml, inventory_dir=None):
     tokenizer = TokenizerLibrary(inventory_dir)
     xml = deepcopy(xml)
     return tokenizer.add_word_children(xml)
 
-def go(inventory_dir, input_filename, output_filename):
+
+def go(input_filename, output_filename, inventory_dir=None):
     xml = load_xml(input_filename)
     xml = tokenize_xml(xml, inventory_dir)
     save_xml(output_filename, xml)
+
 
 if __name__ == '__main__':
      parser = argparse.ArgumentParser(description='Convert XML to another orthography while preserving tags')
@@ -179,4 +187,4 @@ if __name__ == '__main__':
      parser.add_argument('input', type=str, help='Input XML')
      parser.add_argument('output', type=str, help='Output XML')
      args = parser.parse_args()
-     go(args.inv_dir, args.input, args.output)
+     go(args.input, args.output, inventory_dir=args.inv_dir)

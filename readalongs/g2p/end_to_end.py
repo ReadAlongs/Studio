@@ -43,10 +43,10 @@ except:
     unicode = str
 
 
-def end_to_end(mapping_dir, xml, input_filename, unit, word_unit, out_orth):
+def end_to_end(xml, input_filename, unit, word_unit, out_orth, mapping_dir=None):
     xml = tokenize_xml(xml, mapping_dir)
     xml = add_ids(xml)
-    converted_xml = convert_xml(mapping_dir, xml, word_unit, out_orth)
+    converted_xml = convert_xml(xml, word_unit, out_orth, mapping_dir=mapping_dir)
     save_xml("test.xml", converted_xml)
     fsg = make_fsg(converted_xml, input_filename, unit)
     pronouncing_dictionary = make_dict(converted_xml, input_filename, unit)
@@ -62,10 +62,11 @@ def go(input_filename, mapping_dir, output_xml_filename, output_fsg_filename, ou
 if __name__ == '__main__':
      parser = argparse.ArgumentParser(description='Convert XML to another orthography while preserving tags')
      parser.add_argument('input', type=str, help='Input XML')
-     parser.add_argument('mapping_dir', type=str, help="Directory containing orthography mappings")
      parser.add_argument('output_xml', type=str, help="Output XML file")
      parser.add_argument('output_fsg', type=str, help='Output .jsgf file')
      parser.add_argument('output_dict', type=str, help='Output .dict file')
+     parser.add_argument('--mapping-dir', type=str,
+                         help="Alternateirectory containing orthography mappings")
      parser.add_argument('--unit', type=str, default='w', help='XML tag of the unit of analysis (e.g. "w" for word, "m" for morpheme)')
      parser.add_argument('--word_unit', type=str, default="w", help='XML element that represents a word (default: "w")')
      parser.add_argument('--out_orth', type=str, default="eng-arpabet", help='Output orthography (default: "eng-arpabet")')
