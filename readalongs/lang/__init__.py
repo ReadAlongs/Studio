@@ -15,6 +15,7 @@ def base_dir():
 
 def lang_dir(lang, mapping_dir=None):
     """Get the default resource directory for a language."""
+    lang = lang.replace('-', '_')
     lang = lang.replace('_ipa', '')
     if mapping_dir is None:
         mapping_dir = base_dir()
