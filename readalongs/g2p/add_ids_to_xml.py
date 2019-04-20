@@ -16,13 +16,14 @@
 #
 ###################################################
 
-from __future__ import print_function, unicode_literals, division, absolute_import
-from io import open
-import logging, argparse
+from __future__ import print_function, unicode_literals
+from __future__ import division, absolute_import
+
 from copy import deepcopy
-from lxml import etree
+import logging
+import argparse
 from collections import defaultdict
-from readalongs.g2p.util import *
+from util import load_xml, save_xml
 
 TAG_TO_ID = {
     'p': 'p',
@@ -32,14 +33,17 @@ TAG_TO_ID = {
     'm': 'm'
 }
 
-def add_ids_aux(element, ids=defaultdict(lambda:0), parent_id=''):
+
+def add_ids_aux(element, ids=defaultdict(lambda: 0), parent_id=''):
     if "id" not in element.attrib:
         if element.tag in TAG_TO_ID:
             id = TAG_TO_ID[element.tag]
         elif element.tag == 'seg' and "type" in element.attrib:
             if element.attrib["type"] == 'syll':
                 id = "y"
-            elif element.attrib["type"] in ["morph", "morpheme", "base", "root", "prefix", "suffix"]:
+            elif (element.attrib["type"]
+                  in ["morph", "morpheme", "base", "root",
+                      "prefix", "suffix"]):
                 id = 'm'
         else:
             id = element.tag
@@ -53,21 +57,25 @@ def add_ids_aux(element, ids=defaultdict(lambda:0), parent_id=''):
         new_ids = add_ids_aux(child, new_ids, full_id)
     return ids
 
+
 def add_ids(xml):
     xml = deepcopy(xml)
-    ids=defaultdict(lambda:0)
+    ids = defaultdict(lambda: 0)
     for child in xml:    # don't bother with the root element
         ids = add_ids_aux(child, ids)
     return xml
+
 
 def go(input_filename, output_filename):
     xml = load_xml(input_filename)
     xml = add_ids(xml)
     save_xml(output_filename, xml)
 
+
 if __name__ == '__main__':
-     parser = argparse.ArgumentParser(description='Convert XML to another orthography while preserving tags')
-     parser.add_argument('input', type=str, help='Input XML')
-     parser.add_argument('output', type=str, help='Output XML')
-     args = parser.parse_args()
-     go(args.input, args.output)
+    parser = argparse.ArgumentParser(
+        description='Convert XML to another orthography while preserving tags')
+    parser.add_argument('input', type=str, help='Input XML')
+    parser.add_argument('output', type=str, help='Output XML')
+    args = parser.parse_args()
+    go(args.input, args.output)

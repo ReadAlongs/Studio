@@ -140,6 +140,7 @@ class ConverterLibrary:
 
     def transitive_closure(self):
         n_converters = -1
+        # FIXME: Might need to detect cycles here!
         while len(self.converters) != n_converters:
             for converter in list(self.converters.values()):
                 converters = list(self.converters.items())
