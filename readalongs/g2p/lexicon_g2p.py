@@ -29,7 +29,7 @@ import logging
 import os
 from collections import defaultdict
 from unicodedata import normalize
-from util import load_txt, load_json
+from readalongs.g2p.util import load_txt, load_json
 
 
 def sphinx_lexicon_loader(input_path):

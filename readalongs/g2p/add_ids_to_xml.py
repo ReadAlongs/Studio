@@ -22,7 +22,7 @@ from __future__ import division, absolute_import
 from copy import deepcopy
 import argparse
 from collections import defaultdict
-from util import load_xml, save_xml
+from readalongs.g2p.util import load_xml, save_xml
 
 TAG_TO_ID = {
     'p': 'p',
