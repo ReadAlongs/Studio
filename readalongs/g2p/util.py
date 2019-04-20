@@ -62,15 +62,14 @@ def merge_if_same_label(lst_of_dicts, text_key, label_key):
 
 
 def load_xml(input_path):
-    with open(input_path, "r", encoding="utf-8") as fin:
+    with open(input_path, "rb") as fin:
         return etree.fromstring(fin.read())
 
 
 def load_xml_zip(zip_path, input_path):
     with zipfile.ZipFile(zip_path, "r") as fin_zip:
         with fin_zip.open(input_path, "r") as fin:
-            fin_utf8 = TextIOWrapper(fin, encoding='utf-8')
-            return etree.fromstring(fin_utf8.read())
+            return etree.fromstring(fin)
 
 
 def load_xml_with_encoding(input_path):
@@ -80,15 +79,15 @@ def load_xml_with_encoding(input_path):
 
 def save_xml(output_path, xml):
     ensure_dirs(output_path)
-    with open(output_path, "w", encoding="utf-8") as fout:
-        fout.write(etree.tostring(xml, encoding="unicode"))
+    with open(output_path, "wb") as fout:
+        fout.write(etree.tostring(xml, encoding="utf-8"))
 
 
 def save_xml_zip(zip_path, output_path, xml):
     ensure_dirs(zip_path)
-    txt = etree.tostring(xml, encoding="unicode")
     with zipfile.ZipFile(zip_path, "a") as fout_zip:
-        fout_zip.writestr(output_path, txt.encode("utf-8"))
+        fout_zip.writestr(output_path,
+                          etree.tostring(xml, encoding="utf-8"))
 
 
 def load_txt(input_path):
