@@ -121,7 +121,7 @@ def make_argparse():
                         help='Force overwriting existing output files')
     parser.add_argument(
         '--text-input', action='store_true',
-        help='Input is plain text (assume one sentence per line)')
+        help='Input is plain text (assume paragraphs separated by blank lines)')
     parser.add_argument('--text-language', type=str,
                         help='Set language for plain text input')
     return parser
@@ -135,6 +135,30 @@ XML_TEMPLATE = """<document>
 """
 
 
+def create_input_xml(inputfile, text_language):
+    tempfile = NamedTemporaryFile(prefix='readalongs_xml_',
+                                  suffix='.xml')
+    with io.open(inputfile) as fin:
+        text = []
+        para = []
+        for line in fin:
+            line = line.strip()
+            if line == "":
+                text.append(' '.join(para))
+                del para[:]
+            else:
+                para.append(line)
+        if para:
+            text.append(' '.join(para))
+        data = {"sentences":
+                [{"text": para, "lang": text_language}
+                 for para in text]}
+        xml = pystache.render(XML_TEMPLATE, data)
+        tempfile.write(xml.encode('utf-8'))
+        tempfile.flush()
+    return tempfile
+
+
 def main(argv=None):
     """Hey! This function is named main!"""
     parser = make_argparse()
@@ -146,15 +170,8 @@ def main(argv=None):
     if args.text_input:
         if args.text_language is None:
             parser.error("--text-input requires --text-language")
-        tempfile = NamedTemporaryFile(prefix='readalongs_xml_',
-                                      suffix='.xml')
-        with io.open(args.inputfile) as fin:
-            data = {"sentences":
-                    [{"text": text, "lang": args.text_language}
-                     for text in fin if text.strip() != ""]}
-            xml = pystache.render(XML_TEMPLATE, data)
-            tempfile.write(xml.encode('utf-8'))
-            tempfile.flush()
+        tempfile = create_input_xml(args.inputfile, args.text_language)
+        args.inputfile = tempfile.name
     _, input_ext = os.path.splitext(args.inputfile)
     tokenized_xml_path = '%s%s' % (args.outputfile, input_ext)
     if os.path.exists(tokenized_xml_path) and not args.force_overwrite:
