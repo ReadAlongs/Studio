@@ -30,7 +30,8 @@
 ##################################################
 
 
-from __future__ import print_function, unicode_literals, division, absolute_import
+from __future__ import print_function, unicode_literals
+from __future__ import division, absolute_import
 
 from io import open
 from lxml import etree
@@ -38,13 +39,13 @@ from copy import deepcopy
 import logging
 import argparse
 import os
-import glob
 import json
 import re
 
-from .create_inv_from_map import create_inventory_from_mapping
-from .util import get_lang_attrib, merge_if_same_label
-from .. import lang
+from readalongs.g2p.create_inv_from_map import create_inventory_from_mapping
+from readalongs.g2p.util import get_lang_attrib, merge_if_same_label
+from readalongs.g2p.util import load_xml, save_xml
+from readalongs import lang
 
 try:
     unicode()
@@ -182,9 +183,11 @@ def go(input_filename, output_filename, inventory_dir=None):
 
 
 if __name__ == '__main__':
-     parser = argparse.ArgumentParser(description='Convert XML to another orthography while preserving tags')
-     parser.add_argument('inv_dir', type=str, help="Directory containing character inventories")
-     parser.add_argument('input', type=str, help='Input XML')
-     parser.add_argument('output', type=str, help='Output XML')
-     args = parser.parse_args()
-     go(args.input, args.output, inventory_dir=args.inv_dir)
+    parser = argparse.ArgumentParser(
+        description='Convert XML to another orthography while preserving tags')
+    parser.add_argument('inv_dir', type=str,
+                        help="Directory containing character inventories")
+    parser.add_argument('input', type=str, help='Input XML')
+    parser.add_argument('output', type=str, help='Output XML')
+    args = parser.parse_args()
+    go(args.input, args.output, inventory_dir=args.inv_dir)

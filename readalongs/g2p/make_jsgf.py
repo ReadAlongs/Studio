@@ -13,12 +13,15 @@
 ##################################################
 
 
-from __future__ import print_function, unicode_literals, division, absolute_import
-from io import open
-import logging, argparse, os, datetime
-from lxml import etree
+from __future__ import print_function, unicode_literals
+from __future__ import division, absolute_import
+
+import argparse
+import os
+import datetime
+
 import pystache
-from .util import *
+from readalongs.g2p.util import load_xml, save_txt
 
 try:
     unicode()
@@ -51,7 +54,7 @@ def make_jsgf(xml, filename, unit="m"):
         if "id" not in e.attrib:  # don't put in elements with no id
             continue
         text = e.text.strip()
-        if not e.text.strip():  # don't put in elements with no text
+        if text == "":  # don't put in elements with no text
             continue
         id = e.attrib["id"]
         data["words"].append({
@@ -60,15 +63,20 @@ def make_jsgf(xml, filename, unit="m"):
 
     return pystache.render(JSGF_TEMPLATE, data)
 
+
 def go(input_filename, output_filename, unit):
     xml = load_xml(input_filename)
     jsgf = make_jsgf(xml, input_filename, unit)
-    save_txt(output_filename, fsg)
+    save_txt(output_filename, jsgf)
+
 
 if __name__ == '__main__':
-     parser = argparse.ArgumentParser(description='Make an JSGF grammar from an XML file with IDs')
-     parser.add_argument('input', type=str, help='Input XML')
-     parser.add_argument('output_jsgf', type=str, help='Output .jsgf file')
-     parser.add_argument('--unit', type=str, default='m', help='XML tag of the unit of analysis (e.g. "w" for word, "m" for morpheme)')
-     args = parser.parse_args()
-     go(args.input, args.output_fsg, args.unit)
+    parser = argparse.ArgumentParser(
+        description='Make an JSGF grammar from an XML file with IDs')
+    parser.add_argument('input', type=str, help='Input XML')
+    parser.add_argument('output_jsgf', type=str, help='Output .jsgf file')
+    parser.add_argument('--unit', type=str, default='m',
+                        help='XML tag of the unit of analysis '
+                        '(e.g. "w" for word, "m" for morpheme)')
+    args = parser.parse_args()
+    go(args.input, args.output_fsg, args.unit)

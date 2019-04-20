@@ -11,20 +11,20 @@
 ######################################################################
 
 from __future__ import print_function, unicode_literals, division
-from io import open
-import logging, json, os, re, argparse, glob, copy
-from .util import *
+import re
+from .util import load_json
 from unicodedata import normalize
 
 OPEN_BRACKET = "⦕"
 CLOSED_BRACKET = "⦖"
 ZFILL_AMT = 5
-DIGIT_FINDER =  OPEN_BRACKET + "\\d+" + CLOSED_BRACKET
+DIGIT_FINDER = OPEN_BRACKET + "\\d+" + CLOSED_BRACKET
 digit_finder_regex = re.compile(DIGIT_FINDER)
 
 
 def make_bracketed_num(num):
     return OPEN_BRACKET + str(num).zfill(ZFILL_AMT) + CLOSED_BRACKET
+
 
 class SimpleMappingG2P:
 
@@ -44,8 +44,8 @@ class SimpleMappingG2P:
             inp, outp = io_pair["in"], io_pair["out"]
             inp = normalize("NFD", inp)
             outp = normalize("NFD", outp)
-            #inp = self.mapping["in_metadata"]["prefix"] + inp + self.mapping["in_metadata"]["suffix"]
-            #outp = self.mapping["out_metadata"]["prefix"] + outp + self.mapping["out_metadata"]["suffix"]
+            # inp = self.mapping["in_metadata"]["prefix"] + inp + self.mapping["in_metadata"]["suffix"]
+            # outp = self.mapping["out_metadata"]["prefix"] + outp + self.mapping["out_metadata"]["suffix"]
             if self.case_insensitive:
                 inp = inp.lower()
             self.replacements[inp] = outp
@@ -53,7 +53,7 @@ class SimpleMappingG2P:
             self.regex_pieces.append(inp_with_digits)
 
         # create regex
-        self.regex_pieces = sorted(self.regex_pieces, key = lambda s:-len(s))
+        self.regex_pieces = sorted(self.regex_pieces, key=lambda s: -len(s))
         self.regex_pieces += '.'
         if self.input_delimiter:
             self.regex_pieces += self.input_delimiter
@@ -96,7 +96,6 @@ class SimpleMappingG2P:
 
         result_indices.append((current_index, len(result_str)))
         return result_str, result_indices
-
 
     def convert(self, text):
         text_with_nums = make_bracketed_num(0)
