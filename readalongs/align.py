@@ -114,6 +114,8 @@ def make_argparse():
     parser.add_argument('wavfile', type=str, help='Input audio file')
     parser.add_argument('outputfile', type=str,
                         help='Base name for output files')
+    parser.add_argument('--debug', action='store_true',
+                        help='Enable extra debugging logging')
     parser.add_argument('-f', '--force-overwrite',
                         action='store_true',
                         help='Force overwriting existing output files')
@@ -137,10 +139,15 @@ def main(argv=None):
     """Hey! This function is named main!"""
     parser = make_argparse()
     args = parser.parse_args(argv)
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
     if args.text_input:
         if args.text_language is None:
             parser.error("--text-input requires --text-language")
-        tempfile = NamedTemporaryFile(prefix='readalongs_xml_')
+        tempfile = NamedTemporaryFile(prefix='readalongs_xml_',
+                                      suffix='.xml')
         with io.open(args.inputfile) as fin:
             data = {"sentences":
                     [{"text": text, "lang": args.text_language}
@@ -148,9 +155,8 @@ def main(argv=None):
             xml = pystache.render(XML_TEMPLATE, data)
             tempfile.write(xml.encode('utf-8'))
             tempfile.flush()
-        args.inputfile = tempfile.name
-
-    tokenized_xml_path = args.outputfile + '.xml'
+    _, input_ext = os.path.splitext(args.inputfile)
+    tokenized_xml_path = '%s%s' % (args.outputfile, input_ext)
     if os.path.exists(tokenized_xml_path) and not args.force_overwrite:
         parser.error("Output file %s exists already, did you mean to do that?"
                      % tokenized_xml_path)
