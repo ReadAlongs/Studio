@@ -16,10 +16,10 @@
 
 from __future__ import print_function, unicode_literals
 from __future__ import division, absolute_import
+from six.moves import xrange
 
 import argparse
 import json
-import itertools
 import logging
 import io
 
@@ -27,7 +27,7 @@ import panphon.distance
 from panphon.xsampa import XSampa
 from tqdm import tqdm
 
-from .create_inv_from_map import create_inventory_from_mapping
+from readalongs.g2p.create_inv_from_map import create_inventory_from_mapping
 
 dst = panphon.distance.Distance()
 
@@ -97,28 +97,59 @@ def create_mapping(inv_l1, inv_l2):
     return output_mapping
 
 
+def find_good_match(p1, inventory_l2, l2_is_xsampa=False):
+    """Find a good sequence in inventory_l2 matching p1."""
+    # The proper way to do this would be with some kind of beam search
+    # through a determinized/minimized FST, but in the absence of that
+    # we can do a kind of heurstic greedy search.  (we don't want any
+    # dependencies outside of PyPI otherwise we'd just use OpenFST)
+    p1_pseq = dst.fm.ipa_segs(p1)
+    p2_pseqs = [dst.fm.ipa_segs(p)
+                for p in process_characters(inventory_l2, l2_is_xsampa)]
+    i = 0
+    good_match = []
+    while i < len(p1_pseq):
+        best_input = ""
+        best_output = -1
+        best_score = 0xdeadbeef
+        for j, p2_pseq in enumerate(p2_pseqs):
+            # FIXME: Should also consider the (weighted) possibility
+            # of deleting input or inserting any segment (but that
+            # can't be done with a greedy search)
+            if len(p2_pseq) == 0:
+                logging.warning('No panphon mapping for %s - skipping',
+                                inventory_l2[j])
+                continue
+            e = min(i + len(p2_pseq), len(p1_pseq))
+            input_seg = p1_pseq[i:e]
+            score = dst.weighted_feature_edit_distance(''.join(input_seg),
+                                                       ''.join(p2_pseq))
+            # Be very greedy and take the longest match
+            if (score < best_score
+                or score == best_score
+                and len(input_seg) > len(best_input)):
+                best_input = input_seg
+                best_output = j
+                best_score = score
+        logging.debug('Best match at position %d: %s => %s',
+                      i, best_input, inventory_l2[best_output])
+        good_match.append(inventory_l2[best_output])
+        i += len(best_input)  # greedy!
+        print()
+    return ''.join(good_match)
+
+
 def align_inventories(inventory_l1, inventory_l2,
                       l1_is_xsampa=False, l2_is_xsampa=False):
     mapping = []
-    inventory_l1 = list(set(inventory_l1))
+    inventory_l1 = sorted(set(inventory_l1))
     inventory_l2 = list(set(inventory_l2))
-    inventory_l2_expanded = itertools.product(inventory_l2, inventory_l2)
-    inventory_l2_expanded = list(x + y for x, y in inventory_l2_expanded)
-    inventory_l2_expanded = inventory_l2 + inventory_l2_expanded
-    print(inventory_l1)
     for i1, p1 in enumerate(tqdm(process_characters(inventory_l1,
                                                     l1_is_xsampa))):
         # we enumerate the strings because we want to save the original string
         # (e.g., 'kʷ') to the mapping, not the processed one (e.g. 'kw')
-        best_match = None
-        best_match_distance = 1000000000
-        for i2, p2 in enumerate(process_characters(inventory_l2_expanded,
-                                                   l2_is_xsampa)):
-            distance = dst.weighted_feature_edit_distance(p1, p2)
-            if distance < best_match_distance:
-                best_match = inventory_l2_expanded[i2]
-                best_match_distance = distance
-        mapping.append({"in": inventory_l1[i1], "out": best_match})
+        good_match = find_good_match(p1, inventory_l2, l2_is_xsampa)
+        mapping.append({"in": inventory_l1[i1], "out": good_match})
     return mapping
 
 

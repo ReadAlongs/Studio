@@ -1,91 +1,87 @@
 {
-    "out_metadata": {
-        "lang": "eng-ipa",
-        "delimiter": "",
-        "format": "ipa"
-    },
+    "type": "mapping",
     "in_metadata": {
         "lang": "atj-ipa",
-        "delimiter": "",
-        "format": "ipa"
+        "format": "ipa",
+        "delimiter": ""
     },
-    "type": "mapping",
+    "out_metadata": {
+        "lang": "eng-ipa",
+        "format": "ipa",
+        "delimiter": ""
+    },
     "map": [
         {
-            "out": "b",
-            "in": "b"
+            "in": "a",
+            "out": "ɑ"
         },
         {
-            "out": "d",
-            "in": "d"
+            "in": "aː",
+            "out": "ɑ"
         },
         {
-            "out": "ɡ",
-            "in": "ɡ"
+            "in": "b",
+            "out": "b"
         },
         {
-            "out": "s",
-            "in": "s"
+            "in": "d",
+            "out": "d"
         },
         {
-            "out": "ʃ",
-            "in": "ʃ"
+            "in": "d͡ʒ",
+            "out": "dʒ"
         },
         {
-            "out": "dʒ",
-            "in": "d͡ʒ"
+            "in": "eː",
+            "out": "eː"
         },
         {
-            "out": "m",
-            "in": "m"
+            "in": "h",
+            "out": "h"
         },
         {
-            "out": "n",
-            "in": "n"
+            "in": "i",
+            "out": "i"
         },
         {
-            "out": "ɾ",
-            "in": "r"
+            "in": "iː",
+            "out": "i"
         },
         {
-            "out": "h",
-            "in": "h"
+            "in": "m",
+            "out": "m"
         },
         {
-            "out": "w",
-            "in": "w"
+            "in": "n",
+            "out": "n"
         },
         {
-            "out": "ɑ",
-            "in": "a"
+            "in": "r",
+            "out": "ɾ"
         },
         {
-            "out": "ɛ",
-            "in": "eː"
+            "in": "s",
+            "out": "s"
         },
         {
-            "out": "i",
-            "in": "i"
+            "in": "u",
+            "out": "u"
         },
         {
-            "out": "u",
-            "in": "u"
+            "in": "uː",
+            "out": "u"
         },
         {
-            "out": "ɑ",
-            "in": "aː"
+            "in": "w",
+            "out": "w"
         },
         {
-            "out": "ɛ",
-            "in": "eː"
+            "in": "ɡ",
+            "out": "ɡ"
         },
         {
-            "out": "i",
-            "in": "iː"
-        },
-        {
-            "out": "u",
-            "in": "uː"
+            "in": "ʃ",
+            "out": "ʃ"
         }
     ]
 }

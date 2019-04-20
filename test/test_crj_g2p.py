@@ -19,22 +19,21 @@ EXPECTED_CONVERTED = io.open(
                  'test_crj_sample_converted.xml')).read().strip()
 
 class TestSouthEastCreeG2P(TestCase):
-    mapping_dir = os.path.join(next(iter(readalongs.__path__)), 'lang')
     xml = etree.parse(os.path.join(os.path.dirname(__file__),
                                    'test_crj_sample.xml')).getroot()
     def testTokenize(self):
-        xml = tokenize_xml(self.xml, self.mapping_dir)
+        xml = tokenize_xml(self.xml)
         self.assertEqual(etree.tounicode(xml), EXPECTED_TOKENIZED)
 
     def testAddIDs(self):
-        xml = tokenize_xml(self.xml, self.mapping_dir)
+        xml = tokenize_xml(self.xml)
         xml = add_ids(xml)
         self.assertEqual(etree.tounicode(xml), EXPECTED_IDS)
 
     def testConvert(self):
-        xml = tokenize_xml(self.xml, self.mapping_dir)
+        xml = tokenize_xml(self.xml)
         xml = add_ids(xml)
-        xml = convert_xml(self.mapping_dir, xml)
+        xml = convert_xml(xml)
         self.assertEqual(etree.tounicode(xml), EXPECTED_CONVERTED)
 
 if __name__ == '__main__':
