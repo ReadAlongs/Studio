@@ -16,7 +16,6 @@
 
 from __future__ import print_function, unicode_literals
 from __future__ import division, absolute_import
-from six.moves import xrange
 
 import argparse
 import json

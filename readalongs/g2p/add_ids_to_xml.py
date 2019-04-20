@@ -20,7 +20,6 @@ from __future__ import print_function, unicode_literals
 from __future__ import division, absolute_import
 
 from copy import deepcopy
-import logging
 import argparse
 from collections import defaultdict
 from util import load_xml, save_xml

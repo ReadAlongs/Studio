@@ -164,13 +164,3 @@ class ConverterLibrary:
             return None, None
         converter = self.converters[(in_lang, out_lang)]
         return converter.convert(text)
-
-#
-# if __name__ == '__main__':
-#     library = ConverterLibrary("mappings")
-#     result = library.convert("ƛʼiƛʼinʼa", "kwk-napa", "eng-arpabet")
-#     with open("test_output.json", "w", encoding="utf-8") as fout:
-#         fout.write(json.dumps(result,
-#                             ensure_ascii=False,
-#                             indent=4,
-#                             default=lambda o:o.to_json()))

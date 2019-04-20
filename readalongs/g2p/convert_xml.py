@@ -41,9 +41,9 @@ from unicodedata import normalize
 import argparse
 import copy
 
-from .convert_orthography import ConverterLibrary
-from .util import load_xml, save_xml, get_lang_attrib
-from .util import concat_indices, offset_indices, trim_indices
+from readalongs.g2p.convert_orthography import ConverterLibrary, trim_indices
+from readalongs.g2p.convert_orthography import concat_indices, offset_indices
+from readalongs.g2p.util import load_xml, save_xml, get_lang_attrib
 
 try:
     unicode()
