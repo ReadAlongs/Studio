@@ -29,10 +29,15 @@ from readalongs.g2p.make_smil import make_smil
 # Based on http://web.mit.edu/jgross/Public/21M.065/sound.py 9-24-2017
 ####
 
+
 def _trivial__enter__(self):
     return self
+
+
 def _self_close__exit__(self, exc_type, exc_value, traceback):
     self.close()
+
+
 if not hasattr(wave.Wave_read, "__exit__"):
     wave.Wave_read.__exit__ = _self_close__exit__
 if not hasattr(wave.Wave_write, "__exit__"):
@@ -44,8 +49,7 @@ if not hasattr(wave.Wave_write, "__enter__"):
 
 
 def align_audio(xml_path, wav_path, unit='w'):
-
-    results = { "words": [] }
+    results = {"words": []}
     # First do G2P
     xml = etree.parse(xml_path).getroot()
     xml = tokenize_xml(xml)
@@ -73,10 +77,10 @@ def align_audio(xml_path, wav_path, unit='w'):
     cfg.set_float('-beam', 1e-100)
     cfg.set_float('-wbeam', 1e-80)
     ps = pocketsphinx.Decoder(cfg)
-    lmath = ps.get_logmath()
     frame_size = 1.0 / cfg.get_int('-frate')
     logging.info("Model sample rate: %d, frame size: %f sec",
                  cfg.get_float('-samprate'), frame_size)
+
     def frames_to_time(frames):
         return frames * frame_size
     with wave.open(wav_path) as wav:
@@ -102,20 +106,24 @@ def align_audio(xml_path, wav_path, unit='w'):
                      seg.word, start, end)
     return results
 
+
 def make_argparse():
     """Hey! This function makes the argparse!"""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('inputfile', type=str, help='Input file (XML or text)')
     parser.add_argument('wavfile', type=str, help='Input audio file')
-    parser.add_argument('outputfile', type=str, help='Base name for output files')
+    parser.add_argument('outputfile', type=str,
+                        help='Base name for output files')
     parser.add_argument('-f', '--force-overwrite',
                         action='store_true',
                         help='Force overwriting existing output files')
-    parser.add_argument('--text-input', action='store_true',
-                        help='Input is plain text (assume one sentence per line)')
+    parser.add_argument(
+        '--text-input', action='store_true',
+        help='Input is plain text (assume one sentence per line)')
     parser.add_argument('--text-language', type=str,
                         help='Set language for plain text input')
     return parser
+
 
 XML_TEMPLATE = """<document>
 {{#sentences}}
@@ -123,6 +131,7 @@ XML_TEMPLATE = """<document>
 {{/sentences}}
 </document>
 """
+
 
 def main(argv=None):
     """Hey! This function is named main!"""
@@ -133,9 +142,9 @@ def main(argv=None):
             parser.error("--text-input requires --text-language")
         tempfile = NamedTemporaryFile(prefix='readalongs_xml_')
         with io.open(args.inputfile) as fin:
-            data = { "sentences":
-                     [{ "text":text, "lang":args.text_language}
-                      for text in fin if text.strip() != ""] }
+            data = {"sentences":
+                    [{"text": text, "lang": args.text_language}
+                     for text in fin if text.strip() != ""]}
             xml = pystache.render(XML_TEMPLATE, data)
             tempfile.write(xml.encode('utf-8'))
             tempfile.flush()
@@ -162,6 +171,7 @@ def main(argv=None):
     shutil.copy(args.wavfile, wav_path)
     with io.open(smil_path, 'w', encoding='utf-8') as fout:
         fout.write(smil)
+
 
 if __name__ == '__main__':
     main()
