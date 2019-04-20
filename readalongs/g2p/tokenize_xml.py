@@ -153,6 +153,10 @@ class TokenizerLibrary:
                 new_element.text += unit["text"]
 
         for child in element:
+            # Comments Cause Crashes so Copy them Cleanly
+            if child.tag is etree.Comment:
+                new_element.append(child)
+                continue
             new_child_element = self.add_word_children(child)
             new_element.append(new_child_element)
             if child.tail:
@@ -185,9 +189,9 @@ def go(input_filename, output_filename, inventory_dir=None):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Convert XML to another orthography while preserving tags')
-    parser.add_argument('inv_dir', type=str,
-                        help="Directory containing character inventories")
     parser.add_argument('input', type=str, help='Input XML')
     parser.add_argument('output', type=str, help='Output XML')
+    parser.add_argument('--inv-dir', type=str,
+                        help="Alternate directory containing character inventories")
     args = parser.parse_args()
     go(args.input, args.output, inventory_dir=args.inv_dir)

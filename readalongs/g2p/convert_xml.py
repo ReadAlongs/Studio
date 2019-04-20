@@ -102,6 +102,7 @@ def remove_word_boundaries(xml, word_unit="w"):
             word.text = word.text[1:]
         if word.text and word.text.endswith("#"):
             word.text = word.text[:-1]
+        word.text = word.text.strip()
         if word.getchildren():
             last_child = word[-1]
             if last_child.tail and last_child.tail.endswith('#'):

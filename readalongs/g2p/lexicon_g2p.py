@@ -86,7 +86,8 @@ class LexiconG2P:
         text = text.strip("#").strip()
         text = text.upper()
         if text not in self.entries:
-            raise KeyError()
+            raise KeyError("Word %s not found in lexicon %s"
+                           % (text, self.metadata['src']))
         result = self.entries[text][0]
         indices = [(0, 0), (len_text, len(result))]
         return result, indices

@@ -20,6 +20,7 @@ from __future__ import print_function, unicode_literals
 from __future__ import division, absolute_import
 
 from copy import deepcopy
+from lxml import etree
 import argparse
 from collections import defaultdict
 from readalongs.g2p.util import load_xml, save_xml
@@ -61,6 +62,8 @@ def add_ids(xml):
     xml = deepcopy(xml)
     ids = defaultdict(lambda: 0)
     for child in xml:    # don't bother with the root element
+        if child.tag is etree.Comment:
+            continue
         ids = add_ids_aux(child, ids)
     return xml
 
