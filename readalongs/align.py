@@ -7,6 +7,7 @@ import argparse
 import logging
 import pystache
 import shutil
+import pydub
 import wave
 import os
 import io
@@ -78,23 +79,37 @@ def align_audio(xml_path, wav_path, unit='w'):
     # cfg.set_string('-samprate', "no no")
     cfg.set_float('-beam', 1e-100)
     cfg.set_float('-wbeam', 1e-80)
+
+    _, wav_ext = os.path.splitext(wav_path)
+    if wav_ext == '.wav':
+        with wave.open(wav_path) as wav:
+            logging.info("Read %s: %d frames (%f seconds) audio"
+                         % (wav_path, wav.getnframes(), wav.getnframes()
+                            / wav.getframerate()))
+            raw_data = wav.readframes(wav.getnframes())
+            # Downsampling is (probably) not necessary
+            cfg.set_float('-samprate', wav.getframerate())
+    else:  # Try pydub, it might fail
+        audio = pydub.AudioSegment.from_file(wav_path)
+        audio = audio.set_channels(1).set_sample_width(2)
+        # Downsampling is (probably) not necessary
+        cfg.set_float('-samprate', audio.frame_rate)
+        raw_data = audio.raw_data
+
+    frame_points = int(cfg.get_float('-samprate')
+                       * cfg.get_float('-wlen'))
+    fft_size = 1
+    while fft_size < frame_points:
+        fft_size = fft_size << 1
+    cfg.set_int('-nfft', fft_size)
     ps = pocketsphinx.Decoder(cfg)
     frame_size = 1.0 / cfg.get_int('-frate')
-    logging.info("Model sample rate: %d, frame size: %f sec",
-                 cfg.get_float('-samprate'), frame_size)
 
     def frames_to_time(frames):
         return frames * frame_size
-
-    with wave.open(wav_path) as wav:
-        # FIXME: Obvs need to convert/downsample as needed
-        logging.info("Read %s: %d frames (%f seconds) audio"
-                     % (wav_path, wav.getnframes(), wav.getnframes()
-                        / wav.getframerate()))
-        raw_data = wav.readframes(wav.getnframes())
-        ps.start_utt()
-        ps.process_raw(raw_data, no_search=False, full_utt=True)
-        ps.end_utt()
+    ps.start_utt()
+    ps.process_raw(raw_data, no_search=False, full_utt=True)
+    ps.end_utt()
 
     for seg in ps.seg():
         start = frames_to_time(seg.start_frame)
@@ -235,7 +250,8 @@ def main(argv=None):
     if os.path.exists(smil_path) and not args.force_overwrite:
         parser.error("Output file %s exists already, did you mean to do that?"
                      % smil_path)
-    wav_path = args.outputfile + '.wav'
+    _, wav_ext = os.path.splitext(args.wavfile)
+    wav_path = args.outputfile + wav_ext
     if os.path.exists(wav_path) and not args.force_overwrite:
         parser.error("Output file %s exists already, did you mean to do that?"
                      % wav_path)
