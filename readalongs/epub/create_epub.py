@@ -17,7 +17,7 @@ import shutil
 import os
 
 from readalongs.g2p.util import load_xml, load_xml_with_encoding
-from readalongs.g2p.util import load_txt, save_txt_zip, save_txt
+from readalongs.g2p.util import load_txt, save_txt, save_txt_zip
 from readalongs.g2p.util import ensure_dirs, copy_file_to_zip
 
 EPUB_PATH = "EPUB"
@@ -141,32 +141,33 @@ def save_txt_to_dir(output_path, dest_path, txt):
     save_txt(os.path.join(output_path, dest_path), txt)
 
 
-def main(input_path, output_path, unpacked=False):
-    global copy_file_to_zip, save_txt_zip
-
-    if os.path.exists(output_path):
+def create_epub(input_path, output_path, unpacked=False):
+    if os.path.isdir(output_path):
         shutil.rmtree(output_path)
     ensure_dirs(output_path)
     input_dirname = os.path.dirname(input_path)
     if unpacked:
         os.mkdir(output_path)
-        copy_file_to_zip = copy_file_to_dir
-        save_txt_zip = save_txt_to_dir
+        copy = copy_file_to_dir
+        save = save_txt_to_dir
+    else:
+        copy = copy_file_to_zip
+        save = save_txt_zip
 
     # mimetype file
-    copy_file_to_zip(output_path, MIMETYPE_ORIGIN_PATH, MIMETYPE_DEST_PATH)
+    copy(output_path, MIMETYPE_ORIGIN_PATH, MIMETYPE_DEST_PATH)
 
     # container.xml file
     container_template = load_txt(CONTAINER_ORIGIN_PATH)
     container_txt = pystache.render(
         container_template, {"package_path": PACKAGE_DEST_PATH})
-    save_txt_zip(output_path, CONTAINER_DEST_PATH, container_txt)
+    save(output_path, CONTAINER_DEST_PATH, container_txt)
 
     # the SMIL and all the files referenced in the SMIL
     package_data = extract_files_from_SMIL(input_path)
     package_template = load_txt(PACKAGE_ORIGIN_PATH)
     package_txt = pystache.render(package_template, package_data)
-    save_txt_zip(output_path, PACKAGE_DEST_PATH, package_txt)
+    save(output_path, PACKAGE_DEST_PATH, package_txt)
 
     for entry in package_data['media']:
         origin_path = os.path.join(input_dirname, entry["origin_path"])
@@ -175,17 +176,23 @@ def main(input_path, output_path, unpacked=False):
                 "Cannot find file %s to copy into EPUB file", origin_path)
             continue
         dest_path = os.path.join(EPUB_PATH, entry["dest_path"])
-        copy_file_to_zip(output_path, origin_path, dest_path)
+        copy(output_path, origin_path, dest_path)
 
     # CSS file
-    copy_file_to_zip(output_path, STYLESHEET_ORIGIN_PATH, STYLESHEET_DEST_PATH)
+    copy(output_path, STYLESHEET_ORIGIN_PATH, STYLESHEET_DEST_PATH)
 
-if __name__ == '__main__':
+
+def main(argv=None):
     parser = argparse.ArgumentParser(
         description='Convert SMIL document to an EPUB with a Media Overlay')
-    parser.add_argument('--unpacked', action='store_true',
-                        help='Output unpacked directory of files (for testing)')
+    parser.add_argument(
+        '--unpacked', action='store_true',
+        help='Output unpacked directory of files (for testing)')
     parser.add_argument('input', type=str, help='Input SMIL')
     parser.add_argument('output', type=str, help='Output EPUB')
-    args = parser.parse_args()
-    main(args.input, args.output, args.unpacked)
+    args = parser.parse_args(argv)
+    create_epub(args.input, args.output, args.unpacked)
+
+
+if __name__ == '__main__':
+    main()

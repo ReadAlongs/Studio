@@ -13,6 +13,7 @@ setup(
     entry_points={
         'console_scripts': [
             'readalongs_align = readalongs.align:main',
+            'readalongs_create_epub = readalongs.epub.create_epub:main',
         ]
     },
 )
