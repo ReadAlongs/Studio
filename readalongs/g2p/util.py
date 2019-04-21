@@ -80,14 +80,16 @@ def load_xml_with_encoding(input_path):
 def save_xml(output_path, xml):
     ensure_dirs(output_path)
     with open(output_path, "wb") as fout:
-        fout.write(etree.tostring(xml, encoding="utf-8"))
+        fout.write(etree.tostring(xml, encoding="utf-8",
+                                  xml_declaration=True))
 
 
 def save_xml_zip(zip_path, output_path, xml):
     ensure_dirs(zip_path)
     with zipfile.ZipFile(zip_path, "a") as fout_zip:
         fout_zip.writestr(output_path,
-                          etree.tostring(xml, encoding="utf-8"))
+                          etree.tostring(xml, encoding="utf-8",
+                                         xml_declaration=True))
 
 
 def load_txt(input_path):
