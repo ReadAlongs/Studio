@@ -19,6 +19,7 @@ from readalongs.g2p.convert_xml import convert_xml
 from readalongs.g2p.make_fsg import make_fsg
 from readalongs.g2p.make_dict import make_dict
 from readalongs.g2p.make_smil import make_smil
+from readalongs.g2p.util import save_xml, save_txt
 
 ####
 #
@@ -107,6 +108,34 @@ def align_audio(xml_path, wav_path, unit='w'):
     return results
 
 
+def convert_to_xhtml(tokenized_xml, title='Book'):
+    """Do a simple and not at all foolproof conversion to XHTML."""
+    tokenized_xml.tag = 'html'
+    tokenized_xml.attrib['xmlns'] = 'http://www.w3.org/1999/xhtml'
+    tokenized_xml.attrib['xmlns:epub'] = 'http://www.idpf.org/2007/ops'
+    for elem in tokenized_xml.iter():
+        spans = {'u', 's', 'm', 'w'}
+        if elem.tag == 's':
+            elem.tag = 'p'
+        elif elem.tag in spans:
+            elem.tag = 'span'
+    # Wrap everything in a <body> element
+    body = etree.Element('body')
+    for elem in tokenized_xml:
+        body.append(elem)
+    tokenized_xml.append(body)
+    head = etree.Element('head')
+    tokenized_xml.insert(0, head)
+    title_element = etree.Element('head')
+    title_element.text = title
+    head.append(title_element)
+    link_element = etree.Element('link')
+    link_element.attrib['rel'] = 'stylesheet'
+    link_element.attrib['href'] = 'stylesheet.css'
+    link_element.attrib['type'] = 'text/css'
+    head.append(link_element)
+
+
 def make_argparse():
     """Hey! This function makes the argparse!"""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -124,6 +153,8 @@ def make_argparse():
         help='Input is plain text (assume paragraphs separated by blank lines)')
     parser.add_argument('--text-language', type=str,
                         help='Set language for plain text input')
+    parser.add_argument('--output-xhtml', action='store_true',
+                        help='Output simple XHTML instead of XML')
     return parser
 
 
@@ -172,8 +203,11 @@ def main(argv=None):
             parser.error("--text-input requires --text-language")
         tempfile = create_input_xml(args.inputfile, args.text_language)
         args.inputfile = tempfile.name
-    _, input_ext = os.path.splitext(args.inputfile)
-    tokenized_xml_path = '%s%s' % (args.outputfile, input_ext)
+    if args.output_xhtml:
+        tokenized_xml_path = '%s.xhtml' % args.outputfile
+    else:
+        _, input_ext = os.path.splitext(args.inputfile)
+        tokenized_xml_path = '%s%s' % (args.outputfile, input_ext)
     if os.path.exists(tokenized_xml_path) and not args.force_overwrite:
         parser.error("Output file %s exists already, did you mean to do that?"
                      % tokenized_xml_path)
@@ -187,13 +221,13 @@ def main(argv=None):
                      % wav_path)
 
     results = align_audio(args.inputfile, args.wavfile)
-    with io.open(tokenized_xml_path, 'w', encoding='utf-8') as fout:
-        fout.write(etree.tounicode(results['tokenized']))
+    if args.output_xhtml:
+        convert_to_xhtml(results['tokenized'])
+    save_xml(tokenized_xml_path, results['tokenized'])
     smil = make_smil(os.path.basename(tokenized_xml_path),
                      os.path.basename(wav_path), results)
     shutil.copy(args.wavfile, wav_path)
-    with io.open(smil_path, 'w', encoding='utf-8') as fout:
-        fout.write(smil)
+    save_txt(smil_path, smil)
 
 
 if __name__ == '__main__':
