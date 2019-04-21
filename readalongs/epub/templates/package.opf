@@ -5,14 +5,14 @@
 		<dc:identifier id="id">{{book_id}}</dc:identifier>
 		<meta property="dcterms:modified">2010-02-17T04:39:13Z</meta>
 
-		<dc:title id="t1">{{title}}</dc:title>
-		<meta refines="#t1" property="title-type">main</meta>
-		<meta refines="#t1" property="display-seq">1</meta>
+		<dc:title id="title">{{title}}</dc:title>
+		<meta refines="#title" property="title-type">main</meta>
+		<meta refines="#title" property="display-seq">1</meta>
 
       {{#subtitle}}
-		<dc:title id="t2">{{subtitle}}</dc:title>
-		<meta refines="#t2" property="title-type">subtitle</meta>
-		<meta refines="#t2" property="display-seq">2</meta>
+		<dc:title id="subtitle">{{subtitle}}</dc:title>
+		<meta refines="#subtitle" property="title-type">subtitle</meta>
+		<meta refines="#subtitle" property="display-seq">2</meta>
       {{/subtitle}}
 
       {{#authors}}
@@ -22,22 +22,20 @@
 
 		<dc:language>{{lang}}</dc:language>
 		<dc:date>{{date}}</dc:date>
-      <dc:rights>All rights reserved.</dc:rights>
-
+		<dc:rights>All rights reserved.</dc:rights>
+		<meta property="media:duration" refines="#{{media_id}}">{{media_time}}</meta>
+		<meta property="media:duration">{{media_time}}</meta>
+		<meta property="media:narrator">{{narrator}}</meta>
+		<meta property="media:active-class">-epub-media-overlay-active</meta>
 	</metadata>
 	<manifest>
-      <item href="cover.xhtml" id="cover" media-type="application/xhtml+xml"/>
-		<item href="nav.xhtml" id="nav" media-type="application/xhtml+xml" properties="nav scripted"/>
-		<item href="toc.ncx" id="ncx" media-type="application/x-dtbncx+xml"/>
 		{{#media}}
-		<item href="{{dest_path}}" id="{{id}}" media-type="{{mimetype}}"/>
+		<item href="{{dest_path}}" id="{{id}}" {{{overlay}}} media-type="{{mimetype}}"/>
 		{{/media}}
 	</manifest>
 	<spine toc="ncx">
-		<itemref idref="cover"/>
-		<itemref idref="nav"/>
       {{#xhtml}}
-		<itemref idref="{{id}}"/>
+            <itemref idref="{{id}}"/>
       {{/xhtml}}
-   </spine>
+	</spine>
 </package>

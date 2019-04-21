@@ -13,20 +13,23 @@ from __future__ import division, absolute_import
 import argparse
 import pystache
 import logging
+import shutil
 import os
 
 from readalongs.g2p.util import load_xml, load_xml_with_encoding
-from readalongs.g2p.util import load_txt, save_txt_zip
+from readalongs.g2p.util import load_txt, save_txt_zip, save_txt
 from readalongs.g2p.util import ensure_dirs, copy_file_to_zip
 
-OEBPS_PATH = "OEBPS"
+EPUB_PATH = "EPUB"
 RESOURCES = os.path.dirname(__file__)
 MIMETYPE_ORIGIN_PATH = os.path.join(RESOURCES, "templates/mimetype")
 MIMETYPE_DEST_PATH = "mimetype"
 CONTAINER_ORIGIN_PATH = os.path.join(RESOURCES, "templates/container.xml")
 CONTAINER_DEST_PATH = "META-INF/container.xml"
 PACKAGE_ORIGIN_PATH = os.path.join(RESOURCES, "templates/package.opf")
-PACKAGE_DEST_PATH = os.path.join(OEBPS_PATH, "package.opf")
+PACKAGE_DEST_PATH = os.path.join(EPUB_PATH, "package.opf")
+STYLESHEET_ORIGIN_PATH = os.path.join(RESOURCES, "templates/stylesheet.css")
+STYLESHEET_DEST_PATH = os.path.join(EPUB_PATH, "stylesheet.css")
 
 
 def xpath_default(xml, query, default_namespace_prefix="i"):
@@ -57,6 +60,7 @@ def process_src_attrib(src_text, id_prefix, mimetypes):
 def extract_files_from_SMIL(input_path):
     smil = load_xml(input_path)
     found_files = {}
+    xhtml_ids = []
     dirname = os.path.dirname(input_path)
 
     # add media referenced in the SMIL file itself
@@ -79,6 +83,9 @@ def extract_files_from_SMIL(input_path):
             entry = process_src_attrib(
                 src_text, query["id_prefix"], query["mimetypes"])
             if entry is not None and entry["origin_path"] not in found_files:
+                if entry['mimetype'] == 'application/xhtml+xml':
+                    entry['overlay'] = 'media-overlay="overlay"'
+                    xhtml_ids.append({"id": entry['id']})
                 found_files[entry["origin_path"]] = entry
 
     # add media referenced within the xhtml files (e.g. imgs)
@@ -111,19 +118,40 @@ def extract_files_from_SMIL(input_path):
     found_files[input_path] = {
         "origin_path": input_path,
         "dest_path": os.path.basename(input_path),
-        "id": "main",
+        "id": "overlay",
         "mimetype": "application/smil+xml",
         "ext": "smil"
     }
 
-    return found_files.values()
+    return {
+        "media": found_files.values(),
+        "xhtml": xhtml_ids
+    }
 
 
-def main(input_path, output_path):
+def copy_file_to_dir(output_path, origin_path, dest_path):
+    """Copy file to a directory, mimicking the interface of
+    copy_file_to_zip."""
+    shutil.copy(origin_path, os.path.join(output_path, dest_path))
+
+
+def save_txt_to_dir(output_path, dest_path, txt):
+    """Save text to a directory, mimicking the interface of
+    save_txt_zip."""
+    save_txt(os.path.join(output_path, dest_path), txt)
+
+
+def main(input_path, output_path, unpacked=False):
+    global copy_file_to_zip, save_txt_zip
+
     if os.path.exists(output_path):
-        os.remove(output_path)
+        shutil.rmtree(output_path)
     ensure_dirs(output_path)
     input_dirname = os.path.dirname(input_path)
+    if unpacked:
+        os.mkdir(output_path)
+        copy_file_to_zip = copy_file_to_dir
+        save_txt_zip = save_txt_to_dir
 
     # mimetype file
     copy_file_to_zip(output_path, MIMETYPE_ORIGIN_PATH, MIMETYPE_DEST_PATH)
@@ -135,25 +163,29 @@ def main(input_path, output_path):
     save_txt_zip(output_path, CONTAINER_DEST_PATH, container_txt)
 
     # the SMIL and all the files referenced in the SMIL
-    found_files = extract_files_from_SMIL(input_path)
+    package_data = extract_files_from_SMIL(input_path)
     package_template = load_txt(PACKAGE_ORIGIN_PATH)
-    package_txt = pystache.render(package_template, media=found_files)
+    package_txt = pystache.render(package_template, package_data)
     save_txt_zip(output_path, PACKAGE_DEST_PATH, package_txt)
 
-    for entry in found_files:
+    for entry in package_data['media']:
         origin_path = os.path.join(input_dirname, entry["origin_path"])
         if not os.path.exists(origin_path):
             logging.warning(
                 "Cannot find file %s to copy into EPUB file", origin_path)
             continue
-        dest_path = os.path.join(OEBPS_PATH, entry["dest_path"])
+        dest_path = os.path.join(EPUB_PATH, entry["dest_path"])
         copy_file_to_zip(output_path, origin_path, dest_path)
 
+    # CSS file
+    copy_file_to_zip(output_path, STYLESHEET_ORIGIN_PATH, STYLESHEET_DEST_PATH)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Convert SMIL document to an EPUB with a Media Overlay')
+    parser.add_argument('--unpacked', action='store_true',
+                        help='Output unpacked directory of files (for testing)')
     parser.add_argument('input', type=str, help='Input SMIL')
     parser.add_argument('output', type=str, help='Output EPUB')
     args = parser.parse_args()
-    main(args.input, args.output)
+    main(args.input, args.output, args.unpacked)
