@@ -10,6 +10,7 @@ import shutil
 import wave
 import os
 import io
+
 from lxml import etree
 from tempfile import NamedTemporaryFile
 
@@ -112,7 +113,6 @@ def convert_to_xhtml(tokenized_xml, title='Book'):
     """Do a simple and not at all foolproof conversion to XHTML."""
     tokenized_xml.tag = 'html'
     tokenized_xml.attrib['xmlns'] = 'http://www.w3.org/1999/xhtml'
-    tokenized_xml.attrib['xmlns:epub'] = 'http://www.idpf.org/2007/ops'
     for elem in tokenized_xml.iter():
         spans = {'u', 's', 'm', 'w'}
         if elem.tag == 's':
