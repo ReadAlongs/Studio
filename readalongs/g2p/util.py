@@ -82,14 +82,17 @@ def save_xml(output_path, xml):
     with open(output_path, "wb") as fout:
         fout.write(etree.tostring(xml, encoding="utf-8",
                                   xml_declaration=True))
+        fout.write(u'\n'.encode('utf-8'))
 
 
 def save_xml_zip(zip_path, output_path, xml):
     ensure_dirs(zip_path)
-    with zipfile.ZipFile(zip_path, "a") as fout_zip:
+    with zipfile.ZipFile(zip_path, "a",
+                         compression=zipfile.ZIP_DEFLATED) as fout_zip:
         fout_zip.writestr(output_path,
                           etree.tostring(xml, encoding="utf-8",
-                                         xml_declaration=True))
+                                         xml_declaration=True)
+                          + '\n')
 
 
 def load_txt(input_path):
@@ -112,7 +115,8 @@ def save_txt(output_path, txt):
 
 def save_txt_zip(zip_path, output_path, txt):
     ensure_dirs(zip_path)
-    with zipfile.ZipFile(zip_path, "a") as fout_zip:
+    with zipfile.ZipFile(zip_path, "a",
+                         compression=zipfile.ZIP_DEFLATED) as fout_zip:
         fout_zip.writestr(output_path, txt.encode("utf-8"))
 
 
@@ -143,7 +147,8 @@ def save_json_zip(zip_path, output_path, obj):
 
 def copy_file_to_zip(zip_path, origin_path, destination_path):
     ensure_dirs(zip_path)
-    with zipfile.ZipFile(zip_path, "a") as fout_zip:
+    with zipfile.ZipFile(zip_path, "a",
+                         compression=zipfile.ZIP_DEFLATED) as fout_zip:
         fout_zip.write(origin_path, destination_path)
 
 

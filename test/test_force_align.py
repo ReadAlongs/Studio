@@ -58,6 +58,7 @@ class TestXHTML(unittest.TestCase):
         with tempfile.NamedTemporaryFile(suffix='.xml') as tf:
             save_xml(tf.name, xml)
             txt = load_txt(tf.name)
+            self.maxDiff = None
             self.assertEqual(txt,
                              load_txt(
                                  os.path.join(self.data_dir,
