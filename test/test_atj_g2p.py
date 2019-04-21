@@ -25,6 +25,7 @@ EXPECTED_CONVERTED = io.open(os.path.join(
 class TestAtikamekwG2P(TestCase):
     xml = etree.parse(os.path.join(os.path.dirname(__file__),
                                    'test_atj_sample.xml')).getroot()
+    maxDiff = None
 
     def testTokenize(self):
         xml = tokenize_xml(self.xml)
@@ -39,7 +40,6 @@ class TestAtikamekwG2P(TestCase):
         xml = tokenize_xml(self.xml)
         xml = add_ids(xml)
         xml = convert_xml(xml)
-        self.maxDiff = None
         self.assertEqual(etree.tounicode(xml), EXPECTED_CONVERTED)
 
 

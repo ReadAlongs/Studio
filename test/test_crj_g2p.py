@@ -21,6 +21,8 @@ EXPECTED_CONVERTED = io.open(
 class TestSouthEastCreeG2P(TestCase):
     xml = etree.parse(os.path.join(os.path.dirname(__file__),
                                    'test_crj_sample.xml')).getroot()
+    maxDiff = None
+
     def testTokenize(self):
         xml = tokenize_xml(self.xml)
         self.assertEqual(etree.tounicode(xml), EXPECTED_TOKENIZED)
