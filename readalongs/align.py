@@ -85,6 +85,7 @@ def align_audio(xml_path, wav_path, unit='w'):
 
     def frames_to_time(frames):
         return frames * frame_size
+
     with wave.open(wav_path) as wav:
         # FIXME: Obvs need to convert/downsample as needed
         logging.info("Read %s: %d frames (%f seconds) audio"
@@ -94,18 +95,37 @@ def align_audio(xml_path, wav_path, unit='w'):
         ps.start_utt()
         ps.process_raw(raw_data, no_search=False, full_utt=True)
         ps.end_utt()
+
     for seg in ps.seg():
-        if seg.word in ('<sil>', '[NOISE]'):
-            continue
         start = frames_to_time(seg.start_frame)
         end = frames_to_time(seg.end_frame + 1)
-        results["words"].append({
-            "id": seg.word,
-            "start": start,
-            "end": end
-        })
+        if seg.word in ('<sil>', '[NOISE]'):
+            continue
+        else:
+            results["words"].append({
+                "id": seg.word,
+                "start": start,
+                "end": end
+            })
         logging.info("Segment: %s (%.3f : %.3f)",
                      seg.word, start, end)
+    final_end = end
+    # Split adjoining silence/noise between words
+    last_end = 0.0
+    last_word = None
+    for word in results['words']:
+        silence = word['start'] - last_end
+        midpoint = last_end + silence / 2
+        if silence > 0:
+            if last_word is not None:
+                last_word['end'] = midpoint
+            word['start'] = midpoint
+        last_word = word
+        last_end = word['end']
+    silence = final_end - last_end
+    if silence > 0:
+        if last_word is not None:
+            last_word['end'] += silence / 2
     return results
 
 
