@@ -14,7 +14,7 @@ i.e. a package of:
 Which can be loaded using the read-along JavaScript component.
 
 Optionally a book can be generated as a standalone HTML page or
-(maybe) as an ePub file.
+as an ePub file.
 
 1. (optional) Pre-segment inputs, consisting of:
    - Single audio file
@@ -39,3 +39,9 @@ Optionally a book can be generated as a standalone HTML page or
 2. `python`
 3. `>>> from readalongs.app import app`
 4. `app.run()`
+
+# generating an ePub
+
+1. `pip install -e .`
+2. `readalongs_align --output-xhtml XMLFILE WAVFILE OUTPUTNAME`
+3. `readalongs_create_epub OUTPUTNAME.smil OUTPUTNAME.epub`

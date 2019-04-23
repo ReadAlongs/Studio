@@ -33,21 +33,22 @@
 #
 # So, if the XML file doesn't have word elements, tokenize it and add them.
 #
-##########################################################################3
+# 3
 
-from __future__ import print_function, unicode_literals, division, absolute_import
-from io import open
-import logging, argparse
-from lxml import etree
-from .convert_orthography import *
-from .util import *
+from __future__ import print_function, unicode_literals
+from __future__ import division, absolute_import
 from unicodedata import normalize
+import argparse
+import copy
+
+from readalongs.g2p.convert_orthography import ConverterLibrary, trim_indices
+from readalongs.g2p.convert_orthography import concat_indices, offset_indices
+from readalongs.g2p.util import load_xml, save_xml, get_lang_attrib
 
 try:
     unicode()
 except:
     unicode = str
-
 
 
 def iterate_over_text(element):
@@ -59,6 +60,7 @@ def iterate_over_text(element):
             yield subchild
         if child.tail:
             yield (lang, unicode(child.tail))
+
 
 def get_same_language_units(element):
     character_counter = 0
@@ -82,14 +84,17 @@ def get_same_language_units(element):
             "text": current_subword})
     return same_language_units
 
+
 def add_word_boundaries(xml, word_unit="w"):
     for word in xml.xpath(".//" + word_unit):
         word.text = '#' + (word.text if word.text else '')
         if word.getchildren():
             last_child = word[-1]
-            last_child.tail = (last_child.tail if last_child.tail else '') + "#"
+            last_child.tail = (
+                last_child.tail if last_child.tail else '') + "#"
         else:
             word.text += '#'
+
 
 def remove_word_boundaries(xml, word_unit="w"):
     for word in xml.xpath(".//" + word_unit):
@@ -97,14 +102,17 @@ def remove_word_boundaries(xml, word_unit="w"):
             word.text = word.text[1:]
         if word.text and word.text.endswith("#"):
             word.text = word.text[:-1]
+        word.text = word.text.strip()
         if word.getchildren():
             last_child = word[-1]
             if last_child.tail and last_child.tail.endswith('#'):
                 last_child.tail = last_child.tail[:-1]
 
-def convert_words(xml, converter, word_unit="w", output_orthography="eng-arpabet"):
+
+def convert_words(xml, converter, word_unit="w",
+                  output_orthography="eng-arpabet"):
     for word in xml.xpath(".//" + word_unit):
-        #add_word_boundaries(word)
+        # add_word_boundaries(word)
         # only convert text within words
         same_language_units = get_same_language_units(word)
         if not same_language_units:
@@ -112,16 +120,17 @@ def convert_words(xml, converter, word_unit="w", output_orthography="eng-arpabet
         all_text = ''
         all_indices = []
         for unit in same_language_units:
-            text = normalize("NFKD", unit["text"])
+            text = normalize("NFD", unit["text"])
             text, indices = converter.convert(
                 text,
                 unit["lang"],
-                output_orthography )
+                output_orthography)
             all_text += text
             all_indices = concat_indices(all_indices, indices)
         replace_text_in_node(word, all_text, all_indices)
 
     return xml
+
 
 def replace_text_in_node(word, text, indices):
     old_text = ''
@@ -135,9 +144,10 @@ def replace_text_in_node(word, text, indices):
                 old_text = word.text[:i1]
                 new_text = text[:i2]
                 text = text[i2:]
-                new_indices = offset_indices(indices, -len(old_text), -len(new_text))
+                new_indices = offset_indices(
+                    indices, -len(old_text), -len(new_text))
                 new_indices = trim_indices(new_indices)
-                #word.attrib["orig"] = old_text
+                word.attrib["orig"] = old_text
                 word.text = new_text
                 break
 
@@ -149,14 +159,17 @@ def replace_text_in_node(word, text, indices):
                     old_text = child.tail[:i1]
                     new_text = text[:i2]
                     text = text[i2:]
-                    new_indices = offset_indices(indices, -len(old_text), -len(new_text))
+                    new_indices = offset_indices(
+                        indices, -len(old_text), -len(new_text))
                     new_indices = trim_indices(new_indices)
                     child.tail = new_text
                     break
 
     return text, new_indices
 
-def convert_xml(mapping_dir, xml, word_unit="w", output_orthography="eng-arpabet"):
+
+def convert_xml(xml, word_unit="w",
+                output_orthography="eng-arpabet", mapping_dir=None):
     converter = ConverterLibrary(mapping_dir)
     xml_copy = copy.deepcopy(xml)
     add_word_boundaries(xml_copy, word_unit)
@@ -164,17 +177,28 @@ def convert_xml(mapping_dir, xml, word_unit="w", output_orthography="eng-arpabet
     remove_word_boundaries(xml_copy, word_unit)
     return xml_copy
 
-def go(mapping_dir, input_filename, output_filename, word_unit="w", output_orthography="eng-arpabet"):
+
+def go(input_filename, output_filename, word_unit="w",
+       output_orthography="eng-arpabet", mapping_dir=None):
     xml = load_xml(input_filename)
-    converted_xml = convert_xml(mapping_dir, xml, word_unit, output_orthography)
+    converted_xml = convert_xml(xml, word_unit, output_orthography,
+                                mapping_dir=mapping_dir)
     save_xml(output_filename, converted_xml)
 
+
 if __name__ == '__main__':
-     parser = argparse.ArgumentParser(description='Convert XML to another orthography while preserving tags')
-     parser.add_argument('mapping_dir', type=str, help="Directory containing orthography mappings")
-     parser.add_argument('input', type=str, help='Input XML')
-     parser.add_argument('output', type=str, help='Output XML')
-     parser.add_argument('--word_unit', type=str, default="w", help='XML element that represents a word (default: "w")')
-     parser.add_argument('--out_orth', type=str, default="eng-arpabet", help='Output orthography (default: "eng-arpabet")')
-     args = parser.parse_args()
-     go(args.mapping_dir, args.input, args.output, args.word_unit, args.out_orth)
+    parser = argparse.ArgumentParser(
+        description='Convert XML to another orthography while preserving tags')
+    parser.add_argument('input', type=str, help='Input XML')
+    parser.add_argument('output', type=str, help='Output XML')
+    parser.add_argument('--mapping-dir',
+                        type=str, help="Alternate directory containing "
+                        "orthography mappings")
+    parser.add_argument('--word_unit', type=str, default="w",
+                        help='XML element that '
+                        'represents a word (default: "w")')
+    parser.add_argument('--out_orth', type=str, default="eng-arpabet",
+                        help='Output orthography (default: "eng-arpabet")')
+    args = parser.parse_args()
+    go(args.input, args.output, args.word_unit, args.out_orth,
+       mapping_dir=args.mapping_dir)

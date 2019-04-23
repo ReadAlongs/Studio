@@ -8,12 +8,12 @@
 ##################################################
 
 
-from __future__ import print_function, unicode_literals, division, absolute_import
-from io import open
-import logging, argparse, os
-from lxml import etree
+from __future__ import print_function, unicode_literals
+from __future__ import division, absolute_import
+
+import argparse
 import pystache
-from .util import *
+from readalongs.g2p.util import save_txt
 
 try:
     unicode()
@@ -40,10 +40,11 @@ WORD_SPAN = 4
 WORD_SUBIDX = 2
 END_SUBIDX = 3
 
+
 def parse_hypseg(text):
-    results = { "words": [] }
+    results = {"words": []}
     tokens = text.strip().split()
-    #results["basename"] = tokens[BASENAME_IDX]
+    # results["basename"] = tokens[BASENAME_IDX]
     start = float(tokens[START_TIME_IDX]) * 0.01
     i = WORDS_IDX
     while i < len(tokens):
@@ -60,10 +61,12 @@ def parse_hypseg(text):
         i += WORD_SPAN
     return results
 
+
 def make_smil(text_path, audio_path, results):
     results["text_path"] = text_path
     results["audio_path"] = audio_path
     return pystache.render(SMIL_TEMPLATE, results)
+
 
 def go(seg_path, text_path, audio_path, output_path):
     results = make_smil(text_path, audio_path, parse_hypseg(seg_path))
@@ -71,10 +74,11 @@ def go(seg_path, text_path, audio_path, output_path):
 
 
 if __name__ == '__main__':
-     parser = argparse.ArgumentParser(description='Convert XML to another orthography while preserving tags')
-     parser.add_argument('input_seg', type=str, help='Input hypseg file')
-     parser.add_argument('text_path', type=str, help='Text filename')
-     parser.add_argument('audio_path', type=str, help='Audio filename')
-     parser.add_argument('output', type=str, help='Output SMIL file')
-     args = parser.parse_args()
-     go(args.input_seg, args.text_path, args.audio_path, args.output)
+    parser = argparse.ArgumentParser(
+        description='Convert XML to another orthography while preserving tags')
+    parser.add_argument('input_seg', type=str, help='Input hypseg file')
+    parser.add_argument('text_path', type=str, help='Text filename')
+    parser.add_argument('audio_path', type=str, help='Audio filename')
+    parser.add_argument('output', type=str, help='Output SMIL file')
+    args = parser.parse_args()
+    go(args.input_seg, args.text_path, args.audio_path, args.output)

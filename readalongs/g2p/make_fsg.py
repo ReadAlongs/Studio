@@ -13,12 +13,11 @@
 ##################################################
 
 
-from __future__ import print_function, unicode_literals, division, absolute_import
-from io import open
-import logging, argparse, os
-from lxml import etree
+from __future__ import print_function, unicode_literals
+from __future__ import division, absolute_import
+import argparse
+import os
 import pystache
-from .util import *
 
 try:
     unicode()
@@ -49,7 +48,7 @@ def make_fsg(xml, filename, unit="m"):
         if "id" not in e.attrib:  # don't put in elements with no id
             continue
         text = e.text.strip()
-        #if not e.text.strip():  # don't put in elements with no text
+        # if not e.text.strip():  # don't put in elements with no text
         #    continue
         data["states"].append({
             "id": e.attrib["id"] if text else '',
@@ -69,10 +68,14 @@ def go(input_filename, output_filename, unit):
     fsg = make_fsg(xml, input_filename, unit)
     save_txt(output_filename, fsg)
 
+
 if __name__ == '__main__':
-     parser = argparse.ArgumentParser(description='Make an FSG grammar from an XML file with IDs')
-     parser.add_argument('input', type=str, help='Input XML')
-     parser.add_argument('output_fsg', type=str, help='Output .fsg file')
-     parser.add_argument('--unit', type=str, default='m', help='XML tag of the unit of analysis (e.g. "w" for word, "m" for morpheme)')
-     args = parser.parse_args()
-     go(args.input, args.output_fsg, args.unit)
+    parser = argparse.ArgumentParser(
+        description='Make an FSG grammar from an XML file with IDs')
+    parser.add_argument('input', type=str, help='Input XML')
+    parser.add_argument('output_fsg', type=str, help='Output .fsg file')
+    parser.add_argument('--unit', type=str, default='m',
+                        help='XML tag of the unit of analysis '
+                        '(e.g. "w" for word, "m" for morpheme)')
+    args = parser.parse_args()
+    go(args.input, args.output_fsg, args.unit)

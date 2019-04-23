@@ -9,30 +9,33 @@ from lxml import etree
 
 import os, io
 
-EXPECTED_TOKENIZED = io.open(os.path.join(os.path.dirname(__file__),
-                              'test_atj_sample_tokenized.xml')).read().strip()
+EXPECTED_TOKENIZED = io.open(
+    os.path.join(os.path.dirname(__file__),
+                 'test_crj_sample_tokenized.xml')).read().strip()
 EXPECTED_IDS = io.open(os.path.join(os.path.dirname(__file__),
-                              'test_atj_sample_ids.xml')).read().strip()
-EXPECTED_CONVERTED = io.open(os.path.join(os.path.dirname(__file__),
-                              'test_atj_sample_converted.xml')).read().strip()
+                                    'test_crj_sample_ids.xml')).read().strip()
+EXPECTED_CONVERTED = io.open(
+    os.path.join(os.path.dirname(__file__),
+                 'test_crj_sample_converted.xml')).read().strip()
 
-class TestAtikamekwG2P(TestCase):
-    mapping_dir = os.path.join(next(iter(readalongs.__path__), 'lang'))
+class TestSouthEastCreeG2P(TestCase):
     xml = etree.parse(os.path.join(os.path.dirname(__file__),
-                                   'test_atj_sample.xml')).getroot()
+                                   'test_crj_sample.xml')).getroot()
+    maxDiff = None
+
     def testTokenize(self):
-        xml = tokenize_xml(self.xml, self.mapping_dir)
+        xml = tokenize_xml(self.xml)
         self.assertEqual(etree.tounicode(xml), EXPECTED_TOKENIZED)
 
     def testAddIDs(self):
-        xml = tokenize_xml(self.xml, self.mapping_dir)
+        xml = tokenize_xml(self.xml)
         xml = add_ids(xml)
         self.assertEqual(etree.tounicode(xml), EXPECTED_IDS)
 
     def testConvert(self):
-        xml = tokenize_xml(self.xml, self.mapping_dir)
+        xml = tokenize_xml(self.xml)
         xml = add_ids(xml)
-        xml = convert_xml(self.mapping_dir, xml)
+        xml = convert_xml(xml)
         self.assertEqual(etree.tounicode(xml), EXPECTED_CONVERTED)
 
 if __name__ == '__main__':

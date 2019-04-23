@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+
 #######################################################################
 #
-# convert_orthography.py
+# lexicon_g2p.py
 #
 # This module has two pieces of functionality.
 #
@@ -24,11 +25,12 @@
 ######################################################################
 
 from __future__ import print_function, unicode_literals, division
-from io import open
-import logging, os
+import logging
+import os
 from collections import defaultdict
-from .util import *
 from unicodedata import normalize
+from readalongs.g2p.util import load_txt, load_json
+
 
 def sphinx_lexicon_loader(input_path):
     txt = load_txt(input_path)
@@ -55,18 +57,21 @@ class LexiconG2P:
 
         dirname = os.path.dirname(metadata_path)
         if "src" not in self.metadata:
-            logging.error("File %s does not specify a source document", metadata_path)
+            logging.error(
+                "File %s does not specify a source document", metadata_path)
             return
         self.src_path = os.path.join(dirname, self.metadata["src"])
 
         self.entries = defaultdict(list)
         if "src_format" not in self.metadata:
-            logging.error("File %s lacking a source format ('src_format') attribute" % metadata_path)
+            logging.error(
+                "File %s lacking a source format ('src_format') attribute",
+                metadata_path)
             return
 
         if self.metadata["src_format"] not in LEXICON_LOADERS:
             logging.error("File %s references an unknown lexicon format: %s",
-                    metadata_path, self.metadata["src_format"])
+                          metadata_path, self.metadata["src_format"])
 
         self.loader = LEXICON_LOADERS[self.metadata["src_format"]]
 
@@ -81,7 +86,8 @@ class LexiconG2P:
         text = text.strip("#").strip()
         text = text.upper()
         if text not in self.entries:
-            raise KeyError()
+            raise KeyError("Word %s not found in lexicon %s"
+                           % (text, self.metadata['src']))
         result = self.entries[text][0]
-        indices = [(0,0), (len_text, len(result))]
+        indices = [(0, 0), (len_text, len(result))]
         return result, indices

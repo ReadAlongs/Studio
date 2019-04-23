@@ -1,0 +1,124 @@
+body {
+font-size: 3em;
+line-height: 1.33em;
+font-family: serif;
+font-variant-numeric: oldstyle-nums;
+}
+
+p {
+padding: 0;
+margin: 0;
+text-align: justify;
+}
+
+header + p:first-line {
+text-transform: lowercase !important;
+font-variant: small-caps;
+font-size: 1.1em;
+}
+
+p + p {
+text-indent: 1.33em;
+}
+
+h1 {
+font-size: 1.5em;
+line-height: 1.33em;
+text-align: center;
+padding-bottom: 0em;
+text-align: center;
+text-transform: uppercase;
+font-weight: normal;
+letter-spacing: 4px;
+}
+
+h2 {
+text-align: center;
+font-size: 1.33em;
+line-height: 1.2em;
+text-align: center;
+padding-bottom: 0em;
+text-align: center;
+text-transform: uppercase;
+font-weight: normal;
+letter-spacing: 3px;
+}
+
+a {
+color: black !important;
+}
+
+#toc ol {
+list-style-type: none;
+margin: 0 0 0 2em;
+padding: 0 0 0 0;
+}
+
+#toc ol ol {
+list-style-type: none;
+margin: 0 0 0 1em;
+padding: 0 0 0 0;
+}
+
+#toc ol li {
+margin: 0 0 0 0;
+padding: 0 0 0 0;
+}
+
+#toc ol li a {
+text-decoration: none;
+font-family: sans-serif;
+}
+
+.toc-short ol li a {
+text-decoration: none;
+font-family: sans-serif;
+}
+
+.toc-short ol {
+list-style-type: none;
+margin: 0 0 0 2em;
+padding: 0 0 0 0;
+}
+
+#guide {
+display: none;
+}
+
+header {
+padding: 3em 0 2em 0;
+}
+
+header a {
+text-decoration: none;
+color: black;
+}
+
+.title-other-rw {
+text-align: center;
+text-indent: 0;
+margin-top: .5em;
+}
+
+.frontmatter-rw h1 {
+font-size: 1.5em;
+}
+
+.backmatter-rw h1 {
+font-size: 1.5em;
+}
+
+.-epub-media-overlay-active {
+    background-color: #ffb;
+}
+
+
+@media all and (orientation:portrait) {
+p { font-family: serif; }
+}
+
+
+@media all and (orientation:landscape) {
+p { font-family: sans-serif; }
+
+}

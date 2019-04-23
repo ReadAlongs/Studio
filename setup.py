@@ -6,9 +6,14 @@ setup(
     python_requires='>=3.6',
     version=readalongs.VERSION,
     long_description='ReadAlong Studio',
-    packages=find_packages(),
-    # packages=['readalong_studio'],
+    packages=find_packages(exclude=['test']),
     include_package_data=True,
     zip_safe=False,
-    install_requires=['flask', 'flask_restful', 'flask_cors']
+    install_requires=['flask', 'flask_restful', 'flask_cors'],
+    entry_points={
+        'console_scripts': [
+            'readalongs_align = readalongs.align:main',
+            'readalongs_create_epub = readalongs.epub.create_epub:main',
+        ]
+    },
 )

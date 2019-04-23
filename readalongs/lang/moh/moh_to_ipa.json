@@ -4,6 +4,8 @@
   "created": "2019-04-16",
   "last_modified": "2019-04-16",
   "in_metadata": {
+    "display_name": "Mohawk",
+    "display": true,
     "lang": "moh",
     "format": "custom",
     "delimiter": "",
