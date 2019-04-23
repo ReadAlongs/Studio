@@ -118,8 +118,13 @@ class ConverterLibrary:
                         logging.error("File %s is not a JSON dictionary",
                                       mapping_filename)
                         continue
-                    if ("type" not in mapping
-                            or mapping["type"] not in G2P_HANDLERS):
+                    if "type" not in mapping:
+                        logging.error("File %s is not a supported "
+                                      "conversion format", mapping_filename)
+                        continue
+                    if mapping["type"] == "inventory":
+                        continue
+                    if mapping["type"] not in G2P_HANDLERS:
                         logging.error("File %s is not a supported "
                                       "conversion format", mapping_filename)
                         continue

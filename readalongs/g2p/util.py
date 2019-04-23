@@ -24,12 +24,29 @@ try:
 except:
     unicode = str
 
-
 def ensure_dirs(path):
     dirname = os.path.dirname(path)
     if dirname and not os.path.exists(dirname):
         os.makedirs(dirname)
 
+
+def xpath_default(xml, query, default_namespace_prefix="i"):
+    nsmap = xml.nsmap if hasattr(xml, "nsmap") else xml.getroot().nsmap
+    nsmap = dict(((x, y) if x else (default_namespace_prefix, y))
+                 for (x, y) in nsmap.items())
+    for e in xml.xpath(query, namespaces=nsmap):
+        yield e
+
+
+def iterate_over_text(element):
+    lang = get_lang_attrib(element)
+    if element.text:
+        yield (lang, unicode(element.text))
+    for child in element:
+        for subchild in iterate_over_text(child):
+            yield subchild
+        if child.tail:
+            yield (lang, unicode(child.tail))
 
 def get_lang_attrib(element):
     lang_path = element.xpath('./@xml:lang')
@@ -38,8 +55,15 @@ def get_lang_attrib(element):
     if not lang_path and element.getparent() is not None:
         return get_lang_attrib(element.getparent())
     if not lang_path:
-        return None
+        return "und"   # special ISO 639-3 code for an unknown language
     return lang_path[0]
+
+
+def set_lang_attrib(element, lang):
+    nsmap = element.nsmap if hasattr(element, "nsmap") else element.getroot().nsmap
+    xml_ns = nsmap.get("xml", "http://www.w3.org/XML/1998/namespace")
+    key = "{%s}lang" % xml_ns
+    element.attrib[key] = lang
 
 
 def merge_if_same_label(lst_of_dicts, text_key, label_key):

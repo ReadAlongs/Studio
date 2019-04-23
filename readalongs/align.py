@@ -55,6 +55,7 @@ def align_audio(xml_path, wav_path, unit='w'):
     results = {"words": []}
     # First do G2P
     xml = etree.parse(xml_path).getroot()
+    xml = add_lang_ids(xml, mapping_dir, unit="s")
     xml = tokenize_xml(xml)
     results['tokenized'] = xml = add_ids(xml)
     xml = convert_xml(xml)

@@ -4,12 +4,15 @@
    "created": "2019-03-26",
    "last_modified": "2019-03-26",
    "in_metadata": {
+      "display_name": "Kwak'wala (U'mista orthography)",
+      "display": true,
       "lang": "kwk-umista",
       "format": "custom",
-      "delimiter": ""
+      "delimiter": "",
+      "case_insensitive": true
    },
    "out_metadata": {
-      "lang": "kwk-ipa",
+      "lang": "kwk-umista-ipa",
       "format": "ipa",
       "delimiter": ""
    },

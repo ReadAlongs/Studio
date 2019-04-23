@@ -6,7 +6,8 @@
    "in_metadata": {
       "lang": "kwk-napa",
       "format": "custom",
-      "delimiter": ""
+      "delimiter": "",
+      "case_insensitive": true
    },
    "out_metadata": {
       "lang": "kwk-xsampa",

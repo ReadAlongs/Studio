@@ -4,12 +4,14 @@
    "created": "2019-02-13",
    "last_modified": "2019-02-15",
    "in_metadata": {
+      "display_name": "Kwak'wala (NAPA orthography)",
+      "display": true,
       "lang": "kwk-napa",
       "format": "custom",
       "delimiter": ""
    },
    "out_metadata": {
-      "lang": "kwk-ipa",
+      "lang": "kwk-napa-ipa",
       "format": "ipa",
       "delimiter": ""
    },
@@ -45,6 +47,8 @@
       { "in": "gʷ",	"out": "ɡʷ" },
       { "in": "ǧ",	"out": "ɢ" },
       { "in": "ǧʷ",	"out": "ɢʷ" },
+      { "in": "ɢ",	"out": "ɢ" },
+      { "in": "ɢʷ",	"out": "ɢʷ" },
       { "in": "mʼ",	"out": "ʔm" },
       { "in": "nʼ",	"out": "ʔn" },
       { "in": "lʼ",	"out": "ʔl" },
