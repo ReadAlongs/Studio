@@ -103,12 +103,11 @@ class LanguageIdentifier:
             if c not in self.chars:
                 continue            # not a character we use for language id
             char_index = self.chars[c]
-            for lang, lang_index in self.langs.items():
-                logprobs[lang_index] += self.logprobs[lang_index, char_index]
+            logprobs += self.logprobs[:, char_index]
 
-        logprobs -= np.max(logprobs)  # logprob scaling trick
-        probs = np.exp(logprobs)
-        probs /= probs.sum()
+        logprobs -= np.max(logprobs)  # logprob scaling trick for normalization
+        probs = np.exp(logprobs)      # turn back into probs
+        probs /= probs.sum()          # normalize
 
         # return them in a more convenient format
         result = [ (lang, probs[i]) for lang, i in self.langs.items() ]

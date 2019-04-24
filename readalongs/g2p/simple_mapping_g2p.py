@@ -64,6 +64,13 @@ class SimpleMappingG2P:
             flags |= re.I
         self.regex = re.compile(pattern, flags)
 
+    def convert_character(self, text):
+        if text not in self.replacements:
+            return text
+        if text == self.input_delimiter:
+            return self.output_delimiter
+        return self.replacements[text]
+
     def convert_and_tokenize(self, text):
         result_str = ''
         result_indices = []
@@ -78,12 +85,7 @@ class SimpleMappingG2P:
                 s = s.lstrip(OPEN_BRACKET).rstrip(CLOSED_BRACKET)
                 current_index = int(s)
                 continue
-            if s_without_digits not in self.replacements:
-                result = s_without_digits
-            elif s_without_digits == self.input_delimiter:
-                result = self.output_delimiter
-            else:
-                result = self.replacements[s_without_digits]
+            result = self.convert_character(s_without_digits)
 
             result_indices.append((current_index, len(result_str)))
 
