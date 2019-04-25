@@ -1,12 +1,13 @@
 {
-   "type": "mapping",
+   "type": "mapping.unidecode",
    "authors": ["Patrick Littell"],
    "created": "2019-04-19",
    "last_modified": "2019-04-19",
    "in_metadata": {
       "lang": "und",
       "format": "custom",
-      "delimiter": ""
+      "delimiter": "",
+      "case_insensitive": true
    },
    "out_metadata": {
       "lang": "und-ipa",
@@ -20,7 +21,7 @@
       { "in": "d",	"out": "d" },
       { "in": "e",	"out": "e" },
       { "in": "f",	"out": "f" },
-      { "in": "g",	"out": "g" },
+      { "in": "g",	"out": "ɡ" },
       { "in": "h",	"out": "h" },
       { "in": "i",	"out": "i" },
       { "in": "j",	"out": "ʒ" },
@@ -40,5 +41,8 @@
       { "in": "x",	"out": "x" },
       { "in": "y",	"out": "j" },
       { "in": "z",	"out": "z" },
+      { "in": "@",	"out": "ə" },
+      { "in": "?",	"out": "ʔ" },
+      { "in": "'",	"out": "ʔ" }
    ]
 }

@@ -84,6 +84,13 @@ def get_same_language_units(element):
             "text": current_subword})
     return same_language_units
 
+def unicode_normalize_xml(element):
+    if element.text:
+        element.text = normalize("NFD", unicode(element.text))
+    for child in element.getchildren():
+        unicode_normalize_xml(child)
+        if child.tail:
+            child.tail = normalize("NFD", unicode(child.tail))
 
 def add_word_boundaries(xml, word_unit="w"):
     for word in xml.xpath(".//" + word_unit):
@@ -120,9 +127,9 @@ def convert_words(xml, converter, word_unit="w",
         all_text = ''
         all_indices = []
         for unit in same_language_units:
-            text = normalize("NFD", unit["text"])
+            #text = normalize("NFD", unit["text"])
             text, indices = converter.convert(
-                text,
+                unit["text"],
                 unit["lang"],
                 output_orthography)
             all_text += text
@@ -172,9 +179,10 @@ def convert_xml(xml, word_unit="w",
                 output_orthography="eng-arpabet", mapping_dir=None):
     converter = ConverterLibrary(mapping_dir)
     xml_copy = copy.deepcopy(xml)
-    add_word_boundaries(xml_copy, word_unit)
+    unicode_normalize_xml(xml_copy)
+    #add_word_boundaries(xml_copy, word_unit)
     convert_words(xml_copy, converter, word_unit, output_orthography)
-    remove_word_boundaries(xml_copy, word_unit)
+    #remove_word_boundaries(xml_copy, word_unit)
     return xml_copy
 
 

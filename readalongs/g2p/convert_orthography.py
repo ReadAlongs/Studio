@@ -33,7 +33,9 @@ import copy
 
 from io import open
 from .lexicon_g2p import LexiconG2P
+from .simpler_g2p import SimplerG2P
 from .simple_mapping_g2p import SimpleMappingG2P
+from .unidecode_g2p import UnidecodeG2P
 from .. import lang
 
 
@@ -44,7 +46,7 @@ def compose_indices(i1, i2):
     i2_idx = 0
     results = []
     for i1_in, i1_out in i1:
-        highest_i2_found = -1
+        highest_i2_found = 0
         while i2_idx <= i1_out:
             if i2_idx in i2_dict and i2_dict[i2_idx] > highest_i2_found:
                 highest_i2_found = i2_dict[i2_idx]
@@ -98,7 +100,8 @@ class CompositeConverter:
 
 
 G2P_HANDLERS = {
-    "mapping": SimpleMappingG2P,
+    "mapping": SimplerG2P,
+    "mapping.unidecode": UnidecodeG2P,
     "lexicon": LexiconG2P
 }
 
@@ -139,13 +142,14 @@ class ConverterLibrary:
         self.transitive_closure()
 
     def add_converter(self, converter):
-        logging.debug("Adding converter between %s and %s",
+        logging.info("Adding converter between %s and %s",
                       converter.in_lang, converter.out_lang)
         self.converters[(converter.in_lang, converter.out_lang)] = converter
 
     def transitive_closure(self):
         n_converters = -1
         # FIXME: Might need to detect cycles here!
+        # Cycles are prohibited by the in_lang/out_lang comparisons. --Pat
         while len(self.converters) != n_converters:
             for converter in list(self.converters.values()):
                 converters = list(self.converters.items())

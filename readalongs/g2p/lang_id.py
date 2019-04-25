@@ -125,7 +125,7 @@ def add_lang_ids(xml, mapping_dir, unit="p"):
     return xml
 
 def add_lang_ids_to_element(element, lang_identifier):
-    if get_lang_attrib(element) != "und":
+    if get_lang_attrib(element):
         return
     text = [ text for lang, text in iterate_over_text(element) ]
     text = "".join(text)

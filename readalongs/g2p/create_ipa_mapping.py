@@ -66,9 +66,9 @@ def process_characters(inv, is_xsampa=False):
 
 
 def create_mapping(inv_l1, inv_l2):
-    if inv_l1["type"] == "mapping":
+    if inv_l1["type"].startswith("mapping"):
         inv_l1 = create_inventory_from_mapping(inv_l1, "out")
-    if inv_l2["type"] == "mapping":
+    if inv_l2["type"].startswith("mapping"):
         inv_l2 = create_inventory_from_mapping(inv_l2, "in")
     supported_formats = ('ipa', 'x-sampa', 'xsampa')
     if inv_l1["metadata"]["format"].lower() not in supported_formats:

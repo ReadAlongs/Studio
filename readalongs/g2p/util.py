@@ -55,7 +55,7 @@ def get_lang_attrib(element):
     if not lang_path and element.getparent() is not None:
         return get_lang_attrib(element.getparent())
     if not lang_path:
-        return "und"   # special ISO 639-3 code for an unknown language
+        return None
     return lang_path[0]
 
 
