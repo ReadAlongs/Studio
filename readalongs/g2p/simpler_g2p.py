@@ -15,11 +15,14 @@ import re
 import logging
 from .util import load_json
 from unicodedata import normalize
-from text_unidecode import unidecode 
+from text_unidecode import unidecode
 
-UNIDECODE_MAPPING = {
-    "c": "t͡s",
-    "j": "ʒ",
+
+# fallback characters for when a stray letter gets in; we just take a guess
+# what they might mean.  otherwise, we assume "a" represents IPA "a", etc.
+UNIDECODE_MAPPING = {  # note, these replacements should always be something
+    "c": "t͡ʃ",         # in the eng-ipa mapping, because these characters don't
+    "j": "ʒ",          # go through the approximate mapping process
     "y": "j"
 }
 
@@ -61,9 +64,11 @@ class SimplerG2P:
 
     def convert_character(self, text):
         if text not in self.replacements:
-            assert(len(text) <= 1)
             if self.strict:
                 raise KeyError(text)
+            if text in UNIDECODE_MAPPING.values():
+                return text  # it's the output of a prior fallback... or
+                             # if it isn't, you can let it go through anyway.
             text = unidecode(text).lower().strip()
             if text in self.replacements:
                 return self.replacements[text]
