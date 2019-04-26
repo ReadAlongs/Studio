@@ -15,10 +15,17 @@ import re
 import logging
 from .util import load_json
 from unicodedata import normalize
+from text_unidecode import unidecode 
+
+UNIDECODE_MAPPING = {
+    "c": "t͡s",
+    "j": "ʒ",
+    "y": "j"
+}
 
 class SimplerG2P:
 
-    def __init__(self, mapping_path):
+    def __init__(self, mapping_path, strict=False):
         self.mapping = load_json(mapping_path)
         self.in_lang = self.mapping["in_metadata"]["lang"]
         self.out_lang = self.mapping["out_metadata"]["lang"]
@@ -26,6 +33,7 @@ class SimplerG2P:
         self.output_delimiter = self.mapping["out_metadata"]["delimiter"]
         self.case_insensitive = self.mapping["in_metadata"].get(
             "case_insensitive", False)
+        self.strict = strict
 
         # gather replacements
         self.replacements = {}
@@ -53,6 +61,16 @@ class SimplerG2P:
 
     def convert_character(self, text):
         if text not in self.replacements:
+            assert(len(text) <= 1)
+            if self.strict:
+                raise KeyError(text)
+            text = unidecode(text).lower().strip()
+            if text in self.replacements:
+                return self.replacements[text]
+            if not text.isalpha():
+                return ''
+            if text in UNIDECODE_MAPPING:
+                return UNIDECODE_MAPPING[text]
             return text
         if text == self.input_delimiter:
             return self.output_delimiter

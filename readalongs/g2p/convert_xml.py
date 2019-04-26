@@ -44,6 +44,7 @@ import copy
 from readalongs.g2p.convert_orthography import ConverterLibrary, trim_indices
 from readalongs.g2p.convert_orthography import concat_indices, offset_indices
 from readalongs.g2p.util import load_xml, save_xml, get_lang_attrib
+from readalongs.g2p.util import unicode_normalize_xml
 
 try:
     unicode()
@@ -84,13 +85,6 @@ def get_same_language_units(element):
             "text": current_subword})
     return same_language_units
 
-def unicode_normalize_xml(element):
-    if element.text:
-        element.text = normalize("NFD", unicode(element.text))
-    for child in element.getchildren():
-        unicode_normalize_xml(child)
-        if child.tail:
-            child.tail = normalize("NFD", unicode(child.tail))
 
 def add_word_boundaries(xml, word_unit="w"):
     for word in xml.xpath(".//" + word_unit):
@@ -154,7 +148,7 @@ def replace_text_in_node(word, text, indices):
                 new_indices = offset_indices(
                     indices, -len(old_text), -len(new_text))
                 new_indices = trim_indices(new_indices)
-                word.attrib["orig"] = old_text
+                #word.attrib["orig"] = old_text
                 word.text = new_text
                 break
 

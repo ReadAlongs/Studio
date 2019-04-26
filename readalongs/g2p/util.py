@@ -186,3 +186,55 @@ def load_tsv(input_path, labels):
                 continue
             results.append(OrderedDict(zip(labels, pieces)))
     return results
+from unicodedata import normalize, category
+
+
+def unicode_normalize_xml(element):
+    if element.text:
+        element.text = normalize("NFD", unicode(element.text))
+    for child in element.getchildren():
+        unicode_normalize_xml(child)
+        if child.tail:
+            child.tail = normalize("NFD", unicode(child.tail))
+
+
+CATEGORIES = {
+    "Cc": "other",	# Other, Control
+    "Cf": "other",	# Other, Format
+    "Cn": "other",	# Other, Not Assigned (no characters in the file have this property)
+    "Co": "letter",	# Other, Private Use
+    "Cs": "other",	# Other, Surrogate
+    "LC": "letter",	# Letter, Cased
+    "Ll": "letter",	# Letter, Lowercase
+    "Lm": "letter",	# Letter, Modifier
+    "Lo": "letter",	# Letter, Other
+    "Lt": "letter",	# Letter, Titlecase
+    "Lu": "letter",	# Letter, Uppercase
+    "Mc": "diacritic",	# Mark, Spacing Combining
+    "Me": "diacritic",	# Mark, Enclosing
+    "Mn": "diacritic",	# Mark, Nonspacing
+    "Nd": "number",	# Number, Decimal Digit
+    "Nl": "number",	# Number, Letter
+    "No": "number",	# Number, Other
+    "Pc": "punctuation",	# Punctuation, Connector
+    "Pd": "punctuation",	# Punctuation, Dash
+    "Pe": "punctuation",	# Punctuation, Close
+    "Pf": "punctuation",	# Punctuation, Final quote (may behave like Ps or Pe depending on usage)
+    "Pi": "punctuation",	# Punctuation, Initial quote (may behave like Ps or Pe depending on usage)
+    "Po": "punctuation",	# Punctuation, Other
+    "Ps": "punctuation",	# Punctuation, Open
+    "Sc": "symbol",	# Symbol, Currency
+    "Sk": "symbol",	# Symbol, Modifier
+    "Sm": "symbol",	# Symbol, Math
+    "So": "symbol",	# Symbol, Other
+    "Zl": "whitespace",	# Separator, Line
+    "Zp": "whitespace",	# Separator, Paragraph
+    "Zs": "whitespace",	# Separator, Space
+}
+
+def get_unicode_category(c):
+    """ Maps a character to one of [ "letter", "number", "diacritic", "punctuation",
+        "symbol", "whitespace", "other"] """
+    cat = category(c)
+    assert(cat in CATEGORIES)
+    return CATEGORIES[cat]

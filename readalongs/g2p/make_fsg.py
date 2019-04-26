@@ -18,6 +18,7 @@ from __future__ import division, absolute_import
 import argparse
 import os
 import pystache
+import logging
 
 try:
     unicode()
@@ -46,6 +47,9 @@ def make_fsg(xml, filename, unit="m"):
 
     for e in xml.xpath(".//" + unit):
         if "id" not in e.attrib:  # don't put in elements with no id
+            continue
+        if not e.text or not e.text.strip():
+            logging.warning("No text in node %s", e.attrib["id"])
             continue
         text = e.text.strip()
         # if not e.text.strip():  # don't put in elements with no text

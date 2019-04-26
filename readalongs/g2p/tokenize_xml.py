@@ -45,6 +45,7 @@ import re
 from readalongs.g2p.create_inv_from_map import create_inventory_from_mapping
 from readalongs.g2p.util import get_lang_attrib, merge_if_same_label
 from readalongs.g2p.util import load_xml, save_xml
+from readalongs.g2p.util import unicode_normalize_xml, get_unicode_category
 from readalongs import lang
 
 try:
@@ -57,20 +58,25 @@ class DefaultTokenizer:
     def __init__(self):
         self.inventory = []
         self.delim = ''
+        self.case_insensitive = True
 
     def tokenize_aux(self, text):
         return text
 
     def is_word_charcter(self, c):
+        if self.case_insensitive:
+            c = c.lower()
         if c in self.inventory:
             return True
         if self.delim and c == self.delim:
             return True
-        if c.isalnum():
+        assert(len(c) <= 1)
+        if get_unicode_category(c) in [ "letter", "number", "diacritic" ]:
             return True
         return False
 
     def tokenize_text(self, text):
+        text = unicode(text)
         matches = self.tokenize_aux(text)
         units = [{"text": m, "is_word": self.is_word_charcter(m)}
                  for m in matches]
@@ -136,7 +142,6 @@ class TokenizerLibrary:
         lang = get_lang_attrib(element)
         tokenizer = self.tokenizers.get(lang,
                                         self.tokenizers[None])
-
         if element.text:
             new_element.text = ''
             for unit in tokenizer.tokenize_text(element.text):
@@ -177,6 +182,7 @@ class TokenizerLibrary:
 def tokenize_xml(xml, inventory_dir=None):
     tokenizer = TokenizerLibrary(inventory_dir)
     xml = deepcopy(xml)
+    unicode_normalize_xml(xml)
     return tokenizer.add_word_children(xml)
 
 

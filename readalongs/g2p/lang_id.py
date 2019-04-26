@@ -19,15 +19,12 @@
 from __future__ import print_function, unicode_literals
 from __future__ import division, absolute_import
 
-from copy import deepcopy
-from lxml import etree
 import argparse, os
 import logging
 from glob import glob
 from collections import defaultdict
 import numpy as np
 from unicodedata import normalize
-from decimal import Decimal, getcontext
 
 from readalongs.g2p.util import (load_xml, save_xml, load_json,
     get_lang_attrib, set_lang_attrib, iterate_over_text)
