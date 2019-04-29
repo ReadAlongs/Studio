@@ -64,11 +64,11 @@ def align_audio(xml_path, wav_path, unit='w'):
     xml = convert_xml(xml)
     # Now generate dictionary and FSG
     dict_data = make_dict(xml, xml_path, unit=unit)
-    dict_file = NamedTemporaryFile(prefix='readalongs_dict_')
+    dict_file = NamedTemporaryFile(prefix='readalongs_dict_', delete=False)
     dict_file.write(dict_data.encode('utf-8'))
     dict_file.flush()
     fsg_data = make_fsg(xml, xml_path, unit=unit)
-    fsg_file = NamedTemporaryFile(prefix='readalongs_fsg_')
+    fsg_file = NamedTemporaryFile(prefix='readalongs_fsg_', delete=False)
     fsg_file.write(fsg_data.encode('utf-8'))
     fsg_file.flush()
     # Now do alignment (FIXME: need to straighten this out with the
@@ -145,6 +145,13 @@ def align_audio(xml_path, wav_path, unit='w'):
     if silence > 0:
         if last_word is not None:
             last_word['end'] += silence / 2
+
+
+    dict_file.close()
+    os.unlink(dict_file.name)
+    fsg_file.close()
+    os.unlink(fsg_file.name)
+
     return results
 
 
