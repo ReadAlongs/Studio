@@ -54,11 +54,11 @@ class LanguageIdentifier:
                     continue
                 if not isinstance(inv, dict):
                     logging.error("File %s is not a JSON dictionary",
-                                  mapping_filename)
+                                  lang_filename)
                     continue
                 if ("type" not in inv):
                     logging.error("File %s is not a supported "
-                                  "conversion format", mapping_filename)
+                                  "conversion format", lang_filename)
                     continue
                 if inv["type"] == "inventory":
                     self.add_inventory(inv)

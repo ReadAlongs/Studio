@@ -32,10 +32,9 @@ import os
 import copy
 
 from io import open
-from .lexicon_g2p import LexiconG2P
-from .simpler_g2p import SimplerG2P
-from .simple_mapping_g2p import SimpleMappingG2P
-from .unidecode_g2p import UnidecodeG2P
+from readalongs.g2p.lexicon_g2p import LexiconG2P
+from readalongs.g2p.simpler_g2p import SimplerG2P
+from readalongs.g2p.simple_mapping_g2p import SimpleMappingG2P
 from .. import lang
 
 
@@ -104,7 +103,6 @@ class CompositeConverter:
 
 G2P_HANDLERS = {
     "mapping": SimplerG2P,
-    "mapping.unidecode": UnidecodeG2P,
     "lexicon": LexiconG2P
 }
 
