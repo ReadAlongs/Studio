@@ -214,13 +214,13 @@ def convert_to_xhtml(tokenized_xml, title='Book'):
 
 XML_TEMPLATE = """<document>
 {{#sentences}}
-<s xml:lang="{{lang}}">{{text}}</s>
+<s{{#lang}} xml:lang="{{lang}}"{{/lang}}>{{text}}</s>
 {{/sentences}}
 </document>
 """
 
 
-def create_input_xml(inputfile, text_language, save_temps=None):
+def create_input_xml(inputfile, text_language=None, save_temps=None):
     if save_temps:
         filename = save_temps + '.input.xml'
         outfile = io.open(filename, 'wb')
@@ -240,10 +240,14 @@ def create_input_xml(inputfile, text_language, save_temps=None):
                 para.append(line)
         if para:
             text.append(' '.join(para))
-        data = {"sentences":
-                [{"text": para, "lang": text_language}
-                 for para in text]}
-        xml = pystache.render(XML_TEMPLATE, data)
+        sentences = []
+        for p in text:
+            data = {"text": p}
+            if text_language is not None:
+                data["lang"] = text_language
+            sentences.append(data)
+        xml = pystache.render(XML_TEMPLATE,
+                              {'sentences': sentences})
         outfile.write(xml.encode('utf-8'))
         outfile.flush()
     return outfile, filename
@@ -284,10 +288,9 @@ def main(argv=None):
     else:
         logging.basicConfig(level=logging.INFO)
     if args.text_input:
-        if args.text_language is None:
-            parser.error("--text-input requires --text-language")
         tempfile, args.inputfile \
-            = create_input_xml(args.inputfile, args.text_language,
+            = create_input_xml(args.inputfile,
+                               text_language=args.text_language,
                                save_temps=(args.outputfile
                                            if args.save_temps else None))
     if args.output_xhtml:
