@@ -54,25 +54,50 @@ if not hasattr(wave.Wave_write, "__enter__"):
     wave.Wave_write.__enter__ = _trivial__enter__
 
 
-def align_audio(xml_path, wav_path, unit='w'):
+def align_audio(xml_path, wav_path, unit='w', save_temps=None):
+    """
+    Align an XML input file to an audio file.
+
+    Args:
+      xml_path: Path to XML input file in TEI-like format
+      wav_path: Path to audio input (WAV or MP3)
+      unit: Element to create alignments for.
+      save_temps: Basename for intermediate output files (or
+        None if they won't be saved)
+    """
     results = {"words": []}
+
     # First do G2P
     xml = etree.parse(xml_path).getroot()
     xml = add_lang_ids(xml, mapping_dir, unit="s")
     xml = tokenize_xml(xml)
+    if save_temps:
+        save_xml(save_temps + '.tokenized.xml', xml)
     results['tokenized'] = xml = add_ids(xml)
+    if save_temps:
+        save_xml(save_temps + '.ids.xml', xml)
     xml = convert_xml(xml)
+    if save_temps:
+        save_xml(save_temps + '.g2p.xml', xml)
+
     # Now generate dictionary and FSG
     dict_data = make_dict(xml, xml_path, unit=unit)
-    dict_file = NamedTemporaryFile(prefix='readalongs_dict_', delete=False)
+    if save_temps:
+        dict_file = io.open(save_temps + '.dict', 'wb')
+    else:
+        dict_file = NamedTemporaryFile(prefix='readalongs_dict_', delete=False)
     dict_file.write(dict_data.encode('utf-8'))
     dict_file.flush()
+
     fsg_data = make_fsg(xml, xml_path, unit=unit)
-    fsg_file = NamedTemporaryFile(prefix='readalongs_fsg_', delete=False)
+    if save_temps:
+        fsg_file = io.open(save_temps + '.fsg', 'wb')
+    else:
+        fsg_file = NamedTemporaryFile(prefix='readalongs_fsg_', delete=False)
     fsg_file.write(fsg_data.encode('utf-8'))
     fsg_file.flush()
-    # Now do alignment (FIXME: need to straighten this out with the
-    # PocketSphinx python modules)
+
+    # Now do alignment
     cfg = pocketsphinx.Decoder.default_config()
     model_path = pocketsphinx.get_model_path()
     cfg.set_boolean('-remove_noise', False)
@@ -129,6 +154,12 @@ def align_audio(xml_path, wav_path, unit='w'):
         logging.info("Segment: %s (%.3f : %.3f)",
                      seg.word, start, end)
     final_end = end
+
+    # FIXME: should have the same number of outputs as inputs
+    if len(results['words']) == 0:
+        raise RuntimeError("Alignment Failed, please examine "
+                           "dictionary and input audio and text.")
+
     # Split adjoining silence/noise between words
     last_end = 0.0
     last_word = dict()
@@ -145,7 +176,6 @@ def align_audio(xml_path, wav_path, unit='w'):
     if silence > 0:
         if last_word is not None:
             last_word['end'] += silence / 2
-
 
     dict_file.close()
     os.unlink(dict_file.name)
@@ -182,28 +212,6 @@ def convert_to_xhtml(tokenized_xml, title='Book'):
     head.append(link_element)
 
 
-def make_argparse():
-    """Hey! This function makes the argparse!"""
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('inputfile', type=str, help='Input file (XML or text)')
-    parser.add_argument('wavfile', type=str, help='Input audio file')
-    parser.add_argument('outputfile', type=str,
-                        help='Base name for output files')
-    parser.add_argument('--debug', action='store_true',
-                        help='Enable extra debugging logging')
-    parser.add_argument('-f', '--force-overwrite',
-                        action='store_true',
-                        help='Force overwriting existing output files')
-    parser.add_argument(
-        '--text-input', action='store_true',
-        help='Input is plain text (assume paragraphs separated by blank lines)')
-    parser.add_argument('--text-language', type=str,
-                        help='Set language for plain text input')
-    parser.add_argument('--output-xhtml', action='store_true',
-                        help='Output simple XHTML instead of XML')
-    return parser
-
-
 XML_TEMPLATE = """<document>
 {{#sentences}}
 <s xml:lang="{{lang}}">{{text}}</s>
@@ -212,9 +220,14 @@ XML_TEMPLATE = """<document>
 """
 
 
-def create_input_xml(inputfile, text_language):
-    tempfile = NamedTemporaryFile(prefix='readalongs_xml_',
-                                  suffix='.xml')
+def create_input_xml(inputfile, text_language, save_temps=None):
+    if save_temps:
+        filename = save_temps + '.input.xml'
+        outfile = io.open(filename, 'wb')
+    else:
+        outfile = NamedTemporaryFile(prefix='readalongs_xml_',
+                                     suffix='.xml')
+        filename = outfile.name
     with io.open(inputfile) as fin:
         text = []
         para = []
@@ -231,9 +244,35 @@ def create_input_xml(inputfile, text_language):
                 [{"text": para, "lang": text_language}
                  for para in text]}
         xml = pystache.render(XML_TEMPLATE, data)
-        tempfile.write(xml.encode('utf-8'))
-        tempfile.flush()
-    return tempfile
+        outfile.write(xml.encode('utf-8'))
+        outfile.flush()
+    return outfile, filename
+
+
+def make_argparse():
+    """Hey! This function makes the argparse!"""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('inputfile', type=str, help='Input file (XML or text)')
+    parser.add_argument('wavfile', type=str, help='Input audio file')
+    parser.add_argument('outputfile', type=str,
+                        help='Base name for output files')
+    parser.add_argument('--debug', action='store_true',
+                        help='Enable extra debugging logging')
+    parser.add_argument('-s', '--save-temps', action='store_true',
+                        help='Save intermediate stages of processing and '
+                        'temporary files (dictionary, FSG, tokenization etc)')
+    parser.add_argument('-f', '--force-overwrite',
+                        action='store_true',
+                        help='Force overwriting existing output files')
+    parser.add_argument(
+        '--text-input', action='store_true',
+        help='Input is plain text (assume paragraphs '
+        'separated by blank lines)')
+    parser.add_argument('--text-language', type=str,
+                        help='Set language for plain text input')
+    parser.add_argument('--output-xhtml', action='store_true',
+                        help='Output simple XHTML instead of XML')
+    return parser
 
 
 def main(argv=None):
@@ -247,8 +286,10 @@ def main(argv=None):
     if args.text_input:
         if args.text_language is None:
             parser.error("--text-input requires --text-language")
-        tempfile = create_input_xml(args.inputfile, args.text_language)
-        args.inputfile = tempfile.name
+        tempfile, args.inputfile \
+            = create_input_xml(args.inputfile, args.text_language,
+                               save_temps=(args.outputfile
+                                           if args.save_temps else None))
     if args.output_xhtml:
         tokenized_xml_path = '%s.xhtml' % args.outputfile
     else:
@@ -267,7 +308,9 @@ def main(argv=None):
         parser.error("Output file %s exists already, did you mean to do that?"
                      % wav_path)
 
-    results = align_audio(args.inputfile, args.wavfile)
+    results = align_audio(args.inputfile, args.wavfile,
+                          save_temps=(args.outputfile
+                                      if args.save_temps else None))
     if args.output_xhtml:
         convert_to_xhtml(results['tokenized'])
     save_xml(tokenized_xml_path, results['tokenized'])

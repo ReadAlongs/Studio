@@ -34,6 +34,7 @@ DICT_TEMPLATE = '''{{#items}}
 
 def make_dict(xml, input_filename, unit="m"):
     data = {"items": []}
+    nwords = 0
     for e in xml.xpath(".//" + unit):
         if "id" not in e.attrib:
             logging.error("%s-type element without id in file %s" %
@@ -41,11 +42,13 @@ def make_dict(xml, input_filename, unit="m"):
         text = e.text.strip()
         if not text:
             continue
+        nwords += 1
         data["items"].append({
             "id": e.attrib["id"],
             "pronunciation": text
         })
-
+    if nwords == 0:
+        raise RuntimeError("No words in dictionary!")
     return pystache.render(DICT_TEMPLATE, data)
 
 
