@@ -131,11 +131,14 @@ class TokenizerLibrary:
                     self.tokenizers[tokenizer.lang] = tokenizer
 
     def add_word_children(self, element):
-        if element.tag == 'w':   # don't do anything to existing words!
+        tag = etree.QName(element.tag).localname
+        nsmap = element.nsmap if hasattr(element, "nsmap") \
+                            else element.getroot().nsmap
+        if tag in ["w", "teiHeader", "head"]:   # don't do anything to existing words!
             new_element = deepcopy(element)
             new_element.tail = ''  # just take off their .tail so that it's not doubled
             return new_element     # as the calling method tends to it
-        new_element = etree.Element(element.tag)
+        new_element = etree.Element(element.tag, nsmap=nsmap)
         for key, value in element.attrib.items():
             new_element.attrib[key] = value
 
@@ -146,7 +149,7 @@ class TokenizerLibrary:
             new_element.text = ''
             for unit in tokenizer.tokenize_text(element.text):
                 if unit["is_word"]:
-                    new_child_element = etree.Element("w")
+                    new_child_element = etree.Element("w", nsmap=nsmap)
                     new_child_element.text = unit["text"]
                     new_element.append(new_child_element)
                     continue

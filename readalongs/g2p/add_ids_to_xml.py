@@ -26,6 +26,10 @@ from collections import defaultdict
 from readalongs.g2p.util import load_xml, save_xml
 
 TAG_TO_ID = {
+    'text': 't',
+    'body': 'b',
+    'div': 'd',
+    'page': 'pp',
     'p': 'p',
     'u': 'u',
     's': 's',
@@ -33,12 +37,20 @@ TAG_TO_ID = {
     'm': 'm'
 }
 
+TAGS_TO_IGNORE = [
+    "head",
+    "teiHeader",
+    "script"
+]
 
 def add_ids_aux(element, ids=defaultdict(lambda: 0), parent_id=''):
+    tag = etree.QName(element.tag).localname
+    if tag in TAGS_TO_IGNORE:
+        return ids
     if "id" not in element.attrib:
-        if element.tag in TAG_TO_ID:
-            id = TAG_TO_ID[element.tag]
-        elif element.tag == 'seg' and "type" in element.attrib:
+        if tag in TAG_TO_ID:
+            id = TAG_TO_ID[tag]
+        elif tag == 'seg' and "type" in element.attrib:
             if element.attrib["type"] == 'syll':
                 id = "y"
             elif (element.attrib["type"]
@@ -46,7 +58,7 @@ def add_ids_aux(element, ids=defaultdict(lambda: 0), parent_id=''):
                       "prefix", "suffix"]):
                 id = 'm'
         else:
-            id = element.tag
+            id = tag
         if id not in ids:
             ids[id] = 0
         element.attrib["id"] = parent_id + id + str(ids[id])
