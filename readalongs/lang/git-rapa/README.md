@@ -1,0 +1,99 @@
+Language-specific files for Gitksan (RAPA)
+RAPA= Rigsby APA
+
+
+RAPA	 --> 	 IPA
+
+?		Ê”
+ 'l		 'l
+ 'm		 'm
+?m		Ê”m
+ 'n		 'n
+?n		Ê”n
+?w		Ê”w
+?u/?U		Ê”u/Ê”ÊŠ
+?áµ˜/?áµ		Ê”áµ˜/Ê”á¶·
+ 'w		w'
+?y		Ê”j
+ 'y		 'j
+?i		Ê”i
+?Í¥		Ê”Í¥
+A		a/ÊŒ
+a		Ã¦
+AA		aË/ÊŒË
+aa		Ã¦Ë
+b		b
+d		d
+e		e
+E		É›
+ee		eË
+g		g
+g		Ê
+gÌ²		É¢
+gÊ¸		ÉŸ
+gÊ·		gÊ·
+h		h
+É«		É¬
+I		Éª/É¨
+i		i
+ii		iË
+j		dÍ¡z
+k		k
+kÊ¸		c
+kÊ¸Ê°		cÊ°
+kÊ°		kÊ°
+qÊ°		qÊ°
+q		q
+k'		k'
+?k		Ê”k
+?g		Ê”É¢
+?q		Ê”q
+?qÊ°		Ê”qÊ°
+q'		q'
+kÊ¸'		c'
+?kÊ¸		Ê”c
+?kÊ¸Ê°		Ê”cÊ°
+?gÊ¸		Ê”ÉŸ
+kÊ·		kÊ·
+kÊ·Ê°		kÊ·Ê°
+?kÊ·		Ê”kÊ·
+?kÊ·Ê°		Ê”kÊ·Ê°
+kÊ·'		kÊ·'
+?gÊ·		Ê”gÊ·
+l		l
+m		m
+n		n
+O		É”
+o		o
+oo		oË
+p		p
+pÊ°		pÊ°
+?pÊ°		Ê”pÊ°
+?p		Ê”p
+p'		p'
+?b		Ê”b
+s		s
+t		t
+tÊ°		tÊ°
+?t		Ê”t
+?tÊ°		Ê”tÊ°
+t'		t'
+?d		Ê”d
+?tÉ«		Ê”tÉ¬
+È½'		tÍ¡É¬'
+cÊ°		tÍ¡sÊ°
+c		tÍ¡s
+?c		Ê”tÍ¡s
+c'		tÍ¡s'
+?cÊ°		Ê”tÍ¡sÊ°
+U		ÊŠ
+u		u
+oÌ£		ÊŠÌž
+uu		uË
+w		w
+w		w
+x		x
+xÊ¸		Ã§
+xÌ‡		Ï‡
+xÊ·		xÊ·
+y		j
