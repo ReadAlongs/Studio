@@ -1,101 +1,96 @@
 Language-specific files for Gitksan (APA)
 
+APA to IPA
+
+Ɂ,Ɂ
+l̓{1},l{1}ʼ{2}
+m̓{1},m{1}ʼ{2}
+ʔm,ʔm
+n̓{1},n{1}ʼ{2}
+ʔn,ʔn
+ʔw,ʔw
+w̓{1},w{1}ʼ{2}
+ʔ{1}y{2},ʔ{1}j{2}
+y̓{1},ʼ{2}j{1}
+ʔi,ʔi
+?{1}\u2071{2},ʔ{1}\u2071{2}
+æ,æ
+æː,æː
+b,b
+d,d
+e,e
+eː,eː
+ɛ,ɛ
+ɡ,ɡ
+ɡʷ,ɡʷ
+h,h
+ɬ,ɬ
+i,i
+iː,iː
+ʒ{1},ʣ{1}
+k,k
+kʰ,kʰ
+qʰ,qʰ
+q,q
+k̓{1},k{1}ʼ{2}
+ʔk,ʔk
+ʔq,ʔq
+ʔqʰ,ʔqʰ
+q̓{1},q{1}ʼ{2}
+kʷ,kʷ
+kʷʰ,kʷʰ
+ʔkʷ,ʔkʷ
+ʔkʷʰ,ʔkʷʰ
+k̓{1}ʷ{2},k{1}ʷ{2}ʼ{3}
+ʔɡʷ,ʔɡʷ
+l,l
+m,m
+n,n
+oː,oː
+p,p
+pʰ,pʰ
+ʔpʰ,ʔpʰ
+ʔp,ʔp
+p̓{1},p{1}ʼ{2}
+ʔb,ʔb
+s,s
+t,t
+tʰ,tʰ
+ʔt,ʔt
+ʔtʰ,ʔtʰ
+t̓{1},t{1}ʼ{2}
+ʔd,ʔd
+ʔ{1}ƛ{2},ʔ{1}t{2}ɬ{3}
+ƛ̓{1},t{1}ɬ{2}ʼ{3}
+c{1}ʰ{2},ʦ{1}ʰ{2}
+c{1},ʦ{1}
+ʔ{1}c{2},ʔ{1}ʦ{2}
+c̓{1},ʦ{1}ʼ{2}
+ʔ{1}c{2}ʰ{3},ʔ{1}ʦ{2}ʰ{3}
+ω{1},ʊ̞{1}
+uː,uː
+w,w
+x,x
+x̣{1},χ{1}
+xʷ,xʷ
+y{1},j{2}
 
 
-APA	-->	IPA
-
-Ê”		Ê”
-lÌ“		 'l
-mÌ“		 'm
-Ê”m		Ê”m
-nÌ“		 'n
-Ê”n		Ê”n
-Ê”w		Ê”w
-Ê”u		Ê”u
-Ê”ÊŠ		Ê”ÊŠ
-Ê”áµ˜		Ê”áµ˜
-Ê”á¶·		Ê”á¶·
-wÌ“		w'
-Ê”y		Ê”j
-yÌ“		 'j
-Ê”i		Ê”i
-Ê”Í¥		Ê”Í¥
-a/ÊŒ/É‘		a/ÊŒ
-Ã¦		Ã¦
-aË/ÊŒË/É‘Ë		aË/ÊŒË
-Ã¦Ë		Ã¦Ë
-b		b
-d		d
-e		e
-É›		É›
-eË		eË
-g		g
-Ê		Ê
-g/gÌ‡		É¢
-gÊ¸/gÌ‚		ÉŸ
-gÊ·		gÊ·
-h		h
-É¬		É¬
-Éª/É¨		Éª/É¨
-i		i
-iË		iË
-Ê’		dÍ¡z
-k		k
-kÊ¸/kÌ¯		c
-kÊ¸Ê°/kÌ¯Ê°		cÊ°
-kÊ°		kÊ°
-qÊ°		qÊ°
-q		q
-kÌ“		k'
-Ê”k		Ê”k
-Ê”g/gÌ‡		Ê”É¢
-Ê”q		Ê”q
-Ê”qÊ°		Ê”qÊ°
-qÌ“		q'
-kÌ“Ê¸/kÌ¯Ì“		c'
-Ê”kÊ¸/Ê”kÌ¯		Ê”c
-Ê”kÊ¸Ê°/Ê”kÌ¯Ê°		Ê”cÊ°
-Ê”gÊ¸/Ê”gÌ‚		Ê”ÉŸ
-kÊ·		kÊ·
-kÊ·Ê°		kÊ·Ê°
-Ê”kÊ·		Ê”kÊ·
-Ê”kÊ·Ê°		Ê”kÊ·Ê°
-kÌ“Ê·		kÊ·'
-Ê”gÊ·		Ê”gÊ·
-l		l
-m		m
-n		n
-É”		É”
-o		o
-oË		oË
-p		p
-pÊ°		pÊ°
-Ê”pÊ°		Ê”pÊ°
-Ê”p		Ê”p
-p'		p'
-Ê”b		Ê”b
-s		s
-t		t
-tÊ°		tÊ°
-Ê”t		Ê”t
-Ê”tÊ°		Ê”tÊ°
-tÌ“		t'
-Ê”d		Ê”d
-Ê”Æ›		Ê”tÉ¬
-Æ›Ì“		tÍ¡É¬'
-cÊ°		tÍ¡sÊ°
-c		tÍ¡s
-Ê”c		Ê”tÍ¡s
-c'		tÍ¡s'
-Ê”cÊ°		Ê”tÍ¡sÊ°
-ÊŠ		ÊŠ
-u		u
-Ï‰		ÊŠÌž
-uË		uË
-w		w
-w		w
-x		x
-xÊ¸/xÌ¯		Ã§
-xÌ‡		Ï‡
-xÊ·		xÊ·
-y		j
+a/ɑ/ʌ,a/ʌ	free variation
+aː/ɑː/ʌː,aː/ʌː	free variation
+ɪ/ɨ,ɪ/ɨ free variation
+ʁ/ɣ,ʁ free variation
+g̣/ġ,ɢ free variation
+gʸ/ĝ,ɟ free variation
+kʸ/k̯,c free variation
+kʸʰ/k̯ʰ,cʰ free variation
+ʔɡ/ʔġ,ʔɢ free variation
+k̓ʸ/k̯̓,cʼ	free variation
+ʔkʸ/ʔk̯,, ʔc	free variation
+ʔkʸʰ/ʔk̯ʰ,ʔcʰ free variation
+ʔɡʸ/ʔĝ,ʔɟ	free variation
+ɔ/o,ɔ/o free variation
+ʊ/u,ʊ/u	free variation
+xʸ/x̯, ç	free variation
+ʔu/ʔʊ,ʔu/ʔʊ		free variation
+ʔᶸ/ʔᶷ,ʔᶸ/ʔᶷ	free variation
