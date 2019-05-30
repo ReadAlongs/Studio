@@ -143,8 +143,8 @@ class ConverterLibrary:
         self.transitive_closure()
 
     def add_converter(self, converter):
-        logging.info("Adding converter between %s and %s",
-                      converter.in_lang, converter.out_lang)
+        #logging.info("Adding converter between %s and %s",
+        #              converter.in_lang, converter.out_lang)
         self.converters[(converter.in_lang, converter.out_lang)] = converter
 
     def transitive_closure(self):
