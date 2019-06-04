@@ -44,6 +44,8 @@ TAGS_TO_IGNORE = [
 ]
 
 def add_ids_aux(element, ids=defaultdict(lambda: 0), parent_id=''):
+    if element.tag is etree.Comment:
+        return ids
     tag = etree.QName(element.tag).localname
     if tag in TAGS_TO_IGNORE:
         return ids
