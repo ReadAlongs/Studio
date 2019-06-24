@@ -1,0 +1,124 @@
+{
+  "type": "mapping",
+  "authors": [
+    "Aidan Pine"
+  ],
+  "created": "2019-06-23",
+  "last_modified": "2019-06-23",
+  "in_metadata": {
+    "display_name": "Gitksan",
+    "display": true,
+    "lang": "git",
+    "format": "custom",
+    "delimiter": "",
+    "case_insensitive": true
+  },
+  "out_metadata": {
+    "lang": "git-ipa",
+    "format": "ipa",
+    "delimiter": ""
+  },
+  "map": [
+    {
+      "in": "a",
+      "out": "ɑ"
+    },
+    {
+      "in": "p",
+      "out": "b"
+    },
+    {
+      "in": "t",
+      "out": "d"
+    },
+    {
+      "in": "s",
+      "out": "s"
+    },
+    {
+      "in": "k",
+      "out": "k"
+    },
+    {
+      "in": "ɡ",
+      "out": "k"
+    },
+    {
+      "in": "d",
+      "out": "d"
+    },
+    {
+      "in": "b",
+      "out": "b"
+    },
+    {
+      "in": "l",
+      "out": "l"
+    },
+    {
+      "in": "m",
+      "out": "m"
+    },
+    {
+      "in": "n",
+      "out": "n"
+    },
+    {
+      "in": "x",
+      "out": "x"
+    },
+    {
+      "in": "w",
+      "out": "w"
+    },
+    {
+      "in": "o",
+      "out": "u"
+    },
+    {
+      "in": "u",
+      "out": "u"
+    },
+    {
+      "in": "'",
+      "out": "ʔ"
+    },
+    {
+      "in": "y",
+      "out": "i"
+    },
+    {
+      "in": "k\u0332",
+      "out": "q"
+    },
+    {
+      "in": "ts",
+      "out": "t͡s"
+    },
+    {
+      "in": "ɡ\u0332",
+      "out": "ɢ"
+    },
+    {
+      "in": "hl",
+      "out": "ɬ"
+    },
+    {
+      "in": "j",
+      "out": "d͡ʒ"
+    },
+    {
+      "in": "x\u0332",
+      "out": "χ"
+    },
+    {
+      "in": "xw",
+      "out": "xʷ"
+    },
+    {
+      "in": "e",
+      "out": "e"
+    }
+  ],
+  "comments": []
+}

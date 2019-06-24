@@ -1,0 +1,107 @@
+{
+    "type": "mapping",
+    "in_metadata": {
+        "lang": "git-ipa",
+        "format": "ipa",
+        "delimiter": ""
+    },
+    "out_metadata": {
+        "lang": "eng-ipa",
+        "format": "ipa",
+        "delimiter": ""
+    },
+    "map": [
+        {
+            "in": "b",
+            "out": "b"
+        },
+        {
+            "in": "d",
+            "out": "d"
+        },
+        {
+            "in": "d͡ʒ",
+            "out": "dʒ"
+        },
+        {
+            "in": "e",
+            "out": "eː"
+        },
+        {
+            "in": "i",
+            "out": "i"
+        },
+        {
+            "in": "k",
+            "out": "k"
+        },
+        {
+            "in": "l",
+            "out": "l"
+        },
+        {
+            "in": "r",
+            "out": "l"
+        },
+        {
+            "in": "m",
+            "out": "m"
+        },
+        {
+            "in": "n",
+            "out": "n"
+        },
+        {
+            "in": "q",
+            "out": "k"
+        },
+        {
+            "in": "s",
+            "out": "s"
+        },
+        {
+            "in": "t͡s",
+            "out": "ts"
+        },
+        {
+            "in": "u",
+            "out": "u"
+        },
+        {
+            "in": "w",
+            "out": "w"
+        },
+        {
+            "in": "x",
+            "out": "k"
+        },
+        {
+            "in": "xʷ",
+            "out": "kw"
+        },
+        {
+            "in": "ɑ",
+            "out": "ɑ"
+        },
+        {
+            "in": "ɢ",
+            "out": "ɡ"
+        },
+        {
+            "in": "g",
+            "out": "ɡ"
+        },
+        {
+            "in": "ɬ",
+            "out": "s"
+        },
+        {
+            "in": "ʔ",
+            "out": "ʔ"
+        },
+        {
+            "in": "χ",
+            "out": "ʃ"
+        }
+    ]
+}

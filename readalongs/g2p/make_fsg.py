@@ -19,6 +19,7 @@ import argparse
 import os
 import pystache
 import logging
+from slugify import slugify
 
 try:
     unicode()
@@ -40,7 +41,7 @@ FSG_END
 
 def make_fsg(xml, filename, unit="m"):
     data = {
-        "name": os.path.splitext(os.path.basename(filename))[0],
+        "name": slugify(os.path.splitext(os.path.basename(filename))[0]), # If name includes special characters, pocketsphinx throws a RuntimeError: new_Decoder returned -1
         "states": [],
         "num_states": 0
     }
