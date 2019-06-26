@@ -36,7 +36,7 @@ from __future__ import division, absolute_import
 from io import open
 from lxml import etree
 from copy import deepcopy
-import logging
+from readalongs.log import LOGGER
 import argparse
 import os
 import json
@@ -121,7 +121,7 @@ class TokenizerLibrary:
                 with open(inv_filename, "r", encoding="utf-8") as fin:
                     inv = json.load(fin)
                     if not isinstance(inv, dict):
-                        logging.error("File %s is not a JSON dictionary",
+                        LOGGER.error("File %s is not a JSON dictionary",
                                       inv_filename)
                         continue
                     if ("type" not in inv

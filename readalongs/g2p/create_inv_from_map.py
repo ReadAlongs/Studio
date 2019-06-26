@@ -25,12 +25,12 @@ from io import open
 from unicodedata import normalize
 import argparse
 import json
-import logging
+from readalongs.log import LOGGER
 
 
 def create_inventory_from_mapping(mapping, in_or_out):
     if in_or_out not in ["in", "out"]:
-        logging.error("Parameter in_or_out must be 'in' or 'out'")
+        LOGGER.error("Parameter in_or_out must be 'in' or 'out'")
         return {}
     inventory = [x[in_or_out] for x in mapping["map"]]
     inventory = [normalize("NFD", x) for x in inventory]

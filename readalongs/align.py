@@ -4,7 +4,6 @@ Alignment for audiobooks
 
 import pocketsphinx
 import argparse
-import logging
 import pystache
 import shutil
 import pydub
@@ -23,6 +22,8 @@ from readalongs.g2p.make_fsg import make_fsg
 from readalongs.g2p.make_dict import make_dict
 from readalongs.g2p.make_smil import make_smil
 from readalongs.g2p.util import save_xml, save_txt
+
+from readalongs.log import LOGGER
 
 from readalongs import mapping_dir
 
@@ -88,7 +89,6 @@ def align_audio(xml_path, wav_path, unit='w', save_temps=None):
         dict_file = NamedTemporaryFile(prefix='readalongs_dict_', delete=False)
     dict_file.write(dict_data.encode('utf-8'))
     dict_file.flush()
-
     fsg_data = make_fsg(xml, xml_path, unit=unit)
     if save_temps:
         fsg_file = io.open(save_temps + '.fsg', 'wb')
@@ -112,7 +112,7 @@ def align_audio(xml_path, wav_path, unit='w', save_temps=None):
     _, wav_ext = os.path.splitext(wav_path)
     if wav_ext == '.wav':
         with wave.open(wav_path) as wav:
-            logging.info("Read %s: %d frames (%f seconds) audio"
+            LOGGER.info("Read %s: %d frames (%f seconds) audio"
                          % (wav_path, wav.getnframes(), wav.getnframes()
                             / wav.getframerate()))
             raw_data = wav.readframes(wav.getnframes())
@@ -151,9 +151,14 @@ def align_audio(xml_path, wav_path, unit='w', save_temps=None):
                 "start": start,
                 "end": end
             })
-        logging.info("Segment: %s (%.3f : %.3f)",
+        LOGGER.info("Segment: %s (%.3f : %.3f)",
                      seg.word, start, end)
-    final_end = end
+
+    try:
+        final_end = end
+    except UnboundLocalError:
+        raise RuntimeError("Alignment Failed, please examine "
+                           "dictionary and input audio and text.")
 
     # FIXME: should have the same number of outputs as inputs
     if len(results['words']) == 0:
@@ -284,9 +289,7 @@ def main(argv=None):
     parser = make_argparse()
     args = parser.parse_args(argv)
     if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO)
+        LOGGER.setLevel('DEBUG')
     if args.text_input:
         tempfile, args.inputfile \
             = create_input_xml(args.inputfile,

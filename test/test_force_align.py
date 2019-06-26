@@ -3,7 +3,7 @@ Test force-alignment with PocketSphinx FSG search from Python API
 """
 
 import unittest
-import logging
+from readalongs.log import LOGGER
 import tempfile
 import os
 from lxml import etree
@@ -11,9 +11,10 @@ from lxml import etree
 from readalongs.align import align_audio, create_input_xml, convert_to_xhtml
 from readalongs.g2p.util import save_xml, load_txt
 
+import unittest
 
 class TestForceAlignment(unittest.TestCase):
-    logging.basicConfig(level=logging.DEBUG)
+    LOGGER.setLevel('DEBUG')
     data_dir = os.path.dirname(__file__)
 
     def testAlign(self):
@@ -66,5 +67,5 @@ class TestXHTML(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
+    LOGGER.setLevel('DEBUG')
     unittest.main()

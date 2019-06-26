@@ -13,7 +13,7 @@ from __future__ import print_function, unicode_literals, division
 from io import open, TextIOWrapper
 from lxml import etree
 from copy import deepcopy
-import logging
+from readalongs.log import LOGGER
 import os
 import json
 import zipfile
@@ -182,7 +182,7 @@ def load_tsv(input_path, labels):
         for i, line in enumerate(fin, start=1):
             pieces = line.strip("\n").strip(" ").split("\t")
             if len(pieces) > len(labels):
-                logging.error("More columns than labels on line %s" % i)
+                LOGGER.error("More columns than labels on line %s" % i)
                 continue
             results.append(OrderedDict(zip(labels, pieces)))
     return results

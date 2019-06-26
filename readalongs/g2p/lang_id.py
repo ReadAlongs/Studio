@@ -20,7 +20,7 @@ from __future__ import print_function, unicode_literals
 from __future__ import division, absolute_import
 
 import argparse, os
-import logging
+from readalongs.log import LOGGER
 from glob import glob
 from collections import defaultdict
 import numpy as np
@@ -50,14 +50,14 @@ class LanguageIdentifier:
                 try:
                     inv = load_json(lang_filename)
                 except:
-                    logging.error("Invalid JSON in file %s", lang_filename)
+                    LOGGER.error("Invalid JSON in file %s", lang_filename)
                     continue
                 if not isinstance(inv, dict):
-                    logging.error("File %s is not a JSON dictionary",
+                    LOGGER.error("File %s is not a JSON dictionary",
                                   lang_filename)
                     continue
                 if ("type" not in inv):
-                    logging.error("File %s is not a supported "
+                    LOGGER.error("File %s is not a supported "
                                   "conversion format", lang_filename)
                     continue
                 if inv["type"] == "inventory":

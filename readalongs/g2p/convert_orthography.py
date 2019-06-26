@@ -26,7 +26,7 @@
 from __future__ import print_function, unicode_literals
 from __future__ import division, absolute_import
 
-import logging
+from readalongs.log import LOGGER
 import json
 import os
 import copy
@@ -85,7 +85,7 @@ def trim_indices(idxs):
 class CompositeConverter:
     def __init__(self, converter1, converter2):
         if converter1.out_lang != converter2.in_lang:
-            logging.error("Cannot compose converter %s->%s "
+            LOGGER.error("Cannot compose converter %s->%s "
                           "and converter %s->%s" %
                           (converter1.in_lang, converter1.out_lang,
                            converter2.in_lang, converter2.out_lang))
@@ -119,22 +119,22 @@ class ConverterLibrary:
                 with open(mapping_filename, "r", encoding="utf-8") as fin:
                     mapping = json.load(fin)
                     if not isinstance(mapping, dict):
-                        logging.error("File %s is not a JSON dictionary",
+                        LOGGER.error("File %s is not a JSON dictionary",
                                       mapping_filename)
                         continue
                     if "type" not in mapping:
-                        logging.error("File %s is not a supported "
+                        LOGGER.error("File %s is not a supported "
                                       "conversion format", mapping_filename)
                         continue
                     if mapping["type"] == "inventory":
                         continue
                     if mapping["type"] not in G2P_HANDLERS:
-                        logging.error("File %s is not a supported "
+                        LOGGER.error("File %s is not a supported "
                                       "conversion format", mapping_filename)
                         continue
                     converter = G2P_HANDLERS[mapping["type"]](mapping_filename)
                     if converter.in_lang == converter.out_lang:
-                        logging.error("Cannot load reflexive (%s->%s) "
+                        LOGGER.error("Cannot load reflexive (%s->%s) "
                                       "mapping from file %s",
                                       converter.in_lang, converter.out_lang,
                                       mapping_filename)
@@ -143,7 +143,7 @@ class ConverterLibrary:
         self.transitive_closure()
 
     def add_converter(self, converter):
-        #logging.info("Adding converter between %s and %s",
+        #LOGGER.info("Adding converter between %s and %s",
         #              converter.in_lang, converter.out_lang)
         self.converters[(converter.in_lang, converter.out_lang)] = converter
 
@@ -169,7 +169,7 @@ class ConverterLibrary:
 
     def convert(self, text, in_lang, out_lang):
         if (in_lang, out_lang) not in self.converters:
-            logging.error("No conversion found between %s and %s.",
+            LOGGER.error("No conversion found between %s and %s.",
                           in_lang, out_lang)
             return None, None
         converter = self.converters[(in_lang, out_lang)]

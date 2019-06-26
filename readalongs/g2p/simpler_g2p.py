@@ -12,7 +12,7 @@
 
 from __future__ import print_function, unicode_literals, division
 import re
-import logging
+from readalongs.log import LOGGER
 from .util import load_json
 from unicodedata import normalize
 from text_unidecode import unidecode

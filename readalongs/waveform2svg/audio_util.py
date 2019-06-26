@@ -20,7 +20,6 @@ import os
 import numpy as np
 import librosa
 from lxml import etree
-from math import floor
 
 SAMPLE_RATE = 16000
 

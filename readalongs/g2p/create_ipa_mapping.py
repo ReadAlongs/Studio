@@ -19,7 +19,7 @@ from __future__ import division, absolute_import
 
 import argparse
 import json
-import logging
+from readalongs.log import LOGGER
 import io
 
 import panphon.distance
@@ -72,11 +72,11 @@ def create_mapping(inv_l1, inv_l2):
         inv_l2 = create_inventory_from_mapping(inv_l2, "in")
     supported_formats = ('ipa', 'x-sampa', 'xsampa')
     if inv_l1["metadata"]["format"].lower() not in supported_formats:
-        logging.warning("Unsupported orthography of inventory 1: %s"
+        LOGGER.warning("Unsupported orthography of inventory 1: %s"
                         " (must be ipa or x-sampa)",
                         inv_l1["metadata"]["format"].lower())
     if inv_l2["metadata"]["format"].lower() not in supported_formats:
-        logging.warning("Unsupported orthography of inventory 2: %s"
+        LOGGER.warning("Unsupported orthography of inventory 2: %s"
                         " (must be ipa or x-sampa)",
                         inv_l2["metadata"]["format"].lower())
     l1_is_xsampa, l2_is_xsampa = False, False
@@ -116,7 +116,7 @@ def find_good_match(p1, inventory_l2, l2_is_xsampa=False):
             # of deleting input or inserting any segment (but that
             # can't be done with a greedy search)
             if len(p2_pseq) == 0:
-                logging.warning('No panphon mapping for %s - skipping',
+                LOGGER.warning('No panphon mapping for %s - skipping',
                                 inventory_l2[j])
                 continue
             e = min(i + len(p2_pseq), len(p1_pseq))
@@ -130,7 +130,7 @@ def find_good_match(p1, inventory_l2, l2_is_xsampa=False):
                 best_input = input_seg
                 best_output = j
                 best_score = score
-        logging.debug('Best match at position %d: %s => %s',
+        LOGGER.debug('Best match at position %d: %s => %s',
                       i, best_input, inventory_l2[best_output])
         good_match.append(inventory_l2[best_output])
         i += len(best_input)  # greedy!
