@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% block head %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>ReadAlong Web Component</title>
+
+    <!-- Bulma core CSS -->
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+    <!-- Font Awesome CSS -->
+    <link href="{{ url_for('static', filename='css/all.min.css') }}" rel="stylesheet">
+
+    {% endblock %}
+</head>
+
+<body id="page-top">
+    {% block content %}{% endblock %}
+</body>
+
+</html>

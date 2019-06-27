@@ -157,8 +157,10 @@ def align_audio(xml_path, wav_path, unit='w', save_temps=None):
     try:
         final_end = end
     except UnboundLocalError:
-        raise RuntimeError("Alignment Failed, please examine "
+        err = RuntimeError("Alignment Failed, please examine "
                            "dictionary and input audio and text.")
+        LOGGER.exception(err)
+        raise err
 
     # FIXME: should have the same number of outputs as inputs
     if len(results['words']) == 0:
