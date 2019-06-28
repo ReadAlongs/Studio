@@ -13,13 +13,14 @@
 
 from __future__ import print_function, unicode_literals, division, absolute_import
 from io import open
-import logging
+from readalongs.log import LOGGER
 import argparse
 import os
 import numpy as np
-from math import ceil
+from math import floor, ceil
 import pystache
-from audio_util import *
+from readalongs.waveform2svg.audio_util import smooth, load_wav_or_smil, save_txt
+
 
 SVG_TEMPLATE = '''<svg id='wave' preserveAspectRatio='none' viewBox="0 0 {{width}} {{height}}" xmlns="http://www.w3.org/2000/svg" height="{{height}}" width="{{width}}">
   <defs>

@@ -26,7 +26,7 @@
 from __future__ import print_function, unicode_literals
 from __future__ import division, absolute_import
 
-import logging
+from readalongs.log import LOGGER
 import argparse
 
 from readalongs.g2p.lang_id import add_lang_ids
@@ -90,7 +90,7 @@ if __name__ == '__main__':
         '--debug', action='store_true', help='Enable debugging output')
     args = parser.parse_args()
     if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
+        LOGGER.setLevel("DEBUG")
     go(args.input,
        args.mapping_dir,
        args.output_xml,

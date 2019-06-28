@@ -20,7 +20,7 @@ from __future__ import print_function, unicode_literals
 from __future__ import division, absolute_import
 
 import argparse, os
-import logging
+from readalongs.log import LOGGER
 from unicodedata import normalize, category
 from text_unidecode import unidecode
 

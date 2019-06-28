@@ -1,6 +1,6 @@
 from unittest import TestCase
 import unittest
-import logging
+from readalongs.log import LOGGER
 
 from readalongs.g2p.tokenize_xml import tokenize_xml
 from readalongs.g2p.add_ids_to_xml import add_ids
@@ -44,5 +44,5 @@ class TestAtikamekwG2P(TestCase):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
+    LOGGER.setLevel('DEBUG')
     unittest.main()

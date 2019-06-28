@@ -12,7 +12,7 @@ from __future__ import division, absolute_import
 
 import argparse
 import pystache
-import logging
+from readalongs.log import LOGGER
 import shutil
 import os
 
@@ -45,7 +45,7 @@ def process_src_attrib(src_text, id_prefix, mimetypes):
     filename_without_ext, ext = os.path.splitext(filename)
     ext = ext.strip(".")
     if ext not in mimetypes:
-        logging.warning("Unknown extension in SMIL: %s", ext)
+        LOGGER.warning("Unknown extension in SMIL: %s", ext)
         return None
     entry = {
         "origin_path": filename,
@@ -172,7 +172,7 @@ def create_epub(input_path, output_path, unpacked=False):
     for entry in package_data['media']:
         origin_path = os.path.join(input_dirname, entry["origin_path"])
         if not os.path.exists(origin_path):
-            logging.warning(
+            LOGGER.warning(
                 "Cannot find file %s to copy into EPUB file", origin_path)
             continue
         dest_path = os.path.join(EPUB_PATH, entry["dest_path"])

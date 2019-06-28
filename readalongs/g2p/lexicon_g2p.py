@@ -25,7 +25,7 @@
 ######################################################################
 
 from __future__ import print_function, unicode_literals, division
-import logging
+from readalongs.log import LOGGER
 import os
 from collections import defaultdict
 from unicodedata import normalize
@@ -57,20 +57,20 @@ class LexiconG2P:
 
         dirname = os.path.dirname(metadata_path)
         if "src" not in self.metadata:
-            logging.error(
+            LOGGER.error(
                 "File %s does not specify a source document", metadata_path)
             return
         self.src_path = os.path.join(dirname, self.metadata["src"])
 
         self.entries = defaultdict(list)
         if "src_format" not in self.metadata:
-            logging.error(
+            LOGGER.error(
                 "File %s lacking a source format ('src_format') attribute",
                 metadata_path)
             return
 
         if self.metadata["src_format"] not in LEXICON_LOADERS:
-            logging.error("File %s references an unknown lexicon format: %s",
+            LOGGER.error("File %s references an unknown lexicon format: %s",
                           metadata_path, self.metadata["src_format"])
 
         self.loader = LEXICON_LOADERS[self.metadata["src_format"]]

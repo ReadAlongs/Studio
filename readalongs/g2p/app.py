@@ -3,7 +3,7 @@
 
 from __future__ import print_function, unicode_literals, division
 from io import open
-import logging, json, os
+from readalongs.log import LOGGER, json, os
 from pystache import render
 
 from flask import Flask, request

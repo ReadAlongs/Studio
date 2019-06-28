@@ -1,76 +1,95 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-
-    <title>ReadAlong Studio - Step Two</title>
-
-    <!-- Bootstrap core CSS -->
-    <link href="{{ url_for('static', filename='export_page/vendor/bootstrap/css/bootstrap.min.css') }}"
-        rel="stylesheet">
-
-    <!-- Custom fonts for this template -->
-
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
-        integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
-    <link rel="stylesheet"
-        href="{{ url_for('static', filename='export_page/vendor/simple-line-icons/css/simple-line-icons.css') }}">
-    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Catamaran:100,200,300,400,500,600,700,800,900" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Muli" rel="stylesheet">
-
-    <!-- Plugin CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='export_page/device-mockups/device-mockups.min.css') }}">
-
-    <!-- Custom styles for this template -->
-    <link href="{{ url_for('static', filename='export_page/css/new-age.css') }}" rel="stylesheet">
-    <script src="{{ url_for('static', filename='build/read-along.js') }}"></script>
-
-    <link href="https://fonts.googleapis.com/css?family=Lato|Material+Icons|Material+Icons+Outlined" rel="stylesheet">
-
-</head>
-
-<body id="page-top">
-
-    <header class="masthead">
-        <div class="container h-100">
-            <div class="row h-100">
-                <div class="col-lg-7 my-auto">
-                    <div class="header-content mx-auto">
-                        <h1 class="mb-5">Please upload your files here!</h1>
-                        <a href="/step/2" class="btn btn-outline btn-xl js-scroll-trigger">Upload!</a>
-                    </div>
-                </div>
-            </div>
+{% extends "base.html" %}
+{% block content %}
+<section class="section">
+    <div class="container upload__desc">
+        <h1 class="title">Upload</h1>
+        <h2 class="subtitle">
+            Upload data to start creating your ReadAlong</h2>
+        <p>In order to make a ReadAlong, we need 3 different things. We need some <b>text</b>, some corresponding
+            <b>audio</b>,
+            and a way of turning the writing system of your language (AKA <a
+                href='https://en.wikipedia.org/wiki/Orthography'>Orthography</a>) into the <a
+                href='https://en.wikipedia.org/wiki/International_Phonetic_Alphabet'>International Phonetic Alphabet
+                (IPA)</a>. If you're not a linguist, don't worry! This sounds scarier than it is, and, once you make the
+            map between your
+            language's writing system and the IPA once, you don't have to do it again!</p>
+    </div>
+    <div class="container upload__text">
+        <h1 class="title">Text</h1>
+        <h2 class="subtitle">
+            Upload the text of your ReadAlong</h2>
+        <p>You can upload text in a number of ways. You can upload plain text files (.txt), Microsoft Word Documents
+            (.docx), or XML files (.xml)</p>
+        <div class="file">
+            <label class="file-label">
+                <input class="file-input" type="file" name="resume">
+                <span class="file-cta">
+                    <span class="file-icon">
+                        <i class="fas fa-upload"></i>
+                    </span>
+                    <span class="file-label">
+                        Choose a file…
+                    </span>
+                </span>
+            </label>
         </div>
-    </header>
-
-    <footer>
-        <div class="container">
-            <p>&copy; Your Website 2019. All Rights Reserved.</p>
-            <ul class="list-inline">
-                <li class="list-inline-item">
-                    <a href="#">Privacy</a>
-                </li>
-                <li class="list-inline-item">
-                    <a href="#">Terms</a>
-                </li>
-                <li class="list-inline-item">
-                    <a href="#">FAQ</a>
-                </li>
-            </ul>
+    </div>
+    <div class="container upload__audio">
+        <h1 class="title">Audio</h1>
+        <h2 class="subtitle">
+            Upload the audio of your ReadAlong</h2>
+        <p>You must upload your audio either as an mp3 or wav file.</p>
+        <div class="file">
+            <label class="file-label">
+                <input class="file-input" type="file" name="resume">
+                <span class="file-cta">
+                    <span class="file-icon">
+                        <i class="fas fa-upload"></i>
+                    </span>
+                    <span class="file-label">
+                        Choose a file…
+                    </span>
+                </span>
+            </label>
         </div>
-    </footer>
+    </div>
+    <div class="container upload__audio">
+        <h1 class="title">Mapping</h1>
+        <h2 class="subtitle">
+            The map between your language's writing system, and the International Phonetic Alphabet.</h2>
+        <p>The reason ReadAlong Studio works is because it leverages technologies that have been created for English.
+            Usually,
+            need a certain amount of data is needed in order to do the alignment that ReadAlong Studio does. But,
+            instead of that, your
+            ReadAlong is first converted to a very approximate English pronounciation. Then, ReadAlong Studio can
+            do the alignment based on that, and convert it back into your language once it's done.</p>
+        <div class="file has-name">
+            <label class="file-label">
+                <input class="file-input" type="file" name="resume">
+                <span class="file-cta">
+                    <span class="file-icon">
+                        <i class="fas fa-upload"></i>
+                    </span>
+                    <span class="file-label">
+                        Choose a file…
+                    </span>
+                </span>
+            </label>
+        </div>
+    </div>
 
-    <!-- Bootstrap core JavaScript -->
-    <script src="{{ url_for('static', filename='export_page/vendor/jquery/jquery.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='export_page/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <div class="container uploaded">
+        <h1 class="title">Uploaded Material</h1>
+        <h2 class="subtitle">
+            Here are the files you've uploaded</h2>
+    </div>
+</section>
 
-</body>
+<div class="columns is-mobile is-centered">
+    <div class="column is-half is-centered has-text-centered">
+        <a class="button is-medium" href="/step/2">Go to the next step!</a>
+    </div>
+</div>
 
-</html>
+
+{% endblock %}

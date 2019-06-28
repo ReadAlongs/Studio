@@ -1,11 +1,13 @@
 from unittest import TestCase
-import logging
+from readalongs.log import LOGGER
 
 import readalongs
 from readalongs.g2p.tokenize_xml import tokenize_xml
 from readalongs.g2p.add_ids_to_xml import add_ids
 from readalongs.g2p.convert_xml import convert_xml
 from lxml import etree
+
+import unittest
 
 import os, io
 
@@ -39,5 +41,5 @@ class TestSouthEastCreeG2P(TestCase):
         self.assertEqual(etree.tounicode(xml), EXPECTED_CONVERTED)
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
+    LOGGER.setLevel('DEBUG')
     unittest.main()

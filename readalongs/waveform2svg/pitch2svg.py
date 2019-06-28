@@ -16,14 +16,14 @@
 
 from __future__ import print_function, unicode_literals, division, absolute_import
 from io import open
-import logging
+from readalongs.log import LOGGER
 import argparse
 import os
 import numpy as np
 from math import floor
 import pystache
 import librosa
-from audio_util import *
+from readalongs.waveform2svg.audio_util import SAMPLE_RATE, smooth, save_txt, load_wav_or_smil
 
 FMIN = 80
 FMAX = 1000
@@ -52,7 +52,7 @@ def extract_pitches(waveform, nbuckets=512):
     hop_length = int(floor(nsamples / nbuckets))
     pitches, magnitudes = librosa.core.piptrack(y=waveform, sr=SAMPLE_RATE,
         fmin=FMIN, fmax=FMAX, hop_length=hop_length, threshold=THRESHOLD)
-    pitches = pitches[:,:nbuckets]
+    pitches = pitches[:,:nbuckets] #TODO: AP: I'm not sure what this is meant to be. Causing error. Maybe just :nbuckets?
     pitches = pitches.max(axis=0)
     pitches /= pitches.max()
     return smooth(pitches, window_size=int(floor(nbuckets/40)))

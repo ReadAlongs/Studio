@@ -1,16 +1,17 @@
-"""
+'''
 Alignment for audiobooks
-"""
+'''
 
 import pocketsphinx
+import regex as re
 import argparse
-import logging
 import pystache
 import shutil
 import pydub
 import wave
 import os
 import io
+
 
 from lxml import etree
 from tempfile import NamedTemporaryFile
@@ -23,6 +24,8 @@ from readalongs.g2p.make_fsg import make_fsg
 from readalongs.g2p.make_dict import make_dict
 from readalongs.g2p.make_smil import make_smil
 from readalongs.g2p.util import save_xml, save_txt
+
+from readalongs.log import LOGGER
 
 from readalongs import mapping_dir
 
@@ -88,7 +91,6 @@ def align_audio(xml_path, wav_path, unit='w', save_temps=None):
         dict_file = NamedTemporaryFile(prefix='readalongs_dict_', delete=False)
     dict_file.write(dict_data.encode('utf-8'))
     dict_file.flush()
-
     fsg_data = make_fsg(xml, xml_path, unit=unit)
     if save_temps:
         fsg_file = io.open(save_temps + '.fsg', 'wb')
@@ -112,8 +114,8 @@ def align_audio(xml_path, wav_path, unit='w', save_temps=None):
     _, wav_ext = os.path.splitext(wav_path)
     if wav_ext == '.wav':
         with wave.open(wav_path) as wav:
-            logging.info("Read %s: %d frames (%f seconds) audio"
-                         % (wav_path, wav.getnframes(), wav.getnframes()
+            LOGGER.info("Read %s: %d frames (%f seconds) audio"
+                        % (wav_path, wav.getnframes(), wav.getnframes()
                             / wav.getframerate()))
             raw_data = wav.readframes(wav.getnframes())
             # Downsampling is (probably) not necessary
@@ -151,9 +153,16 @@ def align_audio(xml_path, wav_path, unit='w', save_temps=None):
                 "start": start,
                 "end": end
             })
-        logging.info("Segment: %s (%.3f : %.3f)",
-                     seg.word, start, end)
-    final_end = end
+        LOGGER.info("Segment: %s (%.3f : %.3f)",
+                    seg.word, start, end)
+
+    try:
+        final_end = end
+    except UnboundLocalError:
+        err = RuntimeError("Alignment Failed, please examine "
+                           "dictionary and input audio and text.")
+        LOGGER.exception(err)
+        raise err
 
     # FIXME: should have the same number of outputs as inputs
     if len(results['words']) == 0:
@@ -183,6 +192,113 @@ def align_audio(xml_path, wav_path, unit='w', save_temps=None):
     os.unlink(fsg_file.name)
 
     return results
+
+
+def return_word_from_id(xml, el_id):
+    ''' Given an XML document, return the innertext at id
+    '''
+    return xml.xpath('//*[@id="%s"]/text()' % el_id)[0]
+
+
+def write_to_text_grid(results, duration):
+    ''' Write results to Praat TextGrid
+    '''
+    result_id_pattern = re.compile(
+        r'''
+        t(?P<table>\d+)             # Table
+        b(?P<body>\d+)              # Body
+        d(?P<div>\d+)               # Div ( Break )
+        p(?P<par>\d+)               # Paragraph
+        s(?P<sent>\d+)              # Sentence
+        w(?P<word>\d+)              # Word
+        ''', re.VERBOSE)
+
+    all_els = results['words']
+    xml = results['tokenized']
+    sentences = []
+    words = []
+    all_words = []
+    current_sent = 0
+    for el in all_els:
+        parsed = re.search(result_id_pattern, el['id'])
+        sent_i = parsed.group('sent')
+        if int(sent_i) is not current_sent:
+            sentences.append(words)
+            words = []
+            current_sent += 1
+        word = {
+            "text": return_word_from_id(xml, el['id']),
+            "start": el['start'],
+            "end": el['end']
+        }
+        words.append(word)
+        all_words.append(word)
+    sentences.append(words)
+
+    template = '''
+    File type = "ooTextFile"
+    Object class = "TextGrid"
+
+    xmin = 0
+    xmax = {{ audio_duration }}
+    tiers? <exists>
+    size = 2
+    item []:
+        {{ #sentences }}
+        item [1]:
+            class = "IntervalTier"
+            name = "sentence"
+            xmin = {{ sentences_min }} 
+            xmax = {{ sentences_max }}
+            intervals: size = {{ sentences_size }}
+            {{ #sentence }}
+            intervals [{{ sentence_index }}]:
+                xmin = {{ sentence_start }}
+                xmax = {{ sentence_end }}
+                text = "{{{ sentence_text }}}"
+            {{ /sentence }}
+            {{ /sentences }}
+        {{ #words }}
+        item [2]:
+            class = "IntervalTier"
+            name = "words"
+            xmin = {{ words_min }}
+            xmax = {{ words_max }}
+            intervals: size = {{ words_size }}
+            {{ #word }}
+            intervals [{{ word_index }}]:
+                xmin = {{ word_start }}
+                xmax = {{ word_end }}
+                text = "{{{ word_text }}}"
+            {{ /word }}
+        {{ /words }}
+    '''
+
+    data = {'audio_duration': duration,
+            'sentences': {
+                'sentences_min': sentences[0][0]['start'],
+                'sentences_max': sentences[-1][-1]['end'],
+                'sentences_size': len(sentences),
+                'sentence': [
+                    {'sentence_index': sentences.index(s)+1,
+                     'sentence_start': s[0]['start'],
+                     'sentence_end': s[-1]['end'],
+                     'sentence_text': ' '.join([w['text'] for w in s])} for s in sentences]
+            },
+            'words': {
+                'words_min': all_words[0]['start'],
+                'words_max': all_words[-1]['end'],
+                'words_size': len(all_words),
+                'word': [
+                    {'word_index': all_words.index(w)+1,
+                     'word_start': w['start'],
+                     'word_end': w['end'],
+                     'word_text': w['text']} for w in all_words
+                ]
+            }
+            }
+    utf8_stache = pystache.Renderer(string_encoding='utf8')
+    return utf8_stache.render(template, data)
 
 
 def convert_to_xhtml(tokenized_xml, title='Book'):
@@ -268,6 +384,8 @@ def make_argparse():
     parser.add_argument('-f', '--force-overwrite',
                         action='store_true',
                         help='Force overwriting existing output files')
+    parser.add_argument('-t', '--text-grid', action='store_true',
+                        help='Export to Praat TextGrid')
     parser.add_argument(
         '--text-input', action='store_true',
         help='Input is plain text (assume paragraphs '
@@ -284,9 +402,7 @@ def main(argv=None):
     parser = make_argparse()
     args = parser.parse_args(argv)
     if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO)
+        LOGGER.setLevel('DEBUG')
     if args.text_input:
         tempfile, args.inputfile \
             = create_input_xml(args.inputfile,
@@ -314,6 +430,13 @@ def main(argv=None):
     results = align_audio(args.inputfile, args.wavfile,
                           save_temps=(args.outputfile
                                       if args.save_temps else None))
+    if args.text_grid:
+        with wave.open(args.wavfile, 'r') as f:
+            frames = f.getnframes()
+            rate = f.getframerate()
+            duration = frames / float(rate)
+        textgrid = write_to_text_grid(results, duration)
+        save_txt(args.outputfile + '.TextGrid', textgrid)
     if args.output_xhtml:
         convert_to_xhtml(results['tokenized'])
     save_xml(tokenized_xml_path, results['tokenized'])

@@ -15,7 +15,7 @@
 
 from __future__ import print_function, unicode_literals
 from __future__ import division, absolute_import
-import logging
+from readalongs.log import LOGGER
 import argparse
 import pystache
 from readalongs.g2p.util import load_xml, save_txt
@@ -37,7 +37,7 @@ def make_dict(xml, input_filename, unit="m"):
     nwords = 0
     for e in xml.xpath(".//" + unit):
         if "id" not in e.attrib:
-            logging.error("%s-type element without id in file %s" %
+            LOGGER.error("%s-type element without id in file %s" %
                           (unit, input_filename))
         text = e.text.strip()
         if not text:

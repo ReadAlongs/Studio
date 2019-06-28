@@ -16,7 +16,7 @@
 
 from __future__ import print_function, unicode_literals, division, absolute_import
 from io import open
-import logging
+from readalongs.log import LOGGER
 import argparse
 import os
 import numpy as np
@@ -24,7 +24,7 @@ import pystache
 from lxml import etree
 import librosa
 from collections import OrderedDict
-from audio_util import *
+from audio_util import save_txt
 
 FMIN = 80
 FMAX = 1000
