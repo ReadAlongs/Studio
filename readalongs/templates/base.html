@@ -15,11 +15,17 @@
     <!-- Font Awesome CSS -->
     <link href="{{ url_for('static', filename='css/all.min.css') }}" rel="stylesheet">
 
+
+
     {% endblock %}
 </head>
 
 <body id="page-top">
     {% block content %}{% endblock %}
 </body>
+<!-- JQUery -->
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+    integrity="sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8=" crossorigin="anonymous"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
 </html>

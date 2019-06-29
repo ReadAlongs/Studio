@@ -20,38 +20,31 @@
             Upload the text of your ReadAlong</h2>
         <p>You can upload text in a number of ways. You can upload plain text files (.txt), Microsoft Word Documents
             (.docx), or XML files (.xml)</p>
-        <div class="file">
-            <label class="file-label">
-                <input class="file-input" type="file" name="resume">
-                <span class="file-cta">
-                    <span class="file-icon">
-                        <i class="fas fa-upload"></i>
-                    </span>
-                    <span class="file-label">
-                        Choose a file…
-                    </span>
-                </span>
-            </label>
-        </div>
+        <form action='/step/1' method="POST" enctype="multipart/form-data">
+            <input type="file" name="text" accept=".docx,.txt,.xml">
+            <input type="submit">
+        </form>
     </div>
     <div class="container upload__audio">
         <h1 class="title">Audio</h1>
         <h2 class="subtitle">
             Upload the audio of your ReadAlong</h2>
         <p>You must upload your audio either as an mp3 or wav file.</p>
-        <div class="file">
-            <label class="file-label">
-                <input class="file-input" type="file" name="resume">
-                <span class="file-cta">
-                    <span class="file-icon">
-                        <i class="fas fa-upload"></i>
-                    </span>
-                    <span class="file-label">
-                        Choose a file…
-                    </span>
-                </span>
-            </label>
-        </div>
+        <p>
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <ul class=flashes>
+                {% for message in messages %}
+                <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% endwith %}
+        </p>
+        <form action='/step/1' method="POST" enctype="multipart/form-data">
+            <input type="file" name="audio" accept=".mp3,.wav">
+            <input type="submit">
+        </form>
     </div>
     <div class="container upload__audio">
         <h1 class="title">Mapping</h1>
@@ -63,25 +56,35 @@
             instead of that, your
             ReadAlong is first converted to a very approximate English pronounciation. Then, ReadAlong Studio can
             do the alignment based on that, and convert it back into your language once it's done.</p>
-        <div class="file has-name">
-            <label class="file-label">
-                <input class="file-input" type="file" name="resume">
-                <span class="file-cta">
-                    <span class="file-icon">
-                        <i class="fas fa-upload"></i>
-                    </span>
-                    <span class="file-label">
-                        Choose a file…
-                    </span>
-                </span>
-            </label>
-        </div>
+        <form action='/step/1' method="POST" enctype="multipart/form-data">
+            <input type="file" name="map" accept=".csv,.xlsx">
+            <input type="submit">
+        </form>
     </div>
 
     <div class="container uploaded">
         <h1 class="title">Uploaded Material</h1>
         <h2 class="subtitle">
             Here are the files you've uploaded</h2>
+
+        {% for k, v in uploaded.items() %}
+        {% if v %}
+        {% for f in v %}
+        <div class='uploaded__file'>
+            <span class="icon">
+                {% if k == 'audio' %}
+                <i class="fas fa-file-audio"></i>
+                {% elif k == 'text' %}
+                <i class="fas fa-file-alt"></i>
+                {% elif k == 'maps' %}
+                <i class="fas fa-file-csv"></i>
+                {% endif %}
+            </span>
+            <p>{{ f['fn'] }}</p>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endfor %}
     </div>
 </section>
 

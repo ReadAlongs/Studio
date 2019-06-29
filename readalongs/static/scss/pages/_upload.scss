@@ -13,6 +13,16 @@
 
     &ed {
         margin-top: 50px;
+
+        &__file {
+            margin: 25px;
+        }
+
+        &__delete {
+            :hover {
+                cursor: pointer;
+            }
+        }
     }
 
 }
