@@ -15,6 +15,7 @@ import io
 
 from lxml import etree
 from tempfile import NamedTemporaryFile
+from pympi.Praat import TextGrid
 
 from readalongs.g2p.tokenize_xml import tokenize_xml
 from readalongs.g2p.add_ids_to_xml import add_ids
@@ -201,7 +202,7 @@ def return_word_from_id(xml, el_id):
 
 
 def write_to_text_grid(results, duration):
-    ''' Write results to Praat TextGrid
+    ''' Write results to Praat TextGrid. Because we are using pympi, we can also export to Elan EAF.
     '''
     result_id_pattern = re.compile(
         r'''
@@ -235,70 +236,22 @@ def write_to_text_grid(results, duration):
         all_words.append(word)
     sentences.append(words)
 
-    template = '''
-    File type = "ooTextFile"
-    Object class = "TextGrid"
+    tg = TextGrid(xmax=duration)
+    sentence_tier = tg.add_tier(name='Sentence')
+    word_tier = tg.add_tier(name='Word')
+    for s in sentences:
+        sentence_tier.add_interval(
+            begin=s[0]['start'],
+            end=s[-1]['end'],
+            value=' '.join([w['text'] for w in s]))
 
-    xmin = 0
-    xmax = {{ audio_duration }}
-    tiers? <exists>
-    size = 2
-    item []:
-        {{ #sentences }}
-        item [1]:
-            class = "IntervalTier"
-            name = "sentence"
-            xmin = {{ sentences_min }} 
-            xmax = {{ sentences_max }}
-            intervals: size = {{ sentences_size }}
-            {{ #sentence }}
-            intervals [{{ sentence_index }}]:
-                xmin = {{ sentence_start }}
-                xmax = {{ sentence_end }}
-                text = "{{{ sentence_text }}}"
-            {{ /sentence }}
-            {{ /sentences }}
-        {{ #words }}
-        item [2]:
-            class = "IntervalTier"
-            name = "words"
-            xmin = {{ words_min }}
-            xmax = {{ words_max }}
-            intervals: size = {{ words_size }}
-            {{ #word }}
-            intervals [{{ word_index }}]:
-                xmin = {{ word_start }}
-                xmax = {{ word_end }}
-                text = "{{{ word_text }}}"
-            {{ /word }}
-        {{ /words }}
-    '''
+    for w in all_words:
+        word_tier.add_interval(
+            begin=w['start'],
+            end=w['end'],
+            value=w['text'])
 
-    data = {'audio_duration': duration,
-            'sentences': {
-                'sentences_min': sentences[0][0]['start'],
-                'sentences_max': sentences[-1][-1]['end'],
-                'sentences_size': len(sentences),
-                'sentence': [
-                    {'sentence_index': sentences.index(s)+1,
-                     'sentence_start': s[0]['start'],
-                     'sentence_end': s[-1]['end'],
-                     'sentence_text': ' '.join([w['text'] for w in s])} for s in sentences]
-            },
-            'words': {
-                'words_min': all_words[0]['start'],
-                'words_max': all_words[-1]['end'],
-                'words_size': len(all_words),
-                'word': [
-                    {'word_index': all_words.index(w)+1,
-                     'word_start': w['start'],
-                     'word_end': w['end'],
-                     'word_text': w['text']} for w in all_words
-                ]
-            }
-            }
-    utf8_stache = pystache.Renderer(string_encoding='utf8')
-    return utf8_stache.render(template, data)
+    return tg
 
 
 def convert_to_xhtml(tokenized_xml, title='Book'):
@@ -436,7 +389,8 @@ def main(argv=None):
             rate = f.getframerate()
             duration = frames / float(rate)
         textgrid = write_to_text_grid(results, duration)
-        save_txt(args.outputfile + '.TextGrid', textgrid)
+        textgrid.to_file(args.outputfile + '.TextGrid')
+        textgrid.to_eaf().to_file(args.outputfile + ".eaf")
     if args.output_xhtml:
         convert_to_xhtml(results['tokenized'])
     save_xml(tokenized_xml_path, results['tokenized'])

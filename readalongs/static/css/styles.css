@@ -6283,5 +6283,11 @@ button.dropdown-item.is-active {
 .uploaded {
   margin-top: 50px;
 }
+.uploaded__file {
+  margin: 25px;
+}
+.uploaded__delete :hover {
+  cursor: pointer;
+}
 
 /*# sourceMappingURL=styles.css.map */
