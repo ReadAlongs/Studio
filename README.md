@@ -45,3 +45,13 @@ as an ePub file.
 1. `pip install -e .`
 2. `readalongs_align --output-xhtml XMLFILE WAVFILE OUTPUTNAME`
 3. `readalongs_create_epub OUTPUTNAME.smil OUTPUTNAME.epub`
+
+# Docker
+
+To build the Docker container, run:
+
+    docker build . --tag=readlong-studio
+
+To run the Flask web app from the Docker container:
+
+    docker run -p 5000:5000 -it readalong-studio
