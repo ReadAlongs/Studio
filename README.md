@@ -50,7 +50,7 @@ as an ePub file.
 
 To build the Docker container, run:
 
-    docker build . --tag=readlong-studio
+    docker build . --tag=readalong-studio
 
 To run the Flask web app from the Docker container:
 
