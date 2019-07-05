@@ -55,3 +55,5 @@ To build the Docker container, run:
 To run the Flask web app from the Docker container:
 
     docker run -p 5000:5000 -it readalong-studio
+
+Then you should be able to visit http://localhost:5000/.
