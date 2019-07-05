@@ -1,6 +1,7 @@
 panphon==0.14
 pystache==0.5.4
 Flask==1.0.2
+Flask-Session==0.3.1
 lxml==4.3.0
 pocketsphinx==0.1.15
 tqdm==4.31.1
