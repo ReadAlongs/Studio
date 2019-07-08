@@ -13,7 +13,8 @@ RUN apt-get update && apt-get install -y \
         git \
         swig \
         libpulse-dev \
-        portaudio19-dev
+        portaudio19-dev \
+        ffmpeg
 
 
 COPY . $APPHOME
@@ -22,5 +23,5 @@ WORKDIR $APPHOME
 # Install ReadAlong-Studio
 RUN python3 -m pip install -e .
 
-
-ENTRYPOINT [ "python3", "run.py" ]
+#ENTRYPOINT [ "python3", "run.py" ]
+CMD tail -f /dev/null
