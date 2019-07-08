@@ -14,7 +14,8 @@ RUN apt-get update && apt-get install -y \
         swig \
         libpulse-dev \
         portaudio19-dev \
-        ffmpeg
+        ffmpeg \
+        vim-nox
 
 
 COPY . $APPHOME
