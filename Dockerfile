@@ -17,11 +17,14 @@ RUN apt-get update && apt-get install -y \
         ffmpeg \
         vim-nox
 
+# Install 3rd party dependencies in their own layer, for faster rebuilds when we
+# change ReadAlong-Studio source code
+ADD requirements.txt $APPHOME/requirements.txt
+RUN python3 -m pip install -r $APPHOME/requirements.txt
 
+# Install ReadAlong-Studio itself
 COPY . $APPHOME
 WORKDIR $APPHOME
-
-# Install ReadAlong-Studio
 RUN python3 -m pip install -e .
 
 #ENTRYPOINT [ "python3", "run.py" ]
