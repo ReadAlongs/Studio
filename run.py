@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 ''' Run ReadAlong Studio as web application '''
 
 import os
