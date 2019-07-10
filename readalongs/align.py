@@ -143,6 +143,10 @@ def align_audio(xml_path, wav_path, unit='w', save_temps=None):
     ps.process_raw(raw_data, no_search=False, full_utt=True)
     ps.end_utt()
 
+    if not ps.seg():
+        raise RuntimeError("Alignment produced no segments, "
+                           "please examine dictionary and input audio and text.")
+
     for seg in ps.seg():
         start = frames_to_time(seg.start_frame)
         end = frames_to_time(seg.end_frame + 1)
@@ -157,18 +161,17 @@ def align_audio(xml_path, wav_path, unit='w', save_temps=None):
         LOGGER.info("Segment: %s (%.3f : %.3f)",
                     seg.word, start, end)
 
-    try:
-        final_end = end
-    except UnboundLocalError:
-        err = RuntimeError("Alignment Failed, please examine "
-                           "dictionary and input audio and text.")
-        LOGGER.exception(err)
-        raise err
-
-    # FIXME: should have the same number of outputs as inputs
     if len(results['words']) == 0:
-        raise RuntimeError("Alignment Failed, please examine "
-                           "dictionary and input audio and text.")
+        raise RuntimeError("Alignment produced only noise or silence segments, "
+                           "please examine dictionary and input audio and text.")
+
+    # FIXME should have the same number of outputs as inputs
+    # Failed attempt by EJ - not sure how to count tokens in the XML tree.
+    #if len(results['words']) != len(results['tokenized']):
+    #    raise RuntimeError("Alignment produced a different number of segments and tokens, "
+    #                       "please examine dictionary and input audio and text.")
+
+    final_end = end
 
     # Split adjoining silence/noise between words
     last_end = 0.0
@@ -380,9 +383,14 @@ def main(argv=None):
         parser.error("Output file %s exists already, did you mean to do that?"
                      % wav_path)
 
-    results = align_audio(args.inputfile, args.wavfile,
-                          save_temps=(args.outputfile
-                                      if args.save_temps else None))
+    try:
+        results = align_audio(args.inputfile, args.wavfile,
+                              save_temps=(args.outputfile
+                                          if args.save_temps else None))
+    except RuntimeError as e:
+        LOGGER.error(e)
+        exit(1)
+
     if args.text_grid:
         with wave.open(args.wavfile, 'r') as f:
             frames = f.getnframes()
