@@ -72,7 +72,10 @@ def align_audio(xml_path, wav_path, unit='w', save_temps=None):
     results = {"words": []}
 
     # First do G2P
-    xml = etree.parse(xml_path).getroot()
+    try:
+        xml = etree.parse(xml_path).getroot()
+    except etree.XMLSyntaxError as e:
+        raise RuntimeError("Error parsing XML input file %s: %s." % (xml_path, e))
     xml = add_lang_ids(xml, mapping_dir, unit="s")
     xml = tokenize_xml(xml)
     if save_temps:
@@ -113,20 +116,25 @@ def align_audio(xml_path, wav_path, unit='w', save_temps=None):
     cfg.set_float('-wbeam', 1e-80)
 
     _, wav_ext = os.path.splitext(wav_path)
-    if wav_ext == '.wav':
-        with wave.open(wav_path) as wav:
-            LOGGER.info("Read %s: %d frames (%f seconds) audio"
-                        % (wav_path, wav.getnframes(), wav.getnframes()
-                            / wav.getframerate()))
-            raw_data = wav.readframes(wav.getnframes())
+    try:
+        if wav_ext == '.wav':
+            with wave.open(wav_path) as wav:
+                LOGGER.info("Read %s: %d frames (%f seconds) audio"
+                            % (wav_path, wav.getnframes(), wav.getnframes()
+                                / wav.getframerate()))
+                raw_data = wav.readframes(wav.getnframes())
+                # Downsampling is (probably) not necessary
+                cfg.set_float('-samprate', wav.getframerate())
+        else:  # Try pydub, it might fail
+            audio = pydub.AudioSegment.from_file(wav_path)
+            audio = audio.set_channels(1).set_sample_width(2)
             # Downsampling is (probably) not necessary
-            cfg.set_float('-samprate', wav.getframerate())
-    else:  # Try pydub, it might fail
-        audio = pydub.AudioSegment.from_file(wav_path)
-        audio = audio.set_channels(1).set_sample_width(2)
-        # Downsampling is (probably) not necessary
-        cfg.set_float('-samprate', audio.frame_rate)
-        raw_data = audio.raw_data
+            cfg.set_float('-samprate', audio.frame_rate)
+            raw_data = audio.raw_data
+    except Exception as e:
+        # need repr(e) here instead of e since these exceptions don't all have messages
+        # this except clause catches empty audio files and other problems with them.
+        raise RuntimeError("Error reading audio file %s: %s" % (wav_path, repr(e)))
 
     frame_points = int(cfg.get_float('-samprate')
                        * cfg.get_float('-wlen'))
@@ -382,6 +390,15 @@ def main(argv=None):
     if os.path.exists(wav_path) and not args.force_overwrite:
         parser.error("Output file %s exists already, did you mean to do that?"
                      % wav_path)
+
+    try:
+        for file in (args.inputfile, args.wavfile):
+            with open(file) as fp:
+                pass
+    except IOError as e:
+        parser.error("Cannot read file %s: %s." % (file, e))
+        #LOGGER.error("Cannot read file %s: %s." % (file, e))
+        #exit(1)
 
     try:
         results = align_audio(args.inputfile, args.wavfile,
