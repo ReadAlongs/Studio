@@ -75,7 +75,8 @@ def align_audio(xml_path, wav_path, unit='w', save_temps=None):
     try:
         xml = etree.parse(xml_path).getroot()
     except etree.XMLSyntaxError as e:
-        raise RuntimeError("Error parsing XML input file %s: %s." % (xml_path, e))
+        raise RuntimeError(
+            "Error parsing XML input file %s: %s." % (xml_path, e))
     xml = add_lang_ids(xml, mapping_dir, unit="s")
     xml = tokenize_xml(xml)
     if save_temps:
@@ -134,7 +135,8 @@ def align_audio(xml_path, wav_path, unit='w', save_temps=None):
     except Exception as e:
         # need repr(e) here instead of e since these exceptions don't all have messages
         # this except clause catches empty audio files and other problems with them.
-        raise RuntimeError("Error reading audio file %s: %s" % (wav_path, repr(e)))
+        raise RuntimeError("Error reading audio file %s: %s" %
+                           (wav_path, repr(e)))
 
     frame_points = int(cfg.get_float('-samprate')
                        * cfg.get_float('-wlen'))
@@ -173,11 +175,9 @@ def align_audio(xml_path, wav_path, unit='w', save_temps=None):
         raise RuntimeError("Alignment produced only noise or silence segments, "
                            "please examine dictionary and input audio and text.")
 
-    # FIXME should have the same number of outputs as inputs
-    # Failed attempt by EJ - not sure how to count tokens in the XML tree.
-    #if len(results['words']) != len(results['tokenized']):
-    #    raise RuntimeError("Alignment produced a different number of segments and tokens, "
-    #                       "please examine dictionary and input audio and text.")
+    if len(results['words']) != len(results['tokenized'].xpath('//w')):
+        raise RuntimeError("Alignment produced a different number of segments and tokens, "
+                           "please examine dictionary and input audio and text.")
 
     final_end = end
 
@@ -398,7 +398,7 @@ def main(argv=None):
     except IOError as e:
         parser.error("Cannot read file %s: %s." % (file, e))
         #LOGGER.error("Cannot read file %s: %s." % (file, e))
-        #exit(1)
+        # exit(1)
 
     try:
         results = align_audio(args.inputfile, args.wavfile,
