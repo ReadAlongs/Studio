@@ -32,11 +32,36 @@ import os
 import copy
 
 from io import open
+from typing import List, Tuple
+from g2p.transducer import IOStates, IOStateSequence
+from readalongs.g2p.context_g2p import ContextG2P
 from readalongs.g2p.lexicon_g2p import LexiconG2P
 from readalongs.g2p.simpler_g2p import SimplerG2P
 from readalongs.g2p.simple_mapping_g2p import SimpleMappingG2P
 from .. import lang
 
+
+def compose_context_indices(i1: IOStates, i2: IOStates) -> List[Tuple[int, int]]:
+    if isinstance(i1, IOStates):
+        i1 = [(x[0][0], x[1][0]) for x in i1]
+    if isinstance(i2, IOStates):
+        i2 = [(x[0][0], x[1][0]) for x in i2]
+    if not i1:
+        return i2
+    i2_dict = dict(i2)
+    i2_idx = 0
+    results = []
+    for i1_in, i1_out in i1:
+        highest_i2_found = 0 if not results else results[-1][1]
+        while i2_idx <= i1_out:
+            if i2_idx in i2_dict and i2_dict[i2_idx] > highest_i2_found:
+                highest_i2_found = i2_dict[i2_idx]
+            i2_idx += 1
+        if results:
+            assert(i1_in >= results[-1][0])
+            assert(highest_i2_found >= results[-1][1])
+        results.append((i1_in, highest_i2_found))
+    return results
 
 def compose_indices(i1, i2):
     if not i1:
@@ -70,7 +95,6 @@ def concat_indices(i1, i2):
 def offset_indices(idxs, n1, n2):
     return [(i1 + n1, i2 + n2) for i1, i2 in idxs]
 
-
 def trim_indices(idxs):
     result = []
     for i1, i2 in idxs:
@@ -97,11 +121,15 @@ class CompositeConverter:
     def convert(self, text):
         c1_text, c1_indices = self.converter1.convert(text)
         c2_text, c2_indices = self.converter2.convert(c1_text)
-        final_indices = compose_indices(c1_indices, c2_indices)
+        if isinstance(c1_indices, IOStates) or isinstance(c2_indices, IOStates):
+            final_indices = IOStateSequence(c1_indices, c2_indices)
+        else:
+            final_indices = compose_indices(c1_indices, c2_indices)
         return c2_text, final_indices
 
 
 G2P_HANDLERS = {
+    "context-mapping": ContextG2P,
     "mapping": SimplerG2P,
     "lexicon": LexiconG2P
 }
@@ -110,7 +138,6 @@ G2P_HANDLERS = {
 class ConverterLibrary:
     def __init__(self, mappings_dir=None):
         self.converters = {}
-
         for _, langdir in lang.lang_dirs(mappings_dir):
             for mapping_filename in os.listdir(langdir):
                 if not mapping_filename.endswith('json'):

@@ -11,7 +11,8 @@
     "lang": "git",
     "format": "custom",
     "delimiter": "",
-    "case_insensitive": true
+    "case_insensitive": true,
+    "as_is": true
   },
   "out_metadata": {
     "lang": "git-ipa",
@@ -112,6 +113,10 @@
       "out": "ʔ"
     },
     {
+      "in": "j",
+      "out": "d͡ʒ"
+    },
+    {
       "in": "y",
       "out": "j"
     },
@@ -130,10 +135,6 @@
     {
       "in": "hl",
       "out": "ɬ"
-    },
-    {
-      "in": "j",
-      "out": "d͡ʒ"
     },
     {
       "in": "x\u0332",

@@ -6,7 +6,26 @@ import os
 import glob
 import json
 import io
+from iso639 import languages
+from readalongs.lang import __file__ as MAP_DIR_F
 
+MAP_DIR = os.path.dirname(MAP_DIR_F)
+
+def return_lang_name(iso_code: str) -> str:
+    ''' Given a three-part iso-639 code, return the name
+    '''
+    try:
+        return languages.get(part3=iso_code).name
+    except KeyError:
+        return 'Language with 3-part code %s is not declared in ISO-639' % iso_code
+
+def get_langs(mapping_dir=MAP_DIR):
+    """Return the names of all languages in lang folder based on their iso-639 codes"""
+    langs = []
+    for name in os.listdir(MAP_DIR):
+        if len(name) == 3:
+            langs.append({'code': name, 'name': return_lang_name(name)})
+    return sorted(langs, key=lambda x: x['code'])
 
 def base_dir():
     """Get the default directory containing all languages."""
