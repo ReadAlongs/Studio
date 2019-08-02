@@ -1,5 +1,6 @@
 recursive-include readalongs/templates *
 recursive-include readalongs/static *
+recursive-include readalongs/lang *
 include MANIFEST.in
 exclude .gitignore
 recursive-exclude * *.py[co]

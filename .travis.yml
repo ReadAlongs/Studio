@@ -1,0 +1,35 @@
+sudo: required
+dist: xenial
+
+language: python
+python:
+  - "3.7"
+
+# install system dependencies here with apt-get.
+before_install:
+  - sudo apt-get update -y
+  - sudo apt-get install -y python3 python3-pip python-dev build-essential
+
+# install python dependencies including this package in the travis
+# virtualenv
+install:
+  # Install Python dependencies
+  - pip3 install -r /home/travis/build/dhdaines/ReadAlong-Studio/requirements.txt
+  # Install testing requirements
+  - pip3 install coverage
+  - pip3 install coveralls
+  - pip3 install gunicorn
+  # Install ReadAlongs-Studio
+  - cd /home/travis/build/dhdaines/ReadAlong-Studio && pip3 install -e .
+
+before_script:
+  - gunicorn :app --bind 0.0.0.0:5000 --daemon
+
+# commands to run the testing suite. if any of these fail, travic lets us know
+script: 
+  - cd /home/travis/build/dhdaines/ReadAlong-Studio && python3 run_tests.py dev
+  - cd /home/travis/build/dhdaines/ReadAlong-Studio && coverage run --source readalongs run_tests.py dev
+
+# commands to run after the tests successfully complete
+after_success:
+  - coveralls
