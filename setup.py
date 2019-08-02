@@ -24,7 +24,6 @@ setup(
     install_requires=required,
     entry_points={
         'console_scripts': [
-            'readalongs_create_epub = readalongs.epub.create_epub:main',
             'readalongs = readalongs.cli:cli'
         ]
     },

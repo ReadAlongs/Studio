@@ -10,20 +10,18 @@ from readalongs.align import align_audio
 from readalongs.log import LOGGER
 from readalongs.g2p.make_smil import make_smil
 from readalongs.g2p.util import save_xml, save_txt
+from readalongs.epub.create_epub import create_epub
 from readalongs.align import create_input_xml, convert_to_xhtml, write_to_text_grid
 
 LANGS = [x['code'] for x in get_langs()]
 
-
 def create_app():
     return app
-
 
 @click.version_option(version=__version__, prog_name="ReadAlong CLI")
 @click.group(cls=FlaskGroup, create_app=create_app)
 def cli():
     """Management script for Read Along Studio."""
-
 
 @app.cli.command()
 @click.argument('inputfile', type=click.Path(exists=True, readable=True))
@@ -39,7 +37,7 @@ def cli():
 @click.option('-x', '--output-xhtml', is_flag=True, help='Output simple XHTML instead of XML')
 def align(**kwargs):
     """
-    Align INPUTFILE and WAVFILE and create output files at OUTPUT.
+    Align INPUTFILE and WAVFILE and create output files at OUTPUT_BASE.
 
     INPUTFILE is the input XML or text file
 
@@ -52,7 +50,7 @@ def align(**kwargs):
     if kwargs['text_input']:
         tempfile, kwargs.inputfile \
             = create_input_xml(kwargs['inputfile'],
-                               text_language=kwargs['text_language'],
+                               text_language=kwargs['language'],
                                save_temps=(kwargs['output_base']
                                            if kwargs['save_temps'] else None))
     if kwargs['output_xhtml']:
@@ -98,3 +96,17 @@ def align(**kwargs):
                      os.path.basename(wav_path), results)
     shutil.copy(kwargs['wavfile'], wav_path)
     save_txt(smil_path, smil)
+
+@app.cli.command()
+@click.argument('input', type=click.Path(exists=True, readable=True))
+@click.argument('output', type=click.Path(exists=False, readable=True))
+@click.option('-u', '--unpacked', is_flag=True, help='Output unpacked directory of files (for testing)')
+def epub(**kwargs):
+    """
+    Convert INPUT smil document to epub with media overlay at OUTPUT
+
+    INPUT is the .smil document
+
+    OUTPUT is the path to the .epub output
+    """
+    create_epub(kwargs['input'], kwargs['output'], kwargs['unpacked'])

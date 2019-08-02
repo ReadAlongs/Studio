@@ -10,15 +10,16 @@
 from __future__ import print_function, unicode_literals
 from __future__ import division, absolute_import
 
-import argparse
-import pystache
-from readalongs.log import LOGGER
 import shutil
 import os
+
+import pystache
+
 
 from readalongs.g2p.util import load_xml, load_xml_with_encoding
 from readalongs.g2p.util import load_txt, save_txt, save_txt_zip
 from readalongs.g2p.util import ensure_dirs, copy_file_to_zip
+from readalongs.log import LOGGER
 
 EPUB_PATH = "EPUB"
 RESOURCES = os.path.dirname(__file__)
@@ -181,18 +182,3 @@ def create_epub(input_path, output_path, unpacked=False):
     # CSS file
     copy(output_path, STYLESHEET_ORIGIN_PATH, STYLESHEET_DEST_PATH)
 
-
-def main(argv=None):
-    parser = argparse.ArgumentParser(
-        description='Convert SMIL document to an EPUB with a Media Overlay')
-    parser.add_argument(
-        '--unpacked', action='store_true',
-        help='Output unpacked directory of files (for testing)')
-    parser.add_argument('input', type=str, help='Input SMIL')
-    parser.add_argument('output', type=str, help='Output EPUB')
-    args = parser.parse_args(argv)
-    create_epub(args.input, args.output, args.unpacked)
-
-
-if __name__ == '__main__':
-    main()
