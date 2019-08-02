@@ -23,11 +23,11 @@ from g2p.transducer import Transducer
 #TODO: Add fallback mechanism
 # # fallback characters for when a stray letter gets in; we just take a guess
 # # what they might mean.  otherwise, we assume "a" represents IPA "a", etc.
-# UNIDECODE_MAPPING = {  # note, these replacements should always be something
-#     "c": "t͡ʃ",         # in the eng-ipa mapping, because these characters don't
-#     "j": "ʒ",          # go through the approximate mapping process
-#     "y": "j"
-# }
+UNIDECODE_MAPPING = {  # note, these replacements should always be something
+    "c": "t͡ʃ",         # in the eng-ipa mapping, because these characters don't
+    "j": "ʒ",          # go through the approximate mapping process
+    "y": "j"
+}
 
 class ContextG2P:
     def __init__(self, mapping_path, strict=False):
@@ -43,6 +43,9 @@ class ContextG2P:
         self.output_delimiter = self.mapping.kwargs["out_metadata"].get('delimiter', '')
         self.strict = strict #TODO: Add strict support
 
-    def convert(self, text):
-        return self.transducer(text, index=True, debugger=False, output_delimiter=self.output_delimiter)
+    def __repr__(self):
+        return f"{self.__class__} object for {self.in_lang} and {self.out_lang}"
+
+    def convert(self, text, debugger=False):
+        return self.transducer(text, index=True, debugger=debugger, output_delimiter=self.output_delimiter)
 

@@ -1,5 +1,5 @@
 {
-  "type": "mapping",
+  "type": "context-mapping",
   "authors": [
     "Aidan Pine"
   ],
@@ -38,23 +38,12 @@
     },
     {
       "in": "t",
-      "out": "d"
+      "out": "d",
+      "context_after": "[a,e,i,o,u]"
     },
     {
       "in": "kw",
       "out": "kʷ"
-    },
-    {
-      "in": "s",
-      "out": "s"
-    },
-    {
-      "in": "k",
-      "out": "k"
-    },
-    {
-      "in": "g",
-      "out": "ɟ"
     },
     {
       "in": "gy",
@@ -65,36 +54,8 @@
       "out": "ɡʷ"
     },
     {
-      "in": "d",
-      "out": "d"
-    },
-    {
-      "in": "b",
-      "out": "b"
-    },
-    {
-      "in": "l",
-      "out": "l"
-    },
-    {
       "in": "r",
       "out": "l"
-    },
-    {
-      "in": "m",
-      "out": "m"
-    },
-    {
-      "in": "n",
-      "out": "n"
-    },
-    {
-      "in": "x",
-      "out": "x"
-    },
-    {
-      "in": "w",
-      "out": "w"
     },
     {
       "in": "o",
@@ -103,10 +64,6 @@
     {
       "in": "oo",
       "out": "oː"
-    },
-    {
-      "in": "u",
-      "out": "u"
     },
     {
       "in": "'",
@@ -133,6 +90,10 @@
       "out": "ʁ"
     },
     {
+      "in": "g",
+      "out": "ɟ"
+    },
+    {
       "in": "hl",
       "out": "ɬ"
     },
@@ -153,9 +114,29 @@
       "out": "uː"
     },
     {
+      "in": "m",
+      "out": "m"
+    },
+    {
+      "in": "c",
+      "out": "k"
+    },
+    {
+      "in": "d",
+      "out": "d"
+    },
+    {
+      "in": "b",
+      "out": "b"
+    },
+    { 
+      "in": "s", 
+      "out": "s"
+    },
+    {
       "in": "ii",
       "out": "iː"
     }
   ],
-  "comments": []
+  "comments": ["Includes fallback for c -> k because the word 'Jacob' occurs in a story but this should be dealt with some other way."]
 }

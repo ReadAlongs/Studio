@@ -71,9 +71,12 @@ class LexiconG2P:
 
         if self.metadata["src_format"] not in LEXICON_LOADERS:
             LOGGER.error("File %s references an unknown lexicon format: %s",
-                          metadata_path, self.metadata["src_format"])
+                         metadata_path, self.metadata["src_format"])
 
         self.loader = LEXICON_LOADERS[self.metadata["src_format"]]
+
+    def __repr__(self):
+        return f"{self.__class__} object for {self.in_lang} and {self.out_lang}"
 
     def load_entries(self):
         for key, value in self.loader(self.src_path):

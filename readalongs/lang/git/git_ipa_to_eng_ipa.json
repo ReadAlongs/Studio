@@ -1,10 +1,10 @@
 {
-    "type": "mapping",
+    "type": "context-mapping",
     "in_metadata": {
         "lang": "git-ipa",
         "format": "ipa",
         "delimiter": "",
-        "as_is": true
+        "as_is": false
     },
     "out_metadata": {
         "lang": "eng-ipa",

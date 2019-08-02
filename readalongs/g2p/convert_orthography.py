@@ -40,29 +40,6 @@ from readalongs.g2p.simpler_g2p import SimplerG2P
 from readalongs.g2p.simple_mapping_g2p import SimpleMappingG2P
 from .. import lang
 
-
-def compose_context_indices(i1: IOStates, i2: IOStates) -> List[Tuple[int, int]]:
-    if isinstance(i1, IOStates):
-        i1 = [(x[0][0], x[1][0]) for x in i1]
-    if isinstance(i2, IOStates):
-        i2 = [(x[0][0], x[1][0]) for x in i2]
-    if not i1:
-        return i2
-    i2_dict = dict(i2)
-    i2_idx = 0
-    results = []
-    for i1_in, i1_out in i1:
-        highest_i2_found = 0 if not results else results[-1][1]
-        while i2_idx <= i1_out:
-            if i2_idx in i2_dict and i2_dict[i2_idx] > highest_i2_found:
-                highest_i2_found = i2_dict[i2_idx]
-            i2_idx += 1
-        if results:
-            assert(i1_in >= results[-1][0])
-            assert(highest_i2_found >= results[-1][1])
-        results.append((i1_in, highest_i2_found))
-    return results
-
 def compose_indices(i1, i2):
     if not i1:
         return i2
@@ -81,7 +58,6 @@ def compose_indices(i1, i2):
         results.append((i1_in, highest_i2_found))
     return results
 
-
 def concat_indices(i1, i2):
     if not i1:
         return i2
@@ -90,7 +66,6 @@ def concat_indices(i1, i2):
     for i1, i2 in i2[1:]:
         results.append((i1+offset1, i2+offset2))
     return results
-
 
 def offset_indices(idxs, n1, n2):
     return [(i1 + n1, i2 + n2) for i1, i2 in idxs]
@@ -118,7 +93,21 @@ class CompositeConverter:
         self.in_lang = self.converter1.in_lang
         self.out_lang = self.converter2.out_lang
 
-    def convert(self, text):
+    def __repr__(self):
+        return f"{self.__class__} object for {self.in_lang} and {self.out_lang}"
+
+    def debug(self, text, *converters):
+        debugged = []
+        for converter in converters:
+            if isinstance(converter, ContextG2P):
+                debugged.append(converter.convert(text, debugger=True))
+            else:
+                LOGGER.error("Sorry, there are only debugging handlers for ContextG2P transducers.")
+        return debugged
+
+    def convert(self, text, debugger=False):
+        if debugger:
+            return self.debug(text, self.converter1, self.converter2)
         c1_text, c1_indices = self.converter1.convert(text)
         c2_text, c2_indices = self.converter2.convert(c1_text)
         if isinstance(c1_indices, IOStates) or isinstance(c2_indices, IOStates):
@@ -194,10 +183,11 @@ class ConverterLibrary:
                         self.add_converter(composite)
             n_converters = len(self.converters)
 
-    def convert(self, text, in_lang, out_lang):
+    def convert(self, text, in_lang, out_lang, debugger=False):
         if (in_lang, out_lang) not in self.converters:
             LOGGER.error("No conversion found between %s and %s.",
                           in_lang, out_lang)
             return None, None
+        # breakpoint()
         converter = self.converters[(in_lang, out_lang)]
-        return converter.convert(text)
+        return converter.convert(text, debugger=debugger)

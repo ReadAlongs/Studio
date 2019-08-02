@@ -12,4 +12,4 @@ python-slugify==1.2.6
 coloredlogs==10.0
 pympi-ling==1.69
 iso-639==0.4.5
-g2p
+g2p>=0.1

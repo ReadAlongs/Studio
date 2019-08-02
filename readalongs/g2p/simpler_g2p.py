@@ -62,6 +62,9 @@ class SimplerG2P:
             flags |= re.I
         self.regex = re.compile(pattern, flags)
 
+    def __repr__(self):
+        return f"{self.__class__} object for {self.in_lang} and {self.out_lang}"
+
     def convert_character(self, text):
         if text not in self.replacements:
             if self.strict:

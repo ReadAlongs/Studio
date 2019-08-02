@@ -1,5 +1,5 @@
 {
-   "type": "mapping",
+   "type": "context-mapping",
    "authors": ["Patrick Littell"],
    "created": "2019-02-13",
    "last_modified": "2019-02-15",
@@ -7,7 +7,7 @@
       "lang": "eng-ipa",
       "format": "ipa",
       "delimiter": "",
-      "as_is": true
+      "as_is": false
    },
    "out_metadata": {
       "lang": "eng-arpabet",
