@@ -23,7 +23,7 @@ install:
   - cd /home/travis/build/dhdaines/ReadAlong-Studio && pip3 install -e .
 
 before_script:
-  - gunicorn :app --bind 0.0.0.0:5000 --daemon
+  - gunicorn readalongs.app:app --bind 0.0.0.0:5000 --daemon
 
 # commands to run the testing suite. if any of these fail, travic lets us know
 script: 
