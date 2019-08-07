@@ -1,7 +1,8 @@
 '''
 Alignment for audiobooks
 '''
-
+from typing import Dict, List
+from datetime import timedelta
 import pocketsphinx
 import regex as re
 import argparse
@@ -16,6 +17,7 @@ import io
 from lxml import etree
 from tempfile import NamedTemporaryFile
 from pympi.Praat import TextGrid
+from webvtt import WebVTT, Caption
 
 from readalongs.g2p.tokenize_xml import tokenize_xml
 from readalongs.g2p.add_ids_to_xml import add_ids
@@ -212,8 +214,8 @@ def return_word_from_id(xml, el_id):
     return xml.xpath('//*[@id="%s"]/text()' % el_id)[0]
 
 
-def write_to_text_grid(results, duration):
-    ''' Write results to Praat TextGrid. Because we are using pympi, we can also export to Elan EAF.
+def return_words_and_sentences(results):
+    ''' Parse xml into word and sentence 'tier' data
     '''
     result_id_pattern = re.compile(
         r'''
@@ -246,7 +248,12 @@ def write_to_text_grid(results, duration):
         words.append(word)
         all_words.append(word)
     sentences.append(words)
+    return all_words, sentences
 
+
+def write_to_text_grid(words, sentences, duration):
+    ''' Write results to Praat TextGrid. Because we are using pympi, we can also export to Elan EAF.
+    '''
     tg = TextGrid(xmax=duration)
     sentence_tier = tg.add_tier(name='Sentence')
     word_tier = tg.add_tier(name='Word')
@@ -256,13 +263,41 @@ def write_to_text_grid(results, duration):
             end=s[-1]['end'],
             value=' '.join([w['text'] for w in s]))
 
-    for w in all_words:
+    for w in words:
         word_tier.add_interval(
             begin=w['start'],
             end=w['end'],
             value=w['text'])
 
     return tg
+
+
+def float_to_timedelta(n: float) -> str:
+    td = timedelta(seconds=n)
+    if not td.microseconds:
+        return str(td) + ".000"
+    return str(td)
+
+
+def write_to_subtitles(data: List[dict]):
+    '''Returns WebVTT object from data.
+       Data must be either a 'word' tier with
+       a list of dicts that have keys for 'start', 'end' and
+       'text'. Or a 'sentence' tier with a list of lists of dicts.
+       Function return_words_and_sentences returns the proper format.
+    '''
+    vtt = WebVTT()
+    for caption in data:
+        if isinstance(caption, list):
+            formatted = Caption(float_to_timedelta(caption[0]['start']),
+                                float_to_timedelta(caption[-1]['end']),
+                                ' '.join([w['text'] for w in caption]))
+        else:
+            formatted = Caption(float_to_timedelta(caption['start']),
+                                float_to_timedelta(caption['end']),
+                                caption['text'])
+        vtt.captions.append(formatted)
+    return vtt
 
 
 def convert_to_xhtml(tokenized_xml, title='Book'):

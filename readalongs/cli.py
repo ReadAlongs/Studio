@@ -11,7 +11,7 @@ from readalongs.log import LOGGER
 from readalongs.g2p.make_smil import make_smil
 from readalongs.g2p.util import save_xml, save_txt
 from readalongs.epub.create_epub import create_epub
-from readalongs.align import create_input_xml, convert_to_xhtml, write_to_text_grid
+from readalongs.align import create_input_xml, convert_to_xhtml, return_words_and_sentences, write_to_subtitles, write_to_text_grid
 
 LANGS = [x['code'] for x in get_langs()]
 
@@ -27,6 +27,7 @@ def cli():
 @click.argument('inputfile', type=click.Path(exists=True, readable=True))
 @click.argument('wavfile', type=click.Path(exists=True, readable=True))
 @click.argument('output-base', type=click.STRING)
+@click.option('-c', '--closed-captioning', is_flag=True, help='Export sentences to WebVTT and SRT files')
 @click.option('-d', '--debug', is_flag=True, help='Add debugging messages to logger')
 @click.option('-f', '--force-overwrite', is_flag=True, help='Force overwrite output files')
 @click.option('-i', '--text-input', is_flag=True, help='Input is plain text (assume paragraphs separated by blank lines)')
@@ -84,9 +85,19 @@ def align(**kwargs):
             frames = f.getnframes()
             rate = f.getframerate()
             duration = frames / float(rate)
-        textgrid = write_to_text_grid(results, duration)
+        words, sentences = return_words_and_sentences(results)
+        textgrid = write_to_text_grid(words, sentences, duration)
         textgrid.to_file(kwargs['output_base'] + '.TextGrid')
         textgrid.to_eaf().to_file(kwargs['output_base'] + ".eaf")
+
+    if kwargs['closed_captioning']:
+        words, sentences = return_words_and_sentences(results)
+        webvtt_sentences = write_to_subtitles(sentences)
+        webvtt_sentences.save(kwargs['output_base'] + '_sentences.vtt')
+        webvtt_sentences.save_as_srt(kwargs['output_base'] + '_sentences.srt')
+        webvtt_words = write_to_subtitles(words)
+        webvtt_words.save(kwargs['output_base'] + '_words.vtt')
+        webvtt_words.save_as_srt(kwargs['output_base'] + '_words.srt')
 
     if kwargs['output_xhtml']:
         convert_to_xhtml(results['tokenized'])
