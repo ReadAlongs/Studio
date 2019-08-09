@@ -12,8 +12,7 @@
     "format": "custom",
     "delimiter": "",
     "case_insensitive": true,
-    "as_is": true,
-    "escape_special_characters": false
+    "as_is": true
   },
   "out_metadata": {
     "lang": "git-ipa",

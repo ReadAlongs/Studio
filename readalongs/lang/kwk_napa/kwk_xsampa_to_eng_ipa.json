@@ -7,7 +7,8 @@
     "in_metadata": {
         "lang": "kwk-xsampa", 
         "delimiter": " ", 
-        "format": "x-sampa"
+        "format": "x-sampa",
+        "escape_special_characters": true
     }, 
     "type": "mapping", 
     "map": [
