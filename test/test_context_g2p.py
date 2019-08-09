@@ -31,6 +31,8 @@ class TestContextG2P(TestCase):
         conversion = self.converter.convert("K̲'ay", "git", "eng-arpabet")
         self.assertEqual(conversion[1].reduced(), [
                          (2, 1), (3, 4), (4, 7), (5, 9)])
+        conversion1 = self.converter.convert("yukwhl", 'git', 'eng-arpabet')
+        self.assertEqual(conversion1[1].reduced(), [(1, 1), (2, 4), (3, 6), (4, 8), (6, 10)])
 
 
 if __name__ == '__main__':

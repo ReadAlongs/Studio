@@ -177,6 +177,7 @@ def replace_text_in_node(word, text, indices):
 
 def convert_xml(xml, word_unit="w",
                 output_orthography="eng-arpabet", mapping_dir=None):
+    # breakpoint()
     converter = ConverterLibrary(mapping_dir)
     xml_copy = copy.deepcopy(xml)
     unicode_normalize_xml(xml_copy)

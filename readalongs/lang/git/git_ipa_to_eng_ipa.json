@@ -1,5 +1,5 @@
 {
-    "type": "context-mapping",
+    "type": "mapping",
     "in_metadata": {
         "lang": "git-ipa",
         "format": "ipa",

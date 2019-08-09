@@ -49,7 +49,7 @@ def align(**kwargs):
     if kwargs['debug']:
         LOGGER.setLevel('DEBUG')
     if kwargs['text_input']:
-        tempfile, kwargs.inputfile \
+        tempfile, kwargs['inputfile'] \
             = create_input_xml(kwargs['inputfile'],
                                text_language=kwargs['language'],
                                save_temps=(kwargs['output_base']

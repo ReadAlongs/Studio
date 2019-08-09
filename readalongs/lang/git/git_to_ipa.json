@@ -1,5 +1,5 @@
 {
-  "type": "context-mapping",
+  "type": "mapping",
   "authors": [
     "Aidan Pine"
   ],
@@ -12,7 +12,8 @@
     "format": "custom",
     "delimiter": "",
     "case_insensitive": true,
-    "as_is": true
+    "as_is": true,
+    "escape_special_characters": false
   },
   "out_metadata": {
     "lang": "git-ipa",

@@ -219,10 +219,10 @@ def return_words_and_sentences(results):
     '''
     result_id_pattern = re.compile(
         r'''
-        t(?P<table>\d+)             # Table
-        b(?P<body>\d+)              # Body
-        d(?P<div>\d+)               # Div ( Break )
-        p(?P<par>\d+)               # Paragraph
+        t(?P<table>\d*)            # Table
+        b(?P<body>\d*)             # Body
+        d(?P<div>\d*)              # Div ( Break )
+        p(?P<par>\d*)              # Paragraph
         s(?P<sent>\d+)              # Sentence
         w(?P<word>\d+)              # Word
         ''', re.VERBOSE)

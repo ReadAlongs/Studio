@@ -36,11 +36,35 @@ from typing import List, Tuple
 from g2p.transducer import IOStates, IOStateSequence
 from readalongs.g2p.context_g2p import ContextG2P
 from readalongs.g2p.lexicon_g2p import LexiconG2P
-from readalongs.g2p.simpler_g2p import SimplerG2P
-from readalongs.g2p.simple_mapping_g2p import SimpleMappingG2P
 from .. import lang
 
+
+def compose_indices1(i1, i2):
+    if not i1:
+        return i2
+    composed = dict(i2)
+    print(i1)
+    print(i2)
+    for i, tup in enumerate(i1):
+        try:
+            i1_in, i1_out = i1[i][0], i1[i][1]
+        except IndexError:
+            i1_in, i1_out = i1[-1][0], i1[-1][1]
+        try:
+            i2_in, i2_out = i2[i][0], i2[i][1]
+        except IndexError:
+            i2_in, i2_out = i2[-1][0], i2[-1][1]
+        highest_in = max(i1_in, i2_in)
+        highest_out = max(i1_out, i2_out)
+        composed[highest_in] = highest_out
+    composed_tups = [(k, v) for k, v in composed.items()]
+    print(f"composed: {composed_tups}")
+    return composed_tups
+
+
 def compose_indices(i1, i2):
+    print(i1)
+    print(i2)
     if not i1:
         return i2
     i2_dict = dict(i2)
@@ -56,7 +80,9 @@ def compose_indices(i1, i2):
             assert(i1_in >= results[-1][0])
             assert(highest_i2_found >= results[-1][1])
         results.append((i1_in, highest_i2_found))
+    print(f"composed: {results}")
     return results
+
 
 def concat_indices(i1, i2):
     if not i1:
@@ -67,8 +93,10 @@ def concat_indices(i1, i2):
         results.append((i1+offset1, i2+offset2))
     return results
 
+
 def offset_indices(idxs, n1, n2):
     return [(i1 + n1, i2 + n2) for i1, i2 in idxs]
+
 
 def trim_indices(idxs):
     result = []
@@ -80,14 +108,13 @@ def trim_indices(idxs):
         result.append((i1, i2))
     return result
 
-
 class CompositeConverter:
     def __init__(self, converter1, converter2):
         if converter1.out_lang != converter2.in_lang:
             LOGGER.error("Cannot compose converter %s->%s "
-                          "and converter %s->%s" %
-                          (converter1.in_lang, converter1.out_lang,
-                           converter2.in_lang, converter2.out_lang))
+                         "and converter %s->%s" %
+                         (converter1.in_lang, converter1.out_lang,
+                          converter2.in_lang, converter2.out_lang))
         self.converter1 = converter1
         self.converter2 = converter2
         self.in_lang = self.converter1.in_lang
@@ -100,9 +127,15 @@ class CompositeConverter:
         debugged = []
         for converter in converters:
             if isinstance(converter, ContextG2P):
-                debugged.append(converter.convert(text, debugger=True))
+                converted = converter.convert(text, debugger=True)
+                debugged.append(converted)
+                text = converted[0]
+            elif isinstance(converter, CompositeConverter):
+                debugged.append(self.debug(
+                    text, converter.converter1, converter.converter2))
             else:
-                LOGGER.error("Sorry, there are only debugging handlers for ContextG2P transducers.")
+                LOGGER.error(
+                    "Sorry, there are only debugging handlers for ContextG2P transducers.")
         return debugged
 
     def convert(self, text, debugger=False):
@@ -110,16 +143,12 @@ class CompositeConverter:
             return self.debug(text, self.converter1, self.converter2)
         c1_text, c1_indices = self.converter1.convert(text)
         c2_text, c2_indices = self.converter2.convert(c1_text)
-        if isinstance(c1_indices, IOStates) or isinstance(c2_indices, IOStates):
-            final_indices = IOStateSequence(c1_indices, c2_indices)
-        else:
-            final_indices = compose_indices(c1_indices, c2_indices)
+        final_indices = IOStateSequence(c1_indices, c2_indices)
         return c2_text, final_indices
 
 
 G2P_HANDLERS = {
-    "context-mapping": ContextG2P,
-    "mapping": SimplerG2P,
+    "mapping": ContextG2P,
     "lexicon": LexiconG2P
 }
 
@@ -136,30 +165,30 @@ class ConverterLibrary:
                     mapping = json.load(fin)
                     if not isinstance(mapping, dict):
                         LOGGER.error("File %s is not a JSON dictionary",
-                                      mapping_filename)
+                                     mapping_filename)
                         continue
                     if "type" not in mapping:
                         LOGGER.error("File %s is not a supported "
-                                      "conversion format", mapping_filename)
+                                     "conversion format", mapping_filename)
                         continue
                     if mapping["type"] == "inventory":
                         continue
                     if mapping["type"] not in G2P_HANDLERS:
                         LOGGER.error("File %s is not a supported "
-                                      "conversion format", mapping_filename)
+                                     "conversion format", mapping_filename)
                         continue
                     converter = G2P_HANDLERS[mapping["type"]](mapping_filename)
                     if converter.in_lang == converter.out_lang:
                         LOGGER.error("Cannot load reflexive (%s->%s) "
-                                      "mapping from file %s",
-                                      converter.in_lang, converter.out_lang,
-                                      mapping_filename)
+                                     "mapping from file %s",
+                                     converter.in_lang, converter.out_lang,
+                                     mapping_filename)
                         continue
                     self.add_converter(converter)
         self.transitive_closure()
 
     def add_converter(self, converter):
-        #LOGGER.info("Adding converter between %s and %s",
+        # LOGGER.info("Adding converter between %s and %s",
         #              converter.in_lang, converter.out_lang)
         self.converters[(converter.in_lang, converter.out_lang)] = converter
 
@@ -174,20 +203,29 @@ class ConverterLibrary:
                     if (converter.out_lang == in_lang and
                             converter.in_lang != out_lang and
                             (converter.in_lang, out_lang) not in self.converters):
-                        composite = CompositeConverter(converter, other_converter)
+                        composite = CompositeConverter(
+                            converter, other_converter)
                         self.add_converter(composite)
                     elif (converter.in_lang == out_lang and
                           converter.out_lang != in_lang and
                           (in_lang, converter.out_lang) not in self.converters):
-                        composite = CompositeConverter(other_converter, converter)
+                        composite = CompositeConverter(
+                            other_converter, converter)
                         self.add_converter(composite)
             n_converters = len(self.converters)
 
     def convert(self, text, in_lang, out_lang, debugger=False):
         if (in_lang, out_lang) not in self.converters:
             LOGGER.error("No conversion found between %s and %s.",
-                          in_lang, out_lang)
+                         in_lang, out_lang)
             return None, None
-        # breakpoint()
         converter = self.converters[(in_lang, out_lang)]
-        return converter.convert(text, debugger=debugger)
+        # breakpoint()
+        if debugger:
+            if isinstance(converter, ContextG2P) or isinstance(converter, CompositeConverter):
+                return converter.convert(text, debugger=debugger)
+            else:
+                LOGGER.info("'debugger' was set to True but debugger is only supported for a \
+                            ContextG2P converter and the converter you're trying to debug is % s", converter)
+        else:
+            return converter.convert(text)
