@@ -33,8 +33,9 @@ class ContextG2P:
     def __init__(self, mapping_path, strict=False):
         self._json_map = load_json(mapping_path)
         self.case_sensitive = not self._json_map["in_metadata"].get('case_insensitive', False)
-        self.escape_special_characters = self._json_map["in_metadata"].get('escape_special_characters', True)
-        self.mapping = Mapping(self._json_map['map'], norm_form='NFD', case_sensitive=self.case_sensitive, escape_special_characters=self.escape_special_characters, **{k:v for k,v in self._json_map.items() if k != 'map'})
+        self.escape_special_characters = self._json_map["in_metadata"].get('escape_special_characters', False)
+        self.normalization = self._json_map['in_metadata'].get('normalization', 'NFD')
+        self.mapping = Mapping(self._json_map['map'], norm_form=self.normalization, case_sensitive=self.case_sensitive, escape_special_characters=self.escape_special_characters, **{k:v for k,v in self._json_map.items() if k != 'map'})
         self.as_is = self.mapping.kwargs["in_metadata"].get('as_is', False)
         self.transducer = Transducer(self.mapping, as_is=self.as_is)
         self.in_lang = self.mapping.kwargs["in_metadata"]["lang"]
