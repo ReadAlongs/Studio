@@ -3,7 +3,8 @@
     "in_metadata": {
         "lang": "git-ipa",
         "format": "ipa",
-        "delimiter": ""
+        "delimiter": "",
+        "as_is": false
     },
     "out_metadata": {
         "lang": "eng-ipa",

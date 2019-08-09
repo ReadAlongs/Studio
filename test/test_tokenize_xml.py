@@ -1,8 +1,8 @@
 from unittest import TestCase
 from lxml import etree
-import unittest
 
 from readalongs.g2p import tokenize_xml
+
 
 class TestTokenizer(TestCase):
     def test_simple(self):

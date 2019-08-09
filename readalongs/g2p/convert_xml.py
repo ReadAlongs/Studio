@@ -41,6 +41,9 @@ from unicodedata import normalize
 import argparse
 import copy
 
+from g2p.mappings import Mapping
+from g2p.transducer import IOStateSequence, Transducer
+
 from readalongs.g2p.convert_orthography import ConverterLibrary, trim_indices
 from readalongs.g2p.convert_orthography import concat_indices, offset_indices
 from readalongs.g2p.util import load_xml, save_xml, get_lang_attrib
@@ -127,9 +130,13 @@ def convert_words(xml, converter, word_unit="w",
                 unit["lang"],
                 output_orthography)
             all_text += text
-            all_indices = concat_indices(all_indices, indices)
+            # all_indices = concat_indices(all_indices, indices)
+            all_indices += indices
+        try:
+            all_indices = IOStateSequence(*all_indices).reduced()
+        except IndexError:
+            all_indices = all_indices
         replace_text_in_node(word, all_text, all_indices)
-
     return xml
 
 
@@ -137,7 +144,6 @@ def replace_text_in_node(word, text, indices):
     old_text = ''
     new_text = ''
     new_indices = indices
-
     # handle the text
     if word.text:
         for i1, i2 in new_indices:
@@ -171,6 +177,7 @@ def replace_text_in_node(word, text, indices):
 
 def convert_xml(xml, word_unit="w",
                 output_orthography="eng-arpabet", mapping_dir=None):
+    # breakpoint()
     converter = ConverterLibrary(mapping_dir)
     xml_copy = copy.deepcopy(xml)
     unicode_normalize_xml(xml_copy)

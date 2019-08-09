@@ -3,15 +3,13 @@ Test force-alignment with PocketSphinx FSG search from Python API
 """
 
 import unittest
-from readalongs.log import LOGGER
 import tempfile
 import os
 from lxml import etree
 
+from readalongs.log import LOGGER
 from readalongs.align import align_audio, create_input_xml, convert_to_xhtml
 from readalongs.g2p.util import save_xml, load_txt
-
-import unittest
 
 class TestForceAlignment(unittest.TestCase):
     LOGGER.setLevel('DEBUG')
@@ -35,8 +33,8 @@ class TestForceAlignment(unittest.TestCase):
     def testAlignText(self):
         txt_path = os.path.join(self.data_dir, 'test_atj_sample.txt')
         wav_path = os.path.join(self.data_dir, 'test_atj_sample.wav')
-        tempfile = create_input_xml(txt_path, 'atj')
-        results = align_audio(tempfile.name, wav_path, unit='w')
+        tempfile, temp_fn = create_input_xml(txt_path, 'atj')
+        results = align_audio(temp_fn, wav_path, unit='w')
 
         # Verify that the same IDs are in the output
         converted_path = os.path.join(

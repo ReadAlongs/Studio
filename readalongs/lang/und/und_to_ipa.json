@@ -7,7 +7,8 @@
       "lang": "und",
       "format": "custom",
       "delimiter": "",
-      "case_insensitive": true
+      "case_insensitive": true,
+      "escape_special_characters": true
    },
    "out_metadata": {
       "lang": "und-ipa",

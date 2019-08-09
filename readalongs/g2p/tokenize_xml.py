@@ -86,7 +86,7 @@ class DefaultTokenizer:
 
 class Tokenizer(DefaultTokenizer):
     def __init__(self, inventory):
-        if inventory["type"] == "mapping":
+        if "mapping" in inventory["type"]:
             inventory = create_inventory_from_mapping(inventory, "in")
         self.inventory = inventory["inventory"]
         self.lang = inventory["metadata"]["lang"]
@@ -125,7 +125,7 @@ class TokenizerLibrary:
                                       inv_filename)
                         continue
                     if ("type" not in inv
-                            or inv["type"] not in ["inventory", "mapping"]):
+                            or inv["type"] not in ["inventory", "mapping", "context-mapping"]):
                         continue
                     tokenizer = Tokenizer(inv)
                     self.tokenizers[tokenizer.lang] = tokenizer

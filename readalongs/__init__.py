@@ -5,4 +5,4 @@ import os
 
 mapping_dir = os.path.join(os.path.dirname(__file__), 'lang')
 
-VERSION = '0.0.1'
+VERSION = '0.1'

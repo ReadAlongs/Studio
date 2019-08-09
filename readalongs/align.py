@@ -1,7 +1,8 @@
 '''
 Alignment for audiobooks
 '''
-
+from typing import Dict, List
+from datetime import timedelta
 import pocketsphinx
 import regex as re
 import argparse
@@ -16,6 +17,7 @@ import io
 from lxml import etree
 from tempfile import NamedTemporaryFile
 from pympi.Praat import TextGrid
+from webvtt import WebVTT, Caption
 
 from readalongs.g2p.tokenize_xml import tokenize_xml
 from readalongs.g2p.add_ids_to_xml import add_ids
@@ -212,15 +214,15 @@ def return_word_from_id(xml, el_id):
     return xml.xpath('//*[@id="%s"]/text()' % el_id)[0]
 
 
-def write_to_text_grid(results, duration):
-    ''' Write results to Praat TextGrid. Because we are using pympi, we can also export to Elan EAF.
+def return_words_and_sentences(results):
+    ''' Parse xml into word and sentence 'tier' data
     '''
     result_id_pattern = re.compile(
         r'''
-        t(?P<table>\d+)             # Table
-        b(?P<body>\d+)              # Body
-        d(?P<div>\d+)               # Div ( Break )
-        p(?P<par>\d+)               # Paragraph
+        t(?P<table>\d*)            # Table
+        b(?P<body>\d*)             # Body
+        d(?P<div>\d*)              # Div ( Break )
+        p(?P<par>\d*)              # Paragraph
         s(?P<sent>\d+)              # Sentence
         w(?P<word>\d+)              # Word
         ''', re.VERBOSE)
@@ -246,7 +248,12 @@ def write_to_text_grid(results, duration):
         words.append(word)
         all_words.append(word)
     sentences.append(words)
+    return all_words, sentences
 
+
+def write_to_text_grid(words, sentences, duration):
+    ''' Write results to Praat TextGrid. Because we are using pympi, we can also export to Elan EAF.
+    '''
     tg = TextGrid(xmax=duration)
     sentence_tier = tg.add_tier(name='Sentence')
     word_tier = tg.add_tier(name='Word')
@@ -256,13 +263,41 @@ def write_to_text_grid(results, duration):
             end=s[-1]['end'],
             value=' '.join([w['text'] for w in s]))
 
-    for w in all_words:
+    for w in words:
         word_tier.add_interval(
             begin=w['start'],
             end=w['end'],
             value=w['text'])
 
     return tg
+
+
+def float_to_timedelta(n: float) -> str:
+    td = timedelta(seconds=n)
+    if not td.microseconds:
+        return str(td) + ".000"
+    return str(td)
+
+
+def write_to_subtitles(data: List[dict]):
+    '''Returns WebVTT object from data.
+       Data must be either a 'word' tier with
+       a list of dicts that have keys for 'start', 'end' and
+       'text'. Or a 'sentence' tier with a list of lists of dicts.
+       Function return_words_and_sentences returns the proper format.
+    '''
+    vtt = WebVTT()
+    for caption in data:
+        if isinstance(caption, list):
+            formatted = Caption(float_to_timedelta(caption[0]['start']),
+                                float_to_timedelta(caption[-1]['end']),
+                                ' '.join([w['text'] for w in caption]))
+        else:
+            formatted = Caption(float_to_timedelta(caption['start']),
+                                float_to_timedelta(caption['end']),
+                                caption['text'])
+        vtt.captions.append(formatted)
+    return vtt
 
 
 def convert_to_xhtml(tokenized_xml, title='Book'):
@@ -331,99 +366,3 @@ def create_input_xml(inputfile, text_language=None, save_temps=None):
         outfile.write(xml.encode('utf-8'))
         outfile.flush()
     return outfile, filename
-
-
-def make_argparse():
-    """Hey! This function makes the argparse!"""
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('inputfile', type=str, help='Input file (XML or text)')
-    parser.add_argument('wavfile', type=str, help='Input audio file')
-    parser.add_argument('outputfile', type=str,
-                        help='Base name for output files')
-    parser.add_argument('--debug', action='store_true',
-                        help='Enable extra debugging logging')
-    parser.add_argument('-s', '--save-temps', action='store_true',
-                        help='Save intermediate stages of processing and '
-                        'temporary files (dictionary, FSG, tokenization etc)')
-    parser.add_argument('-f', '--force-overwrite',
-                        action='store_true',
-                        help='Force overwriting existing output files')
-    parser.add_argument('-t', '--text-grid', action='store_true',
-                        help='Export to Praat TextGrid')
-    parser.add_argument(
-        '--text-input', action='store_true',
-        help='Input is plain text (assume paragraphs '
-        'separated by blank lines)')
-    parser.add_argument('--text-language', type=str,
-                        help='Set language for plain text input')
-    parser.add_argument('--output-xhtml', action='store_true',
-                        help='Output simple XHTML instead of XML')
-    return parser
-
-
-def main(argv=None):
-    """Hey! This function is named main!"""
-    parser = make_argparse()
-    args = parser.parse_args(argv)
-    if args.debug:
-        LOGGER.setLevel('DEBUG')
-    if args.text_input:
-        tempfile, args.inputfile \
-            = create_input_xml(args.inputfile,
-                               text_language=args.text_language,
-                               save_temps=(args.outputfile
-                                           if args.save_temps else None))
-    if args.output_xhtml:
-        tokenized_xml_path = '%s.xhtml' % args.outputfile
-    else:
-        _, input_ext = os.path.splitext(args.inputfile)
-        tokenized_xml_path = '%s%s' % (args.outputfile, input_ext)
-    if os.path.exists(tokenized_xml_path) and not args.force_overwrite:
-        parser.error("Output file %s exists already, did you mean to do that?"
-                     % tokenized_xml_path)
-    smil_path = args.outputfile + '.smil'
-    if os.path.exists(smil_path) and not args.force_overwrite:
-        parser.error("Output file %s exists already, did you mean to do that?"
-                     % smil_path)
-    _, wav_ext = os.path.splitext(args.wavfile)
-    wav_path = args.outputfile + wav_ext
-    if os.path.exists(wav_path) and not args.force_overwrite:
-        parser.error("Output file %s exists already, did you mean to do that?"
-                     % wav_path)
-
-    try:
-        for file in (args.inputfile, args.wavfile):
-            with open(file) as fp:
-                pass
-    except IOError as e:
-        parser.error("Cannot read file %s: %s." % (file, e))
-        #LOGGER.error("Cannot read file %s: %s." % (file, e))
-        # exit(1)
-
-    try:
-        results = align_audio(args.inputfile, args.wavfile,
-                              save_temps=(args.outputfile
-                                          if args.save_temps else None))
-    except RuntimeError as e:
-        LOGGER.error(e)
-        exit(1)
-
-    if args.text_grid:
-        with wave.open(args.wavfile, 'r') as f:
-            frames = f.getnframes()
-            rate = f.getframerate()
-            duration = frames / float(rate)
-        textgrid = write_to_text_grid(results, duration)
-        textgrid.to_file(args.outputfile + '.TextGrid')
-        textgrid.to_eaf().to_file(args.outputfile + ".eaf")
-    if args.output_xhtml:
-        convert_to_xhtml(results['tokenized'])
-    save_xml(tokenized_xml_path, results['tokenized'])
-    smil = make_smil(os.path.basename(tokenized_xml_path),
-                     os.path.basename(wav_path), results)
-    shutil.copy(args.wavfile, wav_path)
-    save_txt(smil_path, smil)
-
-
-if __name__ == '__main__':
-    main()

@@ -6,7 +6,8 @@
    "in_metadata": {
       "lang": "eng-ipa",
       "format": "ipa",
-      "delimiter": ""
+      "delimiter": "",
+      "as_is": false
    },
    "out_metadata": {
       "lang": "eng-arpabet",
