@@ -33,7 +33,7 @@ before_script:
 # commands to run the testing suite. if any of these fail, travic lets us know
 script: 
   - cd /home/travis/build/dhdaines/ReadAlong-Studio/test && python3 run.py dev
-  - cd /home/travis/build/dhdaines/ReadAlong-Studio/test && coverage run --source readalongs run.py dev
+  - cd /home/travis/build/dhdaines/ReadAlong-Studio/test && coverage run --source ../readalongs run.py dev
 
 # commands to run after the tests successfully complete
 after_success:

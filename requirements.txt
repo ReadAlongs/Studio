@@ -1,6 +1,6 @@
 coloredlogs==10.0
 Flask==1.0.2
-flask_socketio==4.0.0
+flask-socketio==4.0.0
 g2p>=0.1
 iso-639==0.4.5
 lxml==4.3.0

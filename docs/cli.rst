@@ -3,7 +3,12 @@
 Command line interface
 ======================
 
-...more to come...
 
+.. click:: readalongs.cli:cli
+  :prog: readalongs
 
+.. click:: readalongs.cli:align
+  :prog: readalongs align
 
+.. click:: readalongs.cli:epub
+  :prog: readalongs epub

@@ -18,7 +18,7 @@ LANGS = [x['code'] for x in get_langs()]
 def create_app():
     return app
 
-@click.version_option(version=__version__, prog_name="ReadAlong CLI")
+@click.version_option(version=__version__, prog_name="readalongs")
 @click.group(cls=FlaskGroup, create_app=create_app)
 def cli():
     """Management script for Read Along Studio."""

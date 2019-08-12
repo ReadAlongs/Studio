@@ -1,0 +1,9 @@
+build:
+    image: latest
+    
+requirements_file: 
+    requirements.txt
+
+python:
+    setup_py_install: true
+    version: 3.6 # This will cause readthedocs to crash. It looks like 3.7 is unsupported by readthedocs, and 3.7 is needed by readalongs
