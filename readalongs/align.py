@@ -328,6 +328,24 @@ XML_TEMPLATE = """<document>
 </document>
 """
 
+TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
+<TEI>
+    <text{{#text_language}} xml:lang="{{text_language}}"{{/text_language}}>
+        <body>
+            <div type="page">
+                {{#paragraphs}}
+                    <p>
+                        {{#sentences}}
+                            <s>{{.}}</s>
+                        {{/sentences}}
+                    </p>
+                {{/paragraphs}}
+            </div>
+        </body>
+    </text>
+</TEI>
+"""
+
 
 def create_input_xml(inputfile, text_language=None, save_temps=None):
     if save_temps:
@@ -359,4 +377,42 @@ def create_input_xml(inputfile, text_language=None, save_temps=None):
                               {'sentences': sentences})
         outfile.write(xml.encode('utf-8'))
         outfile.flush()
+    return outfile, filename
+
+def create_input_tei(text: str, **kwargs):
+    ''' Create input xml in TEI standard.
+        Uses readlines to infer paragraph and sentence structure from plain text. TODO: Check if path, if it's just plain text, then render that instead of reading from the file
+        Assumes single page. TODO: allow text to be a list where each item in list is formatted as a 'page'
+        Outputs to uft-8 XML using pymustache. 
+        text_language as kwarg sets the language for the text.
+    '''
+    with io.open(text) as f:
+        text = f.readlines()
+    save_temps = kwargs.get('save_temps', False)
+    if save_temps:
+        filename = save_temps + '.input.xml'
+        outfile = io.open(filename, 'wb')
+    else:
+        outfile = NamedTemporaryFile(prefix='readalongs_xml_',
+                                     suffix='.xml')
+        filename = outfile.name
+    paragraphs = []
+    sentences = []
+    for line in text:
+        if line == '\n' and not sentences:
+            # erroneous extra line. don't add as paragraph
+            continue
+        elif line == '\n':
+            # add sentences and begin new paragraph
+            paragraphs.append({'sentences': sentences})
+            sentences = []
+            continue
+        else:
+            # Add text to sentence
+            sentences.append(line.strip())
+    # Add the last paragraph
+    paragraphs.append({'sentences': sentences})
+    xml = pystache.render(TEI_TEMPLATE, {**kwargs, **{'paragraphs': paragraphs}})
+    outfile.write(xml.encode('utf-8'))
+    outfile.flush()
     return outfile, filename

@@ -11,7 +11,7 @@ from readalongs.log import LOGGER
 from readalongs.g2p.make_smil import make_smil
 from readalongs.g2p.util import save_xml, save_txt
 from readalongs.epub.create_epub import create_epub
-from readalongs.align import create_input_xml, convert_to_xhtml, return_words_and_sentences, write_to_subtitles, write_to_text_grid
+from readalongs.align import create_input_tei, convert_to_xhtml, return_words_and_sentences, write_to_subtitles, write_to_text_grid
 
 LANGS = [x['code'] for x in get_langs()]
 
@@ -50,7 +50,7 @@ def align(**kwargs):
         LOGGER.setLevel('DEBUG')
     if kwargs['text_input']:
         tempfile, kwargs['inputfile'] \
-            = create_input_xml(kwargs['inputfile'],
+            = create_input_tei(kwargs['inputfile'],
                                text_language=kwargs['language'],
                                save_temps=(kwargs['output_base']
                                            if kwargs['save_temps'] else None))
