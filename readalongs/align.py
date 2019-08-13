@@ -8,7 +8,6 @@ import regex as re
 import argparse
 import pystache
 import shutil
-import pydub
 import wave
 import os
 import io
@@ -19,6 +18,7 @@ from tempfile import NamedTemporaryFile
 from pympi.Praat import TextGrid
 from webvtt import WebVTT, Caption
 
+from readalongs.audio_utils import read_audio_from_file
 from readalongs.g2p.tokenize_xml import tokenize_xml
 from readalongs.g2p.add_ids_to_xml import add_ids
 from readalongs.g2p.convert_xml import convert_xml
@@ -119,26 +119,20 @@ def align_audio(xml_path, wav_path, unit='w', save_temps=None):
     cfg.set_float('-wbeam', 1e-80)
 
     _, wav_ext = os.path.splitext(wav_path)
-    try:
-        if wav_ext == '.wav':
-            with wave.open(wav_path) as wav:
-                LOGGER.info("Read %s: %d frames (%f seconds) audio"
-                            % (wav_path, wav.getnframes(), wav.getnframes()
-                                / wav.getframerate()))
-                raw_data = wav.readframes(wav.getnframes())
-                # Downsampling is (probably) not necessary
-                cfg.set_float('-samprate', wav.getframerate())
-        else:  # Try pydub, it might fail
-            audio = pydub.AudioSegment.from_file(wav_path)
-            audio = audio.set_channels(1).set_sample_width(2)
+    if wav_ext == '.wav':
+        with wave.open(wav_path) as wav:
+            LOGGER.info("Read %s: %d frames (%f seconds) audio"
+                        % (wav_path, wav.getnframes(), wav.getnframes()
+                            / wav.getframerate()))
+            raw_data = wav.readframes(wav.getnframes())
             # Downsampling is (probably) not necessary
-            cfg.set_float('-samprate', audio.frame_rate)
-            raw_data = audio.raw_data
-    except Exception as e:
-        # need repr(e) here instead of e since these exceptions don't all have messages
-        # this except clause catches empty audio files and other problems with them.
-        raise RuntimeError("Error reading audio file %s: %s" %
-                           (wav_path, repr(e)))
+            cfg.set_float('-samprate', wav.getframerate())
+    else:
+        audio = read_audio_from_file(wav_path)
+        audio = audio.set_channels(1).set_sample_width(2)
+        # Downsampling is (probably) not necessary
+        cfg.set_float('-samprate', audio.frame_rate)
+        raw_data = audio.raw_data
 
     frame_points = int(cfg.get_float('-samprate')
                        * cfg.get_float('-wlen'))
@@ -223,8 +217,8 @@ def return_words_and_sentences(results):
         b(?P<body>\d*)             # Body
         d(?P<div>\d*)              # Div ( Break )
         p(?P<par>\d*)              # Paragraph
-        s(?P<sent>\d+)              # Sentence
-        w(?P<word>\d+)              # Word
+        s(?P<sent>\d+)             # Sentence
+        w(?P<word>\d+)             # Word
         ''', re.VERBOSE)
 
     all_els = results['words']
@@ -281,9 +275,9 @@ def float_to_timedelta(n: float) -> str:
 
 def write_to_subtitles(data: List[dict]):
     '''Returns WebVTT object from data.
-       Data must be either a 'word' tier with
+       Data must be either a 'word'-type tier with
        a list of dicts that have keys for 'start', 'end' and
-       'text'. Or a 'sentence' tier with a list of lists of dicts.
+       'text'. Or a 'sentence'-type tier with a list of lists of dicts.
        Function return_words_and_sentences returns the proper format.
     '''
     vtt = WebVTT()
