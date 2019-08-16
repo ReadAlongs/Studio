@@ -16,12 +16,17 @@
 
         &__file {
             margin: 25px;
+            width: fit-content;
+            border: 1px solid #333;
+            padding: 5px;
+            border-radius: 10px;
         }
 
         &__delete {
             :hover {
                 cursor: pointer;
             }
+            color: indianred;
         }
     }
 
