@@ -22,7 +22,11 @@ class TestContextG2P(TestCase):
             {'in_lang': 'str-sen',
              'out_lang': 'eng-arpabet',
              'in_text': 'X̱I¸ÁM¸',
-             'out_text': 'SH W IY HH EY M HH'}
+             'out_text': 'SH W IY HH EY M HH'},
+            {'in_lang': 'ctp',
+             'out_lang': 'eng-arpabet',
+             'in_text': 'unᴬ',
+             'out_text': 'UW N'}
         ]
 
     def test_conversions(self):
