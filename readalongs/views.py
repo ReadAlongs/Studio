@@ -1,31 +1,33 @@
 ''' ReadAlong Studio web application views '''
+from tempfile import mkdtemp
+from subprocess import run
 import os
-from pathlib import Path
-from tempfile import TemporaryDirectory
-from flask import abort, flash, redirect, request, render_template, session
-from werkzeug.utils import secure_filename
+import io
 
-from readalongs.app import app
+from pathlib import Path
+from flask import abort, flash, redirect, request, render_template, session, send_file, url_for
+from flask_socketio import emit
+from flask_login import current_user
+from werkzeug.utils import secure_filename
+from zipfile import ZipFile
+from shutil import rmtree
+from time import time
+
+
+from readalongs.app import app, socketio
+from readalongs.lang import get_langs
 
 ALLOWED_TEXT = ['txt', 'xml', 'docx']
 ALLOWED_AUDIO = ['wav', 'mp3']
 ALLOWED_G2P = ['csv', 'xlsx']
 ALLOWED_EXTENSIONS = set(ALLOWED_AUDIO + ALLOWED_G2P + ALLOWED_TEXT)
 
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-# TODO: This is currently just uploading everything to tmp...this is not good. more sophisticated option is needed!
-app.config['UPLOAD_FOLDER'] = '/tmp/rastudio'
-
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.mkdir(app.config['UPLOAD_FOLDER'])
-
-
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def uploaded_files():
-    upload_dir = Path(app.config['UPLOAD_FOLDER'])
+def uploaded_files(dir_path):
+    upload_dir = Path(dir_path)
     audio = list(upload_dir.glob('*.wav')) + list(upload_dir.glob('*.mp3'))
     text = list(upload_dir.glob('*.txt')) + \
         list(upload_dir.glob('*.xml')) + list(upload_dir.glob('*.docx'))
@@ -35,54 +37,129 @@ def uploaded_files():
             'maps': [{'path': str(x), 'fn': os.path.basename(str(x))} for x in maps]}
 
 
+def update_session_config(**kwargs):
+    ''' Update the session configuration for running readalongs aligner.
+    '''
+    previous_config = session.get('config', {})
+    print(f'previous: {previous_config}')
+    print(kwargs)
+    session['config'] = {**previous_config, **kwargs}
+    print(session['config'])
+    return session['config']
+
+
 @app.route('/')
 def home():
     ''' Home View - go to Step 1 '''
-    return redirect('/step/1')
+    return redirect(url_for('steps', step=1))
+
+
+@socketio.on('config update event', namespace='/config')
+def update_config(message):
+    emit('config update response', {
+         'data': update_session_config(**message)})
+
+@socketio.on('upload event', namespace='/file')
+def upload(message):
+    if message['type'] == 'audio':
+        save_path = os.path.join(session['temp_dir'], message['name'])
+        session['audio'] = save_path
+    if message['type'] == 'text':
+        save_path = os.path.join(session['temp_dir'], message['name'])
+        session['text'] = save_path
+    if message['type'] == 'mapping':
+        save_path = os.path.join(session['temp_dir'], message['name'])
+        if 'config' in session and 'lang' in session['config']['lang']:
+            del session['config']['lang']
+        session['mapping'] = save_path
+    with open(save_path, 'wb') as f:
+        f.write(message['data']['file'])
+    emit('upload response', {'data': {'path': save_path}})
+
+# @SOCKETIO.on('remove event', namespace='/file')
+# def remove_f(message):
+#     path_to_remove = message['data']['path_to_remove']
+#     if os.path.exists(path_to_remove) and os.path.isfile(path_to_remove):
+#         os.remove(path_to_remove)
+#     emit('remove response', {'data': {'removed_file': os.path.basename(path_to_remove)}})
+
+# @SOCKETIO.on('upload event' namespace='file')
+# def upload_f(message):
+
+
+@app.route('/remove', methods=['POST'])
+def remove_file():
+    if request.method == 'POST':
+        path = request.data.decode('utf8').split('=')[1]
+        os.remove(path)
+    return redirect(url_for('steps', step=1))
 
 
 @app.route('/step/<int:step>')
 def steps(step):
     ''' Go through steps '''
     if step == 1:
-        return render_template('upload.html', uploaded=uploaded_files())
+        temp_dir = session.get('temp_dir', None)
+        if not temp_dir:
+            session['temp_dir'] = mkdtemp()
+            temp_dir = session['temp_dir']
+        return render_template('upload.html', uploaded=uploaded_files(temp_dir), maps=get_langs())
     elif step == 2:
         return render_template('preview.html')
     elif step == 3:
-        return render_template('export.html')
+        if not 'audio' in session or not 'text' in session:
+            log = "Sorry, it looks like something is wrong with your audio or text. Please try again"
+        else:
+            flags = ['--force-overwrite']
+            for option in ['--closed-captioning', '--save-temps', '--text-grid']:
+                if session['config'].get(option, False):
+                    flags.append(option)
+            if session['text'].endswith('txt'):
+                flags.append('--text-input')
+                flags.append('--language')
+                flags.append(session['config']['lang'])
+            args = ['readalongs', 'align'] + flags + [session['text'], session['audio'], os.path.join(session['temp_dir'], 'aligned')]
+            fname, audio_ext = os.path.splitext(session['audio'])
+            data = {'audio_ext': audio_ext}
+            if session['config'].get('show-log', False):
+                log = run(args, capture_output=True)
+                data['log'] = log
+            data['audio_path'] = os.path.join(session['temp_dir'], 'aligned' + audio_ext)
+            data['text_path'] =  os.path.join(session['temp_dir'], 'aligned.xml')
+            data['smil_path'] = os.path.join(session['temp_dir'], 'aligned.smil')
+        return render_template('export.html', data=data)
     else:
         abort(404)
 
+@app.route('/download', methods=['GET'])
+def show_zip():
+    files_to_download = os.listdir(session['temp_dir'])
+    if not 'temp_dir' in session or not os.path.exists(session['temp_dir']) or not files_to_download or not any([x.startswith('aligned') for x in files_to_download]):
+        return abort(404, "Nothing to download. Please go to Step 1 of the Read Along Studio")
 
-@app.route('/step/1', methods=['POST'])
-def upload_file():
-    if request.method == 'POST':
-        if 'text' in request.files:
-            # handle audio
-            upfile = request.files['text']
-        elif 'audio' in request.files:
-            # handle audio
-            upfile = request.files['audio']
-        elif 'map' in request.files:
-            # handle g2p
-            upfile = request.files['map']
-        else:
-            flash('No file part')
-            return redirect(request.url)
-        filename = secure_filename(upfile.filename)
-        path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        upfile.save(path)
-        flash("File '%s' successfully uploaded" % filename)
-        return redirect(request.url)
+    data = io.BytesIO()
+    with ZipFile(data, mode='w') as z:
+        for fname in files_to_download:
+            print(fname)
+            path = os.path.join(session['temp_dir'], fname)
+            if fname.startswith('aligned'):
+                print(path)
+                z.write(path, fname)
+    data.seek(0)
 
-# with TemporaryDirectory() as tmpdir():
+    if not data:
+        return abort(400, "Invalid zip file")
 
-# fd, path = mkstemp()
-#             try:
-#                 document.save(path)
-#                 return send_file(path,
-#                                 as_attachment=True,
-#                                 mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-#                                 attachment_filename='conjugations.docx')
-#             finally:
-#                 os.remove(path)
+    return send_file(
+        data,
+        mimetype='application/zip',
+        as_attachment=True,
+        attachment_filename='data_bundle.zip')
+    
+@app.route('/file/<string:fname>', methods=['GET'])
+def return_temp_file(fname):
+    path = os.path.join(session['temp_dir'], fname)
+    if os.path.exists(path):
+        return send_file(path)
+    else:
+        abort(404, "Sorry, we couldn't find that file.")
