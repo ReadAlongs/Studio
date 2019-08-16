@@ -1,0 +1,6 @@
+docs/* linguist-documentation
+readalongs/static/js/socket.io.slim.js linguist-vendored
+readalongs/static/js/toastr.min.js linguist-vendored
+readalongs/static/css/all.min.css linguist-vendored
+readalongs/static/css/pageloader.css linguist-vendored
+readalongs/static/css/toastr.min.css linguist-vendored
