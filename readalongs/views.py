@@ -99,10 +99,9 @@ def remove_file():
 def steps(step):
     ''' Go through steps '''
     if step == 1:
-        temp_dir = session.get('temp_dir', None)
-        if not temp_dir:
-            session['temp_dir'] = mkdtemp()
-            temp_dir = session['temp_dir']
+        session.clear()
+        session['temp_dir'] = mkdtemp()
+        temp_dir = session['temp_dir']
         return render_template('upload.html', uploaded=uploaded_files(temp_dir), maps=get_langs())
     elif step == 2:
         return render_template('preview.html')
