@@ -186,6 +186,11 @@ def tokenize_xml(xml, inventory_dir=None):
     tokenizer = TokenizerLibrary(inventory_dir)
     xml = deepcopy(xml)
     unicode_normalize_xml(xml)
+    words = xml.xpath(".//w")
+    if words:
+        LOGGER.info("Words (<w>) already present; skipping tokenization")
+        return xml
+    LOGGER.info("Words (<w>) not present; tokenizing")
     return tokenizer.add_word_children(xml)
 
 

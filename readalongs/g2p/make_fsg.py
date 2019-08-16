@@ -41,8 +41,9 @@ FSG_END
 
 
 def make_fsg(xml, filename, unit="m"):
+    name = slugify(unicode(os.path.splitext(os.path.basename(filename))[0]))
     data = {
-        "name": slugify(os.path.splitext(os.path.basename(filename))[0]), # If name includes special characters, pocketsphinx throws a RuntimeError: new_Decoder returned -1
+        "name": name, # If name includes special characters, pocketsphinx throws a RuntimeError: new_Decoder returned -1
         "states": [],
         "num_states": 0
     }
