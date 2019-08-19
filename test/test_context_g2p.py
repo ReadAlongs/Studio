@@ -25,8 +25,8 @@ class TestContextG2P(TestCase):
              'out_text': 'SH W IY HH EY M HH'},
             {'in_lang': 'ctp',
              'out_lang': 'eng-arpabet',
-             'in_text': 'unᴬ',
-             'out_text': 'UW N'}
+             'in_text': 'Qneᴬ',
+             'out_text': 'HH N EY'}
         ]
 
     def test_conversions(self):
@@ -40,10 +40,10 @@ class TestContextG2P(TestCase):
     def test_reduced_indices(self):
         conversion = self.converter.convert("K̲'ay", "git", "eng-arpabet")
         self.assertEqual(conversion[1].reduced(), [
-                         (2, 1), (3, 4), (4, 7), (5, 9)])
+                         (2, 2), (3, 5), (4, 8), (5, 9)])
         conversion1 = self.converter.convert("yukwhl", 'git', 'eng-arpabet')
         self.assertEqual(conversion1[1].reduced(), [
-                         (1, 1), (2, 4), (3, 6), (4, 8), (6, 10)])
+                         (1, 2), (2, 5), (3, 7), (4, 9), (6, 10)])
 
 
 if __name__ == '__main__':

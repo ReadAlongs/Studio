@@ -124,16 +124,14 @@ def convert_words(xml, converter, word_unit="w",
         all_text = ''
         all_indices = []
         for unit in same_language_units:
-            #text = normalize("NFD", unit["text"])
             text, indices = converter.convert(
                 unit["text"],
                 unit["lang"],
                 output_orthography)
             all_text += text
-            # all_indices = concat_indices(all_indices, indices)
             all_indices += indices
         try:
-            all_indices = IOStateSequence(*all_indices).reduced()
+            all_indices = IOStateSequence(*all_indices).composed_and_reduced()
         except IndexError:
             all_indices = all_indices
         replace_text_in_node(word, all_text, all_indices)
