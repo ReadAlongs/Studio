@@ -35,9 +35,9 @@ class ContextG2P:
         self.case_sensitive = not self._json_map["in_metadata"].get('case_insensitive', False)
         self.escape_special_characters = self._json_map["in_metadata"].get('escape_special_characters', False)
         self.normalization = self._json_map['in_metadata'].get('normalization', 'NFD')
-        self.mapping = Mapping(self._json_map['map'], norm_form=self.normalization, case_sensitive=self.case_sensitive, escape_special_characters=self.escape_special_characters, **{k:v for k,v in self._json_map.items() if k != 'map'})
-        self.as_is = self.mapping.kwargs["in_metadata"].get('as_is', False)
-        self.transducer = Transducer(self.mapping, as_is=self.as_is)
+        self.as_is = self._json_map["in_metadata"].get('as_is', False)
+        self.mapping = Mapping(self._json_map['map'], as_is=self.as_is, norm_form=self.normalization, case_sensitive=self.case_sensitive, escape_special_characters=self.escape_special_characters, **{k:v for k,v in self._json_map.items() if k != 'map'})
+        self.transducer = Transducer(self.mapping)
         self.in_lang = self.mapping.kwargs["in_metadata"]["lang"]
         self.out_lang = self.mapping.kwargs["out_metadata"]["lang"]
         self.input_delimiter = self.mapping.kwargs["in_metadata"].get('delimiter', '')
