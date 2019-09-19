@@ -3,7 +3,7 @@ import unittest
 from readalongs.log import LOGGER
 
 from g2p import make_g2p
-from readalongs.g2p.context_g2p import ContextG2P
+from readalongs.text.context_text import ContextG2P
 from lxml import etree
 
 

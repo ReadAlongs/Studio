@@ -1,11 +1,20 @@
-''' ReadAlong Studio App '''
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+#######################################################################
+#
+# app.py
+#
+#   Initializes a Flask web application with
+#   session manager and SocketIO integration.
+#
+#######################################################################
+
 import os
-from flask import Flask, session
-from flask_session import Session
+
+from flask import Flask
 from flask_socketio import SocketIO
-from datetime import timedelta
-
-
+from flask_session import Session
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)

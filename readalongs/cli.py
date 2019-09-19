@@ -1,3 +1,15 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+#######################################################################
+#
+# cli.py
+#
+#   Initializes a Command Line Interface with Click.
+#   The main purpose of the cli is to align input files.
+#
+#######################################################################
+
 import os
 import wave
 import shutil
@@ -5,28 +17,37 @@ import shutil
 
 import click
 from networkx import has_path
-from g2p.mappings.langs import LANGS_AVAILABLE, LANGS_NETWORK
 from flask.cli import FlaskGroup
+from g2p.mappings.langs import LANGS_AVAILABLE, LANGS_NETWORK
 
-from readalongs._version import __version__
 from readalongs.app import app
-from readalongs.align import align_audio
 from readalongs.log import LOGGER
-from readalongs.g2p.make_smil import make_smil
-from readalongs.g2p.util import save_xml, save_txt
+from readalongs.align import align_audio
+from readalongs._version import __version__
+from readalongs.text.make_smil import make_smil
+from readalongs.text.util import save_xml, save_txt
 from readalongs.epub.create_epub import create_epub
-from readalongs.align import create_input_tei, convert_to_xhtml, return_words_and_sentences, write_to_subtitles, write_to_text_grid
+from readalongs.align import write_to_subtitles, write_to_text_grid
+from readalongs.align import create_input_tei, convert_to_xhtml, return_words_and_sentences
 
-# get the key from all networks in g2p module that have a path to 'eng-arpabet', which is needed for the readalongs
-LANGS = [k for x in LANGS_AVAILABLE for k in x.keys() if LANGS_NETWORK.has_node(k) and has_path(LANGS_NETWORK, k, 'eng-arpabet')]
+
+# get the key from all networks in text module that have a path to 'eng-arpabet'
+# which is needed for the readalongs
+LANGS = [k for x in LANGS_AVAILABLE for k in x.keys() if LANGS_NETWORK.has_node(
+    k) and has_path(LANGS_NETWORK, k, 'eng-arpabet')]
+
 
 def create_app():
+    ''' Returns the app
+    '''
     return app
+
 
 @click.version_option(version=__version__, prog_name="readalongs")
 @click.group(cls=FlaskGroup, create_app=create_app)
 def cli():
     """Management script for Read Along Studio."""
+
 
 @app.cli.command()
 @click.argument('inputfile', type=click.Path(exists=True, readable=True))
@@ -42,14 +63,13 @@ def cli():
 @click.option('-t', '--text-grid', is_flag=True, help='Export to Praat TextGrid & ELAN eaf file')
 @click.option('-x', '--output-xhtml', is_flag=True, help='Output simple XHTML instead of XML')
 def align(**kwargs):
-    """
-    Align INPUTFILE and WAVFILE and create output files at OUTPUT_BASE.
+    """Align INPUTFILE and WAVFILE and create output files at OUTPUT_BASE.
+    
+    inputfile : A path to the input text file
 
-    INPUTFILE is the input XML or text file
+    wavfile : A path to the input audio file
 
-    WAVFILE is the input audio file
-
-    OUTPUT_BASE is the basename for output files
+    output-base : A base name for output files
     """
     if kwargs['debug']:
         LOGGER.setLevel('DEBUG')
@@ -113,6 +133,7 @@ def align(**kwargs):
     shutil.copy(kwargs['wavfile'], wav_path)
     save_txt(smil_path, smil)
 
+
 @app.cli.command()
 @click.argument('input', type=click.Path(exists=True, readable=True))
 @click.argument('output', type=click.Path(exists=False, readable=True))
@@ -121,8 +142,8 @@ def epub(**kwargs):
     """
     Convert INPUT smil document to epub with media overlay at OUTPUT
 
-    INPUT is the .smil document
+    input : the .smil document
 
-    OUTPUT is the path to the .epub output
+    output : the path to the .epub output
     """
     create_epub(kwargs['input'], kwargs['output'], kwargs['unpacked'])

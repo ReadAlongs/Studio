@@ -1,7 +1,13 @@
-"""
-    Error log with colours!
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-"""
+#######################################################################
+#
+# log.py
+#
+#   Setup a logger that has colours!
+#
+#######################################################################
 
 import logging
 import coloredlogs
@@ -16,10 +22,10 @@ def setup_logger(name):
     """
     logging.basicConfig(
         level=logging.INFO
-        # filename="logger.log"
     )
     logger = logging.getLogger(name)
     coloredlogs.install(level='INFO', fmt='%(levelname)s - %(message)s',
                         logger=logger, field_styles=FIELD_STYLES)
     return logger
+
 LOGGER = setup_logger('root')

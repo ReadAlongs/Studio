@@ -44,9 +44,9 @@ import os
 import json
 import re
 
-from readalongs.g2p.util import get_lang_attrib, merge_if_same_label
-from readalongs.g2p.util import load_xml, save_xml
-from readalongs.g2p.util import unicode_normalize_xml, get_unicode_category
+from readalongs.text.util import get_lang_attrib, merge_if_same_label
+from readalongs.text.util import load_xml, save_xml
+from readalongs.text.util import unicode_normalize_xml, get_unicode_category
 
 try:
     unicode()

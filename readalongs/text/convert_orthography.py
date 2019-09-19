@@ -34,8 +34,8 @@ import copy
 from io import open
 from typing import List, Tuple
 from g2p.transducer.indices import Indices, IndexSequence
-from readalongs.g2p.context_g2p import ContextG2P
-from readalongs.g2p.lexicon_g2p import LexiconG2P
+from readalongs.text.context_g2p import ContextG2P
+from readalongs.text.lexicon_g2p import LexiconG2P
 
 def compose_indices1(i1, i2):
     if not i1:

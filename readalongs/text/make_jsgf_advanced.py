@@ -21,7 +21,7 @@ import os
 import datetime
 
 import pystache
-from readalongs.g2p.util import load_xml, save_txt
+from readalongs.text.util import load_xml, save_txt
 
 try:
     unicode()

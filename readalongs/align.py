@@ -1,33 +1,37 @@
-'''
-Alignment for audiobooks
-'''
-from typing import Dict, List
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+#######################################################################
+#
+# align.py
+#
+#   This is the main module for aligning text and audio
+#
+#######################################################################
+
+from tempfile import NamedTemporaryFile
 from datetime import timedelta
-import pocketsphinx
-import regex as re
-import argparse
-import pystache
-import shutil
+from typing import List
 import wave
 import os
 import io
 
-
-from lxml import etree
-from tempfile import NamedTemporaryFile
-from pympi.Praat import TextGrid
 from webvtt import WebVTT, Caption
+from pympi.Praat import TextGrid
+from typing import Union
+from lxml import etree
+import pocketsphinx
+import regex as re
+import pystache
 
 from readalongs.audio_utils import read_audio_from_file
-from readalongs.g2p.tokenize_xml import tokenize_xml
-from readalongs.g2p.add_ids_to_xml import add_ids
-from readalongs.g2p.convert_xml import convert_xml
-from readalongs.g2p.lang_id import add_lang_ids
-from readalongs.g2p.make_fsg import make_fsg
-from readalongs.g2p.make_dict import make_dict
-from readalongs.g2p.make_smil import make_smil
-from readalongs.g2p.util import save_xml, save_txt
-
+from readalongs.text.tokenize_xml import tokenize_xml
+from readalongs.text.convert_xml import convert_xml
+from readalongs.text.add_ids_to_xml import add_ids
+from readalongs.text.lang_id import add_lang_ids
+from readalongs.text.make_dict import make_dict
+from readalongs.text.make_fsg import make_fsg
+from readalongs.text.util import save_xml
 from readalongs.log import LOGGER
 
 ####
@@ -43,10 +47,8 @@ from readalongs.log import LOGGER
 def _trivial__enter__(self):
     return self
 
-
 def _self_close__exit__(self, exc_type, exc_value, traceback):
     self.close()
-
 
 if not hasattr(wave.Wave_read, "__exit__"):
     wave.Wave_read.__exit__ = _self_close__exit__
@@ -58,16 +60,37 @@ if not hasattr(wave.Wave_write, "__enter__"):
     wave.Wave_write.__enter__ = _trivial__enter__
 
 
-def align_audio(xml_path, wav_path, unit='w', save_temps=None):
-    """
-    Align an XML input file to an audio file.
+def align_audio(xml_path: str, wav_path: str, unit:str ='w', save_temps:Union[str, None] = None):
+    """ Align an XML input file to an audio file.
+    
+    Parameters
+    ----------
+    xml_path : str
+        Path to XML input file in TEI-like format
+    wav_path : str
+        Path to audio input (WAV or MP3)
+    unit : str, optional
+        Element to create alignments for, by default 'w'
+    save_temps : Union[str, None], optional
+        save temporary files, by default None
 
-    Args:
-      xml_path: Path to XML input file in TEI-like format
-      wav_path: Path to audio input (WAV or MP3)
-      unit: Element to create alignments for.
-      save_temps: Basename for intermediate output files (or
-        None if they won't be saved)
+    #TODO: document return
+    Returns
+    -------
+    [type]
+        [description]
+    
+    #TODO: document exceptions
+    Raises
+    ------
+    RuntimeError
+        [description]
+    RuntimeError
+        [description]
+    RuntimeError
+        [description]
+    RuntimeError
+        [description]
     """
     results = {"words": []}
 
@@ -200,15 +223,39 @@ def align_audio(xml_path, wav_path, unit='w', save_temps=None):
     return results
 
 
-def return_word_from_id(xml, el_id):
-    ''' Given an XML document, return the innertext at id
-    '''
+def return_word_from_id(xml: etree, el_id: str) -> str:
+    """ Given an XML document, return the innertext at id
+    
+    Parameters
+    ----------
+    xml : etree
+        XML document
+    el_id : str
+        ID
+    
+    Returns
+    -------
+    str
+        Innertext of element with el_id in xml
+    """
     return xml.xpath('//*[@id="%s"]/text()' % el_id)[0]
 
 
 def return_words_and_sentences(results):
-    ''' Parse xml into word and sentence 'tier' data
-    '''
+    """ Parse xml into word and sentence 'tier' data
+    
+    #TODO: document params
+    Parameters
+    ----------
+    results : [type]
+        [description]
+    
+    #TODO: document return
+    Returns
+    -------
+    [type]
+        [description]
+    """
     result_id_pattern = re.compile(
         r'''
         t(?P<table>\d*)            # Table
@@ -243,12 +290,26 @@ def return_words_and_sentences(results):
     return all_words, sentences
 
 
-def write_to_text_grid(words, sentences, duration):
-    ''' Write results to Praat TextGrid. Because we are using pympi, we can also export to Elan EAF.
-    '''
-    tg = TextGrid(xmax=duration)
-    sentence_tier = tg.add_tier(name='Sentence')
-    word_tier = tg.add_tier(name='Word')
+def write_to_text_grid(words: List[dict], sentences: List[dict], duration: float):
+    """ Write results to Praat TextGrid. Because we are using pympi, we can also export to Elan EAF.
+    
+    Parameters
+    ----------
+    words : List[dict]
+        List of word times containing start, end, and value keys
+    sentences : List[dict]
+        List of sentence times containing start, end, and value keys
+    duration : float
+        duration of entire audio
+    
+    Returns
+    -------
+    TextGrid
+        Praat TextGrid with word and sentence alignments
+    """
+    text_grid = TextGrid(xmax=duration)
+    sentence_tier = text_grid.add_tier(name='Sentence')
+    word_tier = text_grid.add_tier(name='Word')
     for s in sentences:
         sentence_tier.add_interval(
             begin=s[0]['start'],
@@ -261,23 +322,43 @@ def write_to_text_grid(words, sentences, duration):
             end=w['end'],
             value=w['text'])
 
-    return tg
+    return text_grid
 
 
 def float_to_timedelta(n: float) -> str:
+    """Float to timedelta, for subtitle formats
+    
+    Parameters
+    ----------
+    n : float
+        any float
+    
+    Returns
+    -------
+    str
+        timedelta string
+    """
     td = timedelta(seconds=n)
     if not td.microseconds:
         return str(td) + ".000"
     return str(td)
 
 
-def write_to_subtitles(data: List[dict]):
-    '''Returns WebVTT object from data.
-       Data must be either a 'word'-type tier with
-       a list of dicts that have keys for 'start', 'end' and
+def write_to_subtitles(data: Union[List[dict], List[List[dict]]]):
+    """ Returns WebVTT object from data.
+    
+    Parameters
+    ----------
+    data : Union[List[dict], List[List[dict]]]
+        Data must be either a 'word'-type tier with
+        a list of dicts that have keys for 'start', 'end' and
        'text'. Or a 'sentence'-type tier with a list of lists of dicts.
-       Function return_words_and_sentences returns the proper format.
-    '''
+    
+    Returns
+    -------
+    WebVTT
+        WebVTT subtitles
+    """
     vtt = WebVTT()
     for caption in data:
         if isinstance(caption, list):
@@ -293,7 +374,17 @@ def write_to_subtitles(data: List[dict]):
 
 
 def convert_to_xhtml(tokenized_xml, title='Book'):
-    """Do a simple and not at all foolproof conversion to XHTML."""
+    """ Do a simple and not at all foolproof conversion to XHTML.
+    
+    Parameters
+    ----------
+    tokenized_xml : etree
+        xml etree with tokens
+    title : str, optional
+        title for xhtml, by default 'Book'
+
+    #TODO: AP: Should this be returning something? It's unused seemingly.
+    """
     tokenized_xml.tag = 'html'
     tokenized_xml.attrib['xmlns'] = 'http://www.w3.org/1999/xhtml'
     for elem in tokenized_xml.iter():
@@ -345,7 +436,25 @@ TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 """
 
 
-def create_input_xml(inputfile, text_language=None, save_temps=None):
+def create_input_xml(inputfile: str, text_language: Union[str, None] = None, save_temps: Union[str, None] = None):
+    """Create input XML
+    
+    Parameters
+    ----------
+    inputfile : str
+        path to file
+    text_language : Union[str, None], optional
+        language of inputfile text, by default None
+    save_temps : Union[str, None], optional
+        save temporary files, by default None
+    
+    Returns
+    -------
+    file
+        outfile
+    str
+        filename
+    """
     if save_temps:
         filename = save_temps + '.input.xml'
         outfile = io.open(filename, 'wb')
@@ -378,12 +487,27 @@ def create_input_xml(inputfile, text_language=None, save_temps=None):
     return outfile, filename
 
 def create_input_tei(text: str, **kwargs):
-    ''' Create input xml in TEI standard.
-        Uses readlines to infer paragraph and sentence structure from plain text. TODO: Check if path, if it's just plain text, then render that instead of reading from the file
-        Assumes single page. TODO: allow text to be a list where each item in list is formatted as a 'page'
+    """ Create input xml in TEI standard.
+        Uses readlines to infer paragraph and sentence structure from plain text. 
+        TODO: Check if path, if it's just plain text, then render that instead of reading from the file
+        Assumes single page. 
+        TODO: allow text to be a list where each item in list is formatted as a 'page'
         Outputs to uft-8 XML using pymustache. 
-        text_language as kwarg sets the language for the text.
-    '''
+    
+    Parameters
+    ----------
+    text : str
+        raw input text
+    **text_language as kwarg : str
+        language for the text.
+    
+    Returns
+    -------
+    file
+        outfile
+    str
+        filename
+    """ 
     with io.open(text) as f:
         text = f.readlines()
     save_temps = kwargs.get('save_temps', False)

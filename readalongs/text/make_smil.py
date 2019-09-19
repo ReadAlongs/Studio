@@ -13,7 +13,7 @@ from __future__ import division, absolute_import
 
 import argparse
 import pystache
-from readalongs.g2p.util import save_txt
+from readalongs.text.util import save_txt
 
 try:
     unicode()

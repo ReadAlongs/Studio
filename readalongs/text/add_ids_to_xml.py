@@ -23,7 +23,7 @@ from copy import deepcopy
 from lxml import etree
 import argparse
 from collections import defaultdict
-from readalongs.g2p.util import load_xml, save_xml
+from readalongs.text.util import load_xml, save_xml
 
 TAG_TO_ID = {
     'text': 't',

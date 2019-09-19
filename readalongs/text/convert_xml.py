@@ -43,10 +43,10 @@ import copy
 from g2p import make_g2p
 from g2p.transducer.indices import IndexSequence
 
-from readalongs.g2p.convert_orthography import trim_indices
-from readalongs.g2p.convert_orthography import concat_indices, offset_indices
-from readalongs.g2p.util import load_xml, save_xml, get_lang_attrib
-from readalongs.g2p.util import unicode_normalize_xml
+from readalongs.text.convert_orthography import trim_indices
+from readalongs.text.convert_orthography import concat_indices, offset_indices
+from readalongs.text.util import load_xml, save_xml, get_lang_attrib
+from readalongs.text.util import unicode_normalize_xml
 
 try:
     unicode()

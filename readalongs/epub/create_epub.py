@@ -16,9 +16,9 @@ import os
 import pystache
 
 
-from readalongs.g2p.util import load_xml, load_xml_with_encoding
-from readalongs.g2p.util import load_txt, save_txt, save_txt_zip
-from readalongs.g2p.util import ensure_dirs, copy_file_to_zip
+from readalongs.text.util import load_xml, load_xml_with_encoding
+from readalongs.text.util import load_txt, save_txt, save_txt_zip
+from readalongs.text.util import ensure_dirs, copy_file_to_zip
 from readalongs.log import LOGGER
 
 EPUB_PATH = "EPUB"

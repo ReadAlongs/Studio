@@ -9,7 +9,7 @@ from lxml import etree
 
 from readalongs.log import LOGGER
 from readalongs.align import align_audio, create_input_xml, convert_to_xhtml
-from readalongs.g2p.util import save_xml, load_txt
+from readalongs.text.util import save_xml, load_txt
 
 class TestForceAlignment(unittest.TestCase):
     LOGGER.setLevel('DEBUG')

@@ -20,7 +20,7 @@ import os
 import pystache
 from readalongs.log import LOGGER
 from slugify import slugify
-from readalongs.g2p.util import save_txt, load_xml
+from readalongs.text.util import save_txt, load_xml
 
 try:
     unicode()

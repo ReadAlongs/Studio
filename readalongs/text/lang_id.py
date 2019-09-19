@@ -27,7 +27,7 @@ from collections import defaultdict
 import numpy as np
 from unicodedata import normalize
 
-from readalongs.g2p.util import (load_xml, save_xml, load_json,
+from readalongs.text.util import (load_xml, save_xml, load_json,
                                  get_lang_attrib, set_lang_attrib, iterate_over_text)
 from g2p.mappings.langs import MAPPINGS_AVAILABLE
 from g2p.mappings import Mapping
