@@ -19,10 +19,12 @@
 from __future__ import print_function, unicode_literals
 from __future__ import division, absolute_import
 
-from copy import deepcopy
-from lxml import etree
-import argparse
 from collections import defaultdict
+from copy import deepcopy
+import argparse
+
+from lxml import etree
+
 from readalongs.text.util import load_xml, save_xml
 
 TAG_TO_ID = {
@@ -43,7 +45,23 @@ TAGS_TO_IGNORE = [
     "script"
 ]
 
-def add_ids_aux(element, ids=defaultdict(lambda: 0), parent_id=''):
+def add_ids_aux(element: etree, ids: defaultdict = defaultdict(lambda: 0), parent_id: str = '') -> defaultdict:
+    """ Add ids to xml element
+    
+    Parameters
+    ----------
+    element : etree
+        element to add ids to
+    ids : defaultdict, optional
+        , by default defaultdict(lambda: 0)
+    parent_id : str, optional
+        id of parent element, by default ''
+    
+    Returns
+    -------
+    defaultdict
+        ids added to element
+    """
     if element.tag is etree.Comment:
         return ids
     tag = etree.QName(element.tag).localname
@@ -72,7 +90,19 @@ def add_ids_aux(element, ids=defaultdict(lambda: 0), parent_id=''):
     return ids
 
 
-def add_ids(xml):
+def add_ids(xml: etree) -> etree:
+    """Add ids to xml
+    
+    Parameters
+    ----------
+    xml : etree
+        xml to add ids to
+    
+    Returns
+    -------
+    etree
+        xml with ids added
+    """
     xml = deepcopy(xml)
     ids = defaultdict(lambda: 0)
     for child in xml:    # don't bother with the root element
@@ -82,7 +112,7 @@ def add_ids(xml):
     return xml
 
 
-def go(input_filename, output_filename):
+def go(input_filename: str, output_filename: str) -> None:
     xml = load_xml(input_filename)
     xml = add_ids(xml)
     save_xml(output_filename, xml)

@@ -8,7 +8,7 @@ from readalongs.log import LOGGER
 from test_force_align import TestForceAlignment, TestXHTML
 
 ## G2P
-from test_context_g2p import TestContextG2P
+from test_context_g2p import TestG2P
 
 ## Langs
 from test_atj_g2p import TestAtikamekwG2P
@@ -27,7 +27,7 @@ e2e_tests = [
 
 g2p_tests = [
     loader.loadTestsFromTestCase(test)
-    for test in [TestContextG2P]
+    for test in [TestG2P]
 ]
 
 lang_tests = [

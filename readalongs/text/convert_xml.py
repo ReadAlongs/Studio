@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-##############################################################
+###########################################################################
 #
 # convert_xml.py
 #
 # This takes an XML file with xml:lang attributes and text in
 # some orthography, and converts it to use English ARPABET symbols
 # for speech processing.  (Provided, of course, that a conversion
-# pipeline for it is available through convert_orthography.py.)
+# pipeline for it is available through the G2P library.)
 # This XML file preserves complex markup, even within words
 # (e.g. even if you have morpheme tags within words, it
 # can perform phonological rules across those tags).
@@ -33,19 +33,19 @@
 #
 # So, if the XML file doesn't have word elements, tokenize it and add them.
 #
-# 3
+# TODO: Document functions
+############################################################################
 
 from __future__ import print_function, unicode_literals
 from __future__ import division, absolute_import
 import argparse
 import copy
 
-from g2p import make_g2p
 from g2p.transducer.indices import IndexSequence
+from g2p import make_g2p
 
-from readalongs.text.convert_orthography import trim_indices
-from readalongs.text.convert_orthography import concat_indices, offset_indices
 from readalongs.text.util import load_xml, save_xml, get_lang_attrib
+from readalongs.text.util import trim_indices, offset_indices
 from readalongs.text.util import unicode_normalize_xml
 
 try:

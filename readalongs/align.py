@@ -11,14 +11,13 @@
 
 from tempfile import NamedTemporaryFile
 from datetime import timedelta
-from typing import List
+from typing import List, Union
 import wave
 import os
 import io
 
 from webvtt import WebVTT, Caption
 from pympi.Praat import TextGrid
-from typing import Union
 from lxml import etree
 import pocketsphinx
 import regex as re

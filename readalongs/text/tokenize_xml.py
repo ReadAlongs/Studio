@@ -33,21 +33,21 @@
 from __future__ import print_function, unicode_literals
 from __future__ import division, absolute_import
 
-from io import open
-from lxml import etree
+import re
+import argparse
 from copy import deepcopy
+
+from lxml import etree
 from g2p.mappings import Mapping
 from g2p.mappings.langs import MAPPINGS_AVAILABLE
-from readalongs.log import LOGGER
-import argparse
-import os
-import json
-import re
 
+from readalongs.log import LOGGER
 from readalongs.text.util import get_lang_attrib, merge_if_same_label
 from readalongs.text.util import load_xml, save_xml
 from readalongs.text.util import unicode_normalize_xml, get_unicode_category
 
+# TODO: AP: Is this for Python 2 support? Lots of other parts of this library will not support python2.
+#           Maybe we should just get rid of this?
 try:
     unicode()
 except:

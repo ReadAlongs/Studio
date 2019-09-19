@@ -21,6 +21,7 @@
 # there are, for example, morpheme tags (<m>), you can make that be
 # the level of analysis with the option --unit m
 #
+# TODO: Add numpy standard docstrings to functions
 ##########################################################################
 
 from __future__ import print_function, unicode_literals
@@ -37,6 +38,8 @@ from readalongs.text.make_fsg import make_fsg
 from readalongs.text.make_dict import make_dict
 from readalongs.text.util import save_xml, load_xml, save_txt
 
+# TODO: AP: Is this for Python 2 support? Lots of other parts of this library will not support python2.
+#           Maybe we should just get rid of this?
 try:
     unicode()
 except:

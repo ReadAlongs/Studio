@@ -42,6 +42,9 @@ except:
 # -- a BODY element is treated exactly as a SEQ
 #
 #
+# TODO: AP: Do we need this? It doesn't appear to be used anywhere. 
+#       There's also an undefined variable error on line 90.
+# TODO: Add numpy standard docstrings to functions
 #########################
 
 

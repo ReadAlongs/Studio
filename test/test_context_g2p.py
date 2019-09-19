@@ -3,11 +3,10 @@ import unittest
 from readalongs.log import LOGGER
 
 from g2p import make_g2p
-from readalongs.text.context_text import ContextG2P
 from lxml import etree
 
 
-class TestContextG2P(TestCase):
+class TestG2P(TestCase):
     def setUp(self):
         self.test_conversion_data = [
             {'in_lang': 'git',

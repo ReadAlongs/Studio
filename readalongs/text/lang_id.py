@@ -14,32 +14,29 @@
 # "sentence 0, word 2, morpheme 1".  But it's flexible if some elements
 # already have ids, or if the markup uses different tags than a TEI document.
 #
+# TODO: Add numpy standard docstrings to functions
 ###################################################
 
 from __future__ import print_function, unicode_literals
 from __future__ import division, absolute_import
 
 import argparse
-import os
-from readalongs.log import LOGGER
-from glob import glob
-from collections import defaultdict
-import numpy as np
 from unicodedata import normalize
 
-from readalongs.text.util import (load_xml, save_xml, load_json,
-                                 get_lang_attrib, set_lang_attrib, iterate_over_text)
-from g2p.mappings.langs import MAPPINGS_AVAILABLE
+import numpy as np
 from g2p.mappings import Mapping
+from g2p.mappings.langs import MAPPINGS_AVAILABLE
 from g2p.mappings.utils import is_dummy, is_ipa, is_xsampa
+
+from readalongs.text.util import (load_xml, save_xml, get_lang_attrib,
+                                  set_lang_attrib, iterate_over_text)
 
 
 class LanguageIdentifier:
-
     def __init__(self, seen_factor=1.0, unseen_factor=0.01):
         self.seen_factor = seen_factor
         self.unseen_factor = unseen_factor
-        
+
         self.chars = {}
         self.inventories = {}
         for x in MAPPINGS_AVAILABLE:

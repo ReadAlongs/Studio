@@ -22,6 +22,7 @@
 # are cheap to make; we might as well make all of them ahead of time rather
 # than search through a possibility graph at the point of need.)
 #
+# TODO: Move this to the G2P library
 ######################################################################
 
 from __future__ import print_function, unicode_literals, division
@@ -49,7 +50,6 @@ LEXICON_LOADERS = {
 
 
 class LexiconG2P:
-
     def __init__(self, metadata_path):
         self.metadata = load_json(metadata_path)
         self.in_lang = self.metadata["in_metadata"]["lang"]

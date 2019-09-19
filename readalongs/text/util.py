@@ -1,24 +1,30 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-################################
+###########################################
 #
 # util.py
 #
 # Just some shared functions
 #
-##############################
+# TODO: Add numpy standard format docstrings
+############################################
 
 from __future__ import print_function, unicode_literals, division
-from io import open, TextIOWrapper
-from lxml import etree
-from copy import deepcopy
-from readalongs.log import LOGGER
+
 import os
 import json
 import zipfile
+from copy import deepcopy
 from collections import OrderedDict
 
+from lxml import etree
+from io import open, TextIOWrapper
+
+from readalongs.log import LOGGER
+
+# TODO: AP: Is this for Python 2 support? Lots of other parts of this library will not support python2.
+#           Maybe we should just get rid of this?
 try:
     unicode()
 except:
@@ -238,3 +244,44 @@ def get_unicode_category(c):
     cat = category(c)
     assert(cat in CATEGORIES)
     return CATEGORIES[cat]
+
+def compose_indices(i1, i2):
+    if not i1:
+        return i2
+    i2_dict = dict(i2)
+    i2_idx = 0
+    results = []
+    for i1_in, i1_out in i1:
+        highest_i2_found = 0 if not results else results[-1][1]
+        while i2_idx <= i1_out:
+            if i2_idx in i2_dict and i2_dict[i2_idx] > highest_i2_found:
+                highest_i2_found = i2_dict[i2_idx]
+            i2_idx += 1
+        if results:
+            assert(i1_in >= results[-1][0])
+            assert(highest_i2_found >= results[-1][1])
+        results.append((i1_in, highest_i2_found))
+    print(f"composed: {results}")
+    return results
+
+def concat_indices(i1, i2):
+    if not i1:
+        return i2
+    results = deepcopy(i1)
+    offset1, offset2 = results[-1]
+    for i1, i2 in i2[1:]:
+        results.append((i1+offset1, i2+offset2))
+    return results
+
+def offset_indices(idxs, n1, n2):
+    return [(i1 + n1, i2 + n2) for i1, i2 in idxs]
+
+def trim_indices(idxs):
+    result = []
+    for i1, i2 in idxs:
+        i1 = max(i1, 0)
+        i2 = max(i2, 0)
+        if (i1, i2) in result:
+            continue
+        result.append((i1, i2))
+    return result

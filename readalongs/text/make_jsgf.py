@@ -10,6 +10,8 @@
 # and converted to IPA, and outputs a FSG
 # file for processing by PocketSphinx.
 #
+# TODO: AP: This docstring seems to have been copied from make_fsg
+#           and doesn't appear to be used. Do we need this file?
 ##################################################
 
 
