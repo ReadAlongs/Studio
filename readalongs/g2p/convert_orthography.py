@@ -33,11 +33,9 @@ import copy
 
 from io import open
 from typing import List, Tuple
-from g2p.transducer import IOStates, IOStateSequence
+from g2p.transducer.indices import Indices, IndexSequence
 from readalongs.g2p.context_g2p import ContextG2P
 from readalongs.g2p.lexicon_g2p import LexiconG2P
-from .. import lang
-
 
 def compose_indices1(i1, i2):
     if not i1:
@@ -143,7 +141,7 @@ class CompositeConverter:
             return self.debug(text, self.converter1, self.converter2)
         c1_text, c1_indices = self.converter1.convert(text)
         c2_text, c2_indices = self.converter2.convert(c1_text)
-        final_indices = IOStateSequence(c1_indices, c2_indices)
+        final_indices = IndexSequence(c1_indices, c2_indices)
         return c2_text, final_indices
 
 
@@ -153,79 +151,79 @@ G2P_HANDLERS = {
 }
 
 
-class ConverterLibrary:
-    def __init__(self, mappings_dir=None):
-        self.converters = {}
-        for _, langdir in lang.lang_dirs(mappings_dir):
-            for mapping_filename in os.listdir(langdir):
-                if not mapping_filename.endswith('json'):
-                    continue
-                mapping_filename = os.path.join(langdir, mapping_filename)
-                with open(mapping_filename, "r", encoding="utf-8") as fin:
-                    mapping = json.load(fin)
-                    if not isinstance(mapping, dict):
-                        LOGGER.error("File %s is not a JSON dictionary",
-                                     mapping_filename)
-                        continue
-                    if "type" not in mapping:
-                        LOGGER.error("File %s is not a supported "
-                                     "conversion format", mapping_filename)
-                        continue
-                    if mapping["type"] == "inventory":
-                        continue
-                    if mapping["type"] not in G2P_HANDLERS:
-                        LOGGER.error("File %s is not a supported "
-                                     "conversion format", mapping_filename)
-                        continue
-                    converter = G2P_HANDLERS[mapping["type"]](mapping_filename)
-                    if converter.in_lang == converter.out_lang:
-                        LOGGER.error("Cannot load reflexive (%s->%s) "
-                                     "mapping from file %s",
-                                     converter.in_lang, converter.out_lang,
-                                     mapping_filename)
-                        continue
-                    self.add_converter(converter)
-        self.transitive_closure()
+# class ConverterLibrary:
+#     def __init__(self, mappings_dir=None):
+#         self.converters = {}
+#         for _, langdir in lang.lang_dirs(mappings_dir):
+#             for mapping_filename in os.listdir(langdir):
+#                 if not mapping_filename.endswith('json'):
+#                     continue
+#                 mapping_filename = os.path.join(langdir, mapping_filename)
+#                 with open(mapping_filename, "r", encoding="utf-8") as fin:
+#                     mapping = json.load(fin)
+#                     if not isinstance(mapping, dict):
+#                         LOGGER.error("File %s is not a JSON dictionary",
+#                                      mapping_filename)
+#                         continue
+#                     if "type" not in mapping:
+#                         LOGGER.error("File %s is not a supported "
+#                                      "conversion format", mapping_filename)
+#                         continue
+#                     if mapping["type"] == "inventory":
+#                         continue
+#                     if mapping["type"] not in G2P_HANDLERS:
+#                         LOGGER.error("File %s is not a supported "
+#                                      "conversion format", mapping_filename)
+#                         continue
+#                     converter = G2P_HANDLERS[mapping["type"]](mapping_filename)
+#                     if converter.in_lang == converter.out_lang:
+#                         LOGGER.error("Cannot load reflexive (%s->%s) "
+#                                      "mapping from file %s",
+#                                      converter.in_lang, converter.out_lang,
+#                                      mapping_filename)
+#                         continue
+#                     self.add_converter(converter)
+#         self.transitive_closure()
 
-    def add_converter(self, converter):
-        # LOGGER.info("Adding converter between %s and %s",
-        #              converter.in_lang, converter.out_lang)
-        self.converters[(converter.in_lang, converter.out_lang)] = converter
+#     def add_converter(self, converter):
+#         # LOGGER.info("Adding converter between %s and %s",
+#         #              converter.in_lang, converter.out_lang)
+#         self.converters[(converter.in_lang, converter.out_lang)] = converter
 
-    def transitive_closure(self):
-        n_converters = -1
-        # FIXME: Might need to detect cycles here!
-        # Cycles are prohibited by the in_lang/out_lang comparisons. --Pat
-        while len(self.converters) != n_converters:
-            for converter in list(self.converters.values()):
-                converters = list(self.converters.items())
-                for (in_lang, out_lang), other_converter in converters:
-                    if (converter.out_lang == in_lang and
-                            converter.in_lang != out_lang and
-                            (converter.in_lang, out_lang) not in self.converters):
-                        composite = CompositeConverter(
-                            converter, other_converter)
-                        self.add_converter(composite)
-                    elif (converter.in_lang == out_lang and
-                          converter.out_lang != in_lang and
-                          (in_lang, converter.out_lang) not in self.converters):
-                        composite = CompositeConverter(
-                            other_converter, converter)
-                        self.add_converter(composite)
-            n_converters = len(self.converters)
+#     def transitive_closure(self):
+#         n_converters = -1
+#         # FIXME: Might need to detect cycles here!
+#         # Cycles are prohibited by the in_lang/out_lang comparisons. --Pat
+#         while len(self.converters) != n_converters:
+#             for converter in list(self.converters.values()):
+#                 converters = list(self.converters.items())
+#                 for (in_lang, out_lang), other_converter in converters:
+#                     if (converter.out_lang == in_lang and
+#                             converter.in_lang != out_lang and
+#                             (converter.in_lang, out_lang) not in self.converters):
+#                         composite = CompositeConverter(
+#                             converter, other_converter)
+#                         self.add_converter(composite)
+#                     elif (converter.in_lang == out_lang and
+#                           converter.out_lang != in_lang and
+#                           (in_lang, converter.out_lang) not in self.converters):
+#                         composite = CompositeConverter(
+#                             other_converter, converter)
+#                         self.add_converter(composite)
+#             n_converters = len(self.converters)
 
-    def convert(self, text, in_lang, out_lang, debugger=False):
-        if (in_lang, out_lang) not in self.converters:
-            LOGGER.error("No conversion found between %s and %s.",
-                         in_lang, out_lang)
-            return None, None
-        converter = self.converters[(in_lang, out_lang)]
-        # breakpoint()
-        if debugger:
-            if isinstance(converter, ContextG2P) or isinstance(converter, CompositeConverter):
-                return converter.convert(text, debugger=debugger)
-            else:
-                LOGGER.info("'debugger' was set to True but debugger is only supported for a \
-                            ContextG2P converter and the converter you're trying to debug is % s", converter)
-        else:
-            return converter.convert(text)
+#     def convert(self, text, in_lang, out_lang, debugger=False):
+#         if (in_lang, out_lang) not in self.converters:
+#             LOGGER.error("No conversion found between %s and %s.",
+#                          in_lang, out_lang)
+#             return None, None
+#         converter = self.converters[(in_lang, out_lang)]
+#         # breakpoint()
+#         if debugger:
+#             if isinstance(converter, ContextG2P) or isinstance(converter, CompositeConverter):
+#                 return converter.convert(text, debugger=debugger)
+#             else:
+#                 LOGGER.info("'debugger' was set to True but debugger is only supported for a \
+#                             ContextG2P converter and the converter you're trying to debug is % s", converter)
+#         else:
+#             return converter.convert(text)

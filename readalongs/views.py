@@ -4,18 +4,20 @@ from subprocess import run
 import os
 import io
 
+from networkx import has_path
+from g2p.mappings.langs import LANGS_AVAILABLE, LANGS_NETWORK
 from pathlib import Path
 from flask import abort, flash, redirect, request, render_template, session, send_file, url_for
 from flask_socketio import emit
-from flask_login import current_user
 from werkzeug.utils import secure_filename
 from zipfile import ZipFile
 from shutil import rmtree
 from time import time
 
-
 from readalongs.app import app, socketio
-from readalongs.lang import get_langs
+
+# get the key from all networks in g2p module that have a path to 'eng-arpabet', which is needed for the readalongs
+LANGS = [{'code': k, 'name': v} for x in LANGS_AVAILABLE for k, v in x.items() if LANGS_NETWORK.has_node(k) and has_path(LANGS_NETWORK, k, 'eng-arpabet')]
 
 ALLOWED_TEXT = ['txt', 'xml', 'docx']
 ALLOWED_AUDIO = ['wav', 'mp3']
@@ -102,7 +104,7 @@ def steps(step):
         session.clear()
         session['temp_dir'] = mkdtemp()
         temp_dir = session['temp_dir']
-        return render_template('upload.html', uploaded=uploaded_files(temp_dir), maps=get_langs())
+        return render_template('upload.html', uploaded=uploaded_files(temp_dir), maps=LANGS)
     elif step == 2:
         return render_template('preview.html')
     elif step == 3:

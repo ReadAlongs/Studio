@@ -36,17 +36,17 @@ from __future__ import division, absolute_import
 from io import open
 from lxml import etree
 from copy import deepcopy
+from g2p.mappings import Mapping
+from g2p.mappings.langs import MAPPINGS_AVAILABLE
 from readalongs.log import LOGGER
 import argparse
 import os
 import json
 import re
 
-from readalongs.g2p.create_inv_from_map import create_inventory_from_mapping
 from readalongs.g2p.util import get_lang_attrib, merge_if_same_label
 from readalongs.g2p.util import load_xml, save_xml
 from readalongs.g2p.util import unicode_normalize_xml, get_unicode_category
-from readalongs import lang
 
 try:
     unicode()
@@ -58,13 +58,13 @@ class DefaultTokenizer:
     def __init__(self):
         self.inventory = []
         self.delim = ''
-        self.case_insensitive = True
+        self.case_sensitive = False
 
     def tokenize_aux(self, text):
         return text
 
     def is_word_charcter(self, c):
-        if self.case_insensitive:
+        if not self.case_sensitive:
             c = c.lower()
         if c in self.inventory:
             return True
@@ -85,14 +85,11 @@ class DefaultTokenizer:
 
 
 class Tokenizer(DefaultTokenizer):
-    def __init__(self, inventory):
-        if "mapping" in inventory["type"]:
-            inventory = create_inventory_from_mapping(inventory, "in")
-        self.inventory = inventory["inventory"]
-        self.lang = inventory["metadata"]["lang"]
-        self.delim = inventory["metadata"]["delimiter"]
-        self.case_insensitive = inventory["metadata"].get(
-            "case_insensitive", False)
+    def __init__(self, mapping: Mapping):
+        self.inventory = mapping.inventory('in')
+        self.lang = mapping.kwargs.get('language_name', '')
+        self.delim = mapping.kwargs.get('in_delimiter', '')
+        self.case_sensitive = mapping.kwargs.get('case_sensitive', True)
         # create regex
 
         regex_pieces = sorted(self.inventory, key=lambda s: -len(s))
@@ -102,7 +99,7 @@ class Tokenizer(DefaultTokenizer):
         pattern = "|".join(regex_pieces + ['.'])
         pattern = "(" + pattern + ")"
         flags = re.DOTALL
-        if self.case_insensitive:
+        if not self.case_sensitive:
             flags |= re.I
         self.regex = re.compile(pattern, flags)
 
@@ -111,24 +108,11 @@ class Tokenizer(DefaultTokenizer):
 
 
 class TokenizerLibrary:
-    def __init__(self, inventory_dir=None):
+    def __init__(self):
         self.tokenizers = {None: DefaultTokenizer()}
-        for _, langdir in lang.lang_dirs(inventory_dir):
-            for inv_filename in os.listdir(langdir):
-                if not inv_filename.endswith('json'):
-                    continue
-                inv_filename = os.path.join(langdir, inv_filename)
-                with open(inv_filename, "r", encoding="utf-8") as fin:
-                    inv = json.load(fin)
-                    if not isinstance(inv, dict):
-                        LOGGER.error("File %s is not a JSON dictionary",
-                                      inv_filename)
-                        continue
-                    if ("type" not in inv
-                            or inv["type"] not in ["inventory", "mapping", "context-mapping"]):
-                        continue
-                    tokenizer = Tokenizer(inv)
-                    self.tokenizers[tokenizer.lang] = tokenizer
+        for x in MAPPINGS_AVAILABLE:
+            mapping = Mapping(in_lang=x['in_lang'], out_lang=x['out_lang'])
+            self.tokenizers[x['in_lang']] = Tokenizer(mapping)
 
     def add_word_children(self, element):
         tag = etree.QName(element.tag).localname
@@ -182,8 +166,8 @@ class TokenizerLibrary:
         return new_element
 
 
-def tokenize_xml(xml, inventory_dir=None):
-    tokenizer = TokenizerLibrary(inventory_dir)
+def tokenize_xml(xml):
+    tokenizer = TokenizerLibrary()
     xml = deepcopy(xml)
     unicode_normalize_xml(xml)
     words = xml.xpath(".//w")
@@ -194,18 +178,15 @@ def tokenize_xml(xml, inventory_dir=None):
     return tokenizer.add_word_children(xml)
 
 
-def go(input_filename, output_filename, inventory_dir=None):
+def go(input_filename, output_filename):
     xml = load_xml(input_filename)
-    xml = tokenize_xml(xml, inventory_dir)
+    xml = tokenize_xml(xml)
     save_xml(output_filename, xml)
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Convert XML to another orthography while preserving tags')
     parser.add_argument('input', type=str, help='Input XML')
     parser.add_argument('output', type=str, help='Output XML')
-    parser.add_argument('--inv-dir', type=str,
-                        help="Alternate directory containing character inventories")
     args = parser.parse_args()
-    go(args.input, args.output, inventory_dir=args.inv_dir)
+    go(args.input, args.output)

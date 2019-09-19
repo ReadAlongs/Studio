@@ -37,14 +37,13 @@
 
 from __future__ import print_function, unicode_literals
 from __future__ import division, absolute_import
-from unicodedata import normalize
 import argparse
 import copy
 
-from g2p.mappings import Mapping
-from g2p.transducer import IOStateSequence, Transducer
+from g2p import make_g2p
+from g2p.transducer.indices import IndexSequence
 
-from readalongs.g2p.convert_orthography import ConverterLibrary, trim_indices
+from readalongs.g2p.convert_orthography import trim_indices
 from readalongs.g2p.convert_orthography import concat_indices, offset_indices
 from readalongs.g2p.util import load_xml, save_xml, get_lang_attrib
 from readalongs.g2p.util import unicode_normalize_xml
@@ -113,7 +112,7 @@ def remove_word_boundaries(xml, word_unit="w"):
                 last_child.tail = last_child.tail[:-1]
 
 
-def convert_words(xml, converter, word_unit="w",
+def convert_words(xml, word_unit="w",
                   output_orthography="eng-arpabet"):
     for word in xml.xpath(".//" + word_unit):
         # add_word_boundaries(word)
@@ -124,14 +123,12 @@ def convert_words(xml, converter, word_unit="w",
         all_text = ''
         all_indices = []
         for unit in same_language_units:
-            text, indices = converter.convert(
-                unit["text"],
-                unit["lang"],
-                output_orthography)
+            converter = make_g2p(unit['lang'], output_orthography)
+            text, indices = converter(unit["text"], index=True)
             all_text += text
             all_indices += indices
         try:
-            all_indices = IOStateSequence(*all_indices).composed_and_reduced()
+            all_indices = IndexSequence(*all_indices).reduced()
         except IndexError:
             all_indices = all_indices
         replace_text_in_node(word, all_text, all_indices)
@@ -174,22 +171,20 @@ def replace_text_in_node(word, text, indices):
 
 
 def convert_xml(xml, word_unit="w",
-                output_orthography="eng-arpabet", mapping_dir=None):
+                output_orthography="eng-arpabet"):
     # breakpoint()
-    converter = ConverterLibrary(mapping_dir)
     xml_copy = copy.deepcopy(xml)
     unicode_normalize_xml(xml_copy)
     #add_word_boundaries(xml_copy, word_unit)
-    convert_words(xml_copy, converter, word_unit, output_orthography)
+    convert_words(xml_copy, word_unit, output_orthography)
     #remove_word_boundaries(xml_copy, word_unit)
     return xml_copy
 
 
 def go(input_filename, output_filename, word_unit="w",
-       output_orthography="eng-arpabet", mapping_dir=None):
+       output_orthography="eng-arpabet"):
     xml = load_xml(input_filename)
-    converted_xml = convert_xml(xml, word_unit, output_orthography,
-                                mapping_dir=mapping_dir)
+    converted_xml = convert_xml(xml, word_unit, output_orthography)
     save_xml(output_filename, converted_xml)
 
 
@@ -198,14 +193,10 @@ if __name__ == '__main__':
         description='Convert XML to another orthography while preserving tags')
     parser.add_argument('input', type=str, help='Input XML')
     parser.add_argument('output', type=str, help='Output XML')
-    parser.add_argument('--mapping-dir',
-                        type=str, help="Alternate directory containing "
-                        "orthography mappings")
     parser.add_argument('--word_unit', type=str, default="w",
                         help='XML element that '
                         'represents a word (default: "w")')
     parser.add_argument('--out_orth', type=str, default="eng-arpabet",
                         help='Output orthography (default: "eng-arpabet")')
     args = parser.parse_args()
-    go(args.input, args.output, args.word_unit, args.out_orth,
-       mapping_dir=args.mapping_dir)
+    go(args.input, args.output, args.word_unit, args.out_orth)

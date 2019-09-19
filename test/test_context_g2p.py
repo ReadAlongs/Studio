@@ -2,14 +2,13 @@ from unittest import TestCase
 import unittest
 from readalongs.log import LOGGER
 
+from g2p import make_g2p
 from readalongs.g2p.context_g2p import ContextG2P
-from readalongs.g2p.convert_orthography import ConverterLibrary
 from lxml import etree
 
 
 class TestContextG2P(TestCase):
     def setUp(self):
-        self.converter = ConverterLibrary()
         self.test_conversion_data = [
             {'in_lang': 'git',
              'out_lang': 'eng-arpabet',
@@ -33,15 +32,17 @@ class TestContextG2P(TestCase):
         for test in self.test_conversion_data:
             # if test['in_lang'] == 'str-sen':
             #     breakpoint()
-            conversion = self.converter.convert(
-                test['in_text'], test['in_lang'], test['out_lang'])
-            self.assertEqual(conversion[0], test['out_text'])
+            converter = make_g2p(test['in_lang'], test['out_lang'])
+            # breakpoint()
+            conversion = converter(test['in_text'])
+            self.assertEqual(conversion, test['out_text'])
 
     def test_reduced_indices(self):
-        conversion = self.converter.convert("K̲'ay", "git", "eng-arpabet")
+        converter = make_g2p('git', 'eng-arpabet')
+        conversion = converter("K̲'ay", index=True)
         self.assertEqual(conversion[1].reduced(), [
                          (2, 2), (3, 5), (4, 8), (5, 9)])
-        conversion1 = self.converter.convert("yukwhl", 'git', 'eng-arpabet')
+        conversion1 = converter("yukwhl", index=True)
         self.assertEqual(conversion1[1].reduced(), [
                          (1, 2), (2, 5), (3, 7), (4, 9), (6, 10)])
 

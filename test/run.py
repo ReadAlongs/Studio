@@ -9,7 +9,6 @@ from test_force_align import TestForceAlignment, TestXHTML
 
 ## G2P
 from test_context_g2p import TestContextG2P
-from test_create_mapping import TestMappings
 
 ## Langs
 from test_atj_g2p import TestAtikamekwG2P
@@ -28,7 +27,7 @@ e2e_tests = [
 
 g2p_tests = [
     loader.loadTestsFromTestCase(test)
-    for test in (TestContextG2P, TestMappings)
+    for test in [TestContextG2P]
 ]
 
 lang_tests = [

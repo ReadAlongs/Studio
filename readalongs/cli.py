@@ -1,11 +1,15 @@
 import os
-import click
 import wave
 import shutil
+
+
+import click
+from networkx import has_path
+from g2p.mappings.langs import LANGS_AVAILABLE, LANGS_NETWORK
 from flask.cli import FlaskGroup
+
 from readalongs._version import __version__
 from readalongs.app import app
-from readalongs.lang import get_langs
 from readalongs.align import align_audio
 from readalongs.log import LOGGER
 from readalongs.g2p.make_smil import make_smil
@@ -13,7 +17,8 @@ from readalongs.g2p.util import save_xml, save_txt
 from readalongs.epub.create_epub import create_epub
 from readalongs.align import create_input_tei, convert_to_xhtml, return_words_and_sentences, write_to_subtitles, write_to_text_grid
 
-LANGS = [x['code'] for x in get_langs()]
+# get the key from all networks in g2p module that have a path to 'eng-arpabet', which is needed for the readalongs
+LANGS = [k for x in LANGS_AVAILABLE for k in x.keys() if LANGS_NETWORK.has_node(k) and has_path(LANGS_NETWORK, k, 'eng-arpabet')]
 
 def create_app():
     return app

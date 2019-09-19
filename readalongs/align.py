@@ -30,8 +30,6 @@ from readalongs.g2p.util import save_xml, save_txt
 
 from readalongs.log import LOGGER
 
-from readalongs import mapping_dir
-
 ####
 #
 # Some distros (Python2, Python3 on Windows it seems) don't have the WAV
@@ -79,7 +77,7 @@ def align_audio(xml_path, wav_path, unit='w', save_temps=None):
     except etree.XMLSyntaxError as e:
         raise RuntimeError(
             "Error parsing XML input file %s: %s." % (xml_path, e))
-    xml = add_lang_ids(xml, mapping_dir, unit="s")
+    xml = add_lang_ids(xml, unit="s")
     xml = tokenize_xml(xml)
     if save_temps:
         save_xml(save_temps + '.tokenized.xml', xml)

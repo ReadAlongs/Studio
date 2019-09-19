@@ -44,23 +44,22 @@ except:
 
 
 def end_to_end(xml, input_filename, unit, word_unit,
-               out_orth, mapping_dir=None):
-    xml = add_lang_ids(xml, mapping_dir, unit="p")
-    xml = tokenize_xml(xml, mapping_dir)
+               out_orth):
+    xml = add_lang_ids(xml, unit="p")
+    xml = tokenize_xml(xml)
     xml = add_ids(xml)
-    converted_xml = convert_xml(xml, word_unit, out_orth,
-                                mapping_dir=mapping_dir)
+    converted_xml = convert_xml(xml, word_unit, out_orth)
     #save_xml("test.xml", converted_xml)
     fsg = make_fsg(converted_xml, input_filename, unit)
     pronouncing_dictionary = make_dict(converted_xml, input_filename, unit)
     return xml, fsg, pronouncing_dictionary
 
 
-def go(input_filename, mapping_dir, output_xml_filename,
+def go(input_filename, output_xml_filename,
        output_fsg_filename, output_dict_filename, unit, word_unit, out_orth):
     xml = load_xml(input_filename)
     xml, fsg, dct = end_to_end(xml, input_filename,
-                               unit, word_unit, out_orth, mapping_dir)
+                               unit, word_unit, out_orth)
     save_xml(output_xml_filename, xml)
     save_txt(output_fsg_filename, fsg)
     save_txt(output_dict_filename, dct)
@@ -73,9 +72,6 @@ if __name__ == '__main__':
     parser.add_argument('output_xml', type=str, help="Output XML file")
     parser.add_argument('output_fsg', type=str, help='Output .jsgf file')
     parser.add_argument('output_dict', type=str, help='Output .dict file')
-    parser.add_argument(
-        '--mapping-dir', type=str,
-        help="Alternate directory containing orthography mappings")
     parser.add_argument(
         '--unit', type=str, default='w',
         help='XML tag of the unit of analysis '
@@ -92,7 +88,6 @@ if __name__ == '__main__':
     if args.debug:
         LOGGER.setLevel("DEBUG")
     go(args.input,
-       args.mapping_dir,
        args.output_xml,
        args.output_fsg,
        args.output_dict,

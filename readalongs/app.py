@@ -2,7 +2,6 @@
 import os
 from flask import Flask, session
 from flask_session import Session
-from flask_login import LoginManager
 from flask_socketio import SocketIO
 from datetime import timedelta
 

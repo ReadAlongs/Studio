@@ -3,7 +3,7 @@ import unittest
 from readalongs.log import LOGGER
 
 from readalongs.g2p.context_g2p import ContextG2P
-from readalongs.g2p.convert_orthography import ConverterLibrary, compose_indices
+from readalongs.g2p.convert_orthography import compose_indices
 from lxml import etree
 
 
