@@ -15,7 +15,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='readalongs',
-    python_requires='>=3.7',
+    python_requires='>=3.6',
     version=VERSION,
     long_description='ReadAlong Studio',
     packages=find_packages(exclude=['test']),
