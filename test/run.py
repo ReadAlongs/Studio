@@ -17,13 +17,15 @@ from test_crj_g2p import TestSouthEastCreeG2P
 ## Other tests
 from test_tokenize_xml import TestTokenizer
 
+## Eric Joanis created tests
+from test_basic_case import TestBasicCase
 
 loader = TestLoader()
 
 e2e_tests = [
-        loader.loadTestsFromTestCase(test)
-        for test in (TestForceAlignment, TestXHTML)
-    ]
+    loader.loadTestsFromTestCase(test)
+    for test in (TestForceAlignment, TestXHTML)
+]
 
 g2p_tests = [
     loader.loadTestsFromTestCase(test)
@@ -40,6 +42,11 @@ other_tests = [
     for test in [TestTokenizer]
 ]
 
+ej_tests = [
+    loader.loadTestsFromTestCase(test)
+    for test in [TestBasicCase]
+]
+
 def run_tests(suite):
     if suite == 'e2e':
         suite = TestSuite(e2e_tests)
@@ -49,13 +56,15 @@ def run_tests(suite):
         suite = TestSuite(lang_tests)
     elif suite == 'dev':
         suite = TestSuite(g2p_tests + other_tests)
+    elif suite == 'ej':
+        suite = TestSuite(ej_tests)
     elif suite == 'prod':
         suite = loader.discover(os.path.dirname(__file__))
     elif suite == 'other':
         suite = TestSuite(other_tests)
     else:
         LOGGER.error("Sorry, you need to select a Test Suite to run, like 'dev', 'g2p' or 'prod'")
-        
+
     runner = TextTestRunner(verbosity=3)
     runner.run(suite)
 
