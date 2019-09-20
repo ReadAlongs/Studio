@@ -55,7 +55,7 @@ def run_tests(suite):
     elif suite == 'langs':
         suite = TestSuite(lang_tests)
     elif suite == 'dev':
-        suite = TestSuite(g2p_tests + other_tests)
+        suite = TestSuite(g2p_tests + other_tests + ej_tests)
     elif suite == 'ej':
         suite = TestSuite(ej_tests)
     elif suite == 'prod':
