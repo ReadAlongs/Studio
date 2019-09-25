@@ -22,7 +22,7 @@ class TestForceAlignment(unittest.TestCase):
 
         # Verify that the same IDs are in the output
         converted_path = os.path.join(
-            self.data_dir, 'ap-converted-from-xml.xml')
+            self.data_dir, 'ap-git-converted-from-xml.xml')
         xml = etree.parse(converted_path).getroot()
         words = results['words']
         xml_words = xml.xpath(".//w")
@@ -38,7 +38,7 @@ class TestForceAlignment(unittest.TestCase):
 
         # Verify that the same IDs are in the output
         converted_path = os.path.join(
-            self.data_dir, 'ap-converted-from-txt.xml')
+            self.data_dir, 'ap-git-converted-from-txt.xml')
         xml = etree.parse(converted_path).getroot()
         words = results['words']
         xml_words = xml.xpath(".//w")
@@ -51,7 +51,7 @@ class TestXHTML(unittest.TestCase):
     data_dir = os.path.join(os.path.dirname(__file__), 'data')
 
     def testConvert(self):
-        xml_path = os.path.join(self.data_dir, 'ap-converted-from-xml.xml')
+        xml_path = os.path.join(self.data_dir, 'ap-git-converted-from-xml.xml')
         xml = etree.parse(xml_path).getroot()
         convert_to_xhtml(xml)
         with tempfile.NamedTemporaryFile(suffix='.xml') as tf:
@@ -61,7 +61,7 @@ class TestXHTML(unittest.TestCase):
             self.assertEqual(txt,
                              load_txt(
                                  os.path.join(self.data_dir,
-                                              'ap-converted-from-xml.xhtml')))
+                                              'ap-git-converted-from-xml.xhtml')))
 
 
 if __name__ == '__main__':
