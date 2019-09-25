@@ -16,8 +16,8 @@ class TestForceAlignment(unittest.TestCase):
     data_dir = os.path.join(os.path.dirname(__file__), 'data')
 
     def testAlign(self):
-        xml_path = os.path.join(self.data_dir, 'ap.xml')
-        wav_path = os.path.join(self.data_dir, 'ap.wav')
+        xml_path = os.path.join(self.data_dir, 'ap-git.xml')
+        wav_path = os.path.join(self.data_dir, 'ap-git.wav')
         results = align_audio(xml_path, wav_path, unit='w')
 
         # Verify that the same IDs are in the output
@@ -31,8 +31,8 @@ class TestForceAlignment(unittest.TestCase):
             self.assertEqual(xw.attrib['id'], w['id'])
 
     def testAlignText(self):
-        txt_path = os.path.join(self.data_dir, 'ap.txt')
-        wav_path = os.path.join(self.data_dir, 'ap.wav')
+        txt_path = os.path.join(self.data_dir, 'ap-git.txt')
+        wav_path = os.path.join(self.data_dir, 'ap-git.wav')
         tempfile, temp_fn = create_input_xml(txt_path, 'git')
         results = align_audio(temp_fn, wav_path, unit='w')
 
