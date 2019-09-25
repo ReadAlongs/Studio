@@ -48,7 +48,7 @@ def run_tests(suite):
     elif suite == 'langs':
         suite = TestSuite(lang_tests)
     elif suite == 'dev':
-        suite = TestSuite(g2p_tests + other_tests)
+        suite = TestSuite(g2p_tests + other_tests + e2e_tests)
     elif suite == 'prod':
         suite = loader.discover(os.path.dirname(__file__))
     elif suite == 'other':
