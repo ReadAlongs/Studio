@@ -46,14 +46,15 @@ def create_app():
     '''
     return app
 
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 @click.version_option(version=__version__, prog_name="readalongs")
-@click.group(cls=FlaskGroup, create_app=create_app)
+@click.group(cls=FlaskGroup, create_app=create_app, context_settings=CONTEXT_SETTINGS)
 def cli():
     """Management script for Read Along Studio."""
 
 
-@app.cli.command()
+@app.cli.command(context_settings=CONTEXT_SETTINGS, short_help='Force align a text and a sound file.')
 @click.argument('inputfile', type=click.Path(exists=True, readable=True))
 @click.argument('wavfile', type=click.Path(exists=True, readable=True))
 @click.argument('output-base', type=click.STRING)
@@ -143,7 +144,7 @@ def align(**kwargs):
     save_txt(smil_path, smil)
 
 
-@app.cli.command()
+@app.cli.command(context_settings=CONTEXT_SETTINGS, short_help='Convert a smil document to epub.')
 @click.argument('input', type=click.Path(exists=True, readable=True))
 @click.argument('output', type=click.Path(exists=False, readable=True))
 @click.option('-u', '--unpacked', is_flag=True, help='Output unpacked directory of files (for testing)')
