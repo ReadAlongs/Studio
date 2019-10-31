@@ -1,8 +1,14 @@
-"""
-Package of code for time-aligned read-alongs.
-"""
-import os
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-mapping_dir = os.path.join(os.path.dirname(__file__), 'lang')
+#######################################################################
+#
+# __init__.py
+#
+#   readalongs root module.
+#   Version for setuptools is changed here
+#
+#######################################################################
+import os
 
 VERSION = '0.1'

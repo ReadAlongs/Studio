@@ -8,8 +8,7 @@ from readalongs.log import LOGGER
 from test_force_align import TestForceAlignment, TestXHTML
 
 ## G2P
-from test_context_g2p import TestContextG2P
-from test_create_mapping import TestMappings
+from test_context_g2p import TestG2P
 
 ## Langs
 from test_atj_g2p import TestAtikamekwG2P
@@ -28,7 +27,7 @@ e2e_tests = [
 
 g2p_tests = [
     loader.loadTestsFromTestCase(test)
-    for test in (TestContextG2P, TestMappings)
+    for test in [TestG2P]
 ]
 
 lang_tests = [
@@ -49,7 +48,7 @@ def run_tests(suite):
     elif suite == 'langs':
         suite = TestSuite(lang_tests)
     elif suite == 'dev':
-        suite = TestSuite(g2p_tests + other_tests)
+        suite = TestSuite(g2p_tests + other_tests + e2e_tests)
     elif suite == 'prod':
         suite = loader.discover(os.path.dirname(__file__))
     elif suite == 'other':

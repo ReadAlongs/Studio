@@ -1,6 +1,5 @@
 recursive-include readalongs/templates *
 recursive-include readalongs/static *
-recursive-include readalongs/lang *
 recursive-include readalongs/epub *
 include MANIFEST.in
 exclude .gitignore

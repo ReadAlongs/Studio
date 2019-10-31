@@ -8,9 +8,9 @@ from unittest import main, TestCase
 from lxml import etree
 
 from readalongs.log import LOGGER
-from readalongs.g2p.tokenize_xml import tokenize_xml
-from readalongs.g2p.add_ids_to_xml import add_ids
-from readalongs.g2p.convert_xml import convert_xml
+from readalongs.text.tokenize_xml import tokenize_xml
+from readalongs.text.add_ids_to_xml import add_ids
+from readalongs.text.convert_xml import convert_xml
 
 class TestAtikamekwG2P(TestCase):
 

@@ -1,9 +1,11 @@
 coloredlogs==10.0
 Flask==1.0.2
+Flask-Session==0.3.1
 flask-socketio==4.0.0
-g2p==0.13.20190822
+g2p==0.2.20190919
 iso-639==0.4.5
 lxml==4.3.0
+networkx==2.3
 numpy>=1.16.4
 panphon==0.14
 pocketsphinx==0.1.15

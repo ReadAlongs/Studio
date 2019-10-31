@@ -21,11 +21,13 @@ RUN apt-get update && apt-get install -y \
 # change ReadAlong-Studio source code
 ADD requirements.txt $APPHOME/requirements.txt
 RUN python3 -m pip install -r $APPHOME/requirements.txt
+# RUN python3 -m pip install gunicorn # If you want to run production server
+RUN git clone https://github.com/roedoejet/g2p.git
+RUN cd g2p && python3 -m pip install -e .
 
 # Install ReadAlong-Studio itself
 COPY . $APPHOME
 WORKDIR $APPHOME
 RUN python3 -m pip install -e .
 
-#ENTRYPOINT [ "python3", "run.py" ]
-CMD tail -f /dev/null
+# CMD gunicorn -k gevent -w 1 readalongs.app:app --bind 0.0.0.0:5000 # Productino server

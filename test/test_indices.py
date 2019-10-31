@@ -1,11 +1,9 @@
-from unittest import TestCase
-import unittest
-from readalongs.log import LOGGER
+from unittest import main, TestCase
 
-from readalongs.g2p.context_g2p import ContextG2P
-from readalongs.g2p.convert_orthography import ConverterLibrary, compose_indices
 from lxml import etree
 
+from readalongs.log import LOGGER
+from readalongs.text.util import compose_indices
 
 class TestIndices(TestCase):
     def setUp(self):
