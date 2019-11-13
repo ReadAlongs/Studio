@@ -112,7 +112,13 @@ class TokenizerLibrary:
         self.tokenizers = {None: DefaultTokenizer()}
         for x in MAPPINGS_AVAILABLE:
             mapping = Mapping(in_lang=x['in_lang'], out_lang=x['out_lang'])
-            self.tokenizers[x['in_lang']] = Tokenizer(mapping)
+            tokenizer_key = self.get_tokenizer_key(x['in_lang'], x['out_lang'])
+            self.tokenizers[tokenizer_key] = Tokenizer(mapping)
+
+    def get_tokenizer_key(self, in_lang, out_lang=None):
+        if not out_lang:
+            out_lang = in_lang + '-ipa'
+        return in_lang + "-to-" + out_lang
 
     def add_word_children(self, element):
         tag = etree.QName(element.tag).localname
@@ -127,7 +133,11 @@ class TokenizerLibrary:
             new_element.attrib[key] = value
 
         lang = get_lang_attrib(element)
-        tokenizer = self.tokenizers.get(lang,
+        if lang:
+            tokenizer_key = self.get_tokenizer_key(lang)
+        else:
+            tokenizer_key = None
+        tokenizer = self.tokenizers.get(tokenizer_key,
                                         self.tokenizers[None])
         if element.text:
             new_element.text = ''
