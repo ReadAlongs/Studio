@@ -1,18 +1,81 @@
 <?xml version='1.0' encoding='utf-8'?>
 <TEI>
-    <text xml:lang="git" id="t0">
-        <body id="t0b0">
-            <div type="page" id="t0b0d0">
-                <p id="t0b0d0p0">
-                    <s id="t0b0d0p0s0"><w id="s0w0">Simgiigyat</w>, <w id="s0w1">sigidimhaanak̲</w>', <w id="s0w2">g̲anhl</w> <w id="s0w3">k</w>'<w id="s0w4">ubawilksihlxw</w>.</s>
-                    <s id="t0b0d0p0s1"><w id="s1w0">Aidanhl</w> <w id="s1w1">wa</w>'<w id="s1w2">y</w> <w id="s1w3">ii</w> <w id="s1w4">g̲o</w>'<w id="s1w5">ohl</w> <w id="s1w6">Victoria</w> <w id="s1w7">wil</w> <w id="s1w8">saa</w> '<w id="s1w9">witxwi</w>'<w id="s1w10">y</w>.</s>
-                    <s id="t0b0d0p0s2">'<w id="s2w0">Nit</w> <w id="s2w1">g̲anhl</w> '<w id="s2w2">witxwi</w>'<w id="s2w3">y</w> <w id="s2w4">g̲o</w>'<w id="s2w5">osun</w> <w id="s2w6">dim</w> <w id="s2w7">wila</w> <w id="s2w8">wilaaxhl</w> <w id="s2w9">gitxsanimx̲</w></s>
-                    <s id="t0b0d0p0s3"><w id="s3w0">Luu</w> <w id="s3w1">amhl</w> <w id="s3w2">g̲oodi</w>'<w id="s3w3">y</w> <w id="s3w4">wilt</w> <w id="s3w5">anook̲diit</w> <w id="s3w6">dim</w> <w id="s3w7">wil</w>'<w id="s3w8">y</w> <w id="s3w9">ahl</w> <w id="s3w10">lax̲yipxwdiit</w>, <w id="s3w11">hligyedihl</w> <w id="s3w12">xwseenits</w> <w id="s3w13">g̲anhl</w> <w id="s3w14">sonhiis</w> <w id="s3w15">g̲anhl</w> <w id="s3w16">eskwamalt</w>.</s>
-                    <s id="t0b0d0p0s4"><w id="s4w0">T</w>'<w id="s4w1">oyax̲si</w>'<w id="s4w2">y</w> '<w id="s4w3">nisi</w>'<w id="s4w4">m</w>, <w id="s4w5">gwalg̲a</w> '<w id="s4w6">nithl</w> <w id="s4w7">bagwit</w>.</s>
-                    <s id="t0b0d0p0s5"><w id="s5w0">iin</w> <w id="s5w1">hoxdii</w> <w id="s5w2">t</w>'<w id="s5w3">oyax̲sihl</w> <w id="s5w4">gwalg̲a</w> '<w id="s5w5">nithl</w> <w id="s5w6">ant</w> <w id="s5w7">hlimoo</w>'<w id="s5w8">y</w>.</s>
-                    <s id="t0b0d0p0s6"><w id="s6w0">Ha</w>'<w id="s6w1">miiyaa</w>, <w id="s6w2">sabax̲</w></s>
-                </p>
-            </div>
-        </body>
-    </text>
+        <text xml:lang="git" id="t0">
+                <body id="t0b0">
+                        <div type="page" id="t0b0d0">
+                                <p id="t0b0d0p0">
+                                        <s id="t0b0d0p0s0">
+                                                <w id="t0b0d0p0s0w0">Simgiigyat</w>,                                                <w id="t0b0d0p0s0w1">sigidimhaanak̲'</w>,                                                <w id="t0b0d0p0s0w2">g̲anhl</w>
+                                                <w id="t0b0d0p0s0w3">k'ubawilksihlxw</w>.
+                                        </s>
+                                </p>
+                                <p id="t0b0d0p1">
+                                        <s id="t0b0d0p1s0">
+                                                <w id="t0b0d0p1s0w0">Aidanhl</w>
+                                                <w id="t0b0d0p1s0w1">wa'y</w>
+                                                <w id="t0b0d0p1s0w2">ii</w>
+                                                <w id="t0b0d0p1s0w3">g̲o'ohl</w>
+                                                <w id="t0b0d0p1s0w4">Victoria</w>
+                                                <w id="t0b0d0p1s0w5">wil</w>
+                                                <w id="t0b0d0p1s0w6">saa</w>
+                                                <w id="t0b0d0p1s0w7">'witxwi'y</w>.
+                                        </s>
+                                </p>
+                                <p id="t0b0d0p2">
+                                        <s id="t0b0d0p2s0">
+                                                <w id="t0b0d0p2s0w0">'Nit</w>
+                                                <w id="t0b0d0p2s0w1">g̲anhl</w>
+                                                <w id="t0b0d0p2s0w2">'witxwi'y</w>
+                                                <w id="t0b0d0p2s0w3">g̲o'osun</w>
+                                                <w id="t0b0d0p2s0w4">dim</w>
+                                                <w id="t0b0d0p2s0w5">wila</w>
+                                                <w id="t0b0d0p2s0w6">wilaaxhl</w>
+                                                <w id="t0b0d0p2s0w7">gitxsanimx̲</w>
+                                        </s>
+                                </p>
+                                <p id="t0b0d0p3">
+                                        <s id="t0b0d0p3s0">
+                                                <w id="t0b0d0p3s0w0">Luu</w>
+                                                <w id="t0b0d0p3s0w1">amhl</w>
+                                                <w id="t0b0d0p3s0w2">g̲oodi'y</w>
+                                                <w id="t0b0d0p3s0w3">wilt</w>
+                                                <w id="t0b0d0p3s0w4">anook̲diit</w>
+                                                <w id="t0b0d0p3s0w5">dim</w>
+                                                <w id="t0b0d0p3s0w6">wil'y</w>
+                                                <w id="t0b0d0p3s0w7">ahl</w>
+                                                <w id="t0b0d0p3s0w8">lax̲yipxwdiit</w>,                                                <w id="t0b0d0p3s0w9">hligyedihl</w>
+                                                <w id="t0b0d0p3s0w10">xwseenits</w>
+                                                <w id="t0b0d0p3s0w11">g̲anhl</w>
+                                                <w id="t0b0d0p3s0w12">sonhiis</w>
+                                                <w id="t0b0d0p3s0w13">g̲anhl</w>
+                                                <w id="t0b0d0p3s0w14">eskwamalt</w>.
+                                        </s>
+                                </p>
+                                <p id="t0b0d0p4">
+                                        <s id="t0b0d0p4s0">
+                                                <w id="t0b0d0p4s0w0">T'oyax̲si'y</w>
+                                                <w id="t0b0d0p4s0w1">'nisi'm</w>,                                                <w id="t0b0d0p4s0w2">gwalg̲a</w>
+                                                <w id="t0b0d0p4s0w3">'nithl</w>
+                                                <w id="t0b0d0p4s0w4">bagwit</w>.
+                                        </s>
+                                </p>
+                                <p id="t0b0d0p5">
+                                        <s id="t0b0d0p5s0">
+                                                <w id="t0b0d0p5s0w0">iin</w>
+                                                <w id="t0b0d0p5s0w1">hoxdii</w>
+                                                <w id="t0b0d0p5s0w2">t'oyax̲sihl</w>
+                                                <w id="t0b0d0p5s0w3">gwalg̲a</w>
+                                                <w id="t0b0d0p5s0w4">'nithl</w>
+                                                <w id="t0b0d0p5s0w5">ant</w>
+                                                <w id="t0b0d0p5s0w6">hlimoo'y</w>.
+                                        </s>
+                                </p>
+                                <p id="t0b0d0p6">
+                                        <s id="t0b0d0p6s0">
+                                                <w id="t0b0d0p6s0w0">Ha'miiyaa</w>,                                                <w id="t0b0d0p6s0w1">sabax̲</w>
+                                        </s>
+                                </p>
+                        </div>
+                </body>
+        </text>
 </TEI>
