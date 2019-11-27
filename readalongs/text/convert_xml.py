@@ -40,6 +40,7 @@ from __future__ import print_function, unicode_literals
 from __future__ import division, absolute_import
 import argparse
 import copy
+import os
 
 from g2p.transducer.indices import IndexSequence
 from g2p import make_g2p
@@ -47,6 +48,8 @@ from g2p import make_g2p
 from readalongs.text.util import load_xml, save_xml, get_lang_attrib
 from readalongs.text.util import trim_indices, offset_indices
 from readalongs.text.util import unicode_normalize_xml
+from readalongs.text.lexicon_g2p import LexiconG2P
+from readalongs.text.lexicon_g2p_mappings import __file__ as LEXICON_PATH
 
 try:
     unicode()
@@ -123,8 +126,13 @@ def convert_words(xml, word_unit="w",
         all_text = ''
         all_indices = []
         for unit in same_language_units:
-            converter = make_g2p(unit['lang'], output_orthography)
-            text, indices = converter(unit["text"], index=True)
+            # Hack to use old English LexiconG2P
+            if unit['lang'] != 'eng':
+                converter = make_g2p(unit['lang'], output_orthography)
+                text, indices = converter(unit["text"], index=True)
+            else:
+                converter = LexiconG2P(os.path.join(os.path.dirname(LEXICON_PATH), 'cmu_sphinx.metadata.json'))
+                text, indices = converter.convert(unit['text'])
             all_text += text
             all_indices += indices
         try:

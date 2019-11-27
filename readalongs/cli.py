@@ -36,6 +36,9 @@ from readalongs.align import create_input_tei, convert_to_xhtml, return_words_an
 LANGS = [k for x in LANGS_AVAILABLE for k in x.keys() if LANGS_NETWORK.has_node(
     k) and has_path(LANGS_NETWORK, k, 'eng-arpabet')]
 
+# Hack to allow old English LexiconG2P
+LANGS += ['eng']
+
 
 def create_app():
     ''' Returns the app

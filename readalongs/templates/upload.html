@@ -48,7 +48,8 @@
         <p>You can also use the dropdown below to select a pre-configured mapping for your language.</p>
         <select onchange="updateConfig('lang', this.value)">
             <option value='custom'>User Uploaded</option>
-        {% for map in maps %}
+            <option value='eng'>eng - English</option>
+            {% for map in maps %}
             <option value="{{map['code']}}">{{ map['code'] + ' - ' + map['name'] }}</option>
             {% endfor %}
         </select>
