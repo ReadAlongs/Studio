@@ -23,6 +23,8 @@ from flask_socketio import emit
 from g2p.mappings.langs import LANGS_AVAILABLE, LANGS_NETWORK
 from flask import abort, redirect, request, render_template, session, send_file, url_for
 
+from datetime import datetime
+
 from readalongs.app import app, socketio
 
 # get the key from all networks in g2p module that have a path to 'eng-arpabet'
@@ -156,6 +158,7 @@ def steps(step):
     elif step == 2:
         return render_template('preview.html')
     elif step == 3:
+        timestamp = str(int(datetime.now().timestamp()))
         if not 'audio' in session or not 'text' in session:
             log = "Sorry, it looks like something is wrong with your audio or text. Please try again"
         else:
@@ -168,18 +171,21 @@ def steps(step):
                 flags.append('--language')
                 flags.append(session['config']['lang'])
             args = ['readalongs', 'align'] + flags + [session['text'],
-                                                      session['audio'], os.path.join(session['temp_dir'], 'aligned')]
+                                                      session['audio'], os.path.join(session['temp_dir'], 'aligned' + timestamp)]
             fname, audio_ext = os.path.splitext(session['audio'])
             data = {'audio_ext': audio_ext}
             if session['config'].get('show-log', False):
                 log = run(args, capture_output=True)
                 data['log'] = log
             data['audio_path'] = os.path.join(
-                session['temp_dir'], 'aligned' + audio_ext)
+                session['temp_dir'], 'aligned' + timestamp + audio_ext)
+            data['audio_fn'] = '/file/aligned' + timestamp + audio_ext
             data['text_path'] = os.path.join(
-                session['temp_dir'], 'aligned.xml')
+                session['temp_dir'], 'aligned' + timestamp + '.xml')
+            data['text_fn'] = '/file/aligned' + timestamp + '.xml'
             data['smil_path'] = os.path.join(
-                session['temp_dir'], 'aligned.smil')
+                session['temp_dir'], 'aligned' + timestamp + '.smil')
+            data['smil_fn'] = '/file/aligned' + timestamp + '.smil'
         return render_template('export.html', data=data)
     else:
         abort(404)
