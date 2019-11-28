@@ -179,6 +179,7 @@ class TokenizerLibrary:
 def tokenize_xml(xml):
     tokenizer = TokenizerLibrary()
     xml = deepcopy(xml)
+    # FIXME: different langs have different normalizations, is this necessary?
     unicode_normalize_xml(xml)
     words = xml.xpath(".//w")
     if words:

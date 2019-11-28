@@ -29,6 +29,7 @@ from readalongs.text.util import save_xml, save_txt
 from readalongs.epub.create_epub import create_epub
 from readalongs.align import write_to_subtitles, write_to_text_grid
 from readalongs.align import create_input_tei, convert_to_xhtml, return_words_and_sentences
+from readalongs.audio_utils import read_audio_from_file
 
 
 # get the key from all networks in text module that have a path to 'eng-arpabet'
@@ -59,7 +60,7 @@ def cli():
 @click.option('-c', '--closed-captioning', is_flag=True, help='Export sentences to WebVTT and SRT files')
 @click.option('-d', '--debug', is_flag=True, help='Add debugging messages to logger')
 @click.option('-f', '--force-overwrite', is_flag=True, help='Force overwrite output files')
-@click.option('-i', '--text-input', is_flag=True, help='Input is plain text (assume paragraphs separated by blank lines)')
+@click.option('-i', '--text-input', is_flag=True, help='Input is plain text (assume paragraphs separated by blank lines, 1 paragraph per page)')
 @click.option('-l', '--language', type=click.Choice(LANGS, case_sensitive=False), help='Set language for plain text input')
 @click.option('-s', '--save-temps', is_flag=True,
               help='Save intermediate stages of processing and temporary files (dictionary, FSG, tokenization etc)')
@@ -109,10 +110,15 @@ def align(**kwargs):
         exit(1)
 
     if kwargs['text_grid']:
-        with wave.open(kwargs['wavfile'], 'r') as f:
-            frames = f.getnframes()
-            rate = f.getframerate()
-            duration = frames / float(rate)
+        _, wav_ext = os.path.splitext(kwargs['wavfile'])
+        if wav_ext == '.wav':
+            with wave.open(kwargs['wavfile'], 'r') as f:
+                frames = f.getnframes()
+                rate = f.getframerate()
+                duration = frames / float(rate)
+        else:
+            audio = read_audio_from_file(kwargs['wavfile'])
+            duration = audio.frame_count() / audio.frame_rate
         words, sentences = return_words_and_sentences(results)
         textgrid = write_to_text_grid(words, sentences, duration)
         textgrid.to_file(kwargs['output_base'] + '.TextGrid')

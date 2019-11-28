@@ -420,6 +420,7 @@ TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 <TEI>
     <text{{#text_language}} xml:lang="{{text_language}}"{{/text_language}}>
         <body>
+        {{#pages}}
             <div type="page">
                 {{#paragraphs}}
                     <p>
@@ -429,6 +430,7 @@ TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
                     </p>
                 {{/paragraphs}}
             </div>
+        {{/pages}}    
         </body>
     </text>
 </TEI>
@@ -490,7 +492,6 @@ def create_input_tei(text: str, **kwargs):
         Uses readlines to infer paragraph and sentence structure from plain text. 
         TODO: Check if path, if it's just plain text, then render that instead of reading from the file
         Assumes single page. 
-        TODO: allow text to be a list where each item in list is formatted as a 'page'
         Outputs to uft-8 XML using pymustache. 
     
     Parameters
@@ -517,23 +518,28 @@ def create_input_tei(text: str, **kwargs):
         outfile = NamedTemporaryFile(prefix='readalongs_xml_',
                                      suffix='.xml')
         filename = outfile.name
+    pages = []
     paragraphs = []
     sentences = []
     for line in text:
-        if line == '\n' and not sentences:
-            # erroneous extra line. don't add as paragraph
-            continue
-        elif line == '\n':
-            # add sentences and begin new paragraph
-            paragraphs.append({'sentences': sentences})
-            sentences = []
-            continue
+        if line == '\n':
+            if not sentences:
+                # consider this a page break (unless at the beginning)
+                pages.append({'paragraphs': paragraphs})
+                paragraphs = []
+            else:
+                # add sentences and begin new paragraph
+                paragraphs.append({'sentences': sentences})
+                sentences = []
         else:
             # Add text to sentence
             sentences.append(line.strip())
-    # Add the last paragraph
-    paragraphs.append({'sentences': sentences})
-    xml = pystache.render(TEI_TEMPLATE, {**kwargs, **{'paragraphs': paragraphs}})
+    # Add the last paragraph/sentence
+    if sentences:
+        paragraphs.append({'sentences': sentences})
+    if paragraphs:
+        pages.append({'paragraphs': paragraphs})
+    xml = pystache.render(TEI_TEMPLATE, {**kwargs, **{'pages': pages}})
     outfile.write(xml.encode('utf-8'))
     outfile.flush()
     return outfile, filename

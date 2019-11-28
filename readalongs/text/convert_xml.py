@@ -182,6 +182,7 @@ def convert_xml(xml, word_unit="w",
                 output_orthography="eng-arpabet"):
     # breakpoint()
     xml_copy = copy.deepcopy(xml)
+    # FIXME: different langs have different normalizations, is this necessary?
     unicode_normalize_xml(xml_copy)
     #add_word_boundaries(xml_copy, word_unit)
     convert_words(xml_copy, word_unit, output_orthography)
