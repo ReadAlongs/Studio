@@ -190,8 +190,7 @@ def align_audio(xml_path: str, wav_path: str, unit:str ='w', save_temps:Union[st
     if len(results['words']) == 0:
         raise RuntimeError("Alignment produced only noise or silence segments, "
                            "please examine dictionary and input audio and text.")
-
-    if len(results['words']) != len(results['tokenized'].xpath('//w')):
+    if len(results['words']) != len(results['tokenized'].xpath('//' + unit)):
         raise RuntimeError("Alignment produced a different number of segments and tokens, "
                            "please examine dictionary and input audio and text.")
 

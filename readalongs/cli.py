@@ -63,6 +63,7 @@ def cli():
 @click.option('-f', '--force-overwrite', is_flag=True, help='Force overwrite output files')
 @click.option('-i', '--text-input', is_flag=True, help='Input is plain text (assume paragraphs separated by blank lines, 1 paragraph per page)')
 @click.option('-l', '--language', type=click.Choice(LANGS, case_sensitive=False), help='Set language for plain text input')
+@click.option('-u', '--unit', type=click.Choice(["w", "m"], case_sensitive=False), help='Unit (w = word, m = morpheme) to align to')
 @click.option('-s', '--save-temps', is_flag=True,
               help='Save intermediate stages of processing and temporary files (dictionary, FSG, tokenization etc)')
 @click.option('-t', '--text-grid', is_flag=True, help='Export to Praat TextGrid & ELAN eaf file')
@@ -101,9 +102,11 @@ def align(**kwargs):
     if os.path.exists(wav_path) and not kwargs['force_overwrite']:
         raise click.BadParameter("Output file %s exists already, did you mean to do that?"
                                  % wav_path)
-
+    unit = kwargs.get("unit", "w")
+    if not unit:     # .get() above should handle this but apparently the way kwargs is implemented
+        unit = "w"   # unit could still be None here.
     try:
-        results = align_audio(kwargs['inputfile'], kwargs['wavfile'],
+        results = align_audio(kwargs['inputfile'], kwargs['wavfile'], unit=unit,
                               save_temps=(kwargs['output_base']
                                           if kwargs['save_temps'] else None))
     except RuntimeError as e:
