@@ -58,6 +58,7 @@ def cli():
 @click.argument('inputfile', type=click.Path(exists=True, readable=True))
 @click.argument('wavfile', type=click.Path(exists=True, readable=True))
 @click.argument('output-base', type=click.STRING)
+@click.option('-b', '--bare', is_flag=True, help='Bare alignments do not split silences between words')
 @click.option('-c', '--closed-captioning', is_flag=True, help='Export sentences to WebVTT and SRT files')
 @click.option('-d', '--debug', is_flag=True, help='Add debugging messages to logger')
 @click.option('-f', '--force-overwrite', is_flag=True, help='Force overwrite output files')
@@ -103,10 +104,13 @@ def align(**kwargs):
         raise click.BadParameter("Output file %s exists already, did you mean to do that?"
                                  % wav_path)
     unit = kwargs.get("unit", "w")
+    bare = kwargs.get("bare", False)
     if not unit:     # .get() above should handle this but apparently the way kwargs is implemented
         unit = "w"   # unit could still be None here.
     try:
-        results = align_audio(kwargs['inputfile'], kwargs['wavfile'], unit=unit,
+        results = align_audio(kwargs['inputfile'], kwargs['wavfile'], 
+                              unit=unit,
+                              bare=bare,
                               save_temps=(kwargs['output_base']
                                           if kwargs['save_temps'] else None))
     except RuntimeError as e:
