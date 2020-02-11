@@ -46,22 +46,25 @@ def create_app():
     '''
     return app
 
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 @click.version_option(version=__version__, prog_name="readalongs")
-@click.group(cls=FlaskGroup, create_app=create_app)
+@click.group(cls=FlaskGroup, create_app=create_app, context_settings=CONTEXT_SETTINGS)
 def cli():
     """Management script for Read Along Studio."""
 
 
-@app.cli.command()
+@app.cli.command(context_settings=CONTEXT_SETTINGS, short_help='Force align a text and a sound file.')
 @click.argument('inputfile', type=click.Path(exists=True, readable=True))
 @click.argument('wavfile', type=click.Path(exists=True, readable=True))
 @click.argument('output-base', type=click.STRING)
+@click.option('-b', '--bare', is_flag=True, help='Bare alignments do not split silences between words')
 @click.option('-c', '--closed-captioning', is_flag=True, help='Export sentences to WebVTT and SRT files')
 @click.option('-d', '--debug', is_flag=True, help='Add debugging messages to logger')
 @click.option('-f', '--force-overwrite', is_flag=True, help='Force overwrite output files')
 @click.option('-i', '--text-input', is_flag=True, help='Input is plain text (assume paragraphs separated by blank lines, 1 paragraph per page)')
 @click.option('-l', '--language', type=click.Choice(LANGS, case_sensitive=False), help='Set language for plain text input')
+@click.option('-u', '--unit', type=click.Choice(["w", "m"], case_sensitive=False), help='Unit (w = word, m = morpheme) to align to')
 @click.option('-s', '--save-temps', is_flag=True,
               help='Save intermediate stages of processing and temporary files (dictionary, FSG, tokenization etc)')
 @click.option('-t', '--text-grid', is_flag=True, help='Export to Praat TextGrid & ELAN eaf file')
@@ -100,9 +103,14 @@ def align(**kwargs):
     if os.path.exists(wav_path) and not kwargs['force_overwrite']:
         raise click.BadParameter("Output file %s exists already, did you mean to do that?"
                                  % wav_path)
-
+    unit = kwargs.get("unit", "w")
+    bare = kwargs.get("bare", False)
+    if not unit:     # .get() above should handle this but apparently the way kwargs is implemented
+        unit = "w"   # unit could still be None here.
     try:
-        results = align_audio(kwargs['inputfile'], kwargs['wavfile'],
+        results = align_audio(kwargs['inputfile'], kwargs['wavfile'], 
+                              unit=unit,
+                              bare=bare,
                               save_temps=(kwargs['output_base']
                                           if kwargs['save_temps'] else None))
     except RuntimeError as e:
@@ -143,7 +151,7 @@ def align(**kwargs):
     save_txt(smil_path, smil)
 
 
-@app.cli.command()
+@app.cli.command(context_settings=CONTEXT_SETTINGS, short_help='Convert a smil document to epub.')
 @click.argument('input', type=click.Path(exists=True, readable=True))
 @click.argument('output', type=click.Path(exists=False, readable=True))
 @click.option('-u', '--unpacked', is_flag=True, help='Output unpacked directory of files (for testing)')

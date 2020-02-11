@@ -61,6 +61,8 @@ $ cd ReadAlong-Studio
 $ pip install -e .
 ```
 
+On windows, you must first install [FFmpeg](https://ffmpeg.zeranoe.com/builds/) ([helpful instructions](https://windowsloop.com/install-ffmpeg-windows-10/)), [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017) (search for "Build Tools", select C++ when prompted) and [swigwin](http://www.swig.org/download.html).
+
 ## Usage
 
 ReadAlong-Studio can be used either through the command line, a distributed web application or Docker.

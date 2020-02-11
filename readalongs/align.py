@@ -59,7 +59,7 @@ if not hasattr(wave.Wave_write, "__enter__"):
     wave.Wave_write.__enter__ = _trivial__enter__
 
 
-def align_audio(xml_path: str, wav_path: str, unit:str ='w', save_temps:Union[str, None] = None):
+def align_audio(xml_path: str, wav_path: str, unit:str ='w', bare=False, save_temps:Union[str, None] = None):
     """ Align an XML input file to an audio file.
     
     Parameters
@@ -190,29 +190,29 @@ def align_audio(xml_path: str, wav_path: str, unit:str ='w', save_temps:Union[st
     if len(results['words']) == 0:
         raise RuntimeError("Alignment produced only noise or silence segments, "
                            "please examine dictionary and input audio and text.")
-
-    if len(results['words']) != len(results['tokenized'].xpath('//w')):
+    if len(results['words']) != len(results['tokenized'].xpath('//' + unit)):
         raise RuntimeError("Alignment produced a different number of segments and tokens, "
                            "please examine dictionary and input audio and text.")
 
     final_end = end
 
-    # Split adjoining silence/noise between words
-    last_end = 0.0
-    last_word = dict()
-    for word in results['words']:
-        silence = word['start'] - last_end
-        midpoint = last_end + silence / 2
+    if not bare:
+        # Split adjoining silence/noise between words
+        last_end = 0.0
+        last_word = dict()
+        for word in results['words']:
+            silence = word['start'] - last_end
+            midpoint = last_end + silence / 2
+            if silence > 0:
+                if last_word:
+                    last_word['end'] = midpoint
+                word['start'] = midpoint
+            last_word = word
+            last_end = word['end']
+        silence = final_end - last_end
         if silence > 0:
-            if last_word:
-                last_word['end'] = midpoint
-            word['start'] = midpoint
-        last_word = word
-        last_end = word['end']
-    silence = final_end - last_end
-    if silence > 0:
-        if last_word is not None:
-            last_word['end'] += silence / 2
+            if last_word is not None:
+                last_word['end'] += silence / 2
 
     dict_file.close()
     os.unlink(dict_file.name)
