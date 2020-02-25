@@ -463,7 +463,7 @@ def create_input_xml(inputfile: str, text_language: Union[str, None] = None, sav
         outfile = NamedTemporaryFile(prefix='readalongs_xml_',
                                      suffix='.xml')
         filename = outfile.name
-    with io.open(inputfile) as fin:
+    with io.open(inputfile, encoding="utf-8") as fin:
         text = []
         para = []
         for line in fin:
@@ -508,7 +508,7 @@ def create_input_tei(text: str, **kwargs):
     str
         filename
     """ 
-    with io.open(text) as f:
+    with io.open(text, encoding="utf-8") as f:
         text = f.readlines()
     save_temps = kwargs.get('save_temps', False)
     if save_temps:
