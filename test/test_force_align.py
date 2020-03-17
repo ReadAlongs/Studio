@@ -10,6 +10,7 @@ from lxml import etree
 from readalongs.log import LOGGER
 from readalongs.align import align_audio, create_input_xml, convert_to_xhtml
 from readalongs.text.util import save_xml, load_txt
+from readalongs.tempfile import PortableNamedTemporaryFile
 
 class TestForceAlignment(unittest.TestCase):
     LOGGER.setLevel('DEBUG')
@@ -54,7 +55,7 @@ class TestXHTML(unittest.TestCase):
         xml_path = os.path.join(self.data_dir, 'ap-git-converted-from-xml.xml')
         xml = etree.parse(xml_path).getroot()
         convert_to_xhtml(xml)
-        with tempfile.NamedTemporaryFile(suffix='.xml') as tf:
+        with PortableNamedTemporaryFile(suffix='.xml') as tf:
             save_xml(tf.name, xml)
             txt = load_txt(tf.name)
             self.maxDiff = None
