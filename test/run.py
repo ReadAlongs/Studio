@@ -16,6 +16,7 @@ from test_crj_g2p import TestSouthEastCreeG2P
 
 ## Other tests
 from test_tokenize_xml import TestTokenizer
+from test_temp_file import TestTempFile
 
 
 loader = TestLoader()
@@ -37,7 +38,7 @@ lang_tests = [
 
 other_tests = [
     loader.loadTestsFromTestCase(test)
-    for test in [TestTokenizer]
+    for test in [TestTokenizer, TestTempFile]
 ]
 
 def run_tests(suite):
