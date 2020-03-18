@@ -48,7 +48,7 @@ def run_tests(suite):
     elif suite == 'langs':
         suite = TestSuite(lang_tests)
     elif suite == 'dev':
-        suite = TestSuite(g2p_tests + other_tests + e2e_tests)
+        suite = TestSuite(other_tests + e2e_tests)
     elif suite == 'prod':
         suite = loader.discover(os.path.dirname(__file__))
     elif suite == 'other':
@@ -57,7 +57,12 @@ def run_tests(suite):
         LOGGER.error("Sorry, you need to select a Test Suite to run, like 'dev', 'g2p' or 'prod'")
         
     runner = TextTestRunner(verbosity=3)
-    runner.run(suite)
+    return runner.run(suite)
 
 if __name__ == "__main__":
-    run_tests(sys.argv[1])
+    try:
+        result = run_tests(sys.argv[1])
+        if not result.wasSuccessful():
+            raise Exception(f'Some tests failed. Please see log above.')
+    except IndexError:
+        print("Please specify a test suite to run: i.e. 'dev' or 'all'")
