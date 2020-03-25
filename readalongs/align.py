@@ -9,7 +9,7 @@
 #
 #######################################################################
 
-from tempfile import NamedTemporaryFile
+from readalongs.tempfile import PortableNamedTemporaryFile
 from datetime import timedelta
 from typing import List, Union
 import wave
@@ -115,14 +115,14 @@ def align_audio(xml_path: str, wav_path: str, unit:str ='w', bare=False, save_te
     if save_temps:
         dict_file = io.open(save_temps + '.dict', 'wb')
     else:
-        dict_file = NamedTemporaryFile(prefix='readalongs_dict_', delete=False)
+        dict_file = PortableNamedTemporaryFile(prefix='readalongs_dict_', delete=False)
     dict_file.write(dict_data.encode('utf-8'))
     dict_file.flush()
     fsg_data = make_fsg(xml, xml_path, unit=unit)
     if save_temps:
         fsg_file = io.open(save_temps + '.fsg', 'wb')
     else:
-        fsg_file = NamedTemporaryFile(prefix='readalongs_fsg_', delete=False)
+        fsg_file = PortableNamedTemporaryFile(prefix='readalongs_fsg_', delete=False)
     fsg_file.write(fsg_data.encode('utf-8'))
     fsg_file.flush()
 
@@ -460,10 +460,10 @@ def create_input_xml(inputfile: str, text_language: Union[str, None] = None, sav
         filename = save_temps + '.input.xml'
         outfile = io.open(filename, 'wb')
     else:
-        outfile = NamedTemporaryFile(prefix='readalongs_xml_',
-                                     suffix='.xml')
+        outfile = PortableNamedTemporaryFile(prefix='readalongs_xml_',
+                                     suffix='.xml', delete=True)
         filename = outfile.name
-    with io.open(inputfile) as fin:
+    with io.open(inputfile, encoding="utf-8") as fin:
         text = []
         para = []
         for line in fin:
@@ -485,6 +485,7 @@ def create_input_xml(inputfile: str, text_language: Union[str, None] = None, sav
                               {'sentences': sentences})
         outfile.write(xml.encode('utf-8'))
         outfile.flush()
+        outfile.close()
     return outfile, filename
 
 def create_input_tei(text: str, **kwargs):
@@ -508,15 +509,15 @@ def create_input_tei(text: str, **kwargs):
     str
         filename
     """ 
-    with io.open(text) as f:
+    with io.open(text, encoding="utf-8") as f:
         text = f.readlines()
     save_temps = kwargs.get('save_temps', False)
     if save_temps:
         filename = save_temps + '.input.xml'
         outfile = io.open(filename, 'wb')
     else:
-        outfile = NamedTemporaryFile(prefix='readalongs_xml_',
-                                     suffix='.xml')
+        outfile = PortableNamedTemporaryFile(prefix='readalongs_xml_',
+                                     suffix='.xml', delete=True)
         filename = outfile.name
     pages = []
     paragraphs = []
@@ -542,4 +543,5 @@ def create_input_tei(text: str, **kwargs):
     xml = pystache.render(TEI_TEMPLATE, {**kwargs, **{'pages': pages}})
     outfile.write(xml.encode('utf-8'))
     outfile.flush()
+    outfile.close()
     return outfile, filename

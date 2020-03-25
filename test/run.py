@@ -11,6 +11,7 @@ from test_force_align import TestForceAlignment, TestXHTML
 
 ## Other tests
 from test_tokenize_xml import TestTokenizer
+from test_temp_file import TestTempFile
 
 
 loader = TestLoader()
@@ -27,7 +28,7 @@ indices_tests = [
 
 other_tests = [
     loader.loadTestsFromTestCase(test)
-    for test in [TestTokenizer]
+    for test in [TestTokenizer, TestTempFile]
 ]
 
 def run_tests(suite):
@@ -43,7 +44,12 @@ def run_tests(suite):
         LOGGER.error("Sorry, you need to select a Test Suite to run, like 'dev' or 'prod'")
         
     runner = TextTestRunner(verbosity=3)
-    runner.run(suite)
+    return runner.run(suite)
 
 if __name__ == "__main__":
-    run_tests(sys.argv[1])
+    try:
+        result = run_tests(sys.argv[1])
+        if not result.wasSuccessful():
+            raise Exception(f'Some tests failed. Please see log above.')
+    except IndexError:
+        print("Please specify a test suite to run: i.e. 'dev' or 'all'")
