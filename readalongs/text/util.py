@@ -252,6 +252,9 @@ def compose_indices(i1, i2):
     i2_idx = 0
     results = []
     for i1_in, i1_out in i1:
+        if i1_out == None:
+            results.append((i1_in, highest_i2_found))
+            continue
         highest_i2_found = 0 if not results else results[-1][1]
         while i2_idx <= i1_out:
             if i2_idx in i2_dict and i2_dict[i2_idx] > highest_i2_found:
@@ -261,8 +264,15 @@ def compose_indices(i1, i2):
             assert(i1_in >= results[-1][0])
             assert(highest_i2_found >= results[-1][1])
         results.append((i1_in, highest_i2_found))
-    print(f"composed: {results}")
     return results
+
+def compose_tiers(tiers):
+    counter = 2
+    reduced_indices = compose_indices(tiers[0], tiers[1])
+    while counter < len(tiers):
+        reduced_indices = compose_indices(reduced_indices, tiers[counter])
+        counter += 1
+    return reduced_indices
 
 def concat_indices(i1, i2):
     if not i1:
@@ -275,6 +285,24 @@ def concat_indices(i1, i2):
 
 def offset_indices(idxs, n1, n2):
     return [(i1 + n1, i2 + n2) for i1, i2 in idxs]
+
+def increment_indices(indices):
+    new_indices = []
+    for i, index in enumerate(indices):
+        inp = index[0]
+        outp = index[1]
+        if indices[i][0] != None:
+            inp += 1
+        if indices[i][1] != None:
+            outp += 1
+        new_indices.append((inp, outp))
+    return new_indices
+
+def increment_tiers(tiers):
+    incremented = []
+    for i, tier in enumerate(tiers):
+        incremented.append(increment_indices(tier))
+    return incremented
 
 def trim_indices(idxs):
     result = []

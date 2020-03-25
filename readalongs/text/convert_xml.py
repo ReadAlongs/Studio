@@ -45,8 +45,8 @@ import os
 from g2p import make_g2p
 from g2p.transducer import TransductionGraph, CompositeTransductionGraph
 
-from readalongs.text.util import load_xml, save_xml, get_lang_attrib
-from readalongs.text.util import trim_indices, offset_indices
+from readalongs.text.util import load_xml, save_xml, get_lang_attrib, compose_tiers
+from readalongs.text.util import compose_indices, increment_indices, increment_tiers, trim_indices, offset_indices
 from readalongs.text.util import unicode_normalize_xml
 from readalongs.text.lexicon_g2p import LexiconG2P
 from readalongs.text.lexicon_g2p_mappings import __file__ as LEXICON_PATH
@@ -114,35 +114,6 @@ def remove_word_boundaries(xml, word_unit="w"):
             if last_child.tail and last_child.tail.endswith('#'):
                 last_child.tail = last_child.tail[:-1]
 
-
-def reduce_all_indices(indices):
-    counter = 2
-    reduced_indices = reduce_indices(indices[0], indices[1])
-    while counter < len(indices):
-        reduced_indices = reduce_indices(reduced_indices, indices[counter])
-        counter += 1
-    return reduced_indices
-
-
-def reduce_indices(i1, i2):
-    if not i1:
-        return i2
-    i2_dict = dict(i2)
-    i2_idx = 0
-    results = []
-    for i1_in, i1_out in i1:
-        highest_i2_found = 0 if not results else results[-1][1]
-        while i2_idx <= i1_out:
-            if i2_idx in i2_dict and i2_dict[i2_idx] > highest_i2_found:
-                highest_i2_found = i2_dict[i2_idx]
-            i2_idx += 1
-        if results:
-            assert(i1_in >= results[-1][0])
-            assert(highest_i2_found >= results[-1][1])
-        results.append((i1_in, highest_i2_found))
-    return results
-
-
 def convert_words(xml, word_unit="w",
                   output_orthography="eng-arpabet"):
     for word in xml.xpath(".//" + word_unit):
@@ -168,18 +139,15 @@ def convert_words(xml, word_unit="w",
             all_text += text
             all_indices += indices
         if tg and isinstance(tg, CompositeTransductionGraph):
-            all_indices = reduce_all_indices(indices)
+            indices = increment_tiers(indices)
+            all_indices = compose_tiers(indices)
         elif tg and isinstance(tg, TransductionGraph):
-            all_indices = reduce_indices([], indices)
+            indices = increment_indices(indices)
+            all_indices = compose_indices([], indices)
         else:
             all_indices = indices
-        
-        # TODO: The replace_text_in_node function no longer works with the indices produced by g2p
-        #       If we are going to handle the presence of sub-word (or any child elements to the aligned elements).
-        #       then this will need to be rewritten.    
-        # Until then:
-        word.text = all_text   
-        # replace_text_in_node(word, all_text, all_indices)
+        # word.text = all_text   
+        replace_text_in_node(word, all_text, all_indices)
     return xml
 
 
@@ -214,13 +182,11 @@ def replace_text_in_node(word, text, indices):
                     new_indices=trim_indices(new_indices)
                     child.tail=new_text
                     break
-
     return text, new_indices
 
 
 def convert_xml(xml, word_unit = "w",
                 output_orthography = "eng-arpabet"):
-    # breakpoint()
     xml_copy=copy.deepcopy(xml)
     # FIXME: different langs have different normalizations, is this necessary?
     unicode_normalize_xml(xml_copy)

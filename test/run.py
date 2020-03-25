@@ -3,16 +3,11 @@ import sys
 from unittest import TestLoader, TextTestRunner, TestSuite
 from readalongs.log import LOGGER
 # Unit tests
+from test_indices import TestIndices
 
 ## End-to-End
 from test_force_align import TestForceAlignment, TestXHTML
 
-## G2P
-from test_context_g2p import TestG2P
-
-## Langs
-from test_atj_g2p import TestAtikamekwG2P
-from test_crj_g2p import TestSouthEastCreeG2P
 
 ## Other tests
 from test_tokenize_xml import TestTokenizer
@@ -25,14 +20,9 @@ e2e_tests = [
         for test in (TestForceAlignment, TestXHTML)
     ]
 
-g2p_tests = [
+indices_tests = [
     loader.loadTestsFromTestCase(test)
-    for test in [TestG2P]
-]
-
-lang_tests = [
-    loader.loadTestsFromTestCase(test)
-    for test in (TestAtikamekwG2P, TestSouthEastCreeG2P)
+    for test in [TestIndices]
 ]
 
 other_tests = [
@@ -43,18 +33,14 @@ other_tests = [
 def run_tests(suite):
     if suite == 'e2e':
         suite = TestSuite(e2e_tests)
-    elif suite == 'g2p':
-        suite = TestSuite(g2p_tests)
-    elif suite == 'langs':
-        suite = TestSuite(lang_tests)
     elif suite == 'dev':
-        suite = TestSuite(g2p_tests + other_tests + e2e_tests)
+        suite = TestSuite(indices_tests + other_tests + e2e_tests)
     elif suite == 'prod':
         suite = loader.discover(os.path.dirname(__file__))
     elif suite == 'other':
         suite = TestSuite(other_tests)
     else:
-        LOGGER.error("Sorry, you need to select a Test Suite to run, like 'dev', 'g2p' or 'prod'")
+        LOGGER.error("Sorry, you need to select a Test Suite to run, like 'dev' or 'prod'")
         
     runner = TextTestRunner(verbosity=3)
     runner.run(suite)
