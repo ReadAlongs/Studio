@@ -9,6 +9,3 @@ Command line interface
 
 .. click:: readalongs.cli:align
   :prog: readalongs align
-
-.. click:: readalongs.cli:epub
-  :prog: readalongs epub

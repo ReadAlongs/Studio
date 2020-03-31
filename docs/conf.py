@@ -19,9 +19,9 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'ReadAlongs-Align'
-copyright = '2019, David Daines, Patrick Littell, Aidan Pine'
-author = 'David Daines, Patrick Littell, Aidan Pine'
+project = 'ReadAlongs-Studio'
+copyright = '2019, David Daines, Eric Joanis, Patrick Littell, Aidan Pine'
+author = 'David Daines, Eric Joanis, Patrick Littell, Aidan Pine'
 
 # The short X.Y version
 version = ''
