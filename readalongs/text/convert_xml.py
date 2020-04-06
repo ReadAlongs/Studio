@@ -154,7 +154,8 @@ def convert_words(xml, word_unit="w",
 def replace_text_in_node(word, text, indices):
     old_text = ''
     new_text = ''
-    new_indices = indices
+    # filter inputs
+    new_indices = [x for x in {item[0]: item[1] for item in indices}.items()]
     # handle the text
     if word.text:
         for i1, i2 in new_indices:
