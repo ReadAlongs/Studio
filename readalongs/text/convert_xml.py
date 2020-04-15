@@ -42,11 +42,11 @@ import argparse
 import copy
 import os
 
-from g2p.transducer.indices import IndexSequence
 from g2p import make_g2p
+from g2p.transducer import TransductionGraph, CompositeTransductionGraph
 
-from readalongs.text.util import load_xml, save_xml, get_lang_attrib
-from readalongs.text.util import trim_indices, offset_indices
+from readalongs.text.util import load_xml, save_xml, get_lang_attrib, compose_tiers
+from readalongs.text.util import compose_indices, increment_indices, increment_tiers, trim_indices, offset_indices
 from readalongs.text.util import unicode_normalize_xml
 from readalongs.text.lexicon_g2p import LexiconG2P
 from readalongs.text.lexicon_g2p_mappings import __file__ as LEXICON_PATH
@@ -114,7 +114,6 @@ def remove_word_boundaries(xml, word_unit="w"):
             if last_child.tail and last_child.tail.endswith('#'):
                 last_child.tail = last_child.tail[:-1]
 
-
 def convert_words(xml, word_unit="w",
                   output_orthography="eng-arpabet"):
     for word in xml.xpath(".//" + word_unit):
@@ -129,16 +128,25 @@ def convert_words(xml, word_unit="w",
             # Hack to use old English LexiconG2P
             if unit['lang'] != 'eng':
                 converter = make_g2p(unit['lang'], output_orthography)
-                text, indices = converter(unit["text"], index=True)
+                tg = converter(unit['text'])
+                text = tg.output_string
+                indices = tg.edges
             else:
-                converter = LexiconG2P(os.path.join(os.path.dirname(LEXICON_PATH), 'cmu_sphinx.metadata.json'))
+                tg = False
+                converter = LexiconG2P(os.path.join(os.path.dirname(
+                    LEXICON_PATH), 'cmu_sphinx.metadata.json'))
                 text, indices = converter.convert(unit['text'])
             all_text += text
             all_indices += indices
-        try:
-            all_indices = IndexSequence(*all_indices).reduced()
-        except IndexError:
-            all_indices = all_indices
+        if tg and isinstance(tg, CompositeTransductionGraph):
+            indices = increment_tiers(indices)
+            all_indices = compose_tiers(indices)
+        elif tg and isinstance(tg, TransductionGraph):
+            indices = increment_indices(indices)
+            all_indices = compose_indices([], indices)
+        else:
+            all_indices = indices
+        # word.text = all_text   
         replace_text_in_node(word, all_text, all_indices)
     return xml
 
@@ -146,51 +154,50 @@ def convert_words(xml, word_unit="w",
 def replace_text_in_node(word, text, indices):
     old_text = ''
     new_text = ''
-    new_indices = indices
+    # filter inputs
+    new_indices = [x for x in {item[0]: item[1] for item in indices}.items()]
     # handle the text
     if word.text:
         for i1, i2 in new_indices:
             if i1 >= len(word.text):
-                old_text = word.text[:i1]
-                new_text = text[:i2]
+                old_text= word.text[: i1]
+                new_text= text[: i2]
                 text = text[i2:]
                 new_indices = offset_indices(
                     indices, -len(old_text), -len(new_text))
-                new_indices = trim_indices(new_indices)
-                #word.attrib["orig"] = old_text
-                word.text = new_text
+                new_indices=trim_indices(new_indices)
+                # word.attrib["orig"] = old_text
+                word.text=new_text
                 break
 
     for child in word:
-        text, new_indices = replace_text_in_node(child, text, new_indices)
+        text, new_indices=replace_text_in_node(child, text, new_indices)
         if child.tail:
             for i1, i2 in new_indices:
                 if i1 >= len(child.tail):
-                    old_text = child.tail[:i1]
-                    new_text = text[:i2]
-                    text = text[i2:]
-                    new_indices = offset_indices(
+                    old_text=child.tail[:i1]
+                    new_text=text[:i2]
+                    text=text[i2:]
+                    new_indices=offset_indices(
                         indices, -len(old_text), -len(new_text))
-                    new_indices = trim_indices(new_indices)
-                    child.tail = new_text
+                    new_indices=trim_indices(new_indices)
+                    child.tail=new_text
                     break
-
     return text, new_indices
 
 
-def convert_xml(xml, word_unit="w",
-                output_orthography="eng-arpabet"):
-    # breakpoint()
-    xml_copy = copy.deepcopy(xml)
+def convert_xml(xml, word_unit = "w",
+                output_orthography = "eng-arpabet"):
+    xml_copy=copy.deepcopy(xml)
     # FIXME: different langs have different normalizations, is this necessary?
     unicode_normalize_xml(xml_copy)
-    #add_word_boundaries(xml_copy, word_unit)
+    # add_word_boundaries(xml_copy, word_unit)
     convert_words(xml_copy, word_unit, output_orthography)
-    #remove_word_boundaries(xml_copy, word_unit)
+    # remove_word_boundaries(xml_copy, word_unit)
     return xml_copy
 
 
-def go(input_filename, output_filename, word_unit="w",
+def go(input_filename, output_filename, word_unit = "w",
        output_orthography="eng-arpabet"):
     xml = load_xml(input_filename)
     converted_xml = convert_xml(xml, word_unit, output_orthography)
