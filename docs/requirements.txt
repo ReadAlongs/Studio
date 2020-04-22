@@ -1,3 +1,4 @@
 Sphinx
 guzzle_sphinx_theme
 sphinx-click
+-r ../requirements.txt
