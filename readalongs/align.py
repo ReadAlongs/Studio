@@ -19,7 +19,7 @@ import io
 from webvtt import WebVTT, Caption
 from pympi.Praat import TextGrid
 from lxml import etree
-import pocketsphinx
+import soundswallower
 import regex as re
 import pystache
 
@@ -127,8 +127,8 @@ def align_audio(xml_path: str, wav_path: str, unit:str ='w', bare=False, save_te
     fsg_file.flush()
 
     # Now do alignment
-    cfg = pocketsphinx.Decoder.default_config()
-    model_path = pocketsphinx.get_model_path()
+    cfg = soundswallower.Decoder.default_config()
+    model_path = soundswallower.get_model_path()
     cfg.set_boolean('-remove_noise', False)
     cfg.set_boolean('-remove_silence', False)
     cfg.set_string('-hmm', os.path.join(model_path, 'en-us'))
@@ -160,7 +160,7 @@ def align_audio(xml_path: str, wav_path: str, unit:str ='w', bare=False, save_te
     while fft_size < frame_points:
         fft_size = fft_size << 1
     cfg.set_int('-nfft', fft_size)
-    ps = pocketsphinx.Decoder(cfg)
+    ps = soundswallower.Decoder(cfg)
     frame_size = 1.0 / cfg.get_int('-frate')
 
     def frames_to_time(frames):
