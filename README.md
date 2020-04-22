@@ -1,10 +1,10 @@
 # ReadAlong-Studio
 
-[![Coverage Status](https://coveralls.io/repos/github/dhdaines/ReadAlong-Studio/badge.svg?branch=master)](https://coveralls.io/github/dhdaines/ReadAlong-Studio?branch=master)
-[![Build Status](https://travis-ci.org/dhdaines/ReadAlong-Studio.svg?branch=master)](https://travis-ci.org/dhdaines/ReadAlong-Studio)
+[![Coverage Status](https://coveralls.io/repos/github/ReadAlongs/Studio/badge.svg?branch=master)](https://coveralls.io/github/ReadAlongs/Studio?branch=master)
+[![Build Status](https://travis-ci.org/ReadAlongs/Studio.svg?branch=master)](https://travis-ci.org/ReadAlongs/Studio)
 [![PyPI package](https://img.shields.io/pypi/v/readalongs.svg)](https://pypi.org/project/readalongs/)
-[![license](https://img.shields.io/github/license/dhdaines/ReadAlong-Studio.svg)](LICENSE)
-[![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/dhdaines/ReadAlong-Studio)
+[![GitHub license](https://img.shields.io/github/license/ReadAlongs/Studio)](https://github.com/ReadAlongs/Studio/blob/master/LICENSE)
+[![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/ReadAlongs/Studio)
 
 > Audiobook alignment for Indigenous languages!
 
