@@ -70,6 +70,9 @@ def align_audio(xml_path: str, wav_path: str, unit:str ='w', bare=False, save_te
         Path to audio input (WAV or MP3)
     unit : str, optional
         Element to create alignments for, by default 'w'
+    bare : boolean, optional
+        If False, split silence into adjoining tokens (default)
+        If True, keep the bare tokens without adjoining silences.
     save_temps : Union[str, None], optional
         save temporary files, by default None
 
