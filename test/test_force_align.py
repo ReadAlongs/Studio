@@ -8,7 +8,7 @@ import os
 from lxml import etree
 
 from readalongs.log import LOGGER
-from readalongs.align import align_audio, create_input_xml, convert_to_xhtml
+from readalongs.align import align_audio, create_input_tei, create_input_xml, convert_to_xhtml
 from readalongs.text.util import save_xml, load_txt
 from readalongs.tempfile import PortableNamedTemporaryFile
 
@@ -34,8 +34,9 @@ class TestForceAlignment(unittest.TestCase):
     def testAlignText(self):
         txt_path = os.path.join(self.data_dir, 'ap-git.txt')
         wav_path = os.path.join(self.data_dir, 'ap-git.wav')
-        tempfile, temp_fn = create_input_xml(txt_path, 'git')
-        results = align_audio(temp_fn, wav_path, unit='w')
+        #tempfile, temp_fn = create_input_xml(txt_path, text_language='git', save_temps="unit")
+        tempfile, temp_fn = create_input_tei(txt_path, text_language='git', save_temps=None)
+        results = align_audio(temp_fn, wav_path, unit='w', save_temps=None)
 
         # Verify that the same IDs are in the output
         converted_path = os.path.join(
