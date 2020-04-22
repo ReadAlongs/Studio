@@ -2,7 +2,7 @@ build:
     image: latest
     
 requirements_file: 
-    requirements.txt
+    docs/requirements.txt
 
 python:
     setup_py_install: true
