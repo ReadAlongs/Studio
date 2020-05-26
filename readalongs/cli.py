@@ -46,7 +46,9 @@ def create_app():
     '''
     return app
 
+
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
 
 @click.version_option(version=__version__, prog_name="readalongs")
 @click.group(cls=FlaskGroup, create_app=create_app, context_settings=CONTEXT_SETTINGS)
@@ -57,7 +59,7 @@ def cli():
 @app.cli.command(context_settings=CONTEXT_SETTINGS, short_help='Force align a text and a sound file.')
 @click.argument('inputfile', type=click.Path(exists=True, readable=True))
 @click.argument('wavfile', type=click.Path(exists=True, readable=True))
-@click.argument('output-base', type=click.STRING)
+@click.argument('output-base', type=click.Path(exists=False))
 @click.option('-b', '--bare', is_flag=True, help='Bare alignments do not split silences between words')
 @click.option('-c', '--closed-captioning', is_flag=True, help='Export sentences to WebVTT and SRT files')
 @click.option('-d', '--debug', is_flag=True, help='Add debugging messages to logger')
@@ -71,35 +73,39 @@ def cli():
 @click.option('-x', '--output-xhtml', is_flag=True, help='Output simple XHTML instead of XML')
 def align(**kwargs):
     """Align INPUTFILE and WAVFILE and create output files at OUTPUT_BASE.
-    
+
     inputfile : A path to the input text file
 
     wavfile : A path to the input audio file
 
     output-base : A base name for output files
     """
+    if os.path.exists(kwargs['output_base']):
+        raise click.UsageError(
+            f"Output folder '{kwargs['output_base']}' already exists")
+    os.mkdir(kwargs['output_base'])
     if kwargs['debug']:
         LOGGER.setLevel('DEBUG')
     if kwargs['text_input']:
         tempfile, kwargs['inputfile'] \
             = create_input_tei(kwargs['inputfile'],
                                text_language=kwargs['language'],
-                               save_temps=(kwargs['output_base']
+                               save_temps=(os.path.join(kwargs['output_base'], kwargs['output_base'])
                                            if kwargs['save_temps'] else None))
     if kwargs['output_xhtml']:
-        tokenized_xml_path = '%s.xhtml' % kwargs['output_base']
+        tokenized_xml_path = '%s.xhtml' % os.path.join(kwargs['output_base'], kwargs['output_base'])
     else:
         _, input_ext = os.path.splitext(kwargs['inputfile'])
-        tokenized_xml_path = '%s%s' % (kwargs['output_base'], input_ext)
+        tokenized_xml_path = '%s%s' % (os.path.join(kwargs['output_base'], kwargs['output_base']), input_ext)
     if os.path.exists(tokenized_xml_path) and not kwargs['force_overwrite']:
         raise click.BadParameter("Output file %s exists already, did you mean to do that?"
                                  % tokenized_xml_path)
-    smil_path = kwargs['output_base'] + '.smil'
+    smil_path = os.path.join(kwargs['output_base'], kwargs['output_base']) + '.smil'
     if os.path.exists(smil_path) and not kwargs['force_overwrite']:
         raise click.BadParameter("Output file %s exists already, did you mean to do that?"
                                  % smil_path)
     _, wav_ext = os.path.splitext(kwargs['wavfile'])
-    wav_path = kwargs['output_base'] + wav_ext
+    wav_path = os.path.join(kwargs['output_base'], kwargs['output_base']) + wav_ext
     if os.path.exists(wav_path) and not kwargs['force_overwrite']:
         raise click.BadParameter("Output file %s exists already, did you mean to do that?"
                                  % wav_path)
@@ -108,10 +114,10 @@ def align(**kwargs):
     if not unit:     # .get() above should handle this but apparently the way kwargs is implemented
         unit = "w"   # unit could still be None here.
     try:
-        results = align_audio(kwargs['inputfile'], kwargs['wavfile'], 
+        results = align_audio(kwargs['inputfile'], kwargs['wavfile'],
                               unit=unit,
                               bare=bare,
-                              save_temps=(kwargs['output_base']
+                              save_temps=(os.path.join(kwargs['output_base'], kwargs['output_base'])
                                           if kwargs['save_temps'] else None))
     except RuntimeError as e:
         LOGGER.error(e)
@@ -129,17 +135,17 @@ def align(**kwargs):
             duration = audio.frame_count() / audio.frame_rate
         words, sentences = return_words_and_sentences(results)
         textgrid = write_to_text_grid(words, sentences, duration)
-        textgrid.to_file(kwargs['output_base'] + '.TextGrid')
-        textgrid.to_eaf().to_file(kwargs['output_base'] + ".eaf")
+        textgrid.to_file(os.path.join(kwargs['output_base'], kwargs['output_base']) + '.TextGrid')
+        textgrid.to_eaf().to_file(os.path.join(kwargs['output_base'], kwargs['output_base']) + ".eaf")
 
     if kwargs['closed_captioning']:
         words, sentences = return_words_and_sentences(results)
         webvtt_sentences = write_to_subtitles(sentences)
-        webvtt_sentences.save(kwargs['output_base'] + '_sentences.vtt')
-        webvtt_sentences.save_as_srt(kwargs['output_base'] + '_sentences.srt')
+        webvtt_sentences.save(os.path.join(kwargs['output_base'], kwargs['output_base']) + '_sentences.vtt')
+        webvtt_sentences.save_as_srt(os.path.join(kwargs['output_base'], kwargs['output_base']) + '_sentences.srt')
         webvtt_words = write_to_subtitles(words)
-        webvtt_words.save(kwargs['output_base'] + '_words.vtt')
-        webvtt_words.save_as_srt(kwargs['output_base'] + '_words.srt')
+        webvtt_words.save(os.path.join(kwargs['output_base'], kwargs['output_base']) + '_words.vtt')
+        webvtt_words.save_as_srt(os.path.join(kwargs['output_base'], kwargs['output_base']) + '_words.srt')
 
     if kwargs['output_xhtml']:
         convert_to_xhtml(results['tokenized'])
