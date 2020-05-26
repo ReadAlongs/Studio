@@ -84,28 +84,29 @@ def align(**kwargs):
         raise click.UsageError(
             f"Output folder '{kwargs['output_base']}' already exists")
     os.mkdir(kwargs['output_base'])
+    output_base = os.path.join(kwargs['output_base'], kwargs['output_base']
     if kwargs['debug']:
         LOGGER.setLevel('DEBUG')
     if kwargs['text_input']:
         tempfile, kwargs['inputfile'] \
             = create_input_tei(kwargs['inputfile'],
                                text_language=kwargs['language'],
-                               save_temps=(os.path.join(kwargs['output_base'], kwargs['output_base'])
+                               save_temps=(output_base)
                                            if kwargs['save_temps'] else None))
     if kwargs['output_xhtml']:
-        tokenized_xml_path = '%s.xhtml' % os.path.join(kwargs['output_base'], kwargs['output_base'])
+        tokenized_xml_path = '%s.xhtml' % output_base)
     else:
         _, input_ext = os.path.splitext(kwargs['inputfile'])
-        tokenized_xml_path = '%s%s' % (os.path.join(kwargs['output_base'], kwargs['output_base']), input_ext)
+        tokenized_xml_path = '%s%s' % (output_base), input_ext)
     if os.path.exists(tokenized_xml_path) and not kwargs['force_overwrite']:
         raise click.BadParameter("Output file %s exists already, did you mean to do that?"
                                  % tokenized_xml_path)
-    smil_path = os.path.join(kwargs['output_base'], kwargs['output_base']) + '.smil'
+    smil_path = output_base) + '.smil'
     if os.path.exists(smil_path) and not kwargs['force_overwrite']:
         raise click.BadParameter("Output file %s exists already, did you mean to do that?"
                                  % smil_path)
     _, wav_ext = os.path.splitext(kwargs['wavfile'])
-    wav_path = os.path.join(kwargs['output_base'], kwargs['output_base']) + wav_ext
+    wav_path = output_base) + wav_ext
     if os.path.exists(wav_path) and not kwargs['force_overwrite']:
         raise click.BadParameter("Output file %s exists already, did you mean to do that?"
                                  % wav_path)
@@ -117,7 +118,7 @@ def align(**kwargs):
         results = align_audio(kwargs['inputfile'], kwargs['wavfile'],
                               unit=unit,
                               bare=bare,
-                              save_temps=(os.path.join(kwargs['output_base'], kwargs['output_base'])
+                              save_temps=(output_base)
                                           if kwargs['save_temps'] else None))
     except RuntimeError as e:
         LOGGER.error(e)
@@ -135,17 +136,17 @@ def align(**kwargs):
             duration = audio.frame_count() / audio.frame_rate
         words, sentences = return_words_and_sentences(results)
         textgrid = write_to_text_grid(words, sentences, duration)
-        textgrid.to_file(os.path.join(kwargs['output_base'], kwargs['output_base']) + '.TextGrid')
-        textgrid.to_eaf().to_file(os.path.join(kwargs['output_base'], kwargs['output_base']) + ".eaf")
+        textgrid.to_file(output_base) + '.TextGrid')
+        textgrid.to_eaf().to_file(output_base) + ".eaf")
 
     if kwargs['closed_captioning']:
         words, sentences = return_words_and_sentences(results)
         webvtt_sentences = write_to_subtitles(sentences)
-        webvtt_sentences.save(os.path.join(kwargs['output_base'], kwargs['output_base']) + '_sentences.vtt')
-        webvtt_sentences.save_as_srt(os.path.join(kwargs['output_base'], kwargs['output_base']) + '_sentences.srt')
+        webvtt_sentences.save(output_base) + '_sentences.vtt')
+        webvtt_sentences.save_as_srt(output_base) + '_sentences.srt')
         webvtt_words = write_to_subtitles(words)
-        webvtt_words.save(os.path.join(kwargs['output_base'], kwargs['output_base']) + '_words.vtt')
-        webvtt_words.save_as_srt(os.path.join(kwargs['output_base'], kwargs['output_base']) + '_words.srt')
+        webvtt_words.save(output_base) + '_words.vtt')
+        webvtt_words.save_as_srt(output_base) + '_words.srt')
 
     if kwargs['output_xhtml']:
         convert_to_xhtml(results['tokenized'])
