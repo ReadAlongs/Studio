@@ -84,7 +84,7 @@ def align(**kwargs):
         raise click.UsageError(
             f"Output folder '{kwargs['output_base']}' already exists")
     os.mkdir(kwargs['output_base'])
-    output_base = os.path.join(kwargs['output_base'], kwargs['output_base'])
+    output_base = os.path.join(kwargs['output_base'], os.path.basename(kwargs['output_base']))
     if kwargs['debug']:
         LOGGER.setLevel('DEBUG')
     if kwargs['text_input']:

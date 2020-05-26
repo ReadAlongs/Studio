@@ -26,6 +26,7 @@ from flask import abort, redirect, request, render_template, session, send_file,
 from datetime import datetime
 
 from readalongs.app import app, socketio
+from readalongs.log import LOGGER
 
 # get the key from all networks in g2p module that have a path to 'eng-arpabet'
 # which is needed for the readalongs
@@ -170,40 +171,40 @@ def steps(step):
                 flags.append('--text-input')
                 flags.append('--language')
                 flags.append(session['config']['lang'])
+            output_base = 'aligned' + timestamp
             args = ['readalongs', 'align'] + flags + [session['text'],
-                                                      session['audio'], os.path.join(session['temp_dir'], 'aligned' + timestamp)]
+                                                      session['audio'], os.path.join(session['temp_dir'], output_base)]
+            LOGGER.warn(args)
             fname, audio_ext = os.path.splitext(session['audio'])
-            data = {'audio_ext': audio_ext}
+            data = {'audio_ext': audio_ext, 'base': output_base}
             if session['config'].get('show-log', False):
                 log = run(args, capture_output=True)
                 data['log'] = log
             data['audio_path'] = os.path.join(
-                session['temp_dir'], 'aligned' + timestamp + audio_ext)
-            data['audio_fn'] = '/file/aligned' + timestamp + audio_ext
+                session['temp_dir'], output_base, output_base + audio_ext)
+            data['audio_fn'] = f'/file/{output_base}' + audio_ext
             data['text_path'] = os.path.join(
-                session['temp_dir'], 'aligned' + timestamp + '.xml')
-            data['text_fn'] = '/file/aligned' + timestamp + '.xml'
+                session['temp_dir'], output_base, output_base + '.xml')
+            data['text_fn'] = f'/file/{output_base}' + '.xml'
             data['smil_path'] = os.path.join(
-                session['temp_dir'], 'aligned' + timestamp + '.smil')
-            data['smil_fn'] = '/file/aligned' + timestamp + '.smil'
+                session['temp_dir'], output_base, output_base + '.smil')
+            data['smil_fn'] = f'/file/{output_base}' + '.smil'
         return render_template('export.html', data=data)
     else:
         abort(404)
 
 
-@app.route('/download', methods=['GET'])
-def show_zip():
-    files_to_download = os.listdir(session['temp_dir'])
+@app.route('/download/<string:base>', methods=['GET'])
+def show_zip(base):
+    files_to_download = os.listdir(os.path.join(session['temp_dir'], base))
     if not 'temp_dir' in session or not os.path.exists(session['temp_dir']) or not files_to_download or not any([x.startswith('aligned') for x in files_to_download]):
         return abort(404, "Nothing to download. Please go to Step 1 of the Read Along Studio")
 
     data = io.BytesIO()
     with ZipFile(data, mode='w') as z:
         for fname in files_to_download:
-            print(fname)
-            path = os.path.join(session['temp_dir'], fname)
+            path = os.path.join(session['temp_dir'], base, fname)
             if fname.startswith('aligned'):
-                print(path)
                 z.write(path, fname)
     data.seek(0)
 
@@ -219,7 +220,9 @@ def show_zip():
 
 @app.route('/file/<string:fname>', methods=['GET'])
 def return_temp_file(fname):
-    path = os.path.join(session['temp_dir'], fname)
+    fn, ext = os.path.splitext(fname)
+    LOGGER.warn(session['temp_dir'])
+    path = os.path.join(session['temp_dir'], fn, fname)
     if os.path.exists(path):
         return send_file(path)
     else:
