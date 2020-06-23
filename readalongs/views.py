@@ -180,6 +180,8 @@ def steps(step):
             if session['config'].get('show-log', False):
                 log = run(args, capture_output=True)
                 data['log'] = log
+            else:
+                run(args)
             data['audio_path'] = os.path.join(
                 session['temp_dir'], output_base, output_base + audio_ext)
             data['audio_fn'] = f'/file/{output_base}' + audio_ext

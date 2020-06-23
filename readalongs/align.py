@@ -216,11 +216,12 @@ def align_audio(xml_path: str, wav_path: str, unit:str ='w', bare=False, save_te
         if silence > 0:
             if last_word is not None:
                 last_word['end'] += silence / 2
-
     dict_file.close()
-    os.unlink(dict_file.name)
+    if not save_temps:
+        os.unlink(dict_file.name)
     fsg_file.close()
-    os.unlink(fsg_file.name)
+    if not save_temps:
+        os.unlink(fsg_file.name)
 
     return results
 
