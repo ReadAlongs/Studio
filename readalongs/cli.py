@@ -59,7 +59,7 @@ def cli():
 @app.cli.command(context_settings=CONTEXT_SETTINGS, short_help='Force align a text and a sound file.')
 @click.argument('inputfile', type=click.Path(exists=True, readable=True))
 @click.argument('wavfile', type=click.Path(exists=True, readable=True))
-@click.argument('output-base', type=click.Path(exists=False))
+@click.argument('output-base', type=click.Path())
 @click.option('-b', '--bare', is_flag=True, help='Bare alignments do not split silences between words')
 @click.option('-c', '--closed-captioning', is_flag=True, help='Export sentences to WebVTT and SRT files')
 @click.option('-d', '--debug', is_flag=True, help='Add debugging messages to logger')
@@ -81,13 +81,17 @@ def align(**kwargs):
     output-base : A base name for output files
     """
     if os.path.exists(kwargs['output_base']):
-        raise click.UsageError(
-            f"Output folder '{kwargs['output_base']}' already exists")
-    os.mkdir(kwargs['output_base'])
+        if not kwargs['force_overwrite']:
+            raise click.UsageError(
+                f"Output folder '{kwargs['output_base']}' already exists")
+    else:
+        os.mkdir(kwargs['output_base'])
     output_base = os.path.join(kwargs['output_base'], os.path.basename(kwargs['output_base']))
     if kwargs['debug']:
         LOGGER.setLevel('DEBUG')
     if kwargs['text_input']:
+        if not kwargs['language']:
+            LOGGER.warn(f"No input language provided, using undetermined mapping")
         tempfile, kwargs['inputfile'] \
             = create_input_tei(kwargs['inputfile'],
                                text_language=kwargs['language'],
