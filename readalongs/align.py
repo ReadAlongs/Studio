@@ -466,15 +466,15 @@ TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
         <body>
         {{#pages}}
             <div type="page">
-                {{#paragraphs}}
-                    <p>
-                        {{#sentences}}
-                            <s>{{.}}</s>
-                        {{/sentences}}
-                    </p>
-                {{/paragraphs}}
+            {{#paragraphs}}
+                <p>
+                {{#sentences}}
+                    <s>{{.}}</s>
+                {{/sentences}}
+                </p>
+            {{/paragraphs}}
             </div>
-        {{/pages}}    
+        {{/pages}}
         </body>
     </text>
 </TEI>
