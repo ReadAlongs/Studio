@@ -109,10 +109,12 @@ def align(**kwargs):
             raise click.BadParameter(f"Config file '{config}' must be in JSON format")
 
     if os.path.exists(kwargs["output_base"]):
+        if not os.path.isdir(kwargs["output_base"]):
+            raise click.UsageError(
+                f"Output folder '{kwargs['output_base']}' already exists but is a not a directory.")
         if not kwargs["force_overwrite"]:
             raise click.UsageError(
-                f"Output folder '{kwargs['output_base']}' already exists"
-            )
+                f"Output folder '{kwargs['output_base']}' already exists, use -f to overwrite.")
     else:
         os.mkdir(kwargs["output_base"])
     output_base = os.path.join(
