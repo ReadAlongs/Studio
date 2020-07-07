@@ -83,7 +83,7 @@ def cli():
 @click.option("-C", "--closed-captioning", is_flag=True, help="Export sentences to WebVTT and SRT files")
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
 @click.option("-f", "--force-overwrite", is_flag=True, help="Force overwrite output files")
-@click.option("-i", "--text-input", is_flag=True, help="Input is plain text (assume paragraphs separated by blank lines, 1 paragraph per page)")
+@click.option("-i", "--text-input", is_flag=True, help="Input is plain text (assume paragraphs are separated by blank lines, pages are separated by two blank lines)")
 @click.option("-l", "--language", type=click.Choice(LANGS, case_sensitive=False), help="Set language for plain text input")
 @click.option("-u", "--unit", type=click.Choice(["w", "m"], case_sensitive=False), help="Unit (w = word, m = morpheme) to align to")
 @click.option("-s", "--save-temps", is_flag=True, help="Save intermediate stages of processing and temporary files (dictionary, FSG, tokenization etc)")
@@ -92,7 +92,7 @@ def cli():
 def align(**kwargs):
     """Align INPUTFILE and AUDIOFILE and create output files at OUTPUT_BASE.
 
-    inputfile : A path to the input text file
+    inputfile : A path to the input text file (in XML, or plain text with -i option)
 
     audiofile : A path to the input audio file. Can be any format supported by ffmpeg
 
@@ -232,6 +232,9 @@ def epub(**kwargs):
               required=True, help='Set language for input file')
 def prepare(**kwargs):
     """Prepare XMLFILE for 'readalongs align' from plain text INPUTFILE.
+    INPUTFILE must be plain text encoded in utf-8, with one sentence per line,
+    paragraph breaks marked by a blank line, and page breaks marked by two
+    blank lines.
 
     inputfile : A path to the plain text input file
 
