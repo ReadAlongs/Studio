@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, main
 from lxml import etree
 
 from readalongs.text import tokenize_xml
@@ -43,3 +43,7 @@ class TestTokenizer(TestCase):
         xml = etree.fromstring(txt)
         tokenized = tokenize_xml.tokenize_xml(xml)
         print(etree.tounicode(tokenized))
+
+
+if __name__ == '__main__':
+    main()

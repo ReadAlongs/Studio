@@ -24,7 +24,7 @@
 # what you want; it will put the word annotations inside the
 # subword annotations!  If you have subword annotations already,
 # add the word annotations however is appropriate for your
-# formatting conventions; the possibilities are too-opened ended
+# formatting conventions; the possibilities are too opened ended
 # for this module to attempt to guess for you.
 #
 ##################################################
@@ -43,6 +43,7 @@ from g2p.mappings.langs import MAPPINGS_AVAILABLE
 
 from readalongs.log import LOGGER
 from readalongs.text.util import get_lang_attrib, merge_if_same_label
+from readalongs.text.util import is_do_not_align, is_do_not_align_recursive
 from readalongs.text.util import load_xml, save_xml
 from readalongs.text.util import unicode_normalize_xml, get_unicode_category
 
@@ -128,6 +129,12 @@ class TokenizerLibrary:
             new_element = deepcopy(element)
             new_element.tail = ''  # just take off their .tail so that it's not doubled
             return new_element     # as the calling method tends to it
+
+        if is_do_not_align(element): # skip elements marked do-not-align="true"
+            new_element = deepcopy(element)
+            new_element.tail = '' # don't add spurious whitespace
+            return new_element
+
         new_element = etree.Element(element.tag, nsmap=nsmap)
         for key, value in element.attrib.items():
             new_element.attrib[key] = value

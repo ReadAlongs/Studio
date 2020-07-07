@@ -65,6 +65,21 @@ def get_lang_attrib(element):
     return lang_path[0]
 
 
+def is_do_not_align(element):
+    dna = element.attrib.get('do-not-align',"")
+    return dna == 'true' or dna == 'True' or dna == 'TRUE' or dna == '1'
+
+
+def is_do_not_align_recursive(element):
+    if 'do-not-align' in element.attrib:
+        dna = element.attrib['do-not-align']
+        return dna == 'true' or dna == 'True' or dna == 'TRUE' or dna == '1'
+    elif element.getparent() is not None:
+        return is_do_not_align_recursive(element.getparent())
+    else:
+        return False
+
+
 def set_lang_attrib(element, lang):
     nsmap = element.nsmap if hasattr(element, "nsmap") else element.getroot().nsmap
     xml_ns = nsmap.get("xml", "http://www.w3.org/XML/1998/namespace")
