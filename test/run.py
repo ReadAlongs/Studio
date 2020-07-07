@@ -29,7 +29,7 @@ indices_tests = [
 
 other_tests = [
     loader.loadTestsFromTestCase(test)
-    for test in [TestTokenizer, TestTempFile, CliTest]
+    for test in [TestTokenizer, TestTempFile, TestPrepareCli]
 ]
 
 def run_tests(suite):
