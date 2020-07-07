@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TEI>
+    <text xml:lang="eng" id="t0">
+        <body id="t0b0">
+            <div type="page" id="t0b0d0">
+                    <p id="t0b0d0p0">
+                            <s id="t0b0d0p0s0"><w id="t0b0d0p0s0w0">The</w> <w id="t0b0d0p0s0w1">quick</w> <w id="t0b0d0p0s0w2">brown</w> <w id="t0b0d0p0s0w3">fox</w> <w id="t0b0d0p0s0w4">jumps</w> <w id="t0b0d0p0s0w5">over</w> <w id="t0b0d0p0s0w6">the</w> <w id="t0b0d0p0s0w7">lazy</w> <w id="t0b0d0p0s0w8">dog</w>.</s>
+                    </p>
+            </div>
+            
+        </body>
+    </text>
+</TEI>
