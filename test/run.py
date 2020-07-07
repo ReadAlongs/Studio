@@ -12,6 +12,7 @@ from test_force_align import TestForceAlignment, TestXHTML
 ## Other tests
 from test_tokenize_xml import TestTokenizer
 from test_temp_file import TestTempFile
+from test_prepare_cli import TestPrepareCli
 
 
 loader = TestLoader()
@@ -28,7 +29,7 @@ indices_tests = [
 
 other_tests = [
     loader.loadTestsFromTestCase(test)
-    for test in [TestTokenizer, TestTempFile]
+    for test in [TestTokenizer, TestTempFile, CliTest]
 ]
 
 def run_tests(suite):

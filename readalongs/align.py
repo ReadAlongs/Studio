@@ -503,20 +503,27 @@ def create_input_tei(text: str, **kwargs):
     ----------
     text : str
         raw input text
-    **text_language as kwarg : str
+    **text_language in kwargs : str
         language for the text.
+    **save_temps in kwargs : Union[str, None], optional
+        prefix for output file name, which will be kept; or None to create a temporary file
+    **output_file in kwargs : Union[str, None], optional
+        if specified, the output file will have exactly this name
     
     Returns
     -------
     file
-        outfile
+        outfile (file handle)
     str
         filename
     """ 
     with io.open(text, encoding="utf-8") as f:
         text = f.readlines()
     save_temps = kwargs.get('save_temps', False)
-    if save_temps:
+    if kwargs.get('output_file', False):
+        filename = kwargs.get('output_file')
+        outfile = io.open(filename, 'wb')
+    elif save_temps:
         filename = save_temps + '.input.xml'
         outfile = io.open(filename, 'wb')
     else:

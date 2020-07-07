@@ -8,6 +8,16 @@
 #   Initializes a Command Line Interface with Click.
 #   The main purpose of the cli is to align input files.
 #
+#   CLI commands implemented in this file:
+#    - align  : main command to align text and audio
+#    - epub   : convert aligned file to epub format
+#    - prepare: prepare XML input for align from plain text
+#
+#   Default CLI commands provided by Flask:
+#    - routes : show available routes in the this readalongs Flask app
+#    - run    : run the readalongs Flask app
+#    - shell  : open a shell within the readalongs Flask application context
+#
 #######################################################################
 
 import os
@@ -175,3 +185,32 @@ def epub(**kwargs):
     output : the path to the .epub output
     """
     create_epub(kwargs['input'], kwargs['output'], kwargs['unpacked'])
+
+@app.cli.command(context_settings=CONTEXT_SETTINGS, short_help='Prepare XML input to align from plain text.')
+@click.argument('inputfile', type=click.Path(exists=True, readable=True))
+@click.argument('xmlfile', type=click.Path(exists=False, readable=True))
+@click.option('-d', '--debug', is_flag=True, help='Add debugging messages to logger')
+@click.option('-f', '--force-overwrite', is_flag=True, help='Force overwrite output files')
+@click.option('-l', '--language', type=click.Choice(LANGS, case_sensitive=False),
+              required=True, help='Set language for input file')
+def prepare(**kwargs):
+    """Prepare XMLFILE for 'readalongs align' from plain text INPUTFILE.
+
+    inputfile : A path to the plain text input file
+
+    xmlfile : File name for the .xml output file
+    """
+    if kwargs['debug']:
+        LOGGER.setLevel('DEBUG')
+        LOGGER.info("Running readalongs prepare(lang={}, force-overwrite={}, inputfile={}, xmlfile={})."
+                    .format(kwargs['language'], kwargs['force_overwrite'],
+                        kwargs['inputfile'], kwargs['xmlfile']))
+
+    xmlpath = kwargs['xmlfile']
+    if os.path.exists(xmlpath) and not kwargs['force_overwrite']:
+        raise click.BadParameter("Output file %s exists already, use -f to overwrite."
+                                 % xmlpath)
+    filehandle, filename \
+        = create_input_tei(kwargs['inputfile'],
+                           text_language=kwargs['language'],
+                           output_file=kwargs['xmlfile'])
