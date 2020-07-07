@@ -48,7 +48,7 @@ class AudioTest(TestCase):
         self.assertGreaterEqual(len([x for x in smil_files]), 1)
         self.assertFalse('error' in str(log).lower())
         LOGGER.info('Success - cleaning up alignment files')
-        # rmtree(os.path.join(self.data_path, 'output'))
+        rmtree(os.path.join(self.data_path, 'output'))
 
     def test_align_removed(self):
         """ Try aligning section with removed audio
@@ -62,13 +62,13 @@ class AudioTest(TestCase):
                 '-i', '-l', 'eng', os.path.join(self.data_path, 'output_removed')]
         LOGGER.info(f'Aligning basic DNA removed audio')
         log = run(args, capture_output=True)
-        smilpath = Path(self.data_path + '/output')
+        smilpath = Path(self.data_path + '/output_removed')
         smil_files = smilpath.glob('*.smil')
         self.assertGreaterEqual(len([x for x in smil_files]), 1)
         self.assertFalse('error' in str(log).lower())
         LOGGER.info('Success - cleaning up alignment files')
-        # rmtree(os.path.join(self.data_path, 'output_removed'))
-        # os.remove(audio_output_path)
+        rmtree(os.path.join(self.data_path, 'output_removed'))
+        os.remove(audio_output_path)
 
     def test_align_muted(self):
         """ Try aligning section with muted audio
@@ -82,13 +82,13 @@ class AudioTest(TestCase):
                 '-i', '-l', 'eng', os.path.join(self.data_path, 'output_muted')]
         LOGGER.info(f'Aligning basic DNA muted audio')
         log = run(args, capture_output=True)
-        smilpath = Path(self.data_path + '/output')
+        smilpath = Path(self.data_path + '/output_muted')
         smil_files = smilpath.glob('*.smil')
         self.assertGreaterEqual(len([x for x in smil_files]), 1)
         self.assertFalse('error' in str(log).lower())
         LOGGER.info('Success - cleaning up alignment files')
-        # rmtree(os.path.join(self.data_path, 'output_muted'))
-        # os.remove(audio_output_path)
+        rmtree(os.path.join(self.data_path, 'output_muted'))
+        os.remove(audio_output_path)
 
     def test_adjust_alignments(self):
         """ Try adjusting alignments of re-built audio
