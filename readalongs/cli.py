@@ -23,6 +23,7 @@
 import os
 import json
 import shutil
+from tempfile import TemporaryFile
 
 import click
 from networkx import has_path
@@ -108,18 +109,28 @@ def align(**kwargs):
         else:
             raise click.BadParameter(f"Config file '{config}' must be in JSON format")
 
-    if os.path.exists(kwargs["output_base"]):
-        if not os.path.isdir(kwargs["output_base"]):
+    output_dir = kwargs["output_base"]
+    if os.path.exists(output_dir):
+        if not os.path.isdir(output_dir):
             raise click.UsageError(
-                f"Output folder '{kwargs['output_base']}' already exists but is a not a directory.")
+                f"Output folder '{output_dir}' already exists but is a not a directory.")
         if not kwargs["force_overwrite"]:
             raise click.UsageError(
-                f"Output folder '{kwargs['output_base']}' already exists, use -f to overwrite.")
+                f"Output folder '{output_dir}' already exists, use -f to overwrite.")
     else:
-        os.mkdir(kwargs["output_base"])
-    output_base = os.path.join(
-        kwargs["output_base"], os.path.basename(kwargs["output_base"])
-    )
+        os.mkdir(output_dir)
+
+    # Make sure we can write to the output directory, for early error checking and user
+    # friendly error messages.
+    try:
+        with TemporaryFile(dir=output_dir):
+            pass
+    except:
+        raise click.UsageError(
+            f"Cannot write into output folder '{output_dir}'. Please verify permissions.")
+
+    output_base = os.path.join(output_dir, os.path.basename(output_dir))
+
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
     if kwargs["text_input"]:
