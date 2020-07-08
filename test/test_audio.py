@@ -5,12 +5,16 @@ from subprocess import run
 from shutil import rmtree
 from unittest import TestCase, main
 from readalongs.audio_utils import read_audio_from_file, write_audio_to_file, mute_section, join_section, remove_section
+from readalongs.align import calculate_adjustment, correct_adjustments
+
 
 class AudioTest(TestCase):
     def setUp(self):
         self.data_path = os.path.join(os.path.dirname(__file__), 'data')
-        self.audio_segment = read_audio_from_file(os.path.join(self.data_path, 'audio_sample.ogg'))
-        self.noisy_segment = read_audio_from_file(os.path.join(self.data_path, 'noise_at_1500.mp3'))
+        self.audio_segment = read_audio_from_file(
+            os.path.join(self.data_path, 'audio_sample.ogg'))
+        self.noisy_segment = read_audio_from_file(
+            os.path.join(self.data_path, 'noise_at_1500.mp3'))
         self.to_remove = []
 
     def tearDown(self):
@@ -24,8 +28,10 @@ class AudioTest(TestCase):
                     rmtree(path)
 
     def align(self, input_text_path, input_audio_path, output_path, flags):
-        args = ['readalongs', 'align', input_text_path, input_audio_path, output_path] + flags
-        LOGGER.info(f'Aligning {input_text_path} and {input_audio_path}, outputting to {output_path}')
+        args = ['readalongs', 'align', input_text_path,
+                input_audio_path, output_path] + flags
+        LOGGER.info(
+            f'Aligning {input_text_path} and {input_audio_path}, outputting to {output_path}')
         return run(args, capture_output=True)
 
     def test_mute_section(self):
@@ -85,7 +91,7 @@ class AudioTest(TestCase):
         smil_files = smilpath.glob('*.smil')
         self.assertGreaterEqual(len([x for x in smil_files]), 1)
         self.assertFalse('error' in str(log).lower())
-         # Cleanup
+        # Cleanup
         self.to_remove.append(output_path)
         self.to_remove.append(audio_output_path)
 
@@ -107,14 +113,39 @@ class AudioTest(TestCase):
         smil_files = smilpath.glob('*.smil')
         self.assertGreaterEqual(len([x for x in smil_files]), 1)
         self.assertFalse('error' in str(log).lower())
-         # Cleanup
+        # Cleanup
         self.to_remove.append(output_path)
         self.to_remove.append(audio_output_path)
 
-    def test_adjust_alignments(self):
+    def test_adjustment_calculation(self):
         """ Try adjusting alignments of re-built audio
         """
-        pass
+        self.assertEqual(calculate_adjustment(
+            1.0, [{'begin': 1000, 'end': 1100}]), 100)
+        self.assertEqual(calculate_adjustment(
+            0.9, [{'begin': 1000, 'end': 1100}]), 0)
+        self.assertEqual(calculate_adjustment(
+            1000, [{'begin': 1000, 'end': 1100}]), 100)
+        self.assertEqual(calculate_adjustment(
+            900, [{'begin': 1000, 'end': 1100}]), 0)
+        self.assertEqual(calculate_adjustment(
+            2.0, [{'begin': 1000, 'end': 1100}]), 100)
+        self.assertEqual(calculate_adjustment(
+            1.0, [{'begin': 1000, 'end': 1100}, {'begin': 1500, 'end': 1700}]), 100)
+        self.assertEqual(calculate_adjustment(
+            2.0, [{'begin': 1000, 'end': 1100}, {'begin': 1500, 'end': 2100}]), 700)
+
+    def test_adjustment_correction(self):
+        """ Try correcting adjusted alignments of re-built audio
+        """
+        self.assertEqual(correct_adjustments(
+            950, 1125, [{'begin': 1000, 'end': 1100}]), (950, 1000))
+        self.assertEqual(correct_adjustments(
+            975, 1150, [{'begin': 1000, 'end': 1100}]), (1100, 1150))
+        self.assertEqual(correct_adjustments(
+            .950, 1.125, [{'begin': 1000, 'end': 1100}]), (950, 1000))
+        self.assertEqual(correct_adjustments(
+            .975, 1.150, [{'begin': 1000, 'end': 1100}]), (1100, 1150))
 
 
 if __name__ == '__main__':
