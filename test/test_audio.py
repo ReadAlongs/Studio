@@ -11,6 +11,22 @@ class AudioTest(TestCase):
         self.data_path = os.path.join(os.path.dirname(__file__), 'data')
         self.audio_segment = read_audio_from_file(os.path.join(self.data_path, 'audio_sample.ogg'))
         self.noisy_segment = read_audio_from_file(os.path.join(self.data_path, 'noise_at_1500.mp3'))
+        self.to_remove = []
+
+    def tearDown(self):
+        for path in self.to_remove:
+            if os.path.exists(path):
+                if os.path.isfile(path):
+                    LOGGER.info(f'Cleaning up {path}')
+                    os.remove(path)
+                elif os.path.isdir(path):
+                    LOGGER.info(f'Cleaning up {path}')
+                    rmtree(path)
+
+    def align(self, input_text_path, input_audio_path, output_path, flags):
+        args = ['readalongs', 'align', input_text_path, input_audio_path, output_path] + flags
+        LOGGER.info(f'Aligning {input_text_path} and {input_audio_path}, outputting to {output_path}')
+        return run(args, capture_output=True)
 
     def test_mute_section(self):
         """ Should mute section of audio
@@ -37,58 +53,63 @@ class AudioTest(TestCase):
     def test_align_sample(self):
         """ Sanity check that test audio should align
         """
-        args = ['readalongs', 'align', 
-                os.path.join(self.data_path, 'audio_sample.txt'), 
-                os.path.join(self.data_path, 'audio_sample.ogg'),
-                '-i', '-l', 'eng', os.path.join(self.data_path, 'output')]
-        LOGGER.info(f'Aligning basic test audio sample')
-        log = run(args, capture_output=True)
-        smilpath = Path(self.data_path + '/output')
+        # Align
+        input_text_path = os.path.join(self.data_path, 'audio_sample.txt')
+        input_audio_path = os.path.join(self.data_path, 'audio_sample.ogg')
+        flags = ['-i', '-l', 'eng']
+        output_path = os.path.join(self.data_path, 'output')
+        log = self.align(input_text_path, input_audio_path, output_path, flags)
+        # Check Result
+        smilpath = Path(output_path)
         smil_files = smilpath.glob('*.smil')
         self.assertGreaterEqual(len([x for x in smil_files]), 1)
         self.assertFalse('error' in str(log).lower())
-        LOGGER.info('Success - cleaning up alignment files')
-        rmtree(os.path.join(self.data_path, 'output'))
+        # Cleanup
+        self.to_remove.append(output_path)
 
     def test_align_removed(self):
         """ Try aligning section with removed audio
         """
+        # Process Audio
         removed_segment = remove_section(self.noisy_segment, 1500, 2500)
         audio_output_path = os.path.join(self.data_path, 'removed_sample.mp3')
         removed_segment.export(audio_output_path)
-        args = ['readalongs', 'align', 
-                os.path.join(self.data_path, 'audio_sample.txt'), 
-                audio_output_path,
-                '-i', '-l', 'eng', os.path.join(self.data_path, 'output_removed')]
-        LOGGER.info(f'Aligning basic DNA removed audio')
-        log = run(args, capture_output=True)
-        smilpath = Path(self.data_path + '/output_removed')
+        # Align
+        input_text_path = os.path.join(self.data_path, 'audio_sample.txt')
+        input_audio_path = audio_output_path
+        flags = ['-i', '-l', 'eng']
+        output_path = os.path.join(self.data_path, 'output_removed')
+        log = self.align(input_text_path, input_audio_path, output_path, flags)
+        # Check Result
+        smilpath = Path(output_path)
         smil_files = smilpath.glob('*.smil')
         self.assertGreaterEqual(len([x for x in smil_files]), 1)
         self.assertFalse('error' in str(log).lower())
-        LOGGER.info('Success - cleaning up alignment files')
-        rmtree(os.path.join(self.data_path, 'output_removed'))
-        os.remove(audio_output_path)
+         # Cleanup
+        self.to_remove.append(output_path)
+        self.to_remove.append(audio_output_path)
 
     def test_align_muted(self):
         """ Try aligning section with muted audio
         """
+        # Process Audio
         muted_segment = mute_section(self.noisy_segment, 1500, 2500)
         audio_output_path = os.path.join(self.data_path, 'muted_sample.mp3')
         muted_segment.export(audio_output_path)
-        args = ['readalongs', 'align', 
-                os.path.join(self.data_path, 'audio_sample.txt'), 
-                audio_output_path,
-                '-i', '-l', 'eng', os.path.join(self.data_path, 'output_muted')]
-        LOGGER.info(f'Aligning basic DNA muted audio')
-        log = run(args, capture_output=True)
-        smilpath = Path(self.data_path + '/output_muted')
+        # Align
+        input_text_path = os.path.join(self.data_path, 'audio_sample.txt')
+        input_audio_path = audio_output_path
+        flags = ['-i', '-l', 'eng', '-b']
+        output_path = os.path.join(self.data_path, 'output_muted')
+        log = self.align(input_text_path, input_audio_path, output_path, flags)
+        # Check Result
+        smilpath = Path(output_path)
         smil_files = smilpath.glob('*.smil')
         self.assertGreaterEqual(len([x for x in smil_files]), 1)
         self.assertFalse('error' in str(log).lower())
-        LOGGER.info('Success - cleaning up alignment files')
-        rmtree(os.path.join(self.data_path, 'output_muted'))
-        os.remove(audio_output_path)
+         # Cleanup
+        self.to_remove.append(output_path)
+        self.to_remove.append(audio_output_path)
 
     def test_adjust_alignments(self):
         """ Try adjusting alignments of re-built audio
