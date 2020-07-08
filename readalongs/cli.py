@@ -12,7 +12,6 @@
 
 import os
 import json
-import wave
 import shutil
 
 import click
@@ -67,7 +66,7 @@ def cli():
 
 @app.cli.command(context_settings=CONTEXT_SETTINGS, short_help="Force align a text and a sound file.")
 @click.argument("inputfile", type=click.Path(exists=True, readable=True))
-@click.argument("wavfile", type=click.Path(exists=True, readable=True))
+@click.argument("audiofile", type=click.Path(exists=True, readable=True))
 @click.argument("output-base", type=click.Path())
 @click.option("-b", "--bare", is_flag=True, help="Bare alignments do not split silences between words")
 @click.option("-c", "--config", type=click.Path(exists=True), help="Use ReadAlong-Studio configuration file")
@@ -81,11 +80,11 @@ def cli():
 @click.option("-t", "--text-grid", is_flag=True, help="Export to Praat TextGrid & ELAN eaf file")
 @click.option("-x", "--output-xhtml", is_flag=True, help="Output simple XHTML instead of XML")
 def align(**kwargs):
-    """Align INPUTFILE and WAVFILE and create output files at OUTPUT_BASE.
+    """Align INPUTFILE and AUDIOFILE and create output files at OUTPUT_BASE.
 
     inputfile : A path to the input text file
 
-    wavfile : A path to the input audio file
+    audiofile : A path to the input audio file
 
     output-base : A base name for output files
     """
@@ -133,11 +132,11 @@ def align(**kwargs):
         raise click.BadParameter(
             "Output file %s exists already, did you mean to do that?" % smil_path
         )
-    _, wav_ext = os.path.splitext(kwargs["wavfile"])
-    wav_path = output_base + wav_ext
-    if os.path.exists(wav_path) and not kwargs["force_overwrite"]:
+    _, audio_ext = os.path.splitext(kwargs["audiofile"])
+    audio_path = output_base + audio_ext
+    if os.path.exists(audio_path) and not kwargs["force_overwrite"]:
         raise click.BadParameter(
-            "Output file %s exists already, did you mean to do that?" % wav_path
+            "Output file %s exists already, did you mean to do that?" % audio_path
         )
     unit = kwargs.get("unit", "w")
     bare = kwargs.get("bare", False)
@@ -148,7 +147,7 @@ def align(**kwargs):
     try:
         results = align_audio(
             kwargs["inputfile"],
-            kwargs["wavfile"],
+            kwargs["audiofile"],
             unit=unit,
             bare=bare,
             config=config,
@@ -159,15 +158,8 @@ def align(**kwargs):
         exit(1)
 
     if kwargs["text_grid"]:
-        _, wav_ext = os.path.splitext(kwargs["wavfile"])
-        if wav_ext == ".wav":
-            with wave.open(kwargs["wavfile"], "r") as f:
-                frames = f.getnframes()
-                rate = f.getframerate()
-                duration = frames / float(rate)
-        else:
-            audio = read_audio_from_file(kwargs["wavfile"])
-            duration = audio.frame_count() / audio.frame_rate
+        audio = read_audio_from_file(kwargs["audiofile"])
+        duration = audio.frame_count() / audio.frame_rate
         words, sentences = return_words_and_sentences(results)
         textgrid = write_to_text_grid(words, sentences, duration)
         textgrid.to_file(output_base + ".TextGrid")
@@ -188,9 +180,9 @@ def align(**kwargs):
     save_xml(tokenized_xml_path, results["tokenized"])
     smil = make_smil(
         os.path.basename(tokenized_xml_path), os.path.basename(
-            wav_path), results
+            audio_path), results
     )
-    shutil.copy(kwargs["wavfile"], wav_path)
+    shutil.copy(kwargs["audiofile"], audio_path)
     save_txt(smil_path, smil)
 
 

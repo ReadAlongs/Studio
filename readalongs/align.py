@@ -12,7 +12,6 @@
 from readalongs.tempfile import PortableNamedTemporaryFile
 from datetime import timedelta
 from typing import List, Union
-import wave
 import os
 import io
 
@@ -33,41 +32,15 @@ from readalongs.text.make_fsg import make_fsg
 from readalongs.text.util import save_xml
 from readalongs.log import LOGGER
 
-####
-#
-# Some distros (Python2, Python3 on Windows it seems) don't have the WAV
-# reading methods being context managers; the following checks whether the
-# necessary methods are present and if not, add thems.
-#
-# Based on http://web.mit.edu/jgross/Public/21M.065/sound.py 9-24-2017
-####
-
-
-def _trivial__enter__(self):
-    return self
-
-def _self_close__exit__(self, exc_type, exc_value, traceback):
-    self.close()
-
-if not hasattr(wave.Wave_read, "__exit__"):
-    wave.Wave_read.__exit__ = _self_close__exit__
-if not hasattr(wave.Wave_write, "__exit__"):
-    wave.Wave_write.__exit__ = _self_close__exit__
-if not hasattr(wave.Wave_read, "__enter__"):
-    wave.Wave_read.__enter__ = _trivial__enter__
-if not hasattr(wave.Wave_write, "__enter__"):
-    wave.Wave_write.__enter__ = _trivial__enter__
-
-
-def align_audio(xml_path: str, wav_path: str, unit:str ='w', bare=False, config=None, save_temps:Union[str, None] = None):
+def align_audio(xml_path: str, audio_path: str, unit:str ='w', bare=False, config=None, save_temps:Union[str, None] = None):
     """ Align an XML input file to an audio file.
     
     Parameters
     ----------
     xml_path : str
         Path to XML input file in TEI-like format
-    wav_path : str
-        Path to audio input (WAV or MP3)
+    audio_path : str
+        Path to audio input
     unit : str, optional
         Element to create alignments for, by default 'w'
     bare : boolean, optional
@@ -149,21 +122,11 @@ def align_audio(xml_path: str, wav_path: str, unit:str ='w', bare=False, config=
             do_not_align_segments = sorted(config['do-not-align']['segments'], key=lambda x: x['begin'], reverse=True)
             # for seg in do_not_align_segments:
 
-    _, wav_ext = os.path.splitext(wav_path)
-    if wav_ext == '.wav':
-        with wave.open(wav_path) as wav:
-            LOGGER.info("Read %s: %d frames (%f seconds) audio"
-                        % (wav_path, wav.getnframes(), wav.getnframes()
-                            / wav.getframerate()))
-            raw_data = wav.readframes(wav.getnframes())
-            # Downsampling is (probably) not necessary
-            cfg.set_float('-samprate', wav.getframerate())
-    else:
-        audio = read_audio_from_file(wav_path)
-        audio = audio.set_channels(1).set_sample_width(2)
-        # Downsampling is (probably) not necessary
-        cfg.set_float('-samprate', audio.frame_rate)
-        raw_data = audio.raw_data
+    audio = read_audio_from_file(audio_path)
+    audio = audio.set_channels(1).set_sample_width(2)
+    # Downsampling is (probably) not necessary
+    cfg.set_float('-samprate', audio.frame_rate)
+    raw_data = audio.raw_data
 
     frame_points = int(cfg.get_float('-samprate')
                        * cfg.get_float('-wlen'))
