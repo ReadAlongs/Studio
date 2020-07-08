@@ -59,7 +59,7 @@ if not hasattr(wave.Wave_write, "__enter__"):
     wave.Wave_write.__enter__ = _trivial__enter__
 
 
-def align_audio(xml_path: str, wav_path: str, unit:str ='w', bare=False, save_temps:Union[str, None] = None):
+def align_audio(xml_path: str, wav_path: str, unit:str ='w', bare=False, config=None, save_temps:Union[str, None] = None):
     """ Align an XML input file to an audio file.
     
     Parameters
@@ -73,6 +73,8 @@ def align_audio(xml_path: str, wav_path: str, unit:str ='w', bare=False, save_te
     bare : boolean, optional
         If False, split silence into adjoining tokens (default)
         If True, keep the bare tokens without adjoining silences.
+    config : object, optional
+        Uses ReadAlong-Studio configuration
     save_temps : Union[str, None], optional
         save temporary files, by default None
 
@@ -140,6 +142,12 @@ def align_audio(xml_path: str, wav_path: str, unit:str ='w', bare=False, save_te
     # cfg.set_string('-samprate', "no no")
     cfg.set_float('-beam', 1e-100)
     cfg.set_float('-wbeam', 1e-80)
+
+    # Process audio
+    if config:
+        if "do-not-align" in config:
+            do_not_align_segments = sorted(config['do-not-align']['segments'], key=lambda x: x['begin'], reverse=True)
+            # for seg in do_not_align_segments:
 
     _, wav_ext = os.path.splitext(wav_path)
     if wav_ext == '.wav':
