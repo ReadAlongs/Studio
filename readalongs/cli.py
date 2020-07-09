@@ -78,7 +78,7 @@ def cli():
 @click.argument("audiofile", type=click.Path(exists=True, readable=True))
 @click.argument("output-base", type=click.Path())
 @click.option("-b", "--bare", is_flag=True, help="Bare alignments do not split silences between words")
-@click.option("-c", "--config", type=click.Path(exists=True), help="Use ReadAlong-Studio configuration file")
+@click.option("-c", "--config", type=click.Path(exists=True), help="Use ReadAlong-Studio configuration file (in JSON format)")
 @click.option("-C", "--closed-captioning", is_flag=True, help="Export sentences to WebVTT and SRT files")
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
 @click.option("-f", "--force-overwrite", is_flag=True, help="Force overwrite output files")
@@ -98,12 +98,15 @@ def align(**kwargs):
     output-base : A base name for output files
     """
     config = kwargs.get("config", None)
-    if config and config.endswith("json"):
-        try:
-            with open(config) as f:
-                config = json.load(f)
-        except json.decoder.JSONDecodeError:
-            LOGGER.error(f"Config file at {config} is not valid json.")
+    if config:
+        if config.endswith("json"):
+            try:
+                with open(config) as f:
+                    config = json.load(f)
+            except json.decoder.JSONDecodeError:
+                LOGGER.error(f"Config file at {config} is not valid json.")
+        else:
+            raise click.BadParameter(f"Config file '{config}' must be in JSON format")
 
     if os.path.exists(kwargs["output_base"]):
         if not kwargs["force_overwrite"]:
@@ -133,19 +136,19 @@ def align(**kwargs):
         tokenized_xml_path = "%s%s" % (output_base, input_ext)
     if os.path.exists(tokenized_xml_path) and not kwargs["force_overwrite"]:
         raise click.BadParameter(
-            "Output file %s exists already, did you mean to do that?"
+            "Output file %s exists already, use -f to overwrite."
             % tokenized_xml_path
         )
     smil_path = output_base + ".smil"
     if os.path.exists(smil_path) and not kwargs["force_overwrite"]:
         raise click.BadParameter(
-            "Output file %s exists already, did you mean to do that?" % smil_path
+            "Output file %s exists already, use -f to overwrite." % smil_path
         )
     _, audio_ext = os.path.splitext(kwargs["audiofile"])
     audio_path = output_base + audio_ext
     if os.path.exists(audio_path) and not kwargs["force_overwrite"]:
         raise click.BadParameter(
-            "Output file %s exists already, did you mean to do that?" % audio_path
+            "Output file %s exists already, use -f to overwrite." % audio_path
         )
     unit = kwargs.get("unit", "w")
     bare = kwargs.get("bare", False)
