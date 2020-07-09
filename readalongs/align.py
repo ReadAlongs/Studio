@@ -217,13 +217,17 @@ def align_audio(xml_path: str, audio_path: str, unit: str = 'w', bare=False, con
     for seg in ps.seg():
         start = frames_to_time(seg.start_frame)
         end = frames_to_time(seg.end_frame + 1)
+        # change to ms
+        start_ms = start * 1000
+        end_ms = end * 1000
         if do_not_align_segments and method == 'remove':
-            start += (calculate_adjustment(start,
-                                           do_not_align_segments) / 1000)
-            end += (calculate_adjustment(end, do_not_align_segments) / 1000)
-            start, end = correct_adjustments(start, end, do_not_align_segments)
-            start /= 1000
-            end /= 1000
+            start_ms += (calculate_adjustment(start_ms,
+                                           do_not_align_segments))
+            end_ms += (calculate_adjustment(end_ms, do_not_align_segments))
+            start_ms, end_ms = correct_adjustments(start, end, do_not_align_segments)
+            # change back to seconds to write to smil
+            start = start_ms / 1000
+            end = end_ms / 1000
         if seg.word in ('<sil>', '[NOISE]'):
             continue
         else:
