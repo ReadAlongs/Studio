@@ -77,7 +77,7 @@ def align_audio(xml_path: str, audio_path: str, unit: str = 'w', bare=False, con
     xml_path : str
         Path to XML input file in TEI-like format
     audio_path : str
-        Path to audio input
+        Path to audio input. Must be in a format supported by ffmpeg
     unit : str, optional
         Element to create alignments for, by default 'w'
     bare : boolean, optional
