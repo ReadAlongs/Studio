@@ -24,8 +24,14 @@ def setup_logger(name):
         level=logging.INFO
     )
     logger = logging.getLogger(name)
-    coloredlogs.install(level='INFO', fmt='%(levelname)s - %(message)s',
+
+    # Use level='NOTSET' (most permissive) here so whatever level the user later selects
+    # does get printed. with level='INFO' here, setting LOGGER.setLevel('DEBUG') in the
+    # app doesn't work, and therefore the --debug command line options doesn't work.
+    coloredlogs.install(level='NOTSET', fmt='%(levelname)s - %(message)s',
                         logger=logger, field_styles=FIELD_STYLES)
+
+    logger.setLevel('INFO') # default logging level is INFO
     return logger
 
 LOGGER = setup_logger('root')

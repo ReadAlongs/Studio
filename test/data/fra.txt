@@ -1,0 +1,4 @@
+Ceci est une phrase en français. Ceci est une autre phrase.
+Et voici un deuxième paragraphe.
+
+Un quatrième paragraphe précédé d'un paragraphes vide est ici. Avec deux phrases.

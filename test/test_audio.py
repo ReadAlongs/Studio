@@ -8,7 +8,7 @@ from readalongs.audio_utils import read_audio_from_file, write_audio_to_file, mu
 from readalongs.align import calculate_adjustment, correct_adjustments
 
 
-class AudioTest(TestCase):
+class TestAudio(TestCase):
     def setUp(self):
         self.data_path = os.path.join(os.path.dirname(__file__), 'data')
         self.audio_segment = read_audio_from_file(
