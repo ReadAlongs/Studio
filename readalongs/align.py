@@ -35,16 +35,10 @@ from readalongs.log import LOGGER
 
 
 def correct_adjustments(start: Union[int, float], end: Union[int, float], do_not_align_segments: List[object]) -> (int, int):
-    """ Given the start and end of a segment and a list of do-not-align segments,
+    """ Given the start and end of a segment (in ms) and a list of do-not-align segments,
         If one of the do-not-align segments occurs inside one of the start-end range,
         align the start or end with the do-not-align segment, whichever requires minimal change
     """
-    if isinstance(start, float):
-        LOGGER.info(f'Converting {start} to milliseconds')
-        start = int(start * 1000)
-    if isinstance(end, float):
-        LOGGER.info(f'Converting {end} to milliseconds')
-        end = int(end * 1000)
     for seg in do_not_align_segments:
         if start < seg['begin'] and end > seg['end']:
             if seg['begin'] - start > end - seg['end']:
@@ -55,13 +49,10 @@ def correct_adjustments(start: Union[int, float], end: Union[int, float], do_not
 
 
 def calculate_adjustment(timestamp: Union[int, float], do_not_align_segments: List[object]) -> int:
-    """ Given a time and a list of do-not-align segments,
+    """ Given a time (in ms) and a list of do-not-align segments,
         return the sum (ms) of the lengths of the do-not-align segments 
         that start before the timestamp
     """
-    if isinstance(timestamp, float):
-        LOGGER.info(f'Converting {timestamp} to milliseconds')
-        timestamp = int(timestamp * 1000)
     return sum(
         (seg['end'] - seg['begin'])
         for seg in do_not_align_segments
@@ -224,7 +215,7 @@ def align_audio(xml_path: str, audio_path: str, unit: str = 'w', bare=False, con
             start_ms += (calculate_adjustment(start_ms,
                                            do_not_align_segments))
             end_ms += (calculate_adjustment(end_ms, do_not_align_segments))
-            start_ms, end_ms = correct_adjustments(start, end, do_not_align_segments)
+            start_ms, end_ms = correct_adjustments(start_ms, end_ms, do_not_align_segments)
             # change back to seconds to write to smil
             start = start_ms / 1000
             end = end_ms / 1000

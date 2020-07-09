@@ -124,18 +124,19 @@ class TestAudio(TestCase):
         """ Try adjusting alignments of re-built audio
         """
         self.assertEqual(calculate_adjustment(
-            1.0, [{'begin': 1000, 'end': 1100}]), 100)
+            1000, [{'begin': 1000, 'end': 1100}]), 100)
         self.assertEqual(calculate_adjustment(
-            0.9, [{'begin': 1000, 'end': 1100}]), 0)
+            900, [{'begin': 1000, 'end': 1100}]), 0)
         self.assertEqual(calculate_adjustment(
             1000, [{'begin': 1000, 'end': 1100}]), 100)
         self.assertEqual(calculate_adjustment(
             900, [{'begin': 1000, 'end': 1100}]), 0)
         self.assertEqual(calculate_adjustment(
-            2.0, [{'begin': 1000, 'end': 1100}]), 100)
-        self.assertEqual(calculate_adjustment(
+            2000, [{'begin': 1000, 'end': 1100}]), 100)
+        # Function only accepts args in ms
+        self.assertNotEqual(calculate_adjustment(
             1.0, [{'begin': 1000, 'end': 1100}, {'begin': 1500, 'end': 1700}]), 100)
-        self.assertEqual(calculate_adjustment(
+        self.assertNotEqual(calculate_adjustment(
             2.0, [{'begin': 1000, 'end': 1100}, {'begin': 1500, 'end': 2100}]), 700)
 
     def test_adjustment_correction(self):
@@ -145,9 +146,10 @@ class TestAudio(TestCase):
             950, 1125, [{'begin': 1000, 'end': 1100}]), (950, 1000))
         self.assertEqual(correct_adjustments(
             975, 1150, [{'begin': 1000, 'end': 1100}]), (1100, 1150))
-        self.assertEqual(correct_adjustments(
+        # Function only accepts args in ms
+        self.assertNotEqual(correct_adjustments(
             .950, 1.125, [{'begin': 1000, 'end': 1100}]), (950, 1000))
-        self.assertEqual(correct_adjustments(
+        self.assertNotEqual(correct_adjustments(
             .975, 1.150, [{'begin': 1000, 'end': 1100}]), (1100, 1150))
 
 
