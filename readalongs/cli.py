@@ -152,9 +152,7 @@ def align(**kwargs):
         )
     unit = kwargs.get("unit", "w")
     bare = kwargs.get("bare", False)
-    if (
-        not unit
-    ):  # .get() above should handle this but apparently the way kwargs is implemented
+    if not unit:  # .get() above should handle this but apparently the way kwargs is implemented
         unit = "w"  # unit could still be None here.
     try:
         results = align_audio(
