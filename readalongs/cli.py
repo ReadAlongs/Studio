@@ -28,7 +28,6 @@ import click
 from networkx import has_path
 from flask.cli import FlaskGroup
 from g2p.mappings.langs import LANGS_AVAILABLE, LANGS_NETWORK
-from jsonschema import validate
 
 from readalongs.app import app
 from readalongs.log import LOGGER
