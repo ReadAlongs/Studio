@@ -65,6 +65,7 @@ class TestAudio(TestCase):
         flags = ['-i', '-l', 'eng']
         output_path = os.path.join(self.data_path, 'output')
         log = self.align(input_text_path, input_audio_path, output_path, flags)
+        LOGGER.info(str(log))
         # Check Result
         smilpath = Path(output_path)
         smil_files = smilpath.glob('*.smil')
@@ -86,6 +87,7 @@ class TestAudio(TestCase):
         flags = ['-i', '-l', 'eng']
         output_path = os.path.join(self.data_path, 'output_removed')
         log = self.align(input_text_path, input_audio_path, output_path, flags)
+        LOGGER.info(str(log))
         # Check Result
         smilpath = Path(output_path)
         smil_files = smilpath.glob('*.smil')
@@ -108,6 +110,7 @@ class TestAudio(TestCase):
         flags = ['-i', '-l', 'eng', '-b']
         output_path = os.path.join(self.data_path, 'output_muted')
         log = self.align(input_text_path, input_audio_path, output_path, flags)
+        LOGGER.info(str(log))
         # Check Result
         smilpath = Path(output_path)
         smil_files = smilpath.glob('*.smil')
