@@ -93,7 +93,7 @@ def align(**kwargs):
 
     inputfile : A path to the input text file
 
-    audiofile : A path to the input audio file
+    audiofile : A path to the input audio file. Can be any format supported by ffmpeg
 
     output-base : A base name for output files
     """
