@@ -1,0 +1,11 @@
+{
+    "do-not-align": {
+        "method": "remove",
+        "segments": [
+            {
+                "begin": 1500,
+                "end": 2500
+            }
+        ]
+    }
+}

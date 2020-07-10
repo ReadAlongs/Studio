@@ -13,6 +13,27 @@ from pydub import AudioSegment
 
 from readalongs.log import LOGGER
 
+def join_section(audio: AudioSegment, audio_to_insert: AudioSegment, start: int):
+    """ Given two AudioSegments, insert the second into the first at start (ms)
+    """
+    try:
+        return audio[:start] + audio_to_insert + audio[start:]
+    except IndexError:
+        LOGGER.error(f"Tried to insert audio at {start}, but audio is only {len(audio)}ms long. \
+                     Returning unchanged audio instead.")
+        return audio
+
+def remove_section(audio: AudioSegment, start: int, end: int) -> AudioSegment:
+    """ Given an AudioSement, remove the section between start (ms) and end (ms)
+    """
+    try:
+        return audio[:start] + audio[end:]
+    except IndexError:
+        LOGGER.error(f"Tried to remove audio between {start} and {end}, but audio is only {len(audio)}ms long. \
+                     Returning unchanged audio instead.")
+        return audio
+
+
 def mute_section(audio: AudioSegment, start: int, end: int) -> AudioSegment:
     """ Given an AudioSegment, reduce the gain between a given interval by 120db.
         Effectively, make it silent.

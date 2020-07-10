@@ -4,6 +4,7 @@ from unittest import TestLoader, TextTestRunner, TestSuite
 from readalongs.log import LOGGER
 # Unit tests
 from test_indices import TestIndices
+from test_audio import TestAudio
 
 ## End-to-End
 from test_force_align import TestForceAlignment, TestXHTML
@@ -29,7 +30,7 @@ indices_tests = [
 
 other_tests = [
     loader.loadTestsFromTestCase(test)
-    for test in [TestTokenizer, TestTempFile, TestPrepareCli]
+    for test in [TestTokenizer, TestTempFile, TestPrepareCli, TestAudio]
 ]
 
 def run_tests(suite):

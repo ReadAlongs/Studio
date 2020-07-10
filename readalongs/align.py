@@ -12,18 +12,18 @@
 from readalongs.tempfile import PortableNamedTemporaryFile
 from datetime import timedelta
 from typing import List, Union
-import wave
 import os
 import io
 
 from webvtt import WebVTT, Caption
 from pympi.Praat import TextGrid
+from pydub.exceptions import CouldntEncodeError
 from lxml import etree
 import soundswallower
 import regex as re
 import pystache
 
-from readalongs.audio_utils import read_audio_from_file
+from readalongs.audio_utils import mute_section, read_audio_from_file, remove_section
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.add_ids_to_xml import add_ids
@@ -33,46 +33,49 @@ from readalongs.text.make_fsg import make_fsg
 from readalongs.text.util import save_xml
 from readalongs.log import LOGGER
 
-####
-#
-# Some distros (Python2, Python3 on Windows it seems) don't have the WAV
-# reading methods being context managers; the following checks whether the
-# necessary methods are present and if not, add thems.
-#
-# Based on http://web.mit.edu/jgross/Public/21M.065/sound.py 9-24-2017
-####
+
+def correct_adjustments(start: int, end: int, do_not_align_segments: List[object]) -> (int, int):
+    """ Given the start and end of a segment (in ms) and a list of do-not-align segments,
+        If one of the do-not-align segments occurs inside one of the start-end range,
+        align the start or end with the do-not-align segment, whichever requires minimal change
+    """
+    for seg in do_not_align_segments:
+        if start < seg['begin'] and end > seg['end']:
+            if seg['begin'] - start > end - seg['end']:
+                return start, seg['begin']
+            else:
+                return seg['end'], end
+    return start, end
 
 
-def _trivial__enter__(self):
-    return self
-
-def _self_close__exit__(self, exc_type, exc_value, traceback):
-    self.close()
-
-if not hasattr(wave.Wave_read, "__exit__"):
-    wave.Wave_read.__exit__ = _self_close__exit__
-if not hasattr(wave.Wave_write, "__exit__"):
-    wave.Wave_write.__exit__ = _self_close__exit__
-if not hasattr(wave.Wave_read, "__enter__"):
-    wave.Wave_read.__enter__ = _trivial__enter__
-if not hasattr(wave.Wave_write, "__enter__"):
-    wave.Wave_write.__enter__ = _trivial__enter__
+def calculate_adjustment(timestamp: int, do_not_align_segments: List[object]) -> int:
+    """ Given a time (in ms) and a list of do-not-align segments,
+        return the sum (ms) of the lengths of the do-not-align segments 
+        that start before the timestamp
+    """
+    return sum(
+        (seg['end'] - seg['begin'])
+        for seg in do_not_align_segments
+        if seg['begin'] <= timestamp
+    )
 
 
-def align_audio(xml_path: str, wav_path: str, unit:str ='w', bare=False, save_temps:Union[str, None] = None):
+def align_audio(xml_path: str, audio_path: str, unit: str = 'w', bare=False, config=None, save_temps: Union[str, None] = None):
     """ Align an XML input file to an audio file.
-    
+
     Parameters
     ----------
     xml_path : str
         Path to XML input file in TEI-like format
-    wav_path : str
-        Path to audio input (WAV or MP3)
+    audio_path : str
+        Path to audio input. Must be in a format supported by ffmpeg
     unit : str, optional
         Element to create alignments for, by default 'w'
     bare : boolean, optional
         If False, split silence into adjoining tokens (default)
         If True, keep the bare tokens without adjoining silences.
+    config : object, optional
+        Uses ReadAlong-Studio configuration
     save_temps : Union[str, None], optional
         save temporary files, by default None
 
@@ -81,7 +84,7 @@ def align_audio(xml_path: str, wav_path: str, unit:str ='w', bare=False, save_te
     -------
     [type]
         [description]
-    
+
     #TODO: document exceptions
     Raises
     ------
@@ -118,14 +121,16 @@ def align_audio(xml_path: str, wav_path: str, unit:str ='w', bare=False, save_te
     if save_temps:
         dict_file = io.open(save_temps + '.dict', 'wb')
     else:
-        dict_file = PortableNamedTemporaryFile(prefix='readalongs_dict_', delete=False)
+        dict_file = PortableNamedTemporaryFile(
+            prefix='readalongs_dict_', delete=False)
     dict_file.write(dict_data.encode('utf-8'))
     dict_file.flush()
     fsg_data = make_fsg(xml, xml_path, unit=unit)
     if save_temps:
         fsg_file = io.open(save_temps + '.fsg', 'wb')
     else:
-        fsg_file = PortableNamedTemporaryFile(prefix='readalongs_fsg_', delete=False)
+        fsg_file = PortableNamedTemporaryFile(
+            prefix='readalongs_fsg_', delete=False)
     fsg_file.write(fsg_data.encode('utf-8'))
     fsg_file.flush()
 
@@ -141,20 +146,44 @@ def align_audio(xml_path: str, wav_path: str, unit:str ='w', bare=False, save_te
     cfg.set_float('-beam', 1e-100)
     cfg.set_float('-wbeam', 1e-80)
 
-    _, wav_ext = os.path.splitext(wav_path)
-    if wav_ext == '.wav':
-        with wave.open(wav_path) as wav:
-            LOGGER.info("Read %s: %d frames (%f seconds) audio"
-                        % (wav_path, wav.getnframes(), wav.getnframes()
-                            / wav.getframerate()))
-            raw_data = wav.readframes(wav.getnframes())
-            # Downsampling is (probably) not necessary
-            cfg.set_float('-samprate', wav.getframerate())
+    audio = read_audio_from_file(audio_path)
+    audio = audio.set_channels(1).set_sample_width(2)
+    #  Downsampling is (probably) not necessary
+    cfg.set_float('-samprate', audio.frame_rate)
+
+    # Process audio
+    do_not_align_segments = None
+    if config and "do-not-align" in config:
+        # Reverse sort un-alignable segments
+        do_not_align_segments = sorted(
+            config['do-not-align']['segments'], key=lambda x: x['begin'], reverse=True)
+        method = config['do-not-align'].get('method', 'remove')
+        # Determine do-not-align method
+        if method == 'mute':
+            dna_method = mute_section
+        elif method == 'remove':
+            dna_method = remove_section
+        else:
+            LOGGER.error(f'Unknown do-not-align method declared')
+            dna_method = None
+        # Process audio and save temporary files
+        if dna_method:
+            processed_audio = audio
+            for seg in do_not_align_segments:
+                processed_audio = dna_method(
+                    processed_audio, int(seg['begin']), int(seg['end']))
+            if save_temps:
+                _, ext = os.path.splitext(audio_path)
+                try:
+                    processed_audio.export(
+                        save_temps + '_processed' + ext, format=ext[1:])
+                except CouldntEncodeError:
+                    os.remove(save_temps + '_processed' + ext)
+                    LOGGER.warn(
+                        f"Couldn't find encoder for '{ext[1:]}', defaulting to 'wav'")
+                    processed_audio.export(save_temps + '_processed' + '.wav')
+        raw_data = processed_audio.raw_data
     else:
-        audio = read_audio_from_file(wav_path)
-        audio = audio.set_channels(1).set_sample_width(2)
-        # Downsampling is (probably) not necessary
-        cfg.set_float('-samprate', audio.frame_rate)
         raw_data = audio.raw_data
 
     frame_points = int(cfg.get_float('-samprate')
@@ -179,6 +208,17 @@ def align_audio(xml_path: str, wav_path: str, unit:str ='w', bare=False, save_te
     for seg in ps.seg():
         start = frames_to_time(seg.start_frame)
         end = frames_to_time(seg.end_frame + 1)
+        # change to ms
+        start_ms = start * 1000
+        end_ms = end * 1000
+        if do_not_align_segments and method == 'remove':
+            start_ms += (calculate_adjustment(start_ms,
+                                           do_not_align_segments))
+            end_ms += (calculate_adjustment(end_ms, do_not_align_segments))
+            start_ms, end_ms = correct_adjustments(start_ms, end_ms, do_not_align_segments)
+            # change back to seconds to write to smil
+            start = start_ms / 1000
+            end = end_ms / 1000
         if seg.word in ('<sil>', '[NOISE]'):
             continue
         else:
@@ -228,14 +268,14 @@ def align_audio(xml_path: str, wav_path: str, unit:str ='w', bare=False, save_te
 
 def return_word_from_id(xml: etree, el_id: str) -> str:
     """ Given an XML document, return the innertext at id
-    
+
     Parameters
     ----------
     xml : etree
         XML document
     el_id : str
         ID
-    
+
     Returns
     -------
     str
@@ -246,13 +286,13 @@ def return_word_from_id(xml: etree, el_id: str) -> str:
 
 def return_words_and_sentences(results):
     """ Parse xml into word and sentence 'tier' data
-    
+
     #TODO: document params
     Parameters
     ----------
     results : [type]
         [description]
-    
+
     #TODO: document return
     Returns
     -------
@@ -295,7 +335,7 @@ def return_words_and_sentences(results):
 
 def write_to_text_grid(words: List[dict], sentences: List[dict], duration: float):
     """ Write results to Praat TextGrid. Because we are using pympi, we can also export to Elan EAF.
-    
+
     Parameters
     ----------
     words : List[dict]
@@ -304,7 +344,7 @@ def write_to_text_grid(words: List[dict], sentences: List[dict], duration: float
         List of sentence times containing start, end, and value keys
     duration : float
         duration of entire audio
-    
+
     Returns
     -------
     TextGrid
@@ -330,12 +370,12 @@ def write_to_text_grid(words: List[dict], sentences: List[dict], duration: float
 
 def float_to_timedelta(n: float) -> str:
     """Float to timedelta, for subtitle formats
-    
+
     Parameters
     ----------
     n : float
         any float
-    
+
     Returns
     -------
     str
@@ -349,14 +389,14 @@ def float_to_timedelta(n: float) -> str:
 
 def write_to_subtitles(data: Union[List[dict], List[List[dict]]]):
     """ Returns WebVTT object from data.
-    
+
     Parameters
     ----------
     data : Union[List[dict], List[List[dict]]]
         Data must be either a 'word'-type tier with
         a list of dicts that have keys for 'start', 'end' and
        'text'. Or a 'sentence'-type tier with a list of lists of dicts.
-    
+
     Returns
     -------
     WebVTT
@@ -378,7 +418,7 @@ def write_to_subtitles(data: Union[List[dict], List[List[dict]]]):
 
 def convert_to_xhtml(tokenized_xml, title='Book'):
     """ Do a simple and not at all foolproof conversion to XHTML.
-    
+
     Parameters
     ----------
     tokenized_xml : etree
@@ -443,7 +483,7 @@ TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 
 def create_input_xml(inputfile: str, text_language: Union[str, None] = None, save_temps: Union[str, None] = None):
     """Create input XML
-    
+
     Parameters
     ----------
     inputfile : str
@@ -452,7 +492,7 @@ def create_input_xml(inputfile: str, text_language: Union[str, None] = None, sav
         language of inputfile text, by default None
     save_temps : Union[str, None], optional
         save temporary files, by default None
-    
+
     Returns
     -------
     file
@@ -465,7 +505,7 @@ def create_input_xml(inputfile: str, text_language: Union[str, None] = None, sav
         outfile = io.open(filename, 'wb')
     else:
         outfile = PortableNamedTemporaryFile(prefix='readalongs_xml_',
-                                     suffix='.xml', delete=True)
+                                             suffix='.xml', delete=True)
         filename = outfile.name
     with io.open(inputfile, encoding="utf-8") as fin:
         text = []
@@ -492,13 +532,14 @@ def create_input_xml(inputfile: str, text_language: Union[str, None] = None, sav
         outfile.close()
     return outfile, filename
 
+
 def create_input_tei(text: str, **kwargs):
     """ Create input xml in TEI standard.
         Uses readlines to infer paragraph and sentence structure from plain text. 
         TODO: Check if path, if it's just plain text, then render that instead of reading from the file
         Assumes single page. 
         Outputs to uft-8 XML using pymustache. 
-    
+
     Parameters
     ----------
     text : str
@@ -516,7 +557,7 @@ def create_input_tei(text: str, **kwargs):
         outfile (file handle)
     str
         filename
-    """ 
+    """
     with io.open(text, encoding="utf-8") as f:
         text = f.readlines()
     save_temps = kwargs.get('save_temps', False)
@@ -528,7 +569,7 @@ def create_input_tei(text: str, **kwargs):
         outfile = io.open(filename, 'wb')
     else:
         outfile = PortableNamedTemporaryFile(prefix='readalongs_xml_',
-                                     suffix='.xml', delete=True)
+                                             suffix='.xml', delete=True)
         filename = outfile.name
     pages = []
     paragraphs = []
