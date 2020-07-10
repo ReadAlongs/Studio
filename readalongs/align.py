@@ -34,7 +34,7 @@ from readalongs.text.util import save_xml
 from readalongs.log import LOGGER
 
 
-def correct_adjustments(start: Union[int, float], end: Union[int, float], do_not_align_segments: List[object]) -> (int, int):
+def correct_adjustments(start: int, end: int, do_not_align_segments: List[object]) -> (int, int):
     """ Given the start and end of a segment (in ms) and a list of do-not-align segments,
         If one of the do-not-align segments occurs inside one of the start-end range,
         align the start or end with the do-not-align segment, whichever requires minimal change
@@ -48,7 +48,7 @@ def correct_adjustments(start: Union[int, float], end: Union[int, float], do_not
     return start, end
 
 
-def calculate_adjustment(timestamp: Union[int, float], do_not_align_segments: List[object]) -> int:
+def calculate_adjustment(timestamp: int, do_not_align_segments: List[object]) -> int:
     """ Given a time (in ms) and a list of do-not-align segments,
         return the sum (ms) of the lengths of the do-not-align segments 
         that start before the timestamp
