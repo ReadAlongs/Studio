@@ -1,6 +1,6 @@
 # ReadAlong-Studio
 
-[![Coverage Status](https://coveralls.io/repos/github/ReadAlongs/Studio/badge.svg?branch=master)](https://coveralls.io/github/ReadAlongs/Studio?branch=master)
+[![codecov](https://codecov.io/gh/ReadAlongs/Studio/branch/master/graph/badge.svg)](https://codecov.io/gh/ReadAlongs/Studio)
 [![Build Status](https://travis-ci.org/ReadAlongs/Studio.svg?branch=master)](https://travis-ci.org/ReadAlongs/Studio)
 [![PyPI package](https://img.shields.io/pypi/v/readalongs.svg)](https://pypi.org/project/readalongs/)
 [![GitHub license](https://img.shields.io/github/license/ReadAlongs/Studio)](https://github.com/ReadAlongs/Studio/blob/master/LICENSE)
