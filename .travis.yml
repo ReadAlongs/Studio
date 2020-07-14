@@ -18,7 +18,7 @@ install:
   - pip3 install -r requirements.txt
   # Install testing requirements
   - pip3 install coverage
-  - pip3 install coveralls
+  - pip3 install codecov
   - pip3 install gunicorn
   # Install Studio
   - pip3 install -e .
@@ -33,4 +33,4 @@ script:
 
 # commands to run after the tests successfully complete
 after_success:
-  - coveralls
+  - codecov
