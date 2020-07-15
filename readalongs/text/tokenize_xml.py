@@ -24,7 +24,7 @@
 # what you want; it will put the word annotations inside the
 # subword annotations!  If you have subword annotations already,
 # add the word annotations however is appropriate for your
-# formatting conventions; the possibilities are too opened ended
+# formatting conventions; the possibilities are too open ended
 # for this module to attempt to guess for you.
 #
 ##################################################
