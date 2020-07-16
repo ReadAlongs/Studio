@@ -138,5 +138,20 @@ class TestDNAText(TestCase):
         self.assertEqual(ids_as_txt, ref_with_ids)
 
 
+    def test_dna_word(self):
+        txt = """<s xml:lang="fra">Une <w do-not-align="true">exclude</w> phrase.</s>"""
+        xml = etree.fromstring(txt)
+        tokenized = tokenize_xml.tokenize_xml(xml)
+        self.assertRaises(RuntimeError, add_ids, tokenized)
+
+
+    def test_dna_word_nested(self):
+        txt = """<s xml:lang="fra">Une <foo do-not-align="true"><bar><w>exclude</w></bar></foo> phrase.</s>"""
+        xml = etree.fromstring(txt)
+        tokenized = tokenize_xml.tokenize_xml(xml)
+        self.assertRaises(RuntimeError, add_ids, tokenized)
+
+
+
 if __name__ == '__main__':
     main()
