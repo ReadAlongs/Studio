@@ -68,6 +68,16 @@ def add_ids_aux(element: etree, ids: defaultdict = defaultdict(lambda: 0), paren
     if tag in TAGS_TO_IGNORE:
         return ids
     if is_do_not_align(element):
+        if tag == "w":
+            raise RuntimeError(
+                "Found <w> element with do-not-align=\"true\" attribute. "
+                "This is not allowed, please verify you XML input."
+            )
+        if element.xpath(".//w"):
+            raise RuntimeError(
+                "Found <w> nested inside a do-not-align=\"true\" element. "
+                "This is not allowed, please verify you XML input."
+            )
         return ids
     if "id" not in element.attrib:
         if tag in TAG_TO_ID:
