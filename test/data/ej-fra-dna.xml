@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TEI>
+    <!-- To exclude any element from alignment, add the do-not-align="true" attribute to
+         it, e.g., <p do-not-align="true">...</p>, or
+         <s>Some text <foo do-not-align="true">do not align this</foo> more text</s> -->
+    <text xml:lang="fra">
+        <body>
+            <div type="page">
+                <p>
+                    <s>Bonjour.</s>
+                    <s>Je m&#x27;appelle Éric Joanis.</s>
+                    <s>Je suis programmeur au sein de l&#x27;équipe des <foo do-not-align="true">some text to exclude mid-sentence.</foo> technologies pour les langues autochtones au CNRC.</s>
+                </p>
+                <p>
+                    <s>J&#x27;ai fait une bonne partie de ma carrière en traduction automatique statistique, mais maintenant cette approche est déclassée par l&#x27;apprentissage profond.</s>
+                    <s>En ce moment je travaille à l&#x27;alignement du hansard du Nunavut pour produire un corpus bilingue anglais-inuktitut.</s>
+                    <s>Ce corpus permettra d&#x27;entraîner la TA, neuronale ou statistique, ainsi que d&#x27;autres applications de traitement du langage naturel.</s>
+                    <s do-not-align="1">Phrase superflue pour tester la fonction do-not-align.</s>
+                </p>
+                <p>
+                    <s>En parallèle, j&#x27;aide à écrire des tests pour rendre le ReadAlong-Studio plus robuste.</s>
+                </p>
+                <p do-not-align="TRUE">
+                    <s>Phrase superflue pour tester la fonction do-not-align.</s>
+                </p>
+            </div>
+            <div do-not-align="true">
+                <p><s>Phrase superflue pour tester la fonction do-not-align.</s></p>
+            </div>
+        </body>
+    </text>
+</TEI>

@@ -23,6 +23,7 @@
 import os
 import json
 import shutil
+from tempfile import TemporaryFile
 
 import click
 from networkx import has_path
@@ -82,7 +83,7 @@ def cli():
 @click.option("-C", "--closed-captioning", is_flag=True, help="Export sentences to WebVTT and SRT files")
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
 @click.option("-f", "--force-overwrite", is_flag=True, help="Force overwrite output files")
-@click.option("-i", "--text-input", is_flag=True, help="Input is plain text (assume paragraphs separated by blank lines, 1 paragraph per page)")
+@click.option("-i", "--text-input", is_flag=True, help="Input is plain text (assume paragraphs are separated by blank lines, pages are separated by two blank lines)")
 @click.option("-l", "--language", type=click.Choice(LANGS, case_sensitive=False), help="Set language for plain text input")
 @click.option("-u", "--unit", type=click.Choice(["w", "m"], case_sensitive=False), help="Unit (w = word, m = morpheme) to align to")
 @click.option("-s", "--save-temps", is_flag=True, help="Save intermediate stages of processing and temporary files (dictionary, FSG, tokenization etc)")
@@ -91,7 +92,7 @@ def cli():
 def align(**kwargs):
     """Align INPUTFILE and AUDIOFILE and create output files at OUTPUT_BASE.
 
-    inputfile : A path to the input text file
+    inputfile : A path to the input text file (in XML, or plain text with -i option)
 
     audiofile : A path to the input audio file. Can be any format supported by ffmpeg
 
@@ -108,16 +109,28 @@ def align(**kwargs):
         else:
             raise click.BadParameter(f"Config file '{config}' must be in JSON format")
 
-    if os.path.exists(kwargs["output_base"]):
+    output_dir = kwargs["output_base"]
+    if os.path.exists(output_dir):
+        if not os.path.isdir(output_dir):
+            raise click.UsageError(
+                f"Output folder '{output_dir}' already exists but is a not a directory.")
         if not kwargs["force_overwrite"]:
             raise click.UsageError(
-                f"Output folder '{kwargs['output_base']}' already exists"
-            )
+                f"Output folder '{output_dir}' already exists, use -f to overwrite.")
     else:
-        os.mkdir(kwargs["output_base"])
-    output_base = os.path.join(
-        kwargs["output_base"], os.path.basename(kwargs["output_base"])
-    )
+        os.mkdir(output_dir)
+
+    # Make sure we can write to the output directory, for early error checking and user
+    # friendly error messages.
+    try:
+        with TemporaryFile(dir=output_dir):
+            pass
+    except:
+        raise click.UsageError(
+            f"Cannot write into output folder '{output_dir}'. Please verify permissions.")
+
+    output_base = os.path.join(output_dir, os.path.basename(output_dir))
+
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
     if kwargs["text_input"]:
@@ -212,13 +225,16 @@ def epub(**kwargs):
 
 @app.cli.command(context_settings=CONTEXT_SETTINGS, short_help='Prepare XML input to align from plain text.')
 @click.argument('inputfile', type=click.Path(exists=True, readable=True))
-@click.argument('xmlfile', type=click.Path(exists=False, readable=True))
+@click.argument('xmlfile', type=click.Path())
 @click.option('-d', '--debug', is_flag=True, help='Add debugging messages to logger')
 @click.option('-f', '--force-overwrite', is_flag=True, help='Force overwrite output files')
 @click.option('-l', '--language', type=click.Choice(LANGS, case_sensitive=False),
               required=True, help='Set language for input file')
 def prepare(**kwargs):
     """Prepare XMLFILE for 'readalongs align' from plain text INPUTFILE.
+    INPUTFILE must be plain text encoded in utf-8, with one sentence per line,
+    paragraph breaks marked by a blank line, and page breaks marked by two
+    blank lines.
 
     inputfile : A path to the plain text input file
 
@@ -231,10 +247,13 @@ def prepare(**kwargs):
                         kwargs['inputfile'], kwargs['xmlfile']))
 
     xmlpath = kwargs['xmlfile']
+    if not xmlpath.endswith(".xml"):
+        xmlpath += ".xml"
     if os.path.exists(xmlpath) and not kwargs['force_overwrite']:
         raise click.BadParameter("Output file %s exists already, use -f to overwrite."
                                  % xmlpath)
     filehandle, filename \
         = create_input_tei(kwargs['inputfile'],
                            text_language=kwargs['language'],
-                           output_file=kwargs['xmlfile'])
+                           output_file=xmlpath)
+    LOGGER.info("Wrote {}".format(xmlpath))

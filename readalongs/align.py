@@ -462,19 +462,22 @@ XML_TEMPLATE = """<document>
 
 TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 <TEI>
+    <!-- To exclude any element from alignment, add the do-not-align="true" attribute to
+         it, e.g., <p do-not-align="true">...</p>, or
+         <s>Some text <foo do-not-align="true">do not align this</foo> more text</s> -->
     <text{{#text_language}} xml:lang="{{text_language}}"{{/text_language}}>
         <body>
         {{#pages}}
             <div type="page">
-                {{#paragraphs}}
-                    <p>
-                        {{#sentences}}
-                            <s>{{.}}</s>
-                        {{/sentences}}
-                    </p>
-                {{/paragraphs}}
+            {{#paragraphs}}
+                <p>
+                {{#sentences}}
+                    <s>{{.}}</s>
+                {{/sentences}}
+                </p>
+            {{/paragraphs}}
             </div>
-        {{/pages}}    
+        {{/pages}}
         </body>
     </text>
 </TEI>

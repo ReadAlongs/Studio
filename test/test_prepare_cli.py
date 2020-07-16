@@ -15,6 +15,7 @@ class TestPrepareCli(TestCase):
         self.runner = app.test_cli_runner()
         self.tempdirobj = tempfile.TemporaryDirectory(prefix="test_prepare_cli_tmpdir", dir=".")
         self.tempdir = self.tempdirobj.name
+        # Alternative tempdir code keeps it after running, for manual inspection:
         #self.tempdir = tempfile.mkdtemp(prefix="test_prepare_cli_tmpdir", dir=".")
         #print('tmpdir={}'.format(self.tempdir))
 
@@ -38,7 +39,8 @@ class TestPrepareCli(TestCase):
         self.assertRegex(results.stdout, 'INPUTFILE.*does not exist')
 
     def test_outputfile_exists(self):
-        results = self.runner.invoke(prepare, '-l atj /dev/null /dev/null')
+        results = self.runner.invoke(prepare, '-l atj /dev/null ' + self.tempdir + '/exists')
+        results = self.runner.invoke(prepare, '-l atj /dev/null ' + self.tempdir + '/exists')
         self.assertNotEqual(results.exit_code, 0)
         self.assertRegex(results.stdout, 'exists.*overwrite')
 
