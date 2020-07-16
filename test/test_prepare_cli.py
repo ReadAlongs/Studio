@@ -38,7 +38,8 @@ class TestPrepareCli(TestCase):
         self.assertRegex(results.stdout, 'INPUTFILE.*does not exist')
 
     def test_outputfile_exists(self):
-        results = self.runner.invoke(prepare, '-l atj /dev/null /dev/null')
+        results = self.runner.invoke(prepare, '-l atj /dev/null ' + self.tempdir + '/exists')
+        results = self.runner.invoke(prepare, '-l atj /dev/null ' + self.tempdir + '/exists')
         self.assertNotEqual(results.exit_code, 0)
         self.assertRegex(results.stdout, 'exists.*overwrite')
 
