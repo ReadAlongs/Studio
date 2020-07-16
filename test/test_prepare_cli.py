@@ -15,6 +15,7 @@ class TestPrepareCli(TestCase):
         self.runner = app.test_cli_runner()
         self.tempdirobj = tempfile.TemporaryDirectory(prefix="test_prepare_cli_tmpdir", dir=".")
         self.tempdir = self.tempdirobj.name
+        # Alternative tempdir code keeps it after running, for manual inspection:
         #self.tempdir = tempfile.mkdtemp(prefix="test_prepare_cli_tmpdir", dir=".")
         #print('tmpdir={}'.format(self.tempdir))
 
