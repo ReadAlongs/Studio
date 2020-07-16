@@ -8,7 +8,7 @@ version_path = os.path.join(os.path.dirname(readalongs.__file__), "_version.py")
 VERSION = readalongs.VERSION + "." + build_no
 
 with open(version_path, "w") as f:
-    f.write(f'__version__ = "{VERSION}"')
+    print(f'__version__ = "{VERSION}"', file=f)
 
 with open("requirements.txt") as f:
     required = f.read().splitlines()
