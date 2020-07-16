@@ -225,7 +225,7 @@ def epub(**kwargs):
 
 @app.cli.command(context_settings=CONTEXT_SETTINGS, short_help='Prepare XML input to align from plain text.')
 @click.argument('inputfile', type=click.Path(exists=True, readable=True))
-@click.argument('xmlfile', type=click.Path(exists=False, readable=True))
+@click.argument('xmlfile', type=click.Path())
 @click.option('-d', '--debug', is_flag=True, help='Add debugging messages to logger')
 @click.option('-f', '--force-overwrite', is_flag=True, help='Force overwrite output files')
 @click.option('-l', '--language', type=click.Choice(LANGS, case_sensitive=False),
@@ -247,10 +247,13 @@ def prepare(**kwargs):
                         kwargs['inputfile'], kwargs['xmlfile']))
 
     xmlpath = kwargs['xmlfile']
+    if not xmlpath.endswith(".xml"):
+        xmlpath += ".xml"
     if os.path.exists(xmlpath) and not kwargs['force_overwrite']:
         raise click.BadParameter("Output file %s exists already, use -f to overwrite."
                                  % xmlpath)
     filehandle, filename \
         = create_input_tei(kwargs['inputfile'],
                            text_language=kwargs['language'],
-                           output_file=kwargs['xmlfile'])
+                           output_file=xmlpath)
+    LOGGER.info("Wrote {}".format(xmlpath))
