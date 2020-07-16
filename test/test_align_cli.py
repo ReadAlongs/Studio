@@ -22,43 +22,53 @@ class TestAlignCli(TestCase):
         pass
 
     def test_invoke_align(self):
-        output = self.tempdir + "/output"
+        output = os.path.join(self.tempdir, "output")
         # Run align from plain text
         results = self.runner.invoke(
             align,
-            "-i -s -l fra {}/ej-fra.txt {}/ej-fra.m4a {}".format(
-                self.data_dir, self.data_dir, output
-            ),
+            [
+                "-i",
+                "-s",
+                "-l",
+                "fra",
+                os.path.join(self.data_dir, "ej-fra.txt"),
+                os.path.join(self.data_dir, "ej-fra.m4a"),
+                output,
+            ],
         )
         self.assertTrue(
-            os.path.exists(output + "/output.smil"),
+            os.path.exists(os.path.join(output, "output.smil")),
             "successful alignment should have created output.smil",
         )
 
         # Move the alignment output to compare with further down
         # We cannot just output to a different name because changing the output file name
         # changes the contents of the output.
-        os.rename(output, output + "1")
-        self.assertFalse(os.path.exists(output), "os.rename should have moved dir")
+        output1 = output + "1"
+        os.rename(output, output1)
+        self.assertFalse(os.path.exists(output), "os.rename() should have moved dir")
 
         # Run align again, but on an XML input file with various added DNA text
         results_dna = self.runner.invoke(
             align,
-            "-s {}/ej-fra-dna.xml {}/ej-fra.m4a {}".format(
-                self.data_dir, self.data_dir, output
-            ),
+            [
+                "-s",
+                os.path.join(self.data_dir, "ej-fra-dna.xml"),
+                os.path.join(self.data_dir, "ej-fra.m4a"),
+                output,
+            ],
         )
         self.assertTrue(
-            os.path.exists(output + "/output.smil"),
+            os.path.exists(os.path.join(output, "output.smil")),
             "successful alignment with DNA should have created output.smil",
         )
 
         # Functionally the same as self.assertTrue(filecmp.cmp(f1, f2)), but show where
         # the differences are if the files are not identical
-        self.assertListEqual(
-            list(io.open(output + "1/output.smil")),
-            list(io.open(output + "/output.smil")),
-        )
+        with open(os.path.join(output1, "output.smil")) as f1, open(
+            os.path.join(output, "output.smil")
+        ) as f2:
+            self.assertListEqual(list(f1), list(f2))
 
 
 if __name__ == "__main__":
