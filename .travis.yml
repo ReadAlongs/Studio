@@ -26,9 +26,10 @@ install:
 before_script:
   - gunicorn readalongs.app:app --bind 0.0.0.0:5000 --daemon
 
-# commands to run the testing suite. if any of these fail, travic lets us know
+# commands to run the testing suite. if any of these fail, travis lets us know
 script: 
   - (cd test && coverage run run.py dev)
+  - find . -name \*.py | xargs black --check
 
 # commands to run after the tests successfully complete
 after_success:
