@@ -1,4 +1,5 @@
 import os
+import tempfile
 from readalongs.log import LOGGER
 from pathlib import Path
 from subprocess import run
@@ -15,17 +16,13 @@ class TestAudio(TestCase):
             os.path.join(self.data_path, 'audio_sample.ogg'))
         self.noisy_segment = read_audio_from_file(
             os.path.join(self.data_path, 'noise_at_1500.mp3'))
-        self.to_remove = []
+        # Use a TemporaryDirectory object for temp outputs, so they get cleaned
+        # automatically cleaned even in case of errors or aborted runs.
+        self.tempdirobj = tempfile.TemporaryDirectory(prefix="test_audio_tmpdir", dir=".")
+        self.tempdir = self.tempdirobj.name
 
     def tearDown(self):
-        for path in self.to_remove:
-            if os.path.exists(path):
-                if os.path.isfile(path):
-                    LOGGER.info(f'Cleaning up {path}')
-                    os.remove(path)
-                elif os.path.isdir(path):
-                    LOGGER.info(f'Cleaning up {path}')
-                    rmtree(path)
+        self.tempdirobj.cleanup()
 
     def align(self, input_text_path, input_audio_path, output_path, flags):
         args = ['readalongs', 'align', input_text_path,
@@ -63,7 +60,7 @@ class TestAudio(TestCase):
         input_text_path = os.path.join(self.data_path, 'audio_sample.txt')
         input_audio_path = os.path.join(self.data_path, 'audio_sample.ogg')
         flags = ['-i', '-l', 'eng']
-        output_path = os.path.join(self.data_path, 'output')
+        output_path = os.path.join(self.tempdir, 'output')
         log = self.align(input_text_path, input_audio_path, output_path, flags)
         LOGGER.info(str(log))
         # Check Result
@@ -71,21 +68,19 @@ class TestAudio(TestCase):
         smil_files = smilpath.glob('*.smil')
         self.assertGreaterEqual(len([x for x in smil_files]), 1)
         self.assertFalse('error' in str(log).lower())
-        # Cleanup
-        self.to_remove.append(output_path)
 
     def test_align_removed(self):
         """ Try aligning section with removed audio
         """
         # Process Audio
         removed_segment = remove_section(self.noisy_segment, 1500, 2500)
-        audio_output_path = os.path.join(self.data_path, 'removed_sample.mp3')
+        audio_output_path = os.path.join(self.tempdir, 'removed_sample.mp3')
         removed_segment.export(audio_output_path)
         # Align
         input_text_path = os.path.join(self.data_path, 'audio_sample.txt')
         input_audio_path = audio_output_path
         flags = ['-i', '-l', 'eng']
-        output_path = os.path.join(self.data_path, 'output_removed')
+        output_path = os.path.join(self.tempdir, 'output_removed')
         log = self.align(input_text_path, input_audio_path, output_path, flags)
         LOGGER.info(str(log))
         # Check Result
@@ -93,22 +88,19 @@ class TestAudio(TestCase):
         smil_files = smilpath.glob('*.smil')
         self.assertGreaterEqual(len([x for x in smil_files]), 1)
         self.assertFalse('error' in str(log).lower())
-        # Cleanup
-        self.to_remove.append(output_path)
-        self.to_remove.append(audio_output_path)
 
     def test_align_muted(self):
         """ Try aligning section with muted audio
         """
         # Process Audio
         muted_segment = mute_section(self.noisy_segment, 1500, 2500)
-        audio_output_path = os.path.join(self.data_path, 'muted_sample.mp3')
+        audio_output_path = os.path.join(self.tempdir, 'muted_sample.mp3')
         muted_segment.export(audio_output_path)
         # Align
         input_text_path = os.path.join(self.data_path, 'audio_sample.txt')
         input_audio_path = audio_output_path
         flags = ['-i', '-l', 'eng', '-b']
-        output_path = os.path.join(self.data_path, 'output_muted')
+        output_path = os.path.join(self.tempdir, 'output_muted')
         log = self.align(input_text_path, input_audio_path, output_path, flags)
         LOGGER.info(str(log))
         # Check Result
@@ -116,9 +108,6 @@ class TestAudio(TestCase):
         smil_files = smilpath.glob('*.smil')
         self.assertGreaterEqual(len([x for x in smil_files]), 1)
         self.assertFalse('error' in str(log).lower())
-        # Cleanup
-        self.to_remove.append(output_path)
-        self.to_remove.append(audio_output_path)
 
     def test_adjustment_calculation(self):
         """ Try adjusting alignments of re-built audio
