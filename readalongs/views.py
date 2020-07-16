@@ -30,13 +30,16 @@ from readalongs.log import LOGGER
 
 # get the key from all networks in g2p module that have a path to 'eng-arpabet'
 # which is needed for the readalongs
-LANGS = [{'code': k, 'name': v} for x in LANGS_AVAILABLE
-         for k, v in x.items()
-         if LANGS_NETWORK.has_node(k) and has_path(LANGS_NETWORK, k, 'eng-arpabet')]
+LANGS = [
+    {"code": k, "name": v}
+    for x in LANGS_AVAILABLE
+    for k, v in x.items()
+    if LANGS_NETWORK.has_node(k) and has_path(LANGS_NETWORK, k, "eng-arpabet")
+]
 
-ALLOWED_TEXT = ['txt', 'xml', 'docx']
-ALLOWED_AUDIO = ['wav', 'mp3']
-ALLOWED_G2P = ['csv', 'xlsx']
+ALLOWED_TEXT = ["txt", "xml", "docx"]
+ALLOWED_AUDIO = ["wav", "mp3"]
+ALLOWED_G2P = ["csv", "xlsx"]
 ALLOWED_EXTENSIONS = set(ALLOWED_AUDIO + ALLOWED_G2P + ALLOWED_TEXT)
 
 
@@ -53,7 +56,7 @@ def allowed_file(filename: str) -> bool:
     bool
         True if allowed
     """
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 def uploaded_files(dir_path: str) -> dict:
@@ -73,13 +76,18 @@ def uploaded_files(dir_path: str) -> dict:
             - maps  : A list containing all paths to mapping files
     """
     upload_dir = Path(dir_path)
-    audio = list(upload_dir.glob('*.wav')) + list(upload_dir.glob('*.mp3'))
-    text = list(upload_dir.glob('*.txt')) + \
-        list(upload_dir.glob('*.xml')) + list(upload_dir.glob('*.docx'))
-    maps = list(upload_dir.glob('*.csv')) + list(upload_dir.glob('*.xlsx'))
-    return {'audio': [{'path': str(x), 'fn': os.path.basename(str(x))} for x in audio],
-            'text': [{'path': str(x), 'fn': os.path.basename(str(x))} for x in text],
-            'maps': [{'path': str(x), 'fn': os.path.basename(str(x))} for x in maps]}
+    audio = list(upload_dir.glob("*.wav")) + list(upload_dir.glob("*.mp3"))
+    text = (
+        list(upload_dir.glob("*.txt"))
+        + list(upload_dir.glob("*.xml"))
+        + list(upload_dir.glob("*.docx"))
+    )
+    maps = list(upload_dir.glob("*.csv")) + list(upload_dir.glob("*.xlsx"))
+    return {
+        "audio": [{"path": str(x), "fn": os.path.basename(str(x))} for x in audio],
+        "text": [{"path": str(x), "fn": os.path.basename(str(x))} for x in text],
+        "maps": [{"path": str(x), "fn": os.path.basename(str(x))} for x in maps],
+    }
 
 
 def update_session_config(**kwargs) -> dict:
@@ -95,39 +103,39 @@ def update_session_config(**kwargs) -> dict:
     dict
         Returns the updated session configuration
     """
-    previous_config = session.get('config', {})
-    session['config'] = {**previous_config, **kwargs}
-    return session['config']
+    previous_config = session.get("config", {})
+    session["config"] = {**previous_config, **kwargs}
+    return session["config"]
 
 
-@app.route('/')
+@app.route("/")
 def home():
-    ''' Home View - go to Step 1 which is for uploading files '''
-    return redirect(url_for('steps', step=1))
+    """ Home View - go to Step 1 which is for uploading files """
+    return redirect(url_for("steps", step=1))
 
 
-@socketio.on('config update event', namespace='/config')
+@socketio.on("config update event", namespace="/config")
 def update_config(message):
-    emit('config update response', {
-         'data': update_session_config(**message)})
+    emit("config update response", {"data": update_session_config(**message)})
 
 
-@socketio.on('upload event', namespace='/file')
+@socketio.on("upload event", namespace="/file")
 def upload(message):
-    if message['type'] == 'audio':
-        save_path = os.path.join(session['temp_dir'], message['name'])
-        session['audio'] = save_path
-    if message['type'] == 'text':
-        save_path = os.path.join(session['temp_dir'], message['name'])
-        session['text'] = save_path
-    if message['type'] == 'mapping':
-        save_path = os.path.join(session['temp_dir'], message['name'])
-        if 'config' in session and 'lang' in session['config']['lang']:
-            del session['config']['lang']
-        session['mapping'] = save_path
-    with open(save_path, 'wb') as f:
-        f.write(message['data']['file'])
-    emit('upload response', {'data': {'path': save_path}})
+    if message["type"] == "audio":
+        save_path = os.path.join(session["temp_dir"], message["name"])
+        session["audio"] = save_path
+    if message["type"] == "text":
+        save_path = os.path.join(session["temp_dir"], message["name"])
+        session["text"] = save_path
+    if message["type"] == "mapping":
+        save_path = os.path.join(session["temp_dir"], message["name"])
+        if "config" in session and "lang" in session["config"]["lang"]:
+            del session["config"]["lang"]
+        session["mapping"] = save_path
+    with open(save_path, "wb") as f:
+        f.write(message["data"]["file"])
+    emit("upload response", {"data": {"path": save_path}})
+
 
 # @SOCKETIO.on('remove event', namespace='/file')
 # def remove_f(message):
@@ -140,73 +148,92 @@ def upload(message):
 # def upload_f(message):
 
 
-@app.route('/remove', methods=['POST'])
+@app.route("/remove", methods=["POST"])
 def remove_file():
-    if request.method == 'POST':
-        path = request.data.decode('utf8').split('=')[1]
+    if request.method == "POST":
+        path = request.data.decode("utf8").split("=")[1]
         os.remove(path)
-    return redirect(url_for('steps', step=1))
+    return redirect(url_for("steps", step=1))
 
 
-@app.route('/step/<int:step>')
+@app.route("/step/<int:step>")
 def steps(step):
-    ''' Go through steps '''
+    """ Go through steps """
     if step == 1:
         session.clear()
-        session['temp_dir'] = mkdtemp()
-        temp_dir = session['temp_dir']
-        return render_template('upload.html', uploaded=uploaded_files(temp_dir), maps=LANGS)
+        session["temp_dir"] = mkdtemp()
+        temp_dir = session["temp_dir"]
+        return render_template(
+            "upload.html", uploaded=uploaded_files(temp_dir), maps=LANGS
+        )
     elif step == 2:
-        return render_template('preview.html')
+        return render_template("preview.html")
     elif step == 3:
         timestamp = str(int(datetime.now().timestamp()))
-        if not 'audio' in session or not 'text' in session:
+        if not "audio" in session or not "text" in session:
             log = "Sorry, it looks like something is wrong with your audio or text. Please try again"
         else:
-            flags = ['--force-overwrite']
-            for option in ['--closed-captioning', '--save-temps', '--text-grid']:
-                if session['config'].get(option, False):
+            flags = ["--force-overwrite"]
+            for option in ["--closed-captioning", "--save-temps", "--text-grid"]:
+                if session["config"].get(option, False):
                     flags.append(option)
-            if session['text'].endswith('txt'):
-                flags.append('--text-input')
-                flags.append('--language')
-                flags.append(session['config']['lang'])
-            output_base = 'aligned' + timestamp
-            args = ['readalongs', 'align'] + flags + [session['text'],
-                                                      session['audio'], os.path.join(session['temp_dir'], output_base)]
+            if session["text"].endswith("txt"):
+                flags.append("--text-input")
+                flags.append("--language")
+                flags.append(session["config"]["lang"])
+            output_base = "aligned" + timestamp
+            args = (
+                ["readalongs", "align"]
+                + flags
+                + [
+                    session["text"],
+                    session["audio"],
+                    os.path.join(session["temp_dir"], output_base),
+                ]
+            )
             LOGGER.warn(args)
-            fname, audio_ext = os.path.splitext(session['audio'])
-            data = {'audio_ext': audio_ext, 'base': output_base}
-            if session['config'].get('show-log', False):
+            fname, audio_ext = os.path.splitext(session["audio"])
+            data = {"audio_ext": audio_ext, "base": output_base}
+            if session["config"].get("show-log", False):
                 log = run(args, capture_output=True)
-                data['log'] = log
+                data["log"] = log
             else:
                 run(args)
-            data['audio_path'] = os.path.join(
-                session['temp_dir'], output_base, output_base + audio_ext)
-            data['audio_fn'] = f'/file/{output_base}' + audio_ext
-            data['text_path'] = os.path.join(
-                session['temp_dir'], output_base, output_base + '.xml')
-            data['text_fn'] = f'/file/{output_base}' + '.xml'
-            data['smil_path'] = os.path.join(
-                session['temp_dir'], output_base, output_base + '.smil')
-            data['smil_fn'] = f'/file/{output_base}' + '.smil'
-        return render_template('export.html', data=data)
+            data["audio_path"] = os.path.join(
+                session["temp_dir"], output_base, output_base + audio_ext
+            )
+            data["audio_fn"] = f"/file/{output_base}" + audio_ext
+            data["text_path"] = os.path.join(
+                session["temp_dir"], output_base, output_base + ".xml"
+            )
+            data["text_fn"] = f"/file/{output_base}" + ".xml"
+            data["smil_path"] = os.path.join(
+                session["temp_dir"], output_base, output_base + ".smil"
+            )
+            data["smil_fn"] = f"/file/{output_base}" + ".smil"
+        return render_template("export.html", data=data)
     else:
         abort(404)
 
 
-@app.route('/download/<string:base>', methods=['GET'])
+@app.route("/download/<string:base>", methods=["GET"])
 def show_zip(base):
-    files_to_download = os.listdir(os.path.join(session['temp_dir'], base))
-    if not 'temp_dir' in session or not os.path.exists(session['temp_dir']) or not files_to_download or not any([x.startswith('aligned') for x in files_to_download]):
-        return abort(404, "Nothing to download. Please go to Step 1 of the Read Along Studio")
+    files_to_download = os.listdir(os.path.join(session["temp_dir"], base))
+    if (
+        not "temp_dir" in session
+        or not os.path.exists(session["temp_dir"])
+        or not files_to_download
+        or not any([x.startswith("aligned") for x in files_to_download])
+    ):
+        return abort(
+            404, "Nothing to download. Please go to Step 1 of the Read Along Studio"
+        )
 
     data = io.BytesIO()
-    with ZipFile(data, mode='w') as z:
+    with ZipFile(data, mode="w") as z:
         for fname in files_to_download:
-            path = os.path.join(session['temp_dir'], base, fname)
-            if fname.startswith('aligned'):
+            path = os.path.join(session["temp_dir"], base, fname)
+            if fname.startswith("aligned"):
                 z.write(path, fname)
     data.seek(0)
 
@@ -215,16 +242,17 @@ def show_zip(base):
 
     return send_file(
         data,
-        mimetype='application/zip',
+        mimetype="application/zip",
         as_attachment=True,
-        attachment_filename='data_bundle.zip')
+        attachment_filename="data_bundle.zip",
+    )
 
 
-@app.route('/file/<string:fname>', methods=['GET'])
+@app.route("/file/<string:fname>", methods=["GET"])
 def return_temp_file(fname):
     fn, ext = os.path.splitext(fname)
-    LOGGER.warn(session['temp_dir'])
-    path = os.path.join(session['temp_dir'], fn, fname)
+    LOGGER.warn(session["temp_dir"])
+    path = os.path.join(session["temp_dir"], fn, fname)
     if os.path.exists(path):
         return send_file(path)
     else:

@@ -45,5 +45,5 @@ class TestTokenizer(TestCase):
         print(etree.tounicode(tokenized))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

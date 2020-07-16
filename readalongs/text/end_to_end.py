@@ -46,54 +46,69 @@ except:
     unicode = str
 
 
-def end_to_end(xml, input_filename, unit, word_unit,
-               out_orth):
+def end_to_end(xml, input_filename, unit, word_unit, out_orth):
     xml = add_lang_ids(xml, unit="p")
     xml = tokenize_xml(xml)
     xml = add_ids(xml)
     converted_xml = convert_xml(xml, word_unit, out_orth)
-    #save_xml("test.xml", converted_xml)
+    # save_xml("test.xml", converted_xml)
     fsg = make_fsg(converted_xml, input_filename, unit)
     pronouncing_dictionary = make_dict(converted_xml, input_filename, unit)
     return xml, fsg, pronouncing_dictionary
 
 
-def go(input_filename, output_xml_filename,
-       output_fsg_filename, output_dict_filename, unit, word_unit, out_orth):
+def go(
+    input_filename,
+    output_xml_filename,
+    output_fsg_filename,
+    output_dict_filename,
+    unit,
+    word_unit,
+    out_orth,
+):
     xml = load_xml(input_filename)
-    xml, fsg, dct = end_to_end(xml, input_filename,
-                               unit, word_unit, out_orth)
+    xml, fsg, dct = end_to_end(xml, input_filename, unit, word_unit, out_orth)
     save_xml(output_xml_filename, xml)
     save_txt(output_fsg_filename, fsg)
     save_txt(output_dict_filename, dct)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Convert XML to another orthography while preserving tags')
-    parser.add_argument('input', type=str, help='Input XML')
-    parser.add_argument('output_xml', type=str, help="Output XML file")
-    parser.add_argument('output_fsg', type=str, help='Output .jsgf file')
-    parser.add_argument('output_dict', type=str, help='Output .dict file')
+        description="Convert XML to another orthography while preserving tags"
+    )
+    parser.add_argument("input", type=str, help="Input XML")
+    parser.add_argument("output_xml", type=str, help="Output XML file")
+    parser.add_argument("output_fsg", type=str, help="Output .jsgf file")
+    parser.add_argument("output_dict", type=str, help="Output .dict file")
     parser.add_argument(
-        '--unit', type=str, default='w',
-        help='XML tag of the unit of analysis '
-        '(e.g. "w" for word, "m" for morpheme)')
+        "--unit",
+        type=str,
+        default="w",
+        help="XML tag of the unit of analysis " '(e.g. "w" for word, "m" for morpheme)',
+    )
     parser.add_argument(
-        '--word_unit', type=str, default="w",
-        help='XML element that represents a word (default: "w")')
+        "--word_unit",
+        type=str,
+        default="w",
+        help='XML element that represents a word (default: "w")',
+    )
     parser.add_argument(
-        '--out_orth', type=str, default="eng-arpabet",
-        help='Output orthography (default: "eng-arpabet")')
-    parser.add_argument(
-        '--debug', action='store_true', help='Enable debugging output')
+        "--out_orth",
+        type=str,
+        default="eng-arpabet",
+        help='Output orthography (default: "eng-arpabet")',
+    )
+    parser.add_argument("--debug", action="store_true", help="Enable debugging output")
     args = parser.parse_args()
     if args.debug:
         LOGGER.setLevel("DEBUG")
-    go(args.input,
-       args.output_xml,
-       args.output_fsg,
-       args.output_dict,
-       args.unit,
-       args.word_unit,
-       args.out_orth)
+    go(
+        args.input,
+        args.output_xml,
+        args.output_fsg,
+        args.output_dict,
+        args.unit,
+        args.word_unit,
+        args.out_orth,
+    )

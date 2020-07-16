@@ -35,8 +35,9 @@ STYLESHEET_DEST_PATH = os.path.join(EPUB_PATH, "stylesheet.css")
 
 def xpath_default(xml, query, default_namespace_prefix="i"):
     nsmap = xml.nsmap if hasattr(xml, "nsmap") else xml.getroot().nsmap
-    nsmap = dict(((x, y) if x else (default_namespace_prefix, y))
-                 for (x, y) in nsmap.items())
+    nsmap = dict(
+        ((x, y) if x else (default_namespace_prefix, y)) for (x, y) in nsmap.items()
+    )
     for e in xml.xpath(query, namespaces=nsmap):
         yield e
 
@@ -53,7 +54,7 @@ def process_src_attrib(src_text, id_prefix, mimetypes):
         "dest_path": filename,
         "ext": ext.lower(),
         "id": id_prefix + os.path.basename(filename_without_ext),
-        "mimetype": mimetypes[ext]
+        "mimetype": mimetypes[ext],
     }
     return entry
 
@@ -66,39 +67,39 @@ def extract_files_from_SMIL(input_path):
 
     # add media referenced in the SMIL file itself
     queries = [
-        {"xpath": ".//i:text/@src",
-         "id_prefix": "",
-         "mimetypes": {
-             "xhtml": "application/xhtml+xml"
-         }},
-        {"xpath": ".//i:audio/@src",
-         "id_prefix": "audio-",
-         "mimetypes": {
-             "wav": "audio/wav",
-             "mp3": "audio/mpeg"
-         }}
+        {
+            "xpath": ".//i:text/@src",
+            "id_prefix": "",
+            "mimetypes": {"xhtml": "application/xhtml+xml"},
+        },
+        {
+            "xpath": ".//i:audio/@src",
+            "id_prefix": "audio-",
+            "mimetypes": {"wav": "audio/wav", "mp3": "audio/mpeg"},
+        },
     ]
 
     for query in queries:
         for src_text in xpath_default(smil, query["xpath"]):
-            entry = process_src_attrib(
-                src_text, query["id_prefix"], query["mimetypes"])
+            entry = process_src_attrib(src_text, query["id_prefix"], query["mimetypes"])
             if entry is not None and entry["origin_path"] not in found_files:
-                if entry['mimetype'] == 'application/xhtml+xml':
-                    entry['overlay'] = 'media-overlay="overlay"'
-                    xhtml_ids.append({"id": entry['id']})
+                if entry["mimetype"] == "application/xhtml+xml":
+                    entry["overlay"] = 'media-overlay="overlay"'
+                    xhtml_ids.append({"id": entry["id"]})
                 found_files[entry["origin_path"]] = entry
 
     # add media referenced within the xhtml files (e.g. imgs)
     within_xhtml_queries = [
-        {"xpath": ".//i:img/@src",
-         "id_prefix": "img-",
-         "mimetypes": {
-             "png": "image/png",
-             "jpg": "image/jpeg",
-             "jpeg": "image/jpeg",
-             "gif": "image/gif"
-         }}
+        {
+            "xpath": ".//i:img/@src",
+            "id_prefix": "img-",
+            "mimetypes": {
+                "png": "image/png",
+                "jpg": "image/jpeg",
+                "jpeg": "image/jpeg",
+                "gif": "image/gif",
+            },
+        }
     ]
 
     SEARCHABLE_EXTENSIONS = ["xhtml"]
@@ -110,9 +111,9 @@ def extract_files_from_SMIL(input_path):
         for query in within_xhtml_queries:
             for src_text in xpath_default(xhtml, query["xpath"]):
                 entry = process_src_attrib(
-                    src_text, query["id_prefix"], query["mimetypes"])
-                if (entry is not None
-                        and entry["origin_path"] not in found_files):
+                    src_text, query["id_prefix"], query["mimetypes"]
+                )
+                if entry is not None and entry["origin_path"] not in found_files:
                     found_files[entry["origin_path"]] = entry
 
     # add this file
@@ -121,13 +122,10 @@ def extract_files_from_SMIL(input_path):
         "dest_path": os.path.basename(input_path),
         "id": "overlay",
         "mimetype": "application/smil+xml",
-        "ext": "smil"
+        "ext": "smil",
     }
 
-    return {
-        "media": found_files.values(),
-        "xhtml": xhtml_ids
-    }
+    return {"media": found_files.values(), "xhtml": xhtml_ids}
 
 
 def copy_file_to_dir(output_path, origin_path, dest_path):
@@ -161,7 +159,8 @@ def create_epub(input_path, output_path, unpacked=False):
     # container.xml file
     container_template = load_txt(CONTAINER_ORIGIN_PATH)
     container_txt = pystache.render(
-        container_template, {"package_path": PACKAGE_DEST_PATH})
+        container_template, {"package_path": PACKAGE_DEST_PATH}
+    )
     save(output_path, CONTAINER_DEST_PATH, container_txt)
 
     # the SMIL and all the files referenced in the SMIL
@@ -170,15 +169,13 @@ def create_epub(input_path, output_path, unpacked=False):
     package_txt = pystache.render(package_template, package_data)
     save(output_path, PACKAGE_DEST_PATH, package_txt)
 
-    for entry in package_data['media']:
+    for entry in package_data["media"]:
         origin_path = os.path.join(input_dirname, entry["origin_path"])
         if not os.path.exists(origin_path):
-            LOGGER.warning(
-                "Cannot find file %s to copy into EPUB file", origin_path)
+            LOGGER.warning("Cannot find file %s to copy into EPUB file", origin_path)
             continue
         dest_path = os.path.join(EPUB_PATH, entry["dest_path"])
         copy(output_path, origin_path, dest_path)
 
     # CSS file
     copy(output_path, STYLESHEET_ORIGIN_PATH, STYLESHEET_DEST_PATH)
-

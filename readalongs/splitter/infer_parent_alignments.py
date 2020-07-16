@@ -17,7 +17,7 @@ from collections import defaultdict
 import math
 import pystache
 
-SMIL_TEMPLATE = '''<?xml version='1.0' encoding='utf-8'?>
+SMIL_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 <smil xmlns="http://www.w3.org/ns/SMIL" version="3.0">
     <body>
         {{#sentences}}
@@ -28,12 +28,13 @@ SMIL_TEMPLATE = '''<?xml version='1.0' encoding='utf-8'?>
         {{/sentences}}
     </body>
 </smil>
-'''
+"""
+
 
 def iterate_over_children(element, ids, beginnings, endings):
     if "id" in element.attrib:
         id = element.attrib["id"]
-        if id in ids: 
+        if id in ids:
             for filename, begin, end in ids[id]:
                 beginnings[filename] = min([beginnings[filename], begin])
                 endings[filename] = max([endings[filename], end])
@@ -41,14 +42,15 @@ def iterate_over_children(element, ids, beginnings, endings):
         beginnings, endings = iterate_over_children(child, ids, beginnings, endings)
     return beginnings, endings
 
+
 def main(input_xml_path, input_smil_path, output_smil_path):
     xml = load_xml(input_xml_path)
     xml_filename = os.path.basename(input_xml_path)
     smil = load_xml(input_smil_path)
-    
+
     ids = defaultdict(list)
     for par in xpath_default(smil, ".//i:par"):
-        id = ''
+        id = ""
         for text_src in xpath_default(par, ".//i:text/@src"):
             filename, id = text_src.split("#", 1)
             filename = os.path.basename(filename)
@@ -62,9 +64,9 @@ def main(input_xml_path, input_smil_path, output_smil_path):
                     continue
                 ids[id].append((filename, begin, end))
 
-    results = { "sentences": [] }
+    results = {"sentences": []}
 
-    for sentence in xpath_default(xml, ".//i:s"):    
+    for sentence in xpath_default(xml, ".//i:s"):
         beginnings = defaultdict(lambda: 100000000000000.0)
         endings = defaultdict(lambda: -1.0)
 
@@ -72,23 +74,31 @@ def main(input_xml_path, input_smil_path, output_smil_path):
 
         for audio_path, beginning in beginnings.items():
 
-            results["sentences"].append({ "text_path": xml_filename,
-                                        "text_id": sentence.attrib['id'],
-                                        "audio_path": audio_path,
-                                        "start": beginning,
-                                        "end": endings[audio_path] })
-    
+            results["sentences"].append(
+                {
+                    "text_path": xml_filename,
+                    "text_id": sentence.attrib["id"],
+                    "audio_path": audio_path,
+                    "start": beginning,
+                    "end": endings[audio_path],
+                }
+            )
+
     output_smil_text = pystache.render(SMIL_TEMPLATE, results)
     save_txt(output_smil_path, output_smil_text)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Convert a SMIL file to a SVG file of its waveform, pitch, and units')
-    parser.add_argument('input_xml', type=str, help='Input XML file')
-    parser.add_argument('input_smil', type=str, help='Input SMIL file')
-    parser.add_argument('output_smil', type=str, help='Output SMIL file')
-    parser.add_argument('--tag', type=str, help='Element tag (e.g. "s") that you want to infer time annotations for')
+        description="Convert a SMIL file to a SVG file of its waveform, pitch, and units"
+    )
+    parser.add_argument("input_xml", type=str, help="Input XML file")
+    parser.add_argument("input_smil", type=str, help="Input SMIL file")
+    parser.add_argument("output_smil", type=str, help="Output SMIL file")
+    parser.add_argument(
+        "--tag",
+        type=str,
+        help='Element tag (e.g. "s") that you want to infer time annotations for',
+    )
     args = parser.parse_args()
-    main(args.input_xml, 
-        args.input_smil,
-        args.output_smil)
+    main(args.input_xml, args.input_smil, args.output_smil)

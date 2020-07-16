@@ -34,17 +34,19 @@ from readalongs.text.util import save_xml
 from readalongs.log import LOGGER
 
 
-def correct_adjustments(start: int, end: int, do_not_align_segments: List[object]) -> (int, int):
+def correct_adjustments(
+    start: int, end: int, do_not_align_segments: List[object]
+) -> (int, int):
     """ Given the start and end of a segment (in ms) and a list of do-not-align segments,
         If one of the do-not-align segments occurs inside one of the start-end range,
         align the start or end with the do-not-align segment, whichever requires minimal change
     """
     for seg in do_not_align_segments:
-        if start < seg['begin'] and end > seg['end']:
-            if seg['begin'] - start > end - seg['end']:
-                return start, seg['begin']
+        if start < seg["begin"] and end > seg["end"]:
+            if seg["begin"] - start > end - seg["end"]:
+                return start, seg["begin"]
             else:
-                return seg['end'], end
+                return seg["end"], end
     return start, end
 
 
@@ -54,13 +56,20 @@ def calculate_adjustment(timestamp: int, do_not_align_segments: List[object]) ->
         that start before the timestamp
     """
     return sum(
-        (seg['end'] - seg['begin'])
+        (seg["end"] - seg["begin"])
         for seg in do_not_align_segments
-        if seg['begin'] <= timestamp
+        if seg["begin"] <= timestamp
     )
 
 
-def align_audio(xml_path: str, audio_path: str, unit: str = 'w', bare=False, config=None, save_temps: Union[str, None] = None):
+def align_audio(
+    xml_path: str,
+    audio_path: str,
+    unit: str = "w",
+    bare=False,
+    config=None,
+    save_temps: Union[str, None] = None,
+):
     """ Align an XML input file to an audio file.
 
     Parameters
@@ -103,107 +112,110 @@ def align_audio(xml_path: str, audio_path: str, unit: str = 'w', bare=False, con
     try:
         xml = etree.parse(xml_path).getroot()
     except etree.XMLSyntaxError as e:
-        raise RuntimeError(
-            "Error parsing XML input file %s: %s." % (xml_path, e))
+        raise RuntimeError("Error parsing XML input file %s: %s." % (xml_path, e))
     xml = add_lang_ids(xml, unit="s")
     xml = tokenize_xml(xml)
     if save_temps:
-        save_xml(save_temps + '.tokenized.xml', xml)
-    results['tokenized'] = xml = add_ids(xml)
+        save_xml(save_temps + ".tokenized.xml", xml)
+    results["tokenized"] = xml = add_ids(xml)
     if save_temps:
-        save_xml(save_temps + '.ids.xml', xml)
+        save_xml(save_temps + ".ids.xml", xml)
     xml = convert_xml(xml)
     if save_temps:
-        save_xml(save_temps + '.g2p.xml', xml)
+        save_xml(save_temps + ".g2p.xml", xml)
 
     # Now generate dictionary and FSG
     dict_data = make_dict(xml, xml_path, unit=unit)
     if save_temps:
-        dict_file = io.open(save_temps + '.dict', 'wb')
+        dict_file = io.open(save_temps + ".dict", "wb")
     else:
-        dict_file = PortableNamedTemporaryFile(
-            prefix='readalongs_dict_', delete=False)
-    dict_file.write(dict_data.encode('utf-8'))
+        dict_file = PortableNamedTemporaryFile(prefix="readalongs_dict_", delete=False)
+    dict_file.write(dict_data.encode("utf-8"))
     dict_file.flush()
     fsg_data = make_fsg(xml, xml_path, unit=unit)
     if save_temps:
-        fsg_file = io.open(save_temps + '.fsg', 'wb')
+        fsg_file = io.open(save_temps + ".fsg", "wb")
     else:
-        fsg_file = PortableNamedTemporaryFile(
-            prefix='readalongs_fsg_', delete=False)
-    fsg_file.write(fsg_data.encode('utf-8'))
+        fsg_file = PortableNamedTemporaryFile(prefix="readalongs_fsg_", delete=False)
+    fsg_file.write(fsg_data.encode("utf-8"))
     fsg_file.flush()
 
     # Now do alignment
     cfg = soundswallower.Decoder.default_config()
     model_path = soundswallower.get_model_path()
-    cfg.set_boolean('-remove_noise', False)
-    cfg.set_boolean('-remove_silence', False)
-    cfg.set_string('-hmm', os.path.join(model_path, 'en-us'))
-    cfg.set_string('-dict', dict_file.name)
-    cfg.set_string('-fsg', fsg_file.name)
+    cfg.set_boolean("-remove_noise", False)
+    cfg.set_boolean("-remove_silence", False)
+    cfg.set_string("-hmm", os.path.join(model_path, "en-us"))
+    cfg.set_string("-dict", dict_file.name)
+    cfg.set_string("-fsg", fsg_file.name)
     # cfg.set_string('-samprate', "no no")
-    cfg.set_float('-beam', 1e-100)
-    cfg.set_float('-wbeam', 1e-80)
+    cfg.set_float("-beam", 1e-100)
+    cfg.set_float("-wbeam", 1e-80)
 
     audio = read_audio_from_file(audio_path)
     audio = audio.set_channels(1).set_sample_width(2)
     #  Downsampling is (probably) not necessary
-    cfg.set_float('-samprate', audio.frame_rate)
+    cfg.set_float("-samprate", audio.frame_rate)
 
     # Process audio
     do_not_align_segments = None
     if config and "do-not-align" in config:
         # Reverse sort un-alignable segments
         do_not_align_segments = sorted(
-            config['do-not-align']['segments'], key=lambda x: x['begin'], reverse=True)
-        method = config['do-not-align'].get('method', 'remove')
+            config["do-not-align"]["segments"], key=lambda x: x["begin"], reverse=True
+        )
+        method = config["do-not-align"].get("method", "remove")
         # Determine do-not-align method
-        if method == 'mute':
+        if method == "mute":
             dna_method = mute_section
-        elif method == 'remove':
+        elif method == "remove":
             dna_method = remove_section
         else:
-            LOGGER.error(f'Unknown do-not-align method declared')
+            LOGGER.error(f"Unknown do-not-align method declared")
             dna_method = None
         # Process audio and save temporary files
         if dna_method:
             processed_audio = audio
             for seg in do_not_align_segments:
                 processed_audio = dna_method(
-                    processed_audio, int(seg['begin']), int(seg['end']))
+                    processed_audio, int(seg["begin"]), int(seg["end"])
+                )
             if save_temps:
                 _, ext = os.path.splitext(audio_path)
                 try:
                     processed_audio.export(
-                        save_temps + '_processed' + ext, format=ext[1:])
+                        save_temps + "_processed" + ext, format=ext[1:]
+                    )
                 except CouldntEncodeError:
-                    os.remove(save_temps + '_processed' + ext)
+                    os.remove(save_temps + "_processed" + ext)
                     LOGGER.warn(
-                        f"Couldn't find encoder for '{ext[1:]}', defaulting to 'wav'")
-                    processed_audio.export(save_temps + '_processed' + '.wav')
+                        f"Couldn't find encoder for '{ext[1:]}', defaulting to 'wav'"
+                    )
+                    processed_audio.export(save_temps + "_processed" + ".wav")
         raw_data = processed_audio.raw_data
     else:
         raw_data = audio.raw_data
 
-    frame_points = int(cfg.get_float('-samprate')
-                       * cfg.get_float('-wlen'))
+    frame_points = int(cfg.get_float("-samprate") * cfg.get_float("-wlen"))
     fft_size = 1
     while fft_size < frame_points:
         fft_size = fft_size << 1
-    cfg.set_int('-nfft', fft_size)
+    cfg.set_int("-nfft", fft_size)
     ps = soundswallower.Decoder(cfg)
-    frame_size = 1.0 / cfg.get_int('-frate')
+    frame_size = 1.0 / cfg.get_int("-frate")
 
     def frames_to_time(frames):
         return frames * frame_size
+
     ps.start_utt()
     ps.process_raw(raw_data, no_search=False, full_utt=True)
     ps.end_utt()
 
     if not ps.seg():
-        raise RuntimeError("Alignment produced no segments, "
-                           "please examine dictionary and input audio and text.")
+        raise RuntimeError(
+            "Alignment produced no segments, "
+            "please examine dictionary and input audio and text."
+        )
 
     for seg in ps.seg():
         start = frames_to_time(seg.start_frame)
@@ -211,31 +223,31 @@ def align_audio(xml_path: str, audio_path: str, unit: str = 'w', bare=False, con
         # change to ms
         start_ms = start * 1000
         end_ms = end * 1000
-        if do_not_align_segments and method == 'remove':
-            start_ms += (calculate_adjustment(start_ms,
-                                           do_not_align_segments))
-            end_ms += (calculate_adjustment(end_ms, do_not_align_segments))
-            start_ms, end_ms = correct_adjustments(start_ms, end_ms, do_not_align_segments)
+        if do_not_align_segments and method == "remove":
+            start_ms += calculate_adjustment(start_ms, do_not_align_segments)
+            end_ms += calculate_adjustment(end_ms, do_not_align_segments)
+            start_ms, end_ms = correct_adjustments(
+                start_ms, end_ms, do_not_align_segments
+            )
             # change back to seconds to write to smil
             start = start_ms / 1000
             end = end_ms / 1000
-        if seg.word in ('<sil>', '[NOISE]'):
+        if seg.word in ("<sil>", "[NOISE]"):
             continue
         else:
-            results["words"].append({
-                "id": seg.word,
-                "start": start,
-                "end": end
-            })
-        LOGGER.info("Segment: %s (%.3f : %.3f)",
-                    seg.word, start, end)
+            results["words"].append({"id": seg.word, "start": start, "end": end})
+        LOGGER.info("Segment: %s (%.3f : %.3f)", seg.word, start, end)
 
-    if len(results['words']) == 0:
-        raise RuntimeError("Alignment produced only noise or silence segments, "
-                           "please examine dictionary and input audio and text.")
-    if len(results['words']) != len(results['tokenized'].xpath('//' + unit)):
-        raise RuntimeError("Alignment produced a different number of segments and tokens, "
-                           "please examine dictionary and input audio and text.")
+    if len(results["words"]) == 0:
+        raise RuntimeError(
+            "Alignment produced only noise or silence segments, "
+            "please examine dictionary and input audio and text."
+        )
+    if len(results["words"]) != len(results["tokenized"].xpath("//" + unit)):
+        raise RuntimeError(
+            "Alignment produced a different number of segments and tokens, "
+            "please examine dictionary and input audio and text."
+        )
 
     final_end = end
 
@@ -243,19 +255,19 @@ def align_audio(xml_path: str, audio_path: str, unit: str = 'w', bare=False, con
         # Split adjoining silence/noise between words
         last_end = 0.0
         last_word = dict()
-        for word in results['words']:
-            silence = word['start'] - last_end
+        for word in results["words"]:
+            silence = word["start"] - last_end
             midpoint = last_end + silence / 2
             if silence > 0:
                 if last_word:
-                    last_word['end'] = midpoint
-                word['start'] = midpoint
+                    last_word["end"] = midpoint
+                word["start"] = midpoint
             last_word = word
-            last_end = word['end']
+            last_end = word["end"]
         silence = final_end - last_end
         if silence > 0:
             if last_word is not None:
-                last_word['end'] += silence / 2
+                last_word["end"] += silence / 2
     dict_file.close()
     if not save_temps:
         os.unlink(dict_file.name)
@@ -300,32 +312,34 @@ def return_words_and_sentences(results):
         [description]
     """
     result_id_pattern = re.compile(
-        r'''
+        r"""
         t(?P<table>\d*)            # Table
         b(?P<body>\d*)             # Body
         d(?P<div>\d*)              # Div ( Break )
         p(?P<par>\d*)              # Paragraph
         s(?P<sent>\d+)             # Sentence
         w(?P<word>\d+)             # Word
-        ''', re.VERBOSE)
+        """,
+        re.VERBOSE,
+    )
 
-    all_els = results['words']
-    xml = results['tokenized']
+    all_els = results["words"]
+    xml = results["tokenized"]
     sentences = []
     words = []
     all_words = []
     current_sent = 0
     for el in all_els:
-        parsed = re.search(result_id_pattern, el['id'])
-        sent_i = parsed.group('sent')
+        parsed = re.search(result_id_pattern, el["id"])
+        sent_i = parsed.group("sent")
         if int(sent_i) is not current_sent:
             sentences.append(words)
             words = []
             current_sent += 1
         word = {
-            "text": return_word_from_id(xml, el['id']),
-            "start": el['start'],
-            "end": el['end']
+            "text": return_word_from_id(xml, el["id"]),
+            "start": el["start"],
+            "end": el["end"],
         }
         words.append(word)
         all_words.append(word)
@@ -351,19 +365,17 @@ def write_to_text_grid(words: List[dict], sentences: List[dict], duration: float
         Praat TextGrid with word and sentence alignments
     """
     text_grid = TextGrid(xmax=duration)
-    sentence_tier = text_grid.add_tier(name='Sentence')
-    word_tier = text_grid.add_tier(name='Word')
+    sentence_tier = text_grid.add_tier(name="Sentence")
+    word_tier = text_grid.add_tier(name="Word")
     for s in sentences:
         sentence_tier.add_interval(
-            begin=s[0]['start'],
-            end=s[-1]['end'],
-            value=' '.join([w['text'] for w in s]))
+            begin=s[0]["start"],
+            end=s[-1]["end"],
+            value=" ".join([w["text"] for w in s]),
+        )
 
     for w in words:
-        word_tier.add_interval(
-            begin=w['start'],
-            end=w['end'],
-            value=w['text'])
+        word_tier.add_interval(begin=w["start"], end=w["end"], value=w["text"])
 
     return text_grid
 
@@ -405,18 +417,22 @@ def write_to_subtitles(data: Union[List[dict], List[List[dict]]]):
     vtt = WebVTT()
     for caption in data:
         if isinstance(caption, list):
-            formatted = Caption(float_to_timedelta(caption[0]['start']),
-                                float_to_timedelta(caption[-1]['end']),
-                                ' '.join([w['text'] for w in caption]))
+            formatted = Caption(
+                float_to_timedelta(caption[0]["start"]),
+                float_to_timedelta(caption[-1]["end"]),
+                " ".join([w["text"] for w in caption]),
+            )
         else:
-            formatted = Caption(float_to_timedelta(caption['start']),
-                                float_to_timedelta(caption['end']),
-                                caption['text'])
+            formatted = Caption(
+                float_to_timedelta(caption["start"]),
+                float_to_timedelta(caption["end"]),
+                caption["text"],
+            )
         vtt.captions.append(formatted)
     return vtt
 
 
-def convert_to_xhtml(tokenized_xml, title='Book'):
+def convert_to_xhtml(tokenized_xml, title="Book"):
     """ Do a simple and not at all foolproof conversion to XHTML.
 
     Parameters
@@ -428,28 +444,28 @@ def convert_to_xhtml(tokenized_xml, title='Book'):
 
     #TODO: AP: Should this be returning something? It's unused seemingly.
     """
-    tokenized_xml.tag = 'html'
-    tokenized_xml.attrib['xmlns'] = 'http://www.w3.org/1999/xhtml'
+    tokenized_xml.tag = "html"
+    tokenized_xml.attrib["xmlns"] = "http://www.w3.org/1999/xhtml"
     for elem in tokenized_xml.iter():
-        spans = {'u', 's', 'm', 'w'}
-        if elem.tag == 's':
-            elem.tag = 'p'
+        spans = {"u", "s", "m", "w"}
+        if elem.tag == "s":
+            elem.tag = "p"
         elif elem.tag in spans:
-            elem.tag = 'span'
+            elem.tag = "span"
     # Wrap everything in a <body> element
-    body = etree.Element('body')
+    body = etree.Element("body")
     for elem in tokenized_xml:
         body.append(elem)
     tokenized_xml.append(body)
-    head = etree.Element('head')
+    head = etree.Element("head")
     tokenized_xml.insert(0, head)
-    title_element = etree.Element('head')
+    title_element = etree.Element("head")
     title_element.text = title
     head.append(title_element)
-    link_element = etree.Element('link')
-    link_element.attrib['rel'] = 'stylesheet'
-    link_element.attrib['href'] = 'stylesheet.css'
-    link_element.attrib['type'] = 'text/css'
+    link_element = etree.Element("link")
+    link_element.attrib["rel"] = "stylesheet"
+    link_element.attrib["href"] = "stylesheet.css"
+    link_element.attrib["type"] = "text/css"
     head.append(link_element)
 
 
@@ -484,7 +500,11 @@ TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 """
 
 
-def create_input_xml(inputfile: str, text_language: Union[str, None] = None, save_temps: Union[str, None] = None):
+def create_input_xml(
+    inputfile: str,
+    text_language: Union[str, None] = None,
+    save_temps: Union[str, None] = None,
+):
     """Create input XML
 
     Parameters
@@ -504,11 +524,12 @@ def create_input_xml(inputfile: str, text_language: Union[str, None] = None, sav
         filename
     """
     if save_temps:
-        filename = save_temps + '.input.xml'
-        outfile = io.open(filename, 'wb')
+        filename = save_temps + ".input.xml"
+        outfile = io.open(filename, "wb")
     else:
-        outfile = PortableNamedTemporaryFile(prefix='readalongs_xml_',
-                                             suffix='.xml', delete=True)
+        outfile = PortableNamedTemporaryFile(
+            prefix="readalongs_xml_", suffix=".xml", delete=True
+        )
         filename = outfile.name
     with io.open(inputfile, encoding="utf-8") as fin:
         text = []
@@ -516,21 +537,20 @@ def create_input_xml(inputfile: str, text_language: Union[str, None] = None, sav
         for line in fin:
             line = line.strip()
             if line == "":
-                text.append(' '.join(para))
+                text.append(" ".join(para))
                 del para[:]
             else:
                 para.append(line)
         if para:
-            text.append(' '.join(para))
+            text.append(" ".join(para))
         sentences = []
         for p in text:
             data = {"text": p}
             if text_language is not None:
                 data["lang"] = text_language
             sentences.append(data)
-        xml = pystache.render(XML_TEMPLATE,
-                              {'sentences': sentences})
-        outfile.write(xml.encode('utf-8'))
+        xml = pystache.render(XML_TEMPLATE, {"sentences": sentences})
+        outfile.write(xml.encode("utf-8"))
         outfile.flush()
         outfile.close()
     return outfile, filename
@@ -563,40 +583,41 @@ def create_input_tei(text: str, **kwargs):
     """
     with io.open(text, encoding="utf-8") as f:
         text = f.readlines()
-    save_temps = kwargs.get('save_temps', False)
-    if kwargs.get('output_file', False):
-        filename = kwargs.get('output_file')
-        outfile = io.open(filename, 'wb')
+    save_temps = kwargs.get("save_temps", False)
+    if kwargs.get("output_file", False):
+        filename = kwargs.get("output_file")
+        outfile = io.open(filename, "wb")
     elif save_temps:
-        filename = save_temps + '.input.xml'
-        outfile = io.open(filename, 'wb')
+        filename = save_temps + ".input.xml"
+        outfile = io.open(filename, "wb")
     else:
-        outfile = PortableNamedTemporaryFile(prefix='readalongs_xml_',
-                                             suffix='.xml', delete=True)
+        outfile = PortableNamedTemporaryFile(
+            prefix="readalongs_xml_", suffix=".xml", delete=True
+        )
         filename = outfile.name
     pages = []
     paragraphs = []
     sentences = []
     for line in text:
-        if line == '\n':
+        if line == "\n":
             if not sentences:
                 # consider this a page break (unless at the beginning)
-                pages.append({'paragraphs': paragraphs})
+                pages.append({"paragraphs": paragraphs})
                 paragraphs = []
             else:
                 # add sentences and begin new paragraph
-                paragraphs.append({'sentences': sentences})
+                paragraphs.append({"sentences": sentences})
                 sentences = []
         else:
             # Add text to sentence
             sentences.append(line.strip())
     # Add the last paragraph/sentence
     if sentences:
-        paragraphs.append({'sentences': sentences})
+        paragraphs.append({"sentences": sentences})
     if paragraphs:
-        pages.append({'paragraphs': paragraphs})
-    xml = pystache.render(TEI_TEMPLATE, {**kwargs, **{'pages': pages}})
-    outfile.write(xml.encode('utf-8'))
+        pages.append({"paragraphs": paragraphs})
+    xml = pystache.render(TEI_TEMPLATE, {**kwargs, **{"pages": pages}})
+    outfile.write(xml.encode("utf-8"))
     outfile.flush()
     outfile.close()
     return outfile, filename

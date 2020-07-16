@@ -42,14 +42,13 @@ except:
 # -- a BODY element is treated exactly as a SEQ
 #
 #
-# TODO: AP: Do we need this? It doesn't appear to be used anywhere. 
+# TODO: AP: Do we need this? It doesn't appear to be used anywhere.
 #       There's also an undefined variable error on line 90.
 # TODO: Add numpy standard docstrings to functions
 #########################
 
 
 class GrammarComposite:
-
     def __init__(self, id):
         self.id = id
         self.children = []
@@ -60,8 +59,8 @@ class GrammarComposite:
     def get_id_as_str(self):
         return "<%s>" % self.id
 
-class GrammarChoice(GrammarComposite):
 
+class GrammarChoice(GrammarComposite):
     def to_jsgf(self):
         results = []
         child_ids = " | ".join(c.get_id_as_str() for c in self.children)
@@ -70,8 +69,8 @@ class GrammarChoice(GrammarComposite):
             results += child.to_jsgf()
         return results
 
-class GrammarSequence(GrammarComposite):
 
+class GrammarSequence(GrammarComposite):
     def to_jsgf(self):
         results = []
         child_ids = " ".join(c.get_id_as_str() for c in self.children)
@@ -86,27 +85,29 @@ def make_sequence(seq_node):
         child_id = child.attrib["id"]
 
 
-
 def make_jsgf(smil, unit="m"):
     body_node = xpath_default(smil, ".//i:body")[0]
     for child in body_node:
         print(child.tag)
 
 
-
 def main(input_filename, output_filename, unit):
     smil = load_xml(input_filename)
     jsgf = make_jsgf(smil, unit)
-    #save_txt(output_filename, jsgf)
+    # save_txt(output_filename, jsgf)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Make an JSGF grammar from an XML file with IDs')
-    parser.add_argument('input', type=str, help='Input SMIL')
-    parser.add_argument('output_jsgf', type=str, help='Output .jsgf file')
-    parser.add_argument('--unit', type=str, default='m',
-                        help='XML tag of the unit of analysis '
-                        '(e.g. "w" for word, "m" for morpheme)')
+        description="Make an JSGF grammar from an XML file with IDs"
+    )
+    parser.add_argument("input", type=str, help="Input SMIL")
+    parser.add_argument("output_jsgf", type=str, help="Output .jsgf file")
+    parser.add_argument(
+        "--unit",
+        type=str,
+        default="m",
+        help="XML tag of the unit of analysis " '(e.g. "w" for word, "m" for morpheme)',
+    )
     args = parser.parse_args()
     main(args.input, args.output_fsg, args.unit)

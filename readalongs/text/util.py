@@ -30,6 +30,7 @@ try:
 except:
     unicode = str
 
+
 def ensure_dirs(path):
     dirname = os.path.dirname(path)
     if dirname and not os.path.exists(dirname):
@@ -38,8 +39,9 @@ def ensure_dirs(path):
 
 def xpath_default(xml, query, default_namespace_prefix="i"):
     nsmap = xml.nsmap if hasattr(xml, "nsmap") else xml.getroot().nsmap
-    nsmap = dict(((x, y) if x else (default_namespace_prefix, y))
-                 for (x, y) in nsmap.items())
+    nsmap = dict(
+        ((x, y) if x else (default_namespace_prefix, y)) for (x, y) in nsmap.items()
+    )
     for e in xml.xpath(query, namespaces=nsmap):
         yield e
 
@@ -54,8 +56,9 @@ def iterate_over_text(element):
         if child.tail:
             yield (lang, unicode(child.tail))
 
+
 def get_lang_attrib(element):
-    lang_path = element.xpath('./@xml:lang')
+    lang_path = element.xpath("./@xml:lang")
     if not lang_path and "lang" in element.attrib:
         lang_path = element.attrib["lang"]
     if not lang_path and element.getparent() is not None:
@@ -66,14 +69,14 @@ def get_lang_attrib(element):
 
 
 def is_do_not_align(element):
-    dna = element.attrib.get('do-not-align',"")
-    return dna == 'true' or dna == 'True' or dna == 'TRUE' or dna == '1'
+    dna = element.attrib.get("do-not-align", "")
+    return dna == "true" or dna == "True" or dna == "TRUE" or dna == "1"
 
 
 def is_do_not_align_recursive(element):
-    if 'do-not-align' in element.attrib:
-        dna = element.attrib['do-not-align']
-        return dna == 'true' or dna == 'True' or dna == 'TRUE' or dna == '1'
+    if "do-not-align" in element.attrib:
+        dna = element.attrib["do-not-align"]
+        return dna == "true" or dna == "True" or dna == "TRUE" or dna == "1"
     elif element.getparent() is not None:
         return is_do_not_align_recursive(element.getparent())
     else:
@@ -118,26 +121,24 @@ def load_xml_zip(zip_path, input_path):
 
 
 def load_xml_with_encoding(input_path):
-    ''' etree.fromstring messes up on declared encodings '''
+    """ etree.fromstring messes up on declared encodings """
     return etree.parse(input_path)
 
 
 def save_xml(output_path, xml):
     ensure_dirs(output_path)
     with open(output_path, "wb") as fout:
-        fout.write(etree.tostring(xml, encoding="utf-8",
-                                  xml_declaration=True))
-        fout.write(u'\n'.encode('utf-8'))
+        fout.write(etree.tostring(xml, encoding="utf-8", xml_declaration=True))
+        fout.write("\n".encode("utf-8"))
 
 
 def save_xml_zip(zip_path, output_path, xml):
     ensure_dirs(zip_path)
-    with zipfile.ZipFile(zip_path, "a",
-                         compression=zipfile.ZIP_DEFLATED) as fout_zip:
-        fout_zip.writestr(output_path,
-                          etree.tostring(xml, encoding="utf-8",
-                                         xml_declaration=True)
-                          + '\n')
+    with zipfile.ZipFile(zip_path, "a", compression=zipfile.ZIP_DEFLATED) as fout_zip:
+        fout_zip.writestr(
+            output_path,
+            etree.tostring(xml, encoding="utf-8", xml_declaration=True) + "\n",
+        )
 
 
 def load_txt(input_path):
@@ -148,7 +149,7 @@ def load_txt(input_path):
 def load_txt_zip(zip_path, input_path):
     with zipfile.ZipFile(zip_path, "r") as fin_zip:
         with fin_zip.open(input_path, "r") as fin:
-            fin_utf8 = TextIOWrapper(fin, encoding='utf-8')
+            fin_utf8 = TextIOWrapper(fin, encoding="utf-8")
             return fin_utf8.read()
 
 
@@ -160,8 +161,7 @@ def save_txt(output_path, txt):
 
 def save_txt_zip(zip_path, output_path, txt):
     ensure_dirs(zip_path)
-    with zipfile.ZipFile(zip_path, "a",
-                         compression=zipfile.ZIP_DEFLATED) as fout_zip:
+    with zipfile.ZipFile(zip_path, "a", compression=zipfile.ZIP_DEFLATED) as fout_zip:
         fout_zip.writestr(output_path, txt.encode("utf-8"))
 
 
@@ -173,7 +173,7 @@ def load_json(input_path):
 def load_json_zip(zip_path, input_path):
     with zipfile.ZipFile(zip_path, "r") as fin_zip:
         with fin_zip.open(input_path, "r") as fin:
-            fin_utf8 = TextIOWrapper(fin, encoding='utf-8')
+            fin_utf8 = TextIOWrapper(fin, encoding="utf-8")
             return json.loads(fin_utf8.read(), object_pairs_hook=OrderedDict)
 
 
@@ -192,8 +192,7 @@ def save_json_zip(zip_path, output_path, obj):
 
 def copy_file_to_zip(zip_path, origin_path, destination_path):
     ensure_dirs(zip_path)
-    with zipfile.ZipFile(zip_path, "a",
-                         compression=zipfile.ZIP_DEFLATED) as fout_zip:
+    with zipfile.ZipFile(zip_path, "a", compression=zipfile.ZIP_DEFLATED) as fout_zip:
         fout_zip.write(origin_path, destination_path)
 
 
@@ -207,6 +206,8 @@ def load_tsv(input_path, labels):
                 continue
             results.append(OrderedDict(zip(labels, pieces)))
     return results
+
+
 from unicodedata import normalize, category
 
 
@@ -220,45 +221,47 @@ def unicode_normalize_xml(element):
 
 
 CATEGORIES = {
-    "Cc": "other",	# Other, Control
-    "Cf": "other",	# Other, Format
-    "Cn": "other",	# Other, Not Assigned (no characters in the file have this property)
-    "Co": "letter",	# Other, Private Use
-    "Cs": "other",	# Other, Surrogate
-    "LC": "letter",	# Letter, Cased
-    "Ll": "letter",	# Letter, Lowercase
-    "Lm": "letter",	# Letter, Modifier
-    "Lo": "letter",	# Letter, Other
-    "Lt": "letter",	# Letter, Titlecase
-    "Lu": "letter",	# Letter, Uppercase
-    "Mc": "diacritic",	# Mark, Spacing Combining
-    "Me": "diacritic",	# Mark, Enclosing
-    "Mn": "diacritic",	# Mark, Nonspacing
-    "Nd": "number",	# Number, Decimal Digit
-    "Nl": "number",	# Number, Letter
-    "No": "number",	# Number, Other
-    "Pc": "punctuation",	# Punctuation, Connector
-    "Pd": "punctuation",	# Punctuation, Dash
-    "Pe": "punctuation",	# Punctuation, Close
-    "Pf": "punctuation",	# Punctuation, Final quote (may behave like Ps or Pe depending on usage)
-    "Pi": "punctuation",	# Punctuation, Initial quote (may behave like Ps or Pe depending on usage)
-    "Po": "punctuation",	# Punctuation, Other
-    "Ps": "punctuation",	# Punctuation, Open
-    "Sc": "symbol",	# Symbol, Currency
-    "Sk": "symbol",	# Symbol, Modifier
-    "Sm": "symbol",	# Symbol, Math
-    "So": "symbol",	# Symbol, Other
-    "Zl": "whitespace",	# Separator, Line
-    "Zp": "whitespace",	# Separator, Paragraph
-    "Zs": "whitespace",	# Separator, Space
+    "Cc": "other",  # Other, Control
+    "Cf": "other",  # Other, Format
+    "Cn": "other",  # Other, Not Assigned (no characters in the file have this property)
+    "Co": "letter",  # Other, Private Use
+    "Cs": "other",  # Other, Surrogate
+    "LC": "letter",  # Letter, Cased
+    "Ll": "letter",  # Letter, Lowercase
+    "Lm": "letter",  # Letter, Modifier
+    "Lo": "letter",  # Letter, Other
+    "Lt": "letter",  # Letter, Titlecase
+    "Lu": "letter",  # Letter, Uppercase
+    "Mc": "diacritic",  # Mark, Spacing Combining
+    "Me": "diacritic",  # Mark, Enclosing
+    "Mn": "diacritic",  # Mark, Nonspacing
+    "Nd": "number",  # Number, Decimal Digit
+    "Nl": "number",  # Number, Letter
+    "No": "number",  # Number, Other
+    "Pc": "punctuation",  # Punctuation, Connector
+    "Pd": "punctuation",  # Punctuation, Dash
+    "Pe": "punctuation",  # Punctuation, Close
+    "Pf": "punctuation",  # Punctuation, Final quote (may behave like Ps or Pe depending on usage)
+    "Pi": "punctuation",  # Punctuation, Initial quote (may behave like Ps or Pe depending on usage)
+    "Po": "punctuation",  # Punctuation, Other
+    "Ps": "punctuation",  # Punctuation, Open
+    "Sc": "symbol",  # Symbol, Currency
+    "Sk": "symbol",  # Symbol, Modifier
+    "Sm": "symbol",  # Symbol, Math
+    "So": "symbol",  # Symbol, Other
+    "Zl": "whitespace",  # Separator, Line
+    "Zp": "whitespace",  # Separator, Paragraph
+    "Zs": "whitespace",  # Separator, Space
 }
+
 
 def get_unicode_category(c):
     """ Maps a character to one of [ "letter", "number", "diacritic", "punctuation",
         "symbol", "whitespace", "other"] """
     cat = category(c)
-    assert(cat in CATEGORIES)
+    assert cat in CATEGORIES
     return CATEGORIES[cat]
+
 
 def compose_indices(i1, i2):
     if not i1:
@@ -276,10 +279,11 @@ def compose_indices(i1, i2):
                 highest_i2_found = i2_dict[i2_idx]
             i2_idx += 1
         if results:
-            assert(i1_in >= results[-1][0])
-            assert(highest_i2_found >= results[-1][1])
+            assert i1_in >= results[-1][0]
+            assert highest_i2_found >= results[-1][1]
         results.append((i1_in, highest_i2_found))
     return results
+
 
 def compose_tiers(tiers):
     counter = 2
@@ -289,17 +293,20 @@ def compose_tiers(tiers):
         counter += 1
     return reduced_indices
 
+
 def concat_indices(i1, i2):
     if not i1:
         return i2
     results = deepcopy(i1)
     offset1, offset2 = results[-1]
     for i1, i2 in i2[1:]:
-        results.append((i1+offset1, i2+offset2))
+        results.append((i1 + offset1, i2 + offset2))
     return results
+
 
 def offset_indices(idxs, n1, n2):
     return [(i1 + n1, i2 + n2) for i1, i2 in idxs]
+
 
 def increment_indices(indices):
     new_indices = []
@@ -313,11 +320,13 @@ def increment_indices(indices):
         new_indices.append((inp, outp))
     return new_indices
 
+
 def increment_tiers(tiers):
     incremented = []
     for i, tier in enumerate(tiers):
         incremented.append(increment_indices(tier))
     return incremented
+
 
 def trim_indices(idxs):
     result = []

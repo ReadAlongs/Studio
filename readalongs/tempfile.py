@@ -10,16 +10,17 @@ from readalongs.log import LOGGER
 from tempfile import NamedTemporaryFile, template, _TemporaryFileWrapper
 import os
 
+
 class _PortableNamedTemporaryFileWrapperSubclass(_TemporaryFileWrapper):
     def __init__(self):
         pass
+
 
 class _PortableNamedTemporaryFileWrapper:
     def __init__(self, named_temporary_file):
         self.named_temporary_file = named_temporary_file
         self.name = named_temporary_file.name
-        #LOGGER.info("_PortableNamedTemporaryFileWrapper.name={}".format(self.name))
-
+        # LOGGER.info("_PortableNamedTemporaryFileWrapper.name={}".format(self.name))
 
     def __enter__(self):
         self.named_temporary_file.__enter__()
@@ -39,7 +40,7 @@ class _PortableNamedTemporaryFileWrapper:
     def close(self):
         return self.named_temporary_file.close()
 
-    #def __iter__(self):
+    # def __iter__(self):
     #    for line in self.named_temporary_file:
     #        yield line
 
@@ -48,11 +49,12 @@ class _PortableNamedTemporaryFileWrapper:
         try:
             os.unlink(self.named_temporary_file.name)
         except FileNotFoundError:
-            pass # cleaning up more than once is not an error
+            pass  # cleaning up more than once is not an error
 
 
-def PortableNamedTemporaryFile(mode='w+b', suffix="",
-                       prefix=template, dir=None, delete=True):
+def PortableNamedTemporaryFile(
+    mode="w+b", suffix="", prefix=template, dir=None, delete=True
+):
     """
     Wrap tempfile.NamedTemporaryFile() with a portable behaviour that works on Windows, Linux and Mac
     See https://docs.python.org/3/library/tempfile.html for full documentation.
@@ -61,9 +63,13 @@ def PortableNamedTemporaryFile(mode='w+b', suffix="",
     file while the original handle is still open, so this function makes temporary files work across OS's.
     """
     if not delete:
-        return NamedTemporaryFile(mode=mode, suffix=suffix,
-                                  prefix=prefix, delete=delete)
+        return NamedTemporaryFile(
+            mode=mode, suffix=suffix, prefix=prefix, delete=delete
+        )
     else:
-        named_temporary_file = NamedTemporaryFile(mode=mode, suffix=suffix,
-                                                  prefix=prefix, delete=False)
-        return _PortableNamedTemporaryFileWrapper(named_temporary_file=named_temporary_file)
+        named_temporary_file = NamedTemporaryFile(
+            mode=mode, suffix=suffix, prefix=prefix, delete=False
+        )
+        return _PortableNamedTemporaryFileWrapper(
+            named_temporary_file=named_temporary_file
+        )

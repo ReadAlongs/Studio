@@ -12,10 +12,12 @@
 
 from readalongs.app import app, socketio
 
+
 def run():
-    ''' Run app using SocketIO
-    '''
+    """ Run app using SocketIO
+    """
     socketio.run(app)
+
 
 if __name__ == "__main__":
     run()

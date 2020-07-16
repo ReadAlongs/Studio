@@ -10,6 +10,7 @@ from readalongs.log import LOGGER
 from tempfile import NamedTemporaryFile
 from readalongs.tempfile import PortableNamedTemporaryFile
 
+
 class TestTempFile(unittest.TestCase):
     def testBasicFile(self):
         f = open("delme_test_temp_file", mode="w")
@@ -20,7 +21,7 @@ class TestTempFile(unittest.TestCase):
     def testNTF(self):
         tf = NamedTemporaryFile(prefix="testtempfile_testNTF_", delete=False, mode="w")
         tf.write("Some text")
-        #LOGGER.debug("tf.name {}".format(tf.name))
+        # LOGGER.debug("tf.name {}".format(tf.name))
         tf.close()
         readf = open(tf.name, mode="r")
         text = readf.readline()
@@ -29,10 +30,12 @@ class TestTempFile(unittest.TestCase):
         os.unlink(tf.name)
 
     def testDeleteFalse(self):
-        tf = PortableNamedTemporaryFile(prefix="testtempfile_testDeleteFalse_", delete=False, mode="w")
+        tf = PortableNamedTemporaryFile(
+            prefix="testtempfile_testDeleteFalse_", delete=False, mode="w"
+        )
         tf.write("Some text")
         tf.close()
-        #LOGGER.info(tf.name)
+        # LOGGER.info(tf.name)
         readf = open(tf.name, mode="r")
         text = readf.readline()
         readf.close()
@@ -40,29 +43,35 @@ class TestTempFile(unittest.TestCase):
         os.unlink(tf.name)
 
     def testTypicalUsage(self):
-        tf = PortableNamedTemporaryFile(prefix="testtempfile_testTypicalUsage_", delete=True, mode="w")
-        #LOGGER.info(tf.name)
+        tf = PortableNamedTemporaryFile(
+            prefix="testtempfile_testTypicalUsage_", delete=True, mode="w"
+        )
+        # LOGGER.info(tf.name)
         tf.write("Some text")
         tf.close()
-        #LOGGER.info(tf.name)
+        # LOGGER.info(tf.name)
         readf = open(tf.name, mode="r")
         text = readf.readline()
         readf.close()
         self.assertEqual(text, "Some text")
 
     def testUsingWith(self):
-        with PortableNamedTemporaryFile(prefix="testtempfile_testUsingWith_", delete=True, mode="w") as tf:
-            #LOGGER.info(tf.name)
+        with PortableNamedTemporaryFile(
+            prefix="testtempfile_testUsingWith_", delete=True, mode="w"
+        ) as tf:
+            # LOGGER.info(tf.name)
             tf.write("Some text")
             tf.close()
-            #LOGGER.info(tf.name)
+            # LOGGER.info(tf.name)
             readf = open(tf.name, mode="r")
             text = readf.readline()
             readf.close()
             self.assertEqual(text, "Some text")
 
     def testSeek(self):
-        tf = PortableNamedTemporaryFile(prefix="testtempfile_testSeek_", delete=True, mode="w+")
+        tf = PortableNamedTemporaryFile(
+            prefix="testtempfile_testSeek_", delete=True, mode="w+"
+        )
         tf.write("Some text")
         tf.seek(0)
         text = tf.readline()
@@ -70,6 +79,7 @@ class TestTempFile(unittest.TestCase):
         tf.close()
         os.unlink(tf.named_temporary_file.name)
 
-if __name__ == '__main__':
-    LOGGER.setLevel('DEBUG')
+
+if __name__ == "__main__":
+    LOGGER.setLevel("DEBUG")
     unittest.main()

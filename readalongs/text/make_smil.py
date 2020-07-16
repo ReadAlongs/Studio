@@ -23,7 +23,7 @@ try:
 except:
     unicode = str
 
-SMIL_TEMPLATE = '''<smil xmlns="http://www.w3.org/ns/SMIL" version="3.0">
+SMIL_TEMPLATE = """<smil xmlns="http://www.w3.org/ns/SMIL" version="3.0">
     <body>
         {{#words}}
         <par id="par-{{id}}">
@@ -33,7 +33,7 @@ SMIL_TEMPLATE = '''<smil xmlns="http://www.w3.org/ns/SMIL" version="3.0">
         {{/words}}
     </body>
 </smil>
-'''
+"""
 
 BASENAME_IDX = 0
 START_TIME_IDX = 9
@@ -65,12 +65,8 @@ def parse_hypseg(text: str) -> dict:
         word = tokens[i + WORD_SUBIDX]
         end = tokens[i + END_SUBIDX]
         end = float(end) * 0.01
-        if word != '<sil>':
-            results["words"].append({
-                "id": word,
-                "start": start,
-                "end": end
-            })
+        if word != "<sil>":
+            results["words"].append({"id": word, "start": start, "end": end})
         start = end
         i += WORD_SPAN
     return results
@@ -103,12 +99,13 @@ def go(seg_path, text_path, audio_path, output_path):
     save_txt(output_path, results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Convert XML to another orthography while preserving tags')
-    parser.add_argument('input_seg', type=str, help='Input hypseg file')
-    parser.add_argument('text_path', type=str, help='Text filename')
-    parser.add_argument('audio_path', type=str, help='Audio filename')
-    parser.add_argument('output', type=str, help='Output SMIL file')
+        description="Convert XML to another orthography while preserving tags"
+    )
+    parser.add_argument("input_seg", type=str, help="Input hypseg file")
+    parser.add_argument("text_path", type=str, help="Text filename")
+    parser.add_argument("audio_path", type=str, help="Audio filename")
+    parser.add_argument("output", type=str, help="Output SMIL file")
     args = parser.parse_args()
     go(args.input_seg, args.text_path, args.audio_path, args.output)

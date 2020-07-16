@@ -30,7 +30,7 @@ try:
 except:
     unicode = str
 
-JSGF_TEMPLATE = '''#JSGF 1.0 UTF-8;
+JSGF_TEMPLATE = """#JSGF 1.0 UTF-8;
 grammar {{name}};
 
 /**
@@ -42,14 +42,14 @@ grammar {{name}};
     */
 
 public <s> = {{#words}} {{id}} {{/words}} ;
-'''
+"""
 
 
 def make_jsgf(xml, filename, unit="m"):
     data = {
         "name": os.path.splitext(os.path.basename(filename))[0],
-        "date": datetime.datetime.today().strftime('%Y-%m-%d'),
-        "words": []
+        "date": datetime.datetime.today().strftime("%Y-%m-%d"),
+        "words": [],
     }
 
     for e in xml.xpath(".//" + unit):
@@ -59,9 +59,7 @@ def make_jsgf(xml, filename, unit="m"):
         if text == "":  # don't put in elements with no text
             continue
         id = e.attrib["id"]
-        data["words"].append({
-            "id": id
-        })
+        data["words"].append({"id": id})
 
     return pystache.render(JSGF_TEMPLATE, data)
 
@@ -72,13 +70,17 @@ def go(input_filename, output_filename, unit):
     save_txt(output_filename, jsgf)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Make an JSGF grammar from an XML file with IDs')
-    parser.add_argument('input', type=str, help='Input XML')
-    parser.add_argument('output_jsgf', type=str, help='Output .jsgf file')
-    parser.add_argument('--unit', type=str, default='m',
-                        help='XML tag of the unit of analysis '
-                        '(e.g. "w" for word, "m" for morpheme)')
+        description="Make an JSGF grammar from an XML file with IDs"
+    )
+    parser.add_argument("input", type=str, help="Input XML")
+    parser.add_argument("output_jsgf", type=str, help="Output .jsgf file")
+    parser.add_argument(
+        "--unit",
+        type=str,
+        default="m",
+        help="XML tag of the unit of analysis " '(e.g. "w" for word, "m" for morpheme)',
+    )
     args = parser.parse_args()
     go(args.input, args.output_fsg, args.unit)

@@ -28,24 +28,23 @@ from lxml import etree
 from readalongs.text.util import load_xml, save_xml, is_do_not_align
 
 TAG_TO_ID = {
-    'text': 't',
-    'body': 'b',
-    'div': 'd',
-    'page': 'pp',
-    'p': 'p',
-    'u': 'u',
-    's': 's',
-    'w': 'w',
-    'm': 'm'
+    "text": "t",
+    "body": "b",
+    "div": "d",
+    "page": "pp",
+    "p": "p",
+    "u": "u",
+    "s": "s",
+    "w": "w",
+    "m": "m",
 }
 
-TAGS_TO_IGNORE = [
-    "head",
-    "teiHeader",
-    "script"
-]
+TAGS_TO_IGNORE = ["head", "teiHeader", "script"]
 
-def add_ids_aux(element: etree, ids: defaultdict = defaultdict(lambda: 0), parent_id: str = '') -> defaultdict:
+
+def add_ids_aux(
+    element: etree, ids: defaultdict = defaultdict(lambda: 0), parent_id: str = ""
+) -> defaultdict:
     """ Add ids to xml element
     
     Parameters
@@ -70,25 +69,30 @@ def add_ids_aux(element: etree, ids: defaultdict = defaultdict(lambda: 0), paren
     if is_do_not_align(element):
         if tag == "w":
             raise RuntimeError(
-                "Found <w> element with do-not-align=\"true\" attribute. "
+                'Found <w> element with do-not-align="true" attribute. '
                 "This is not allowed, please verify you XML input."
             )
         if element.xpath(".//w"):
             raise RuntimeError(
-                "Found <w> nested inside a do-not-align=\"true\" element. "
+                'Found <w> nested inside a do-not-align="true" element. '
                 "This is not allowed, please verify you XML input."
             )
         return ids
     if "id" not in element.attrib:
         if tag in TAG_TO_ID:
             id = TAG_TO_ID[tag]
-        elif tag == 'seg' and "type" in element.attrib:
-            if element.attrib["type"] == 'syll':
+        elif tag == "seg" and "type" in element.attrib:
+            if element.attrib["type"] == "syll":
                 id = "y"
-            elif (element.attrib["type"]
-                  in ["morph", "morpheme", "base", "root",
-                      "prefix", "suffix"]):
-                id = 'm'
+            elif element.attrib["type"] in [
+                "morph",
+                "morpheme",
+                "base",
+                "root",
+                "prefix",
+                "suffix",
+            ]:
+                id = "m"
         else:
             id = tag
         if id not in ids:
@@ -117,7 +121,7 @@ def add_ids(xml: etree) -> etree:
     """
     xml = deepcopy(xml)
     ids = defaultdict(lambda: 0)
-    for child in xml:    # don't bother with the root element
+    for child in xml:  # don't bother with the root element
         if child.tag is etree.Comment:
             continue
         ids = add_ids_aux(child, ids)
@@ -130,10 +134,11 @@ def go(input_filename: str, output_filename: str) -> None:
     save_xml(output_filename, xml)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Convert XML to another orthography while preserving tags')
-    parser.add_argument('input', type=str, help='Input XML')
-    parser.add_argument('output', type=str, help='Output XML')
+        description="Convert XML to another orthography while preserving tags"
+    )
+    parser.add_argument("input", type=str, help="Input XML")
+    parser.add_argument("output", type=str, help="Output XML")
     args = parser.parse_args()
     go(args.input, args.output)

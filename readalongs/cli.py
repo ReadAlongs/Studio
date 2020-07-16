@@ -74,21 +74,64 @@ def cli():
     """Management script for Read Along Studio."""
 
 
-@app.cli.command(context_settings=CONTEXT_SETTINGS, short_help="Force align a text and a sound file.")
+@app.cli.command(
+    context_settings=CONTEXT_SETTINGS, short_help="Force align a text and a sound file."
+)
 @click.argument("inputfile", type=click.Path(exists=True, readable=True))
 @click.argument("audiofile", type=click.Path(exists=True, readable=True))
 @click.argument("output-base", type=click.Path())
-@click.option("-b", "--bare", is_flag=True, help="Bare alignments do not split silences between words")
-@click.option("-c", "--config", type=click.Path(exists=True), help="Use ReadAlong-Studio configuration file (in JSON format)")
-@click.option("-C", "--closed-captioning", is_flag=True, help="Export sentences to WebVTT and SRT files")
+@click.option(
+    "-b",
+    "--bare",
+    is_flag=True,
+    help="Bare alignments do not split silences between words",
+)
+@click.option(
+    "-c",
+    "--config",
+    type=click.Path(exists=True),
+    help="Use ReadAlong-Studio configuration file (in JSON format)",
+)
+@click.option(
+    "-C",
+    "--closed-captioning",
+    is_flag=True,
+    help="Export sentences to WebVTT and SRT files",
+)
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
-@click.option("-f", "--force-overwrite", is_flag=True, help="Force overwrite output files")
-@click.option("-i", "--text-input", is_flag=True, help="Input is plain text (assume paragraphs are separated by blank lines, pages are separated by two blank lines)")
-@click.option("-l", "--language", type=click.Choice(LANGS, case_sensitive=False), help="Set language for plain text input")
-@click.option("-u", "--unit", type=click.Choice(["w", "m"], case_sensitive=False), help="Unit (w = word, m = morpheme) to align to")
-@click.option("-s", "--save-temps", is_flag=True, help="Save intermediate stages of processing and temporary files (dictionary, FSG, tokenization etc)")
-@click.option("-t", "--text-grid", is_flag=True, help="Export to Praat TextGrid & ELAN eaf file")
-@click.option("-x", "--output-xhtml", is_flag=True, help="Output simple XHTML instead of XML")
+@click.option(
+    "-f", "--force-overwrite", is_flag=True, help="Force overwrite output files"
+)
+@click.option(
+    "-i",
+    "--text-input",
+    is_flag=True,
+    help="Input is plain text (assume paragraphs are separated by blank lines, pages are separated by two blank lines)",
+)
+@click.option(
+    "-l",
+    "--language",
+    type=click.Choice(LANGS, case_sensitive=False),
+    help="Set language for plain text input",
+)
+@click.option(
+    "-u",
+    "--unit",
+    type=click.Choice(["w", "m"], case_sensitive=False),
+    help="Unit (w = word, m = morpheme) to align to",
+)
+@click.option(
+    "-s",
+    "--save-temps",
+    is_flag=True,
+    help="Save intermediate stages of processing and temporary files (dictionary, FSG, tokenization etc)",
+)
+@click.option(
+    "-t", "--text-grid", is_flag=True, help="Export to Praat TextGrid & ELAN eaf file"
+)
+@click.option(
+    "-x", "--output-xhtml", is_flag=True, help="Output simple XHTML instead of XML"
+)
 def align(**kwargs):
     """Align INPUTFILE and AUDIOFILE and create output files at OUTPUT_BASE.
 
@@ -113,10 +156,12 @@ def align(**kwargs):
     if os.path.exists(output_dir):
         if not os.path.isdir(output_dir):
             raise click.UsageError(
-                f"Output folder '{output_dir}' already exists but is a not a directory.")
+                f"Output folder '{output_dir}' already exists but is a not a directory."
+            )
         if not kwargs["force_overwrite"]:
             raise click.UsageError(
-                f"Output folder '{output_dir}' already exists, use -f to overwrite.")
+                f"Output folder '{output_dir}' already exists, use -f to overwrite."
+            )
     else:
         os.mkdir(output_dir)
 
@@ -127,7 +172,8 @@ def align(**kwargs):
             pass
     except:
         raise click.UsageError(
-            f"Cannot write into output folder '{output_dir}'. Please verify permissions.")
+            f"Cannot write into output folder '{output_dir}'. Please verify permissions."
+        )
 
     output_base = os.path.join(output_dir, os.path.basename(output_dir))
 
@@ -135,8 +181,7 @@ def align(**kwargs):
         LOGGER.setLevel("DEBUG")
     if kwargs["text_input"]:
         if not kwargs["language"]:
-            LOGGER.warn(
-                f"No input language provided, using undetermined mapping")
+            LOGGER.warn(f"No input language provided, using undetermined mapping")
         tempfile, kwargs["inputfile"] = create_input_tei(
             kwargs["inputfile"],
             text_language=kwargs["language"],
@@ -149,8 +194,7 @@ def align(**kwargs):
         tokenized_xml_path = "%s%s" % (output_base, input_ext)
     if os.path.exists(tokenized_xml_path) and not kwargs["force_overwrite"]:
         raise click.BadParameter(
-            "Output file %s exists already, use -f to overwrite."
-            % tokenized_xml_path
+            "Output file %s exists already, use -f to overwrite." % tokenized_xml_path
         )
     smil_path = output_base + ".smil"
     if os.path.exists(smil_path) and not kwargs["force_overwrite"]:
@@ -165,7 +209,9 @@ def align(**kwargs):
         )
     unit = kwargs.get("unit", "w")
     bare = kwargs.get("bare", False)
-    if not unit:  # .get() above should handle this but apparently the way kwargs is implemented
+    if (
+        not unit
+    ):  # .get() above should handle this but apparently the way kwargs is implemented
         unit = "w"  # unit could still be None here.
     try:
         results = align_audio(
@@ -202,17 +248,23 @@ def align(**kwargs):
 
     save_xml(tokenized_xml_path, results["tokenized"])
     smil = make_smil(
-        os.path.basename(tokenized_xml_path), os.path.basename(
-            audio_path), results
+        os.path.basename(tokenized_xml_path), os.path.basename(audio_path), results
     )
     shutil.copy(kwargs["audiofile"], audio_path)
     save_txt(smil_path, smil)
 
 
-@app.cli.command(context_settings=CONTEXT_SETTINGS, short_help="Convert a smil document to epub.")
+@app.cli.command(
+    context_settings=CONTEXT_SETTINGS, short_help="Convert a smil document to epub."
+)
 @click.argument("input", type=click.Path(exists=True, readable=True))
 @click.argument("output", type=click.Path(exists=False, readable=True))
-@click.option("-u", "--unpacked", is_flag=True, help="Output unpacked directory of files (for testing)")
+@click.option(
+    "-u",
+    "--unpacked",
+    is_flag=True,
+    help="Output unpacked directory of files (for testing)",
+)
 def epub(**kwargs):
     """
     Convert INPUT smil document to epub with media overlay at OUTPUT
@@ -221,15 +273,26 @@ def epub(**kwargs):
 
     output : the path to the .epub output
     """
-    create_epub(kwargs['input'], kwargs['output'], kwargs['unpacked'])
+    create_epub(kwargs["input"], kwargs["output"], kwargs["unpacked"])
 
-@app.cli.command(context_settings=CONTEXT_SETTINGS, short_help='Prepare XML input to align from plain text.')
-@click.argument('inputfile', type=click.Path(exists=True, readable=True))
-@click.argument('xmlfile', type=click.Path())
-@click.option('-d', '--debug', is_flag=True, help='Add debugging messages to logger')
-@click.option('-f', '--force-overwrite', is_flag=True, help='Force overwrite output files')
-@click.option('-l', '--language', type=click.Choice(LANGS, case_sensitive=False),
-              required=True, help='Set language for input file')
+
+@app.cli.command(
+    context_settings=CONTEXT_SETTINGS,
+    short_help="Prepare XML input to align from plain text.",
+)
+@click.argument("inputfile", type=click.Path(exists=True, readable=True))
+@click.argument("xmlfile", type=click.Path())
+@click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
+@click.option(
+    "-f", "--force-overwrite", is_flag=True, help="Force overwrite output files"
+)
+@click.option(
+    "-l",
+    "--language",
+    type=click.Choice(LANGS, case_sensitive=False),
+    required=True,
+    help="Set language for input file",
+)
 def prepare(**kwargs):
     """Prepare XMLFILE for 'readalongs align' from plain text INPUTFILE.
     INPUTFILE must be plain text encoded in utf-8, with one sentence per line,
@@ -240,20 +303,25 @@ def prepare(**kwargs):
 
     xmlfile : File name for the .xml output file
     """
-    if kwargs['debug']:
-        LOGGER.setLevel('DEBUG')
-        LOGGER.info("Running readalongs prepare(lang={}, force-overwrite={}, inputfile={}, xmlfile={})."
-                    .format(kwargs['language'], kwargs['force_overwrite'],
-                        kwargs['inputfile'], kwargs['xmlfile']))
+    if kwargs["debug"]:
+        LOGGER.setLevel("DEBUG")
+        LOGGER.info(
+            "Running readalongs prepare(lang={}, force-overwrite={}, inputfile={}, xmlfile={}).".format(
+                kwargs["language"],
+                kwargs["force_overwrite"],
+                kwargs["inputfile"],
+                kwargs["xmlfile"],
+            )
+        )
 
-    xmlpath = kwargs['xmlfile']
+    xmlpath = kwargs["xmlfile"]
     if not xmlpath.endswith(".xml"):
         xmlpath += ".xml"
-    if os.path.exists(xmlpath) and not kwargs['force_overwrite']:
-        raise click.BadParameter("Output file %s exists already, use -f to overwrite."
-                                 % xmlpath)
-    filehandle, filename \
-        = create_input_tei(kwargs['inputfile'],
-                           text_language=kwargs['language'],
-                           output_file=xmlpath)
+    if os.path.exists(xmlpath) and not kwargs["force_overwrite"]:
+        raise click.BadParameter(
+            "Output file %s exists already, use -f to overwrite." % xmlpath
+        )
+    filehandle, filename = create_input_tei(
+        kwargs["inputfile"], text_language=kwargs["language"], output_file=xmlpath
+    )
     LOGGER.info("Wrote {}".format(xmlpath))

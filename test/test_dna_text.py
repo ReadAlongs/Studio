@@ -8,9 +8,10 @@ from readalongs.app import app
 from readalongs.text import tokenize_xml
 from readalongs.text.add_ids_to_xml import add_ids
 
+
 class TestDNAText(TestCase):
-    LOGGER.setLevel('DEBUG')
-    data_dir = os.path.join(os.path.dirname(__file__), 'data')
+    LOGGER.setLevel("DEBUG")
+    data_dir = os.path.join(os.path.dirname(__file__), "data")
     maxDiff = None
 
     def setUp(self):
@@ -27,19 +28,19 @@ class TestDNAText(TestCase):
         xml = etree.fromstring(txt)
         tokenized = tokenize_xml.tokenize_xml(xml)
         as_txt = etree.tounicode(tokenized)
-        #print(etree.tounicode(tokenized))
+        # print(etree.tounicode(tokenized))
 
         ref = """<document xml:lang="fra">
 <s><w>Bonjour</w>! <w>Comment</w> <w>ça</w> <w>va</w>?</s>
 <s><w>Voici</w> <w>une</w> <w>deuxième</w> <w>phrase</w>.</s>
 </document>"""
-        #print('as_txt="' + as_txt +'"')
-        #print('ref="' + ref +'"')
+        # print('as_txt="' + as_txt +'"')
+        # print('ref="' + ref +'"')
         self.assertEqual(as_txt, ref)
 
         with_ids = add_ids(tokenized)
         ids_as_txt = etree.tounicode(with_ids)
-        #print('with ids="' + ids_as_txt + '"')
+        # print('with ids="' + ids_as_txt + '"')
         ref_with_ids = """<document xml:lang="fra">
 <s id="s0"><w id="s0w0">Bonjour</w>! <w id="s0w1">Comment</w> <w id="s0w2">ça</w> <w id="s0w3">va</w>?</s>
 <s id="s1"><w id="s1w0">Voici</w> <w id="s1w1">une</w> <w id="s1w2">deuxième</w> <w id="s1w3">phrase</w>.</s>
@@ -56,7 +57,7 @@ class TestDNAText(TestCase):
         xml = etree.fromstring(txt)
         tokenized = tokenize_xml.tokenize_xml(xml)
         as_txt = etree.tounicode(tokenized)
-        #print('as_txt="' + as_txt +'"')
+        # print('as_txt="' + as_txt +'"')
 
         ref = """<document xml:lang="fra">
 <p><s><w>Bonjour</w>! <w>Comment</w> <w>ça</w> <w>va</w>?</s></p>
@@ -68,7 +69,7 @@ class TestDNAText(TestCase):
 
         with_ids = add_ids(tokenized)
         ids_as_txt = etree.tounicode(with_ids)
-        #print('with ids="' + ids_as_txt + '"')
+        # print('with ids="' + ids_as_txt + '"')
         ref_with_ids = """<document xml:lang="fra">
 <p id="p0"><s id="p0s0"><w id="p0s0w0">Bonjour</w>! <w id="p0s0w1">Comment</w> <w id="p0s0w2">ça</w> <w id="p0s0w3">va</w>?</s></p>
 <p do-not-align="true"><s>Bonjour! Comment ça va?</s></p>
@@ -76,7 +77,6 @@ class TestDNAText(TestCase):
 <s id="s0"><w id="s0w0">Un</w> <foo do-not-align="1">mot ou deux</foo> <w id="s0w1">à</w> <w id="s0w2">exclure</w>.</s>
 </document>"""
         self.assertEqual(ids_as_txt, ref_with_ids)
-
 
     def test_tok_div_p_s(self):
         txt = """<document xml:lang="fra">
@@ -97,7 +97,7 @@ class TestDNAText(TestCase):
         xml = etree.fromstring(txt)
         tokenized = tokenize_xml.tokenize_xml(xml)
         as_txt = etree.tounicode(tokenized)
-        #print('as_txt="' + as_txt +'"')
+        # print('as_txt="' + as_txt +'"')
 
         ref = """<document xml:lang="fra">
 <div>
@@ -118,7 +118,7 @@ class TestDNAText(TestCase):
 
         with_ids = add_ids(tokenized)
         ids_as_txt = etree.tounicode(with_ids)
-        #print('with ids="' + ids_as_txt + '"')
+        # print('with ids="' + ids_as_txt + '"')
 
         ref_with_ids = """<document xml:lang="fra">
 <div id="d0">
@@ -137,13 +137,11 @@ class TestDNAText(TestCase):
 </document>"""
         self.assertEqual(ids_as_txt, ref_with_ids)
 
-
     def test_dna_word(self):
         txt = """<s xml:lang="fra">Une <w do-not-align="true">exclude</w> phrase.</s>"""
         xml = etree.fromstring(txt)
         tokenized = tokenize_xml.tokenize_xml(xml)
         self.assertRaises(RuntimeError, add_ids, tokenized)
-
 
     def test_dna_word_nested(self):
         txt = """<s xml:lang="fra">Une <foo do-not-align="true"><bar><w>exclude</w></bar></foo> phrase.</s>"""
@@ -152,6 +150,5 @@ class TestDNAText(TestCase):
         self.assertRaises(RuntimeError, add_ids, tokenized)
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

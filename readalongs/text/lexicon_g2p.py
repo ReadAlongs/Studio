@@ -44,9 +44,7 @@ def sphinx_lexicon_loader(input_path):
         yield key, value
 
 
-LEXICON_LOADERS = {
-    "sphinx": sphinx_lexicon_loader
-}
+LEXICON_LOADERS = {"sphinx": sphinx_lexicon_loader}
 
 
 class LexiconG2P:
@@ -57,8 +55,7 @@ class LexiconG2P:
 
         dirname = os.path.dirname(metadata_path)
         if "src" not in self.metadata:
-            LOGGER.error(
-                "File %s does not specify a source document", metadata_path)
+            LOGGER.error("File %s does not specify a source document", metadata_path)
             return
         self.src_path = os.path.join(dirname, self.metadata["src"])
 
@@ -66,12 +63,16 @@ class LexiconG2P:
         if "src_format" not in self.metadata:
             LOGGER.error(
                 "File %s lacking a source format ('src_format') attribute",
-                metadata_path)
+                metadata_path,
+            )
             return
 
         if self.metadata["src_format"] not in LEXICON_LOADERS:
-            LOGGER.error("File %s references an unknown lexicon format: %s",
-                         metadata_path, self.metadata["src_format"])
+            LOGGER.error(
+                "File %s references an unknown lexicon format: %s",
+                metadata_path,
+                self.metadata["src_format"],
+            )
 
         self.loader = LEXICON_LOADERS[self.metadata["src_format"]]
 
@@ -89,8 +90,9 @@ class LexiconG2P:
         text = text.strip("#").strip()
         text = text.upper()
         if text not in self.entries:
-            raise KeyError("Word %s not found in lexicon %s"
-                           % (text, self.metadata['src']))
+            raise KeyError(
+                "Word %s not found in lexicon %s" % (text, self.metadata["src"])
+            )
         result = self.entries[text][0]
         indices = [(0, 0), (len_text, len(result))]
         return result, indices

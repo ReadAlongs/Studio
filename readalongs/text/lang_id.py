@@ -28,8 +28,13 @@ from g2p.mappings import Mapping
 from g2p.mappings.langs import MAPPINGS_AVAILABLE
 from g2p.mappings.utils import is_dummy, is_ipa, is_xsampa
 
-from readalongs.text.util import (load_xml, save_xml, get_lang_attrib,
-                                  set_lang_attrib, iterate_over_text)
+from readalongs.text.util import (
+    load_xml,
+    save_xml,
+    get_lang_attrib,
+    set_lang_attrib,
+    iterate_over_text,
+)
 
 
 class LanguageIdentifier:
@@ -40,10 +45,14 @@ class LanguageIdentifier:
         self.chars = {}
         self.inventories = {}
         for x in MAPPINGS_AVAILABLE:
-            if not is_ipa(x['in_lang']) and not is_xsampa(x['in_lang']) and not is_dummy(x['in_lang']):
-                mapping = Mapping(in_lang=x['in_lang'], out_lang=x['out_lang'])
-                self.inventories[x['in_lang']] = set(mapping.inventory('in'))
-                for s in self.inventories[x['in_lang']]:
+            if (
+                not is_ipa(x["in_lang"])
+                and not is_xsampa(x["in_lang"])
+                and not is_dummy(x["in_lang"])
+            ):
+                mapping = Mapping(in_lang=x["in_lang"], out_lang=x["out_lang"])
+                self.inventories[x["in_lang"]] = set(mapping.inventory("in"))
+                for s in self.inventories[x["in_lang"]]:
                     for c in s:
                         if c not in self.chars:  # not yet seen in any lang
                             # make an index for it
@@ -54,8 +63,7 @@ class LanguageIdentifier:
     def calculate_prior_probs(self):
         probs = np.full((len(self.langs), len(self.chars)), self.unseen_factor)
         for lang, lang_index in self.langs.items():
-            seen_indices = [self.chars[c] for s in self.inventories[lang]
-                            for c in s]
+            seen_indices = [self.chars[c] for s in self.inventories[lang] for c in s]
             probs[lang_index, seen_indices] = self.seen_factor
         probs /= probs.sum(axis=1, keepdims=True)
         self.logprobs = np.log(probs)
@@ -65,13 +73,13 @@ class LanguageIdentifier:
         logprobs = np.zeros((len(self.langs),))
         for c in s:
             if c not in self.chars:
-                continue            # not a character we use for language id
+                continue  # not a character we use for language id
             char_index = self.chars[c]
             logprobs += self.logprobs[:, char_index]
 
         logprobs -= np.max(logprobs)  # logprob scaling trick for normalization
-        probs = np.exp(logprobs)      # turn back into probs
-        probs /= probs.sum()          # normalize
+        probs = np.exp(logprobs)  # turn back into probs
+        probs /= probs.sum()  # normalize
 
         # return them in a more convenient format
         result = [(lang, probs[i]) for lang, i in self.langs.items()]
@@ -105,12 +113,17 @@ def main(input_path, output_path, unit="p"):
     save_xml(output_path, xml)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Convert XML to another orthography while preserving tags')
-    parser.add_argument('input', type=str, help='Input XML')
-    parser.add_argument('output', type=str, help='Output XML')
-    parser.add_argument('--unit', type=str, default="p",
-                        help="Unit at which to do language identification")
+        description="Convert XML to another orthography while preserving tags"
+    )
+    parser.add_argument("input", type=str, help="Input XML")
+    parser.add_argument("output", type=str, help="Output XML")
+    parser.add_argument(
+        "--unit",
+        type=str,
+        default="p",
+        help="Unit at which to do language identification",
+    )
     args = parser.parse_args()
     main(args.input, args.output, args.unit)
