@@ -28,7 +28,7 @@ before_script:
 
 # commands to run the testing suite. if any of these fail, travis lets us know
 script: 
-  - (cd test && coverage run run.py dev)
+  - (cd test && coverage run run.py prod)
   - find . -name \*.py | xargs black --check
 
 # commands to run after the tests successfully complete
