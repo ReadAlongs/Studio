@@ -23,12 +23,12 @@ class TestForceAlignment(unittest.TestCase):
     data_dir = os.path.join(os.path.dirname(__file__), "data")
 
     def testAlign(self):
-        xml_path = os.path.join(self.data_dir, "ap-git.xml")
-        wav_path = os.path.join(self.data_dir, "ap-git.wav")
+        xml_path = os.path.join(self.data_dir, "ej-fra.xml")
+        wav_path = os.path.join(self.data_dir, "ej-fra.m4a")
         results = align_audio(xml_path, wav_path, unit="w")
 
         # Verify that the same IDs are in the output
-        converted_path = os.path.join(self.data_dir, "ap-git-converted-from-xml.xml")
+        converted_path = os.path.join(self.data_dir, "ej-fra-converted.xml")
         xml = etree.parse(converted_path).getroot()
         words = results["words"]
         xml_words = xml.xpath(".//w")
@@ -37,16 +37,16 @@ class TestForceAlignment(unittest.TestCase):
             self.assertEqual(xw.attrib["id"], w["id"])
 
     def testAlignText(self):
-        txt_path = os.path.join(self.data_dir, "ap-git.txt")
-        wav_path = os.path.join(self.data_dir, "ap-git.wav")
-        # tempfile, temp_fn = create_input_xml(txt_path, text_language='git', save_temps="unit")
-        tempfile, temp_fn = create_input_tei(
-            txt_path, text_language="git", save_temps=None
+        txt_path = os.path.join(self.data_dir, "ej-fra.txt")
+        wav_path = os.path.join(self.data_dir, "ej-fra.m4a")
+        # tempfh, temp_fn = create_input_xml(txt_path, text_language='git', save_temps="unit")
+        tempfh, temp_fn = create_input_tei(
+            txt_path, text_language="fra", save_temps=None
         )
         results = align_audio(temp_fn, wav_path, unit="w", save_temps=None)
 
         # Verify that the same IDs are in the output
-        converted_path = os.path.join(self.data_dir, "ap-git-converted-from-txt.xml")
+        converted_path = os.path.join(self.data_dir, "ej-fra-converted.xml")
         xml = etree.parse(converted_path).getroot()
         words = results["words"]
         xml_words = xml.xpath(".//w")
@@ -59,7 +59,7 @@ class TestXHTML(unittest.TestCase):
     data_dir = os.path.join(os.path.dirname(__file__), "data")
 
     def testConvert(self):
-        xml_path = os.path.join(self.data_dir, "ap-git-converted-from-xml.xml")
+        xml_path = os.path.join(self.data_dir, "ej-fra-converted.xml")
         xml = etree.parse(xml_path).getroot()
         convert_to_xhtml(xml)
         with PortableNamedTemporaryFile(suffix=".xml") as tf:
@@ -69,7 +69,7 @@ class TestXHTML(unittest.TestCase):
             self.assertEqual(
                 txt,
                 load_txt(
-                    os.path.join(self.data_dir, "ap-git-converted-from-xml.xhtml")
+                    os.path.join(self.data_dir, "ej-fra-converted.xhtml")
                 ),
             )
 
