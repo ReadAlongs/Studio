@@ -5,5 +5,5 @@ recursive-include readalongs/text/lexicon_g2p_mappings *
 include MANIFEST.in
 exclude .gitignore
 recursive-exclude * *.py[co]
-recursive-exclude * *~ 
+recursive-exclude * *~
 recursive-exclude * *.orig

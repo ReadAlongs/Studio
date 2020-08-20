@@ -46,7 +46,7 @@ def add_ids_aux(
     element: etree, ids: defaultdict = defaultdict(lambda: 0), parent_id: str = ""
 ) -> defaultdict:
     """ Add ids to xml element
-    
+
     Parameters
     ----------
     element : etree
@@ -55,7 +55,7 @@ def add_ids_aux(
         , by default defaultdict(lambda: 0)
     parent_id : str, optional
         id of parent element, by default ''
-    
+
     Returns
     -------
     defaultdict
@@ -108,12 +108,12 @@ def add_ids_aux(
 
 def add_ids(xml: etree) -> etree:
     """Add ids to xml
-    
+
     Parameters
     ----------
     xml : etree
         xml to add ids to
-    
+
     Returns
     -------
     etree

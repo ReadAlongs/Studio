@@ -53,7 +53,7 @@ as an ePub file.
 
 ## Install
 
-The best thing to do is install with pip `pip install readalongs`. 
+The best thing to do is install with pip `pip install readalongs`.
 
 Otherwise, clone the repo and pip install it locally.
 
@@ -119,7 +119,7 @@ This repo follows the [Contributor Covenant](http://contributor-covenant.org/ver
 
 ### Contributors
 
-This project exists thanks to all the people who contribute. 
+This project exists thanks to all the people who contribute.
 
 [@dhdaines](https://github.com/dhdaines).
 [@eddieantonio](https://github.com/eddieantonio).

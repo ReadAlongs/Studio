@@ -47,7 +47,7 @@ The above assumes the following structure:
 | │   ├── sample.wav
 | │   ├── sample.xml
 | ├── index.html
-| 
-| 
+|
+|
 
 Then you can host your site anywhere, or run it locally (``cd web && python3 -m http.server`` for example)

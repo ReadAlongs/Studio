@@ -81,11 +81,10 @@ config_socket.on('config update response', function (msg) {
     } else {
         toastr["error"](`Hmm. Something went wrong. Please try again. ${msg['error']}`)
     }
-   
+
 })
 
 // Spinner
 function spinner(id) {
     document.getElementById(id).classList.add('is-active')
 }
-

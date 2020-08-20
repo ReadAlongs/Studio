@@ -52,7 +52,7 @@ def correct_adjustments(
 
 def calculate_adjustment(timestamp: int, do_not_align_segments: List[object]) -> int:
     """ Given a time (in ms) and a list of do-not-align segments,
-        return the sum (ms) of the lengths of the do-not-align segments 
+        return the sum (ms) of the lengths of the do-not-align segments
         that start before the timestamp
     """
     return sum(
@@ -171,7 +171,7 @@ def align_audio(
         elif method == "remove":
             dna_method = remove_section
         else:
-            LOGGER.error(f"Unknown do-not-align method declared")
+            LOGGER.error("Unknown do-not-align method declared")
             dna_method = None
         # Process audio and save temporary files
         if dna_method:
@@ -558,10 +558,10 @@ def create_input_xml(
 
 def create_input_tei(text: str, **kwargs):
     """ Create input xml in TEI standard.
-        Uses readlines to infer paragraph and sentence structure from plain text. 
+        Uses readlines to infer paragraph and sentence structure from plain text.
         TODO: Check if path, if it's just plain text, then render that instead of reading from the file
-        Assumes single page. 
-        Outputs to uft-8 XML using pymustache. 
+        Assumes single page.
+        Outputs to uft-8 XML using pymustache.
 
     Parameters
     ----------
@@ -573,7 +573,7 @@ def create_input_tei(text: str, **kwargs):
         prefix for output file name, which will be kept; or None to create a temporary file
     **output_file in kwargs : Union[str, None], optional
         if specified, the output file will have exactly this name
-    
+
     Returns
     -------
     file

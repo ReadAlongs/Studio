@@ -45,7 +45,7 @@ ALLOWED_EXTENSIONS = set(ALLOWED_AUDIO + ALLOWED_G2P + ALLOWED_TEXT)
 
 def allowed_file(filename: str) -> bool:
     """Determines whether filename is allowable
-    
+
     Parameters
     ----------
     filename : str
@@ -61,12 +61,12 @@ def allowed_file(filename: str) -> bool:
 
 def uploaded_files(dir_path: str) -> dict:
     """Returns all files that have been uploaded
-    
+
     Parameters
     ----------
     dir_path : str
         path to directory where uploaded files are
-    
+
     Returns
     -------
     dict
@@ -92,7 +92,7 @@ def uploaded_files(dir_path: str) -> dict:
 
 def update_session_config(**kwargs) -> dict:
     """Update the session configuration for running readalongs aligner.
-    
+
     Parameters
     ----------
     **kwargs
@@ -170,7 +170,7 @@ def steps(step):
         return render_template("preview.html")
     elif step == 3:
         timestamp = str(int(datetime.now().timestamp()))
-        if not "audio" in session or not "text" in session:
+        if "audio" not in session or "text" not in session:
             log = "Sorry, it looks like something is wrong with your audio or text. Please try again"
         else:
             flags = ["--force-overwrite"]
@@ -220,7 +220,7 @@ def steps(step):
 def show_zip(base):
     files_to_download = os.listdir(os.path.join(session["temp_dir"], base))
     if (
-        not "temp_dir" in session
+        "temp_dir" not in session
         or not os.path.exists(session["temp_dir"])
         or not files_to_download
         or not any([x.startswith("aligned") for x in files_to_download])

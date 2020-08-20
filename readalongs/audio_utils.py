@@ -43,7 +43,7 @@ def remove_section(audio: AudioSegment, start: int, end: int) -> AudioSegment:
 def mute_section(audio: AudioSegment, start: int, end: int) -> AudioSegment:
     """ Given an AudioSegment, reduce the gain between a given interval by 120db.
         Effectively, make it silent.
-    
+
     Parameters
     ----------
     audio : AudioSegment
@@ -52,7 +52,7 @@ def mute_section(audio: AudioSegment, start: int, end: int) -> AudioSegment:
         start timestamp of audio (ms)
     end : int
         end timestamp of audio (ms)
-    
+
     Returns
     -------
     AudioSegment
@@ -83,12 +83,12 @@ def read_audio_from_file(path: str) -> AudioSegment:
     ----------
     str
         Path to audiofile
-    
+
     Returns
     -------
     AudioSegment
         An AudioSegment object of the audiofile
-    
+
     Raises
     ------
     RuntimeError

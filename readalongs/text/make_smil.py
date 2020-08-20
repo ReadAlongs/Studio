@@ -16,13 +16,6 @@ import argparse
 import pystache
 from readalongs.text.util import save_txt
 
-# TODO: AP: Is this for Python 2 support? Lots of other parts of this library will not support python2.
-#           Maybe we should just get rid of this?
-try:
-    unicode()
-except:
-    unicode = str
-
 SMIL_TEMPLATE = """<smil xmlns="http://www.w3.org/ns/SMIL" version="3.0">
     <body>
         {{#words}}
@@ -45,12 +38,12 @@ END_SUBIDX = 3
 
 def parse_hypseg(text: str) -> dict:
     """ Parse hypseg alignments file and return alignements
-    
+
     Parameters
     ----------
     text : str
         hypseg text
-    
+
     Returns
     -------
     dict
@@ -74,7 +67,7 @@ def parse_hypseg(text: str) -> dict:
 
 def make_smil(text_path: str, audio_path: str, results: dict) -> str:
     """ Actually render the SMIL
-    
+
     Parameters
     ----------
     text_path : str
@@ -83,7 +76,7 @@ def make_smil(text_path: str, audio_path: str, results: dict) -> str:
         path to audio
     results : dict
         all alignements
-    
+
     Returns
     -------
     str

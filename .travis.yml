@@ -27,7 +27,7 @@ before_script:
   - gunicorn readalongs.app:app --bind 0.0.0.0:5000 --daemon
 
 # commands to run the testing suite. if any of these fail, travis lets us know
-script: 
+script:
   - (cd test && coverage run run.py prod)
   - find . -name \*.py | xargs black --check
 
