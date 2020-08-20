@@ -9,3 +9,12 @@ repos:
     rev: 3.8.3
     hooks:
     -   id: flake8
+-   repo: local
+    hooks:
+    -   id: black
+        # Using local black because it won't work for me from remote repo -EJ
+        name: black
+        entry: black
+        language: system
+        types: [python]
+        stages: [commit]
