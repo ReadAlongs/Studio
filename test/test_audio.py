@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 import tempfile
 from readalongs.log import LOGGER

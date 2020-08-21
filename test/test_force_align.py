@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 Test force-alignment with PocketSphinx FSG search from Python API
 """
