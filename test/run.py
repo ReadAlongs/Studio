@@ -39,7 +39,7 @@ def run_tests(suite):
         suite = TestSuite(e2e_tests)
     elif suite == "dev":
         suite = TestSuite(indices_tests + other_tests + e2e_tests)
-    elif suite == "prod":
+    elif suite == "prod" or suite == "all":
         suite = loader.discover(os.path.dirname(__file__))
     elif suite == "other":
         suite = TestSuite(other_tests)
