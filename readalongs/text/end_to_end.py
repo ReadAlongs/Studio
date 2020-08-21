@@ -38,13 +38,6 @@ from readalongs.text.make_fsg import make_fsg
 from readalongs.text.make_dict import make_dict
 from readalongs.text.util import save_xml, load_xml, save_txt
 
-# TODO: AP: Is this for Python 2 support? Lots of other parts of this library will not support python2.
-#           Maybe we should just get rid of this?
-try:
-    unicode()
-except:
-    unicode = str
-
 
 def end_to_end(xml, input_filename, unit, word_unit, out_orth):
     xml = add_lang_ids(xml, unit="p")

@@ -36,6 +36,7 @@ class TestAlignCli(TestCase):
                 output,
             ],
         )
+        self.assertEqual(results.exit_code, 0)
         self.assertTrue(
             os.path.exists(os.path.join(output, "output.smil")),
             "successful alignment should have created output.smil",
@@ -58,6 +59,7 @@ class TestAlignCli(TestCase):
                 output,
             ],
         )
+        self.assertEqual(results_dna.exit_code, 0)
         self.assertTrue(
             os.path.exists(os.path.join(output, "output.smil")),
             "successful alignment with DNA should have created output.smil",

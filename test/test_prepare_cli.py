@@ -58,6 +58,7 @@ class TestPrepareCli(TestCase):
         results = self.runner.invoke(
             prepare, ["-l", "fra", self.data_dir + "/fra.txt", xmlfile]
         )
+        self.assertEqual(results.exit_code, 0)
         self.assertTrue(os.path.exists(xmlfile), "output xmlfile did not get created")
 
 

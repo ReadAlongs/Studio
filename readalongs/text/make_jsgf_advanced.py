@@ -23,13 +23,8 @@ import datetime
 import pystache
 from readalongs.text.util import load_xml, save_txt
 
-try:
-    unicode()
-except:
-    unicode = str
 
-
-####################3
+# ###################3
 #
 # For making an FSG from a SMIL, we have the following rules:
 #
@@ -82,6 +77,9 @@ class GrammarSequence(GrammarComposite):
 
 def make_sequence(seq_node):
     for child in seq_node:
+        # TODO: flake8 flags child_id as an unused variable, and indeed, this function
+        # basically does nothing. Figure out what it's supposed to do and fix this
+        # function! -EJ
         child_id = child.attrib["id"]
 
 

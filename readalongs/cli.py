@@ -170,7 +170,7 @@ def align(**kwargs):
     try:
         with TemporaryFile(dir=output_dir):
             pass
-    except:
+    except Exception:
         raise click.UsageError(
             f"Cannot write into output folder '{output_dir}'. Please verify permissions."
         )
@@ -181,7 +181,7 @@ def align(**kwargs):
         LOGGER.setLevel("DEBUG")
     if kwargs["text_input"]:
         if not kwargs["language"]:
-            LOGGER.warn(f"No input language provided, using undetermined mapping")
+            LOGGER.warn("No input language provided, using undetermined mapping")
         tempfile, kwargs["inputfile"] = create_input_tei(
             kwargs["inputfile"],
             text_language=kwargs["language"],

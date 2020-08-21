@@ -20,11 +20,6 @@ import argparse
 import pystache
 from readalongs.text.util import load_xml, save_txt
 
-try:
-    unicode()
-except:
-    unicode = str
-
 
 DICT_TEMPLATE = """{{#items}}
 {{id}}\t{{pronunciation}}

@@ -57,21 +57,16 @@ from readalongs.text.util import unicode_normalize_xml
 from readalongs.text.lexicon_g2p import LexiconG2P
 from readalongs.text.lexicon_g2p_mappings import __file__ as LEXICON_PATH
 
-try:
-    unicode()
-except:
-    unicode = str
-
 
 def iterate_over_text(element):
     lang = get_lang_attrib(element)
     if element.text:
-        yield (lang, unicode(element.text))
+        yield (lang, element.text)
     for child in element:
         for subchild in iterate_over_text(child):
             yield subchild
         if child.tail:
-            yield (lang, unicode(child.tail))
+            yield (lang, child.tail)
 
 
 def get_same_language_units(element):

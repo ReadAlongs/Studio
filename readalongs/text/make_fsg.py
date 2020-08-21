@@ -22,11 +22,6 @@ from readalongs.log import LOGGER
 from slugify import slugify
 from readalongs.text.util import save_txt, load_xml
 
-try:
-    unicode()
-except:
-    unicode = str
-
 
 FSG_TEMPLATE = """FSG_BEGIN {{name}}
 NUM_STATES {{num_states}}
@@ -41,7 +36,7 @@ FSG_END
 
 
 def make_fsg(xml, filename, unit="m"):
-    name = slugify(unicode(os.path.splitext(os.path.basename(filename))[0]))
+    name = slugify(os.path.splitext(os.path.basename(filename))[0])
     data = {
         "name": name,  # If name includes special characters, pocketsphinx throws a RuntimeError: new_Decoder returned -1
         "states": [],

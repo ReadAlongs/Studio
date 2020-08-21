@@ -47,13 +47,6 @@ from readalongs.text.util import is_do_not_align, is_do_not_align_recursive
 from readalongs.text.util import load_xml, save_xml
 from readalongs.text.util import unicode_normalize_xml, get_unicode_category
 
-# TODO: AP: Is this for Python 2 support? Lots of other parts of this library will not support python2.
-#           Maybe we should just get rid of this?
-try:
-    unicode()
-except:
-    unicode = str
-
 
 class DefaultTokenizer:
     def __init__(self):
@@ -77,7 +70,6 @@ class DefaultTokenizer:
         return False
 
     def tokenize_text(self, text):
-        text = unicode(text)
         matches = self.tokenize_aux(text)
         units = [{"text": m, "is_word": self.is_word_charcter(m)} for m in matches]
         units = merge_if_same_label(units, "text", "is_word")

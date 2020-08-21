@@ -17,18 +17,16 @@ import json
 import zipfile
 from copy import deepcopy
 from collections import OrderedDict
+from unicodedata import normalize, category
 
 from lxml import etree
 from io import open, TextIOWrapper
 
 from readalongs.log import LOGGER
 
-# TODO: AP: Is this for Python 2 support? Lots of other parts of this library will not support python2.
-#           Maybe we should just get rid of this?
-try:
-    unicode()
-except:
-    unicode = str
+# removed "try: unicode() except" block (was for Python 2), but this file uses unicode()
+# too many times, so define it anyway.
+unicode = str
 
 
 def ensure_dirs(path):
@@ -208,9 +206,6 @@ def load_tsv(input_path, labels):
     return results
 
 
-from unicodedata import normalize, category
-
-
 def unicode_normalize_xml(element):
     if element.text:
         element.text = normalize("NFD", unicode(element.text))
@@ -271,7 +266,7 @@ def compose_indices(i1, i2):
     results = []
     for i1_in, i1_out in i1:
         highest_i2_found = 0 if not results else results[-1][1]
-        if i1_out == None:
+        if i1_out is None:
             results.append((i1_in, highest_i2_found))
             continue
         while i2_idx <= i1_out:
@@ -313,9 +308,9 @@ def increment_indices(indices):
     for i, index in enumerate(indices):
         inp = index[0]
         outp = index[1]
-        if indices[i][0] != None:
+        if indices[i][0] is not None:
             inp += 1
-        if indices[i][1] != None:
+        if indices[i][1] is not None:
             outp += 1
         new_indices.append((inp, outp))
     return new_indices

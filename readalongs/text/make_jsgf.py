@@ -25,10 +25,6 @@ import datetime
 import pystache
 from readalongs.text.util import load_xml, save_txt
 
-try:
-    unicode()
-except:
-    unicode = str
 
 JSGF_TEMPLATE = """#JSGF 1.0 UTF-8;
 grammar {{name}};
