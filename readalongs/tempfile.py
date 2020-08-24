@@ -7,7 +7,7 @@ So this wrapper deletes the file on exit or object deletion instead of closing.
 """
 
 import os
-from tempfile import NamedTemporaryFile, _TemporaryFileWrapper, template
+from tempfile import NamedTemporaryFile, _TemporaryFileWrapper, template  # type: ignore
 
 from readalongs.log import LOGGER
 

@@ -119,7 +119,7 @@ def add_ids(xml: etree) -> etree:
         xml with ids added
     """
     xml = deepcopy(xml)
-    ids = defaultdict(lambda: 0)
+    ids: defaultdict = defaultdict(lambda: 0)
     for child in xml:  # don't bother with the root element
         if child.tag is etree.Comment:
             continue

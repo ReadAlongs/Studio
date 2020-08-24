@@ -37,7 +37,7 @@ WORD_SUBIDX = 2
 END_SUBIDX = 3
 
 
-def parse_hypseg(text: str) -> dict:
+def parse_hypseg(text):
     """ Parse hypseg alignments file and return alignements
 
     Parameters

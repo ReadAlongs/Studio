@@ -12,7 +12,7 @@
 import io
 import os
 from datetime import timedelta
-from typing import List, Union
+from typing import Dict, List, Tuple, Union
 
 import pystache
 import regex as re
@@ -35,8 +35,8 @@ from readalongs.text.util import save_xml
 
 
 def correct_adjustments(
-    start: int, end: int, do_not_align_segments: List[object]
-) -> (int, int):
+    start: int, end: int, do_not_align_segments: List[dict]
+) -> Tuple[int, int]:
     """ Given the start and end of a segment (in ms) and a list of do-not-align segments,
         If one of the do-not-align segments occurs inside one of the start-end range,
         align the start or end with the do-not-align segment, whichever requires minimal change
@@ -50,7 +50,7 @@ def correct_adjustments(
     return start, end
 
 
-def calculate_adjustment(timestamp: int, do_not_align_segments: List[object]) -> int:
+def calculate_adjustment(timestamp: int, do_not_align_segments: List[dict]) -> int:
     """ Given a time (in ms) and a list of do-not-align segments,
         return the sum (ms) of the lengths of the do-not-align segments
         that start before the timestamp
@@ -63,12 +63,7 @@ def calculate_adjustment(timestamp: int, do_not_align_segments: List[object]) ->
 
 
 def align_audio(
-    xml_path: str,
-    audio_path: str,
-    unit: str = "w",
-    bare=False,
-    config=None,
-    save_temps: Union[str, None] = None,
+    xml_path, audio_path, unit="w", bare=False, config=None, save_temps=None,
 ):
     """ Align an XML input file to an audio file.
 
@@ -106,7 +101,7 @@ def align_audio(
     RuntimeError
         [description]
     """
-    results = {"words": []}
+    results: Dict[str, List] = {"words": []}
 
     # First do G2P
     try:
@@ -172,9 +167,8 @@ def align_audio(
             dna_method = remove_section
         else:
             LOGGER.error("Unknown do-not-align method declared")
-            dna_method = None
         # Process audio and save temporary files
-        if dna_method:
+        if method == "mute" or method == "remove":
             processed_audio = audio
             for seg in do_not_align_segments:
                 processed_audio = dna_method(
@@ -501,9 +495,7 @@ TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 
 
 def create_input_xml(
-    inputfile: str,
-    text_language: Union[str, None] = None,
-    save_temps: Union[str, None] = None,
+    inputfile, text_language=None, save_temps=None,
 ):
     """Create input XML
 
@@ -556,7 +548,7 @@ def create_input_xml(
     return outfile, filename
 
 
-def create_input_tei(text: str, **kwargs):
+def create_input_tei(text, **kwargs):
     """ Create input xml in TEI standard.
         Uses readlines to infer paragraph and sentence structure from plain text.
         TODO: Check if path, if it's just plain text, then render that instead of reading from the file
