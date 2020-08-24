@@ -11,15 +11,17 @@ repos:
     hooks:
     -   id: flake8
 -   repo: local
+    # Using local repos because these won't work for me from remote repo -EJ
     hooks:
+    -   id: isort
+        name: isort
+        entry: isort
+        language: system
+        types: [python]
+        stages: [commit]
     -   id: black
-        # Using local black because it won't work for me from remote repo -EJ
         name: black
         entry: black
         language: system
         types: [python]
         stages: [commit]
--   repo: https://github.com/PyCQA/isort
-    rev: 5.4.2
-    hooks:
-    -   id: isort
