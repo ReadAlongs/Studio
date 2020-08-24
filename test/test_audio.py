@@ -2,19 +2,16 @@
 
 import os
 import tempfile
-from readalongs.log import LOGGER
 from pathlib import Path
-from subprocess import run
 from shutil import rmtree
+from subprocess import run
 from unittest import TestCase, main
-from readalongs.audio_utils import (
-    read_audio_from_file,
-    write_audio_to_file,
-    mute_section,
-    join_section,
-    remove_section,
-)
+
 from readalongs.align import calculate_adjustment, correct_adjustments
+from readalongs.audio_utils import (join_section, mute_section,
+                                    read_audio_from_file, remove_section,
+                                    write_audio_to_file)
+from readalongs.log import LOGGER
 
 
 class TestAudio(TestCase):

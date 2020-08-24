@@ -1,7 +1,9 @@
-import os
-from setuptools import setup, find_packages
-import readalongs
 import datetime as dt
+import os
+
+from setuptools import find_packages, setup
+
+import readalongs
 
 build_no = dt.datetime.today().strftime("%Y%m%d")
 version_path = os.path.join(os.path.dirname(readalongs.__file__), "_version.py")

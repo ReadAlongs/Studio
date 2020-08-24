@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from unittest import TestCase, main
+
 from lxml import etree
 
 from readalongs.text import tokenize_xml

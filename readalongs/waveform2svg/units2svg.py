@@ -14,17 +14,21 @@
 #
 ###################################################
 
-from __future__ import print_function, unicode_literals, division, absolute_import
-from io import open
-from readalongs.log import LOGGER
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
 import argparse
 import os
+from collections import OrderedDict
+from io import open
+
+import librosa
 import numpy as np
 import pystache
-from lxml import etree
-import librosa
-from collections import OrderedDict
 from audio_util import save_txt
+from lxml import etree
+
+from readalongs.log import LOGGER
 
 FMIN = 80
 FMAX = 1000

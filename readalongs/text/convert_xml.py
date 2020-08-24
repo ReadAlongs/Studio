@@ -36,26 +36,23 @@
 # TODO: Document functions
 ############################################################################
 
-from __future__ import print_function, unicode_literals
-from __future__ import division, absolute_import
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
 import argparse
 import copy
 import os
 
 from g2p import make_g2p
-from g2p.transducer import TransductionGraph, CompositeTransductionGraph
+from g2p.transducer import CompositeTransductionGraph, TransductionGraph
 
-from readalongs.text.util import load_xml, save_xml, get_lang_attrib, compose_tiers
-from readalongs.text.util import (
-    compose_indices,
-    increment_indices,
-    increment_tiers,
-    trim_indices,
-    offset_indices,
-)
-from readalongs.text.util import unicode_normalize_xml
 from readalongs.text.lexicon_g2p import LexiconG2P
 from readalongs.text.lexicon_g2p_mappings import __file__ as LEXICON_PATH
+from readalongs.text.util import (compose_indices, compose_tiers,
+                                  get_lang_attrib, increment_indices,
+                                  increment_tiers, load_xml, offset_indices,
+                                  save_xml, trim_indices,
+                                  unicode_normalize_xml)
 
 
 def iterate_over_text(element):

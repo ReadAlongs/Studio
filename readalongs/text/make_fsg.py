@@ -13,15 +13,17 @@
 ##################################################
 
 
-from __future__ import print_function, unicode_literals
-from __future__ import division, absolute_import
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
 import argparse
 import os
-import pystache
-from readalongs.log import LOGGER
-from slugify import slugify
-from readalongs.text.util import save_txt, load_xml
 
+import pystache
+from slugify import slugify
+
+from readalongs.log import LOGGER
+from readalongs.text.util import load_xml, save_txt
 
 FSG_TEMPLATE = """FSG_BEGIN {{name}}
 NUM_STATES {{num_states}}

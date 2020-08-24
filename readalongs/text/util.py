@@ -10,17 +10,17 @@
 # TODO: Add numpy standard format docstrings
 ############################################
 
-from __future__ import print_function, unicode_literals, division
+from __future__ import division, print_function, unicode_literals
 
-import os
 import json
+import os
 import zipfile
-from copy import deepcopy
 from collections import OrderedDict
-from unicodedata import normalize, category
+from copy import deepcopy
+from io import TextIOWrapper, open
+from unicodedata import category, normalize
 
 from lxml import etree
-from io import open, TextIOWrapper
 
 from readalongs.log import LOGGER
 

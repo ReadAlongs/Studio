@@ -6,9 +6,10 @@ while on Windows, you cannot reopen the file unless you've closed it first.
 So this wrapper deletes the file on exit or object deletion instead of closing.
 """
 
-from readalongs.log import LOGGER
-from tempfile import NamedTemporaryFile, template, _TemporaryFileWrapper
 import os
+from tempfile import NamedTemporaryFile, _TemporaryFileWrapper, template
+
+from readalongs.log import LOGGER
 
 
 class _PortableNamedTemporaryFileWrapperSubclass(_TemporaryFileWrapper):

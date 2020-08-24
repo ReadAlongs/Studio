@@ -16,16 +16,16 @@
 #
 ###################################################
 
-from __future__ import print_function, unicode_literals
-from __future__ import division, absolute_import
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
+import argparse
 from collections import defaultdict
 from copy import deepcopy
-import argparse
 
 from lxml import etree
 
-from readalongs.text.util import load_xml, save_xml, is_do_not_align
+from readalongs.text.util import is_do_not_align, load_xml, save_xml
 
 TAG_TO_ID = {
     "text": "t",

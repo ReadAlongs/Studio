@@ -25,12 +25,14 @@
 # TODO: Move this to the G2P library
 ######################################################################
 
-from __future__ import print_function, unicode_literals, division
-from readalongs.log import LOGGER
+from __future__ import division, print_function, unicode_literals
+
 import os
 from collections import defaultdict
 from unicodedata import normalize
-from readalongs.text.util import load_txt, load_json
+
+from readalongs.log import LOGGER
+from readalongs.text.util import load_json, load_txt
 
 
 def sphinx_lexicon_loader(input_path):

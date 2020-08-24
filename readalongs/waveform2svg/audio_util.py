@@ -14,11 +14,14 @@
 #
 ###################################################
 
-from __future__ import print_function, unicode_literals, division, absolute_import
-from io import open
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
 import os
-import numpy as np
+from io import open
+
 import librosa
+import numpy as np
 from lxml import etree
 
 SAMPLE_RATE = 16000

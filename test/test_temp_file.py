@@ -4,12 +4,12 @@
 Test PortableNamedTemporaryFile class
 """
 
-import unittest
 import os
 import sys
+import unittest
+from tempfile import NamedTemporaryFile
 
 from readalongs.log import LOGGER
-from tempfile import NamedTemporaryFile
 from readalongs.tempfile import PortableNamedTemporaryFile
 
 

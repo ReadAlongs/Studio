@@ -17,8 +17,8 @@
 # TODO: Add numpy standard docstrings to functions
 ###################################################
 
-from __future__ import print_function, unicode_literals
-from __future__ import division, absolute_import
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import argparse
 from unicodedata import normalize
@@ -28,13 +28,8 @@ from g2p.mappings import Mapping
 from g2p.mappings.langs import MAPPINGS_AVAILABLE
 from g2p.mappings.utils import is_dummy, is_ipa, is_xsampa
 
-from readalongs.text.util import (
-    load_xml,
-    save_xml,
-    get_lang_attrib,
-    set_lang_attrib,
-    iterate_over_text,
-)
+from readalongs.text.util import (get_lang_attrib, iterate_over_text, load_xml,
+                                  save_xml, set_lang_attrib)
 
 
 class LanguageIdentifier:

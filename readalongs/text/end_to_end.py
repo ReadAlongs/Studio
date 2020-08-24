@@ -24,19 +24,19 @@
 # TODO: Add numpy standard docstrings to functions
 ##########################################################################
 
-from __future__ import print_function, unicode_literals
-from __future__ import division, absolute_import
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
-from readalongs.log import LOGGER
 import argparse
 
-from readalongs.text.lang_id import add_lang_ids
+from readalongs.log import LOGGER
 from readalongs.text.add_ids_to_xml import add_ids
-from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.convert_xml import convert_xml
-from readalongs.text.make_fsg import make_fsg
+from readalongs.text.lang_id import add_lang_ids
 from readalongs.text.make_dict import make_dict
-from readalongs.text.util import save_xml, load_xml, save_txt
+from readalongs.text.make_fsg import make_fsg
+from readalongs.text.tokenize_xml import tokenize_xml
+from readalongs.text.util import load_xml, save_txt, save_xml
 
 
 def end_to_end(xml, input_filename, unit, word_unit, out_orth):

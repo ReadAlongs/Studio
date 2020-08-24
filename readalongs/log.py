@@ -10,6 +10,7 @@
 #######################################################################
 
 import logging
+
 import coloredlogs
 
 FIELD_STYLES = dict(levelname=dict(color="green", bold=coloredlogs.CAN_USE_BOLD_FONT),)

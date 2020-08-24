@@ -1,18 +1,14 @@
 #!/usr/bin/env python3
 
-from unittest import main, TestCase
-
-from readalongs.log import LOGGER
-from readalongs.text.util import (
-    compose_indices,
-    compose_tiers,
-    increment_indices,
-    increment_tiers,
-)
+from unittest import TestCase, main
 
 from g2p import make_g2p
 from g2p.mappings import Mapping
 from g2p.transducer import Transducer
+
+from readalongs.log import LOGGER
+from readalongs.text.util import (compose_indices, compose_tiers,
+                                  increment_indices, increment_tiers)
 
 
 class TestIndices(TestCase):

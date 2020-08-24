@@ -9,29 +9,30 @@
 #
 #######################################################################
 
-from readalongs.tempfile import PortableNamedTemporaryFile
+import io
+import os
 from datetime import timedelta
 from typing import List, Union
-import os
-import io
 
-from webvtt import WebVTT, Caption
-from pympi.Praat import TextGrid
-from pydub.exceptions import CouldntEncodeError
-from lxml import etree
-import soundswallower
-import regex as re
 import pystache
+import regex as re
+import soundswallower
+from lxml import etree
+from pydub.exceptions import CouldntEncodeError
+from pympi.Praat import TextGrid
+from webvtt import Caption, WebVTT
 
-from readalongs.audio_utils import mute_section, read_audio_from_file, remove_section
-from readalongs.text.tokenize_xml import tokenize_xml
-from readalongs.text.convert_xml import convert_xml
+from readalongs.audio_utils import (mute_section, read_audio_from_file,
+                                    remove_section)
+from readalongs.log import LOGGER
+from readalongs.tempfile import PortableNamedTemporaryFile
 from readalongs.text.add_ids_to_xml import add_ids
+from readalongs.text.convert_xml import convert_xml
 from readalongs.text.lang_id import add_lang_ids
 from readalongs.text.make_dict import make_dict
 from readalongs.text.make_fsg import make_fsg
+from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import save_xml
-from readalongs.log import LOGGER
 
 
 def correct_adjustments(

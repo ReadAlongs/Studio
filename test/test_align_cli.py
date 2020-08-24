@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-from unittest import main, TestCase
-import tempfile
-import os
 import io
+import os
+import tempfile
+from unittest import TestCase, main
 
-from readalongs.log import LOGGER
 from readalongs.app import app
 from readalongs.cli import align
+from readalongs.log import LOGGER
 
 
 class TestAlignCli(TestCase):

@@ -30,22 +30,22 @@
 ##################################################
 
 
-from __future__ import print_function, unicode_literals
-from __future__ import division, absolute_import
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
-import re
 import argparse
+import re
 from copy import deepcopy
 
-from lxml import etree
 from g2p.mappings import Mapping
 from g2p.mappings.langs import MAPPINGS_AVAILABLE
+from lxml import etree
 
 from readalongs.log import LOGGER
-from readalongs.text.util import get_lang_attrib, merge_if_same_label
-from readalongs.text.util import is_do_not_align, is_do_not_align_recursive
-from readalongs.text.util import load_xml, save_xml
-from readalongs.text.util import unicode_normalize_xml, get_unicode_category
+from readalongs.text.util import (get_lang_attrib, get_unicode_category,
+                                  is_do_not_align, is_do_not_align_recursive,
+                                  load_xml, merge_if_same_label, save_xml,
+                                  unicode_normalize_xml)
 
 
 class DefaultTokenizer:

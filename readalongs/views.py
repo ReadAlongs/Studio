@@ -11,19 +11,19 @@
 #
 #######################################################################
 
-import os
 import io
+import os
+from datetime import datetime
+from pathlib import Path
 from subprocess import run
 from tempfile import mkdtemp
-
-from pathlib import Path
 from zipfile import ZipFile
-from networkx import has_path
+
+from flask import (abort, redirect, render_template, request, send_file,
+                   session, url_for)
 from flask_socketio import emit
 from g2p.mappings.langs import LANGS_AVAILABLE, LANGS_NETWORK
-from flask import abort, redirect, request, render_template, session, send_file, url_for
-
-from datetime import datetime
+from networkx import has_path
 
 from readalongs.app import app, socketio
 from readalongs.log import LOGGER

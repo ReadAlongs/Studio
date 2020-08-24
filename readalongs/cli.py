@@ -20,31 +20,26 @@
 #
 #######################################################################
 
-import os
 import json
+import os
 import shutil
 from tempfile import TemporaryFile
 
 import click
-from networkx import has_path
 from flask.cli import FlaskGroup
 from g2p.mappings.langs import LANGS_AVAILABLE, LANGS_NETWORK
+from networkx import has_path
 
-from readalongs.app import app
-from readalongs.log import LOGGER
-from readalongs.align import align_audio
 from readalongs._version import __version__
-from readalongs.text.make_smil import make_smil
-from readalongs.text.util import save_xml, save_txt
-from readalongs.epub.create_epub import create_epub
-from readalongs.align import write_to_subtitles, write_to_text_grid
-from readalongs.align import (
-    create_input_tei,
-    convert_to_xhtml,
-    return_words_and_sentences,
-)
+from readalongs.align import (align_audio, convert_to_xhtml, create_input_tei,
+                              return_words_and_sentences, write_to_subtitles,
+                              write_to_text_grid)
+from readalongs.app import app
 from readalongs.audio_utils import read_audio_from_file
-
+from readalongs.epub.create_epub import create_epub
+from readalongs.log import LOGGER
+from readalongs.text.make_smil import make_smil
+from readalongs.text.util import save_txt, save_xml
 
 # get the key from all networks in text module that have a path to 'eng-arpabet'
 # which is needed for the readalongs

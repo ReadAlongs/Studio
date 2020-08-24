@@ -4,20 +4,17 @@
 Test force-alignment with PocketSphinx FSG search from Python API
 """
 
-import unittest
-import tempfile
 import os
+import tempfile
+import unittest
+
 from lxml import etree
 
+from readalongs.align import (align_audio, convert_to_xhtml, create_input_tei,
+                              create_input_xml)
 from readalongs.log import LOGGER
-from readalongs.align import (
-    align_audio,
-    create_input_tei,
-    create_input_xml,
-    convert_to_xhtml,
-)
-from readalongs.text.util import save_xml, load_txt
 from readalongs.tempfile import PortableNamedTemporaryFile
+from readalongs.text.util import load_txt, save_xml
 
 
 class TestForceAlignment(unittest.TestCase):

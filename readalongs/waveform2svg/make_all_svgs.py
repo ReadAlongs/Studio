@@ -9,14 +9,16 @@
 #
 ########################################################
 
-from __future__ import print_function, unicode_literals, division, absolute_import
-from io import open
-import argparse
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
-from waveform2svg import make_waveform_svg
+import argparse
+from io import open
+
+from audio_util import save_txt
 from pitch2svg import make_pitch_svg
 from units2svg import make_units_svg
-from audio_util import save_txt
+from waveform2svg import make_waveform_svg
 
 
 def main(

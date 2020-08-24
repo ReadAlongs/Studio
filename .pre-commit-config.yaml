@@ -19,3 +19,7 @@ repos:
         language: system
         types: [python]
         stages: [commit]
+-   repo: https://github.com/PyCQA/isort
+    rev: 5.4.2
+    hooks:
+    -   id: isort

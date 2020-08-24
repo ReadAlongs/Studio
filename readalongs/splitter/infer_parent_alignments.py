@@ -7,15 +7,19 @@
 #
 ###################################################
 
-from __future__ import print_function, unicode_literals, division, absolute_import
-from io import open
-from readalongs.log import LOGGER
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+
 import argparse
-import os
-from readalongs.g2p.util import load_xml, xpath_default, save_txt
-from collections import defaultdict
 import math
+import os
+from collections import defaultdict
+from io import open
+
 import pystache
+
+from readalongs.g2p.util import load_xml, save_txt, xpath_default
+from readalongs.log import LOGGER
 
 SMIL_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 <smil xmlns="http://www.w3.org/ns/SMIL" version="3.0">

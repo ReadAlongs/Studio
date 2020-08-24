@@ -3,6 +3,7 @@
 """ Run ReadAlong Studio as web application """
 
 import os
+
 from readalongs.app import app, socketio
 
 HOST = "0.0.0.0"

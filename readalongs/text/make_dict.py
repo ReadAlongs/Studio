@@ -13,13 +13,15 @@
 ##################################################
 
 
-from __future__ import print_function, unicode_literals
-from __future__ import division, absolute_import
-from readalongs.log import LOGGER
-import argparse
-import pystache
-from readalongs.text.util import load_xml, save_txt
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
+import argparse
+
+import pystache
+
+from readalongs.log import LOGGER
+from readalongs.text.util import load_xml, save_txt
 
 DICT_TEMPLATE = """{{#items}}
 {{id}}\t{{pronunciation}}

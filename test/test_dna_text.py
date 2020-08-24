@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
-from unittest import main, TestCase
-import tempfile
 import os
+import tempfile
+from unittest import TestCase, main
+
 from lxml import etree
 
-from readalongs.log import LOGGER
 from readalongs.app import app
+from readalongs.log import LOGGER
 from readalongs.text import tokenize_xml
 from readalongs.text.add_ids_to_xml import add_ids
 

@@ -14,6 +14,7 @@ import os
 
 from flask import Flask
 from flask_socketio import SocketIO
+
 from flask_session import Session
 
 app = Flask(__name__)
