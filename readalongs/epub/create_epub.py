@@ -7,8 +7,7 @@
 #
 ######################################################################
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
 import shutil
@@ -16,9 +15,15 @@ import shutil
 import pystache
 
 from readalongs.log import LOGGER
-from readalongs.text.util import (copy_file_to_zip, ensure_dirs, load_txt,
-                                  load_xml, load_xml_with_encoding, save_txt,
-                                  save_txt_zip)
+from readalongs.text.util import (
+    copy_file_to_zip,
+    ensure_dirs,
+    load_txt,
+    load_xml,
+    load_xml_with_encoding,
+    save_txt,
+    save_txt_zip,
+)
 
 EPUB_PATH = "EPUB"
 RESOURCES = os.path.dirname(__file__)

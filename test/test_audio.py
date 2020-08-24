@@ -8,9 +8,13 @@ from subprocess import run
 from unittest import TestCase, main
 
 from readalongs.align import calculate_adjustment, correct_adjustments
-from readalongs.audio_utils import (join_section, mute_section,
-                                    read_audio_from_file, remove_section,
-                                    write_audio_to_file)
+from readalongs.audio_utils import (
+    join_section,
+    mute_section,
+    read_audio_from_file,
+    remove_section,
+    write_audio_to_file,
+)
 from readalongs.log import LOGGER
 
 

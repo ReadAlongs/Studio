@@ -30,8 +30,7 @@
 ##################################################
 
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import argparse
 import re
@@ -42,10 +41,16 @@ from g2p.mappings.langs import MAPPINGS_AVAILABLE
 from lxml import etree
 
 from readalongs.log import LOGGER
-from readalongs.text.util import (get_lang_attrib, get_unicode_category,
-                                  is_do_not_align, is_do_not_align_recursive,
-                                  load_xml, merge_if_same_label, save_xml,
-                                  unicode_normalize_xml)
+from readalongs.text.util import (
+    get_lang_attrib,
+    get_unicode_category,
+    is_do_not_align,
+    is_do_not_align_recursive,
+    load_xml,
+    merge_if_same_label,
+    save_xml,
+    unicode_normalize_xml,
+)
 
 
 class DefaultTokenizer:

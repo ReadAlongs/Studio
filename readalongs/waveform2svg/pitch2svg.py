@@ -14,8 +14,7 @@
 #
 ###################################################
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import argparse
 import os
@@ -27,8 +26,12 @@ import numpy as np
 import pystache
 
 from readalongs.log import LOGGER
-from readalongs.waveform2svg.audio_util import (SAMPLE_RATE, load_wav_or_smil,
-                                                save_txt, smooth)
+from readalongs.waveform2svg.audio_util import (
+    SAMPLE_RATE,
+    load_wav_or_smil,
+    save_txt,
+    smooth,
+)
 
 FMIN = 80
 FMAX = 1000

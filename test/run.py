@@ -6,12 +6,15 @@ from unittest import TestLoader, TestSuite, TextTestRunner
 
 from test_align_cli import TestAlignCli
 from test_audio import TestAudio
+
 ## End-to-End
 from test_force_align import TestForceAlignment, TestXHTML
+
 # Unit tests
 from test_indices import TestIndices
 from test_prepare_cli import TestPrepareCli
 from test_temp_file import TestTempFile
+
 ## Other tests
 from test_tokenize_xml import TestTokenizer
 

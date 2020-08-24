@@ -19,8 +19,7 @@ from subprocess import run
 from tempfile import mkdtemp
 from zipfile import ZipFile
 
-from flask import (abort, redirect, render_template, request, send_file,
-                   session, url_for)
+from flask import abort, redirect, render_template, request, send_file, session, url_for
 from flask_socketio import emit
 from g2p.mappings.langs import LANGS_AVAILABLE, LANGS_NETWORK
 from networkx import has_path

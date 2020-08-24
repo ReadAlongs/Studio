@@ -7,8 +7,12 @@ from g2p.mappings import Mapping
 from g2p.transducer import Transducer
 
 from readalongs.log import LOGGER
-from readalongs.text.util import (compose_indices, compose_tiers,
-                                  increment_indices, increment_tiers)
+from readalongs.text.util import (
+    compose_indices,
+    compose_tiers,
+    increment_indices,
+    increment_tiers,
+)
 
 
 class TestIndices(TestCase):

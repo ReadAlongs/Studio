@@ -31,9 +31,14 @@ from g2p.mappings.langs import LANGS_AVAILABLE, LANGS_NETWORK
 from networkx import has_path
 
 from readalongs._version import __version__
-from readalongs.align import (align_audio, convert_to_xhtml, create_input_tei,
-                              return_words_and_sentences, write_to_subtitles,
-                              write_to_text_grid)
+from readalongs.align import (
+    align_audio,
+    convert_to_xhtml,
+    create_input_tei,
+    return_words_and_sentences,
+    write_to_subtitles,
+    write_to_text_grid,
+)
 from readalongs.app import app
 from readalongs.audio_utils import read_audio_from_file
 from readalongs.epub.create_epub import create_epub

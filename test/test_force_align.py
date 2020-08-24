@@ -10,8 +10,12 @@ import unittest
 
 from lxml import etree
 
-from readalongs.align import (align_audio, convert_to_xhtml, create_input_tei,
-                              create_input_xml)
+from readalongs.align import (
+    align_audio,
+    convert_to_xhtml,
+    create_input_tei,
+    create_input_xml,
+)
 from readalongs.log import LOGGER
 from readalongs.tempfile import PortableNamedTemporaryFile
 from readalongs.text.util import load_txt, save_xml

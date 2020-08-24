@@ -22,8 +22,7 @@ from pydub.exceptions import CouldntEncodeError
 from pympi.Praat import TextGrid
 from webvtt import Caption, WebVTT
 
-from readalongs.audio_utils import (mute_section, read_audio_from_file,
-                                    remove_section)
+from readalongs.audio_utils import mute_section, read_audio_from_file, remove_section
 from readalongs.log import LOGGER
 from readalongs.tempfile import PortableNamedTemporaryFile
 from readalongs.text.add_ids_to_xml import add_ids
