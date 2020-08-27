@@ -117,7 +117,7 @@ Feel free to dive in! [Open an issue](https://github.com/dhdaines/ReadAlong-Stud
 
 This repo follows the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.
 
-Have a look at [Contributors.md](Contributors.md) for help getting started.
+Have a look at [Contributing.md](Contributing.md) for help getting started.
 
 ### Contributors
 
