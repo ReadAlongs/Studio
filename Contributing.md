@@ -21,10 +21,14 @@ Pre-commit hooks enabled:
 - check-yaml validates YAML files
 - end-of-file-fixer makes sure each text file ends with exactly one newline character
 - trailing-whitespace removes superfluous whitespace at the end of lines in text files
-- [Flake8](https://flake8.pycqa.org/) enforces good Python style rules
+- [Flake8](https://flake8.pycqa.org/) enforces good Python style rules; more info about
+  using Flake8 in pre-commit hooks at:
+  [Lj Miranda flake8 blog post](https://ljvmiranda921.github.io/notebook/2018/06/21/precommits-using-black-and-flake8/)
 - [isort](https://pycqa.github.io/isort/) orders python imports in a standard way
 - [Black](https://github.com/psf/black), the Uncompromising Code Formatter, refortmats all
-  Python code according to very strict rules we've agreed to follow
+  Python code according to very strict rules we've agreed to follow; more info about Black
+  formatting rules in
+  [The Black code style](https://black.readthedocs.io/en/stable/the_black_code_style.html)
 - [mypy](http://mypy-lang.org/) runs type checking for any statically-typed Python code in
   the repo
 
@@ -87,9 +91,11 @@ Optional footer: separated from the body (or subject if body is empty) by a blan
 lists reference (e.g.: "Closes #12" "Ref #24") or warns of breaking changes (e.g.,
 "BREAKING CHANGE: explanation").
 
-These rules are inspired from the [Bluejava commit guide](https://github.com/bluejava/git-commit-guide)
-and [develar's commit message format](https://gist.github.com/develar/273e2eb938792cf5f86451fbac2bcd51) and the
-[AngularJS Git Commit Message Conventions](https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y).
+These rules are inspired by these commit formatting guides:
+ - [Conventional Commits](https://www.conventionalcommits.org/)
+ - [Bluejava commit guide](https://github.com/bluejava/git-commit-guide)
+ - [develar's commit message format](https://gist.github.com/develar/273e2eb938792cf5f86451fbac2bcd51)
+ - [AngularJS Git Commit Message Conventions](https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y).
 
 ### Enabling commitlint
 
