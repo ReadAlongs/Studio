@@ -58,8 +58,8 @@ The best thing to do is install with pip `pip install readalongs`.
 Otherwise, clone the repo and pip install it locally.
 
 ```sh
-$ git clone https://github.com/dhdaines/ReadAlong-Studio.git
-$ cd ReadAlong-Studio
+$ git clone https://github.com/Readalongs/Studio.git
+$ cd Studio
 $ pip install -e .
 ```
 
@@ -110,10 +110,11 @@ Then you should be able to visit http://localhost:5000/.
 [@dhdaines](https://github.com/dhdaines).
 [@littell](https://github.com/littell).
 [@roedoejet](https://github.com/roedoejet).
+[@joanise](https://github.com/joanise).
 
 ## Contributing
 
-Feel free to dive in! [Open an issue](https://github.com/dhdaines/ReadAlong-Studio/issues/new) or submit PRs.
+Feel free to dive in! [Open an issue](https://github.com/ReadAlongs/Studio/issues/new) or submit PRs.
 
 This repo follows the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.
 

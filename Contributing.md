@@ -1,6 +1,6 @@
 # Contributing to ReadAlong Studio
 
-Feel free to dive in! [Open an issue](https://github.com/dhdaines/ReadAlong-Studio/issues/new) or submit PRs.
+Feel free to dive in! [Open an issue](https://github.com/ReadAlongs/Studio/issues/new) or submit PRs.
 
 This repo follows the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.
 
