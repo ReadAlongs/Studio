@@ -58,7 +58,7 @@ The best thing to do is install with pip `pip install readalongs`.
 Otherwise, clone the repo and pip install it locally.
 
 ```sh
-$ git clone https://github.com/Readalongs/Studio.git
+$ git clone https://github.com/ReadAlongs/Studio.git
 $ cd Studio
 $ pip install -e .
 ```
