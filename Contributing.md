@@ -106,22 +106,17 @@ manager, and you need Node to run it.
 If you don't already use Node, this is a bit more work to install that the pre-commit
 hooks above, but please take a moment to do this:
 
-- If you don't already use Node or nvm, install nvm in your ~/.nvm folder:
+- If you don't already use Node or nvm, or if you don't have admin access to the system
+  version of node, install nvm in your ~/.nvm folder:
 ```sh
-wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash`
+wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
 ```
 This will add a few lines to your `.bashrc` file, which you'll need to execute now,
 possibly by starting a new shell.
 
-- Install Node, preferably version 12.18.3
+- Install Node:
 ```sh
-nvm install node && nvm install 12.18.3
-```
-
-- Use Node 12.18.3: you need to do this each time, so adding it to your .bashrc is a good
-  idea unless you already use other versions of Node for other projects
-```sh
-nvm use 12.18.3
+nvm install node
 ```
 
 - In your ReadAlong/Studio sandbox, install the husky commit-msg hook using npm, the node
