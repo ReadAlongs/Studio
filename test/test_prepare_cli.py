@@ -43,7 +43,7 @@ class TestPrepareCli(TestCase):
     def test_inputfile_not_exist(self):
         results = self.runner.invoke(prepare, "-l atj /file/does/not/exist delme")
         self.assertNotEqual(results.exit_code, 0)
-        self.assertRegex(results.stdout, "INPUTFILE.*does not exist")
+        self.assertRegex(results.stdout, "FILE.*does not exist")
 
     def test_outputfile_exists(self):
         results = self.runner.invoke(
