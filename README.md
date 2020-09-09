@@ -58,12 +58,18 @@ The best thing to do is install with pip `pip install readalongs`.
 Otherwise, clone the repo and pip install it locally.
 
 ```sh
-$ git clone https://github.com/dhdaines/ReadAlong-Studio.git
-$ cd ReadAlong-Studio
+$ git clone https://github.com/ReadAlongs/Studio.git
+$ cd Studio
 $ pip install -e .
 ```
 
-On windows, you must first install [FFmpeg](https://ffmpeg.zeranoe.com/builds/) ([helpful instructions](https://windowsloop.com/install-ffmpeg-windows-10/)), [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017) (search for "Build Tools", select C++ when prompted) and [swigwin](http://www.swig.org/download.html).
+If you don't already have it, you will also need [FFmpeg](https://ffmpeg.org/).
+ - Windows: [FFmpeg builds for Windows](https://ffmpeg.zeranoe.com/builds/) ([helpful instructions](https://windowsloop.com/install-ffmpeg-windows-10/))
+ - Mac: `brew install ffmpeg`
+ - Linux: `<your package manager> install ffmpeg`
+
+On Windows, you might also need [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017) (search for "Build Tools", select C++ when prompted) and [swigwin](http://www.swig.org/download.html).
+(TODO: verify whether these are still needed now that `soundswallower` has replaced `pocketsphinx`.)
 
 ## Usage
 
@@ -110,14 +116,15 @@ Then you should be able to visit http://localhost:5000/.
 [@dhdaines](https://github.com/dhdaines).
 [@littell](https://github.com/littell).
 [@roedoejet](https://github.com/roedoejet).
+[@joanise](https://github.com/joanise).
 
 ## Contributing
 
-Feel free to dive in! [Open an issue](https://github.com/dhdaines/ReadAlong-Studio/issues/new) or submit PRs.
+Feel free to dive in! [Open an issue](https://github.com/ReadAlongs/Studio/issues/new) or submit PRs.
 
 This repo follows the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.
 
-Have a look at [Contributors.md](Contributors.md) for help getting started.
+Have a look at [Contributing.md](Contributing.md) for help getting started.
 
 ### Contributors
 
