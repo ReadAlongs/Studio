@@ -70,7 +70,6 @@ Valid types: (these are the default, which we're using as is for now)
  - docs: adding and changing documentation
  - feat: adding a new feature
  - fix: fixing something
- - improvement: improve something
  - perf: improving performance
  - refactor: refactor code
  - revert: undo a previous change
