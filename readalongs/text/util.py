@@ -206,6 +206,40 @@ def load_tsv(input_path, labels):
     return results
 
 
+MINIMAL_INDEX_HTML_TEMPLATE = """<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Insert Title Here</title>
+        <!-- Import fonts. Material Icons are needed by the web component -->
+        <link href="https://fonts.googleapis.com/css?family=Lato%7CMaterial+Icons%7CMaterial+Icons+Outlined" rel="stylesheet">
+    </head>
+
+    <body>
+        <!-- Here is how you declare the Web Component. Supported languages: en, fr -->
+        <read-along text="{}" alignment="{}" audio="{}" language="en">
+            <span slot="read-along-header">Insert Title Here Too</span>
+        </read-along>
+    </body>
+
+    <!-- The last step needed is to import the package -->
+    <script type="module" src='https://unpkg.com/@roedoejet/readalong@latest/dist/read-along/read-along.esm.js'></script>
+    <script nomodule src='https://unpkg.com/@roedoejet/readalong@latest/dist/read-along/read-along.js'></script>
+</html>
+"""
+
+
+def save_minimal_index_html(
+    output_path, tokenized_xml_basename, smil_basename, audio_basename
+):
+    with open(output_path, "w", encoding="utf-8") as fout:
+        fout.write(
+            MINIMAL_INDEX_HTML_TEMPLATE.format(
+                tokenized_xml_basename, smil_basename, audio_basename
+            )
+        )
+
+
 def unicode_normalize_xml(element):
     if element.text:
         element.text = normalize("NFD", unicode(element.text))

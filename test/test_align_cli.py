@@ -43,6 +43,15 @@ class TestAlignCli(TestCase):
             os.path.exists(os.path.join(output, "output.smil")),
             "successful alignment should have created output.smil",
         )
+        self.assertTrue(
+            os.path.exists(os.path.join(output, "index.html")),
+            "successful alignment should have created index.html",
+        )
+        with open(os.path.join(output, "index.html")) as f:
+            self.assertIn(
+                '<read-along text="output.xml" alignment="output.smil" audio="output.m4a"',
+                f.read(),
+            )
 
         # Move the alignment output to compare with further down
         # We cannot just output to a different name because changing the output file name

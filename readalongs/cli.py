@@ -44,7 +44,7 @@ from readalongs.audio_utils import read_audio_from_file
 from readalongs.epub.create_epub import create_epub
 from readalongs.log import LOGGER
 from readalongs.text.make_smil import make_smil
-from readalongs.text.util import save_txt, save_xml
+from readalongs.text.util import save_minimal_index_html, save_txt, save_xml
 
 # get the key from all networks in text module that have a path to 'eng-arpabet'
 # which is needed for the readalongs
@@ -246,6 +246,13 @@ def align(**kwargs):
 
     if kwargs["output_xhtml"]:
         convert_to_xhtml(results["tokenized"])
+
+    save_minimal_index_html(
+        os.path.join(output_dir, "index.html"),
+        os.path.basename(tokenized_xml_path),
+        os.path.basename(smil_path),
+        os.path.basename(audio_path),
+    )
 
     save_xml(tokenized_xml_path, results["tokenized"])
     smil = make_smil(
