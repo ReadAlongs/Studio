@@ -52,6 +52,10 @@ class TestAlignCli(TestCase):
                 '<read-along text="output.xml" alignment="output.smil" audio="output.m4a"',
                 f.read(),
             )
+        self.assertTrue(
+            os.path.exists(os.path.join(output, "tempfiles", "output.tokenized.xml")),
+            "alignment with -s should have created tempfiles/output.tokenized.xml",
+        )
 
         # Move the alignment output to compare with further down
         # We cannot just output to a different name because changing the output file name

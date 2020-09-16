@@ -176,7 +176,16 @@ def align(**kwargs):
             f"Cannot write into output folder '{output_dir}'. Please verify permissions."
         )
 
-    output_base = os.path.join(output_dir, os.path.basename(output_dir))
+    output_basename = os.path.basename(output_dir)
+    output_base = os.path.join(output_dir, output_basename)
+    temp_base = None
+    if kwargs["save_temps"]:
+        temp_dir = os.path.join(output_dir, "tempfiles")
+        if not os.path.isdir(temp_dir):
+            if os.path.exists(temp_dir) and kwargs["force_overwrite"]:
+                os.unlink(temp_dir)
+            os.mkdir(temp_dir)
+        temp_base = os.path.join(temp_dir, output_basename)
 
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
@@ -184,9 +193,7 @@ def align(**kwargs):
         if not kwargs["language"]:
             LOGGER.warn("No input language provided, using undetermined mapping")
         tempfile, kwargs["textfile"] = create_input_tei(
-            kwargs["textfile"],
-            text_language=kwargs["language"],
-            save_temps=(output_base if kwargs["save_temps"] else None),
+            kwargs["textfile"], text_language=kwargs["language"], save_temps=temp_base,
         )
     if kwargs["output_xhtml"]:
         tokenized_xml_path = "%s.xhtml" % output_base
@@ -221,7 +228,7 @@ def align(**kwargs):
             unit=unit,
             bare=bare,
             config=config,
-            save_temps=(output_base if kwargs["save_temps"] else None),
+            save_temps=temp_base,
         )
     except RuntimeError as e:
         LOGGER.error(e)
