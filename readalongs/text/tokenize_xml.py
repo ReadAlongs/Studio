@@ -45,7 +45,6 @@ from readalongs.text.util import (
     get_lang_attrib,
     get_unicode_category,
     is_do_not_align,
-    is_do_not_align_recursive,
     load_xml,
     merge_if_same_label,
     save_xml,
