@@ -41,6 +41,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import argparse
 import copy
 import os
+import unicodedata as ud
 
 from g2p import make_g2p
 from g2p.transducer import CompositeTransductionGraph, TransductionGraph
@@ -151,14 +152,18 @@ def convert_words(xml, word_unit="w", output_orthography="eng-arpabet"):
             all_text += text
             all_indices += indices
         if tg and isinstance(tg, CompositeTransductionGraph):
+            norm_form = converter._transducers[0].norm_form
             indices = increment_tiers(indices)
             all_indices = compose_tiers(indices)
         elif tg and isinstance(tg, TransductionGraph):
+            norm_form = converter.norm_form
             indices = increment_indices(indices)
             all_indices = compose_indices([], indices)
         else:
+            norm_form = None
             all_indices = indices
-        # word.text = all_text
+        if norm_form:
+            word.text = ud.normalize(norm_form, word.text)
         replace_text_in_node(word, all_text, all_indices)
     return xml
 
