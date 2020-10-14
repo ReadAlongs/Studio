@@ -61,7 +61,7 @@ class DefaultTokenizer:
     def tokenize_aux(self, text):
         return text
 
-    def is_word_charcter(self, c):
+    def is_word_character(self, c):
         if not self.case_sensitive:
             c = c.lower()
         if c in self.inventory:
@@ -75,7 +75,7 @@ class DefaultTokenizer:
 
     def tokenize_text(self, text):
         matches = self.tokenize_aux(text)
-        units = [{"text": m, "is_word": self.is_word_charcter(m)} for m in matches]
+        units = [{"text": m, "is_word": self.is_word_character(m)} for m in matches]
         units = merge_if_same_label(units, "text", "is_word")
         return units
 
