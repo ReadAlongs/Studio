@@ -9,8 +9,6 @@ So this wrapper deletes the file on exit or object deletion instead of closing.
 import os
 from tempfile import NamedTemporaryFile, _TemporaryFileWrapper, template  # type: ignore
 
-from readalongs.log import LOGGER
-
 
 class _PortableNamedTemporaryFileWrapperSubclass(_TemporaryFileWrapper):
     def __init__(self):
@@ -21,7 +19,6 @@ class _PortableNamedTemporaryFileWrapper:
     def __init__(self, named_temporary_file):
         self.named_temporary_file = named_temporary_file
         self.name = named_temporary_file.name
-        # LOGGER.info("_PortableNamedTemporaryFileWrapper.name={}".format(self.name))
 
     def __enter__(self):
         self.named_temporary_file.__enter__()
