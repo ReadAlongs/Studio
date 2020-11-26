@@ -19,22 +19,37 @@ from subprocess import run
 from tempfile import mkdtemp
 from zipfile import ZipFile
 
+import g2p.mappings.langs as g2p_langs
 from flask import abort, redirect, render_template, request, send_file, session, url_for
 from flask_socketio import emit
-from g2p.mappings.langs import LANGS_AVAILABLE, LANGS_NETWORK
 from networkx import has_path
 
 from readalongs.app import app, socketio
 from readalongs.log import LOGGER
 
-# get the key from all networks in g2p module that have a path to 'eng-arpabet'
-# which is needed for the readalongs
-LANGS = [
-    {"code": k, "name": v}
-    for x in LANGS_AVAILABLE
-    for k, v in x.items()
-    if LANGS_NETWORK.has_node(k) and has_path(LANGS_NETWORK, k, "eng-arpabet")
+# LANGS_AVAILABLE in g2p lists langs inferred by the directory structure of
+# g2p/mappings/langs, but in ReadAlongs, we need all input languages to any mappings.
+# E.g., for Michif, we need to allow crg-dv and crg-tmd, but not crg, which is what
+# LANGS_AVAILABLE contains. So we define our own list of languages here.
+LANGS_AVAILABLE = [
+    mapping["in_lang"] for k, v in g2p_langs.LANGS.items() for mapping in v["mappings"]
 ]
+
+# get the key from all networks in g2p module that have a path to 'eng-arpabet',
+# which is needed for the readalongs
+# Filter out <lang>-ipa: we only want "normal" input languages.
+LANGS = [
+    x
+    for x in LANGS_AVAILABLE
+    if not x.endswith("-ipa")
+    and g2p_langs.LANGS_NETWORK.has_node(x)
+    and has_path(g2p_langs.LANGS_NETWORK, x, "eng-arpabet")
+]
+
+# Hack to allow old English LexiconG2P
+LANGS += ["eng"]
+# Sort LANGS so the -h messages list them alphabetically
+LANGS = sorted(LANGS)
 
 ALLOWED_TEXT = ["txt", "xml", "docx"]
 ALLOWED_AUDIO = ["wav", "mp3"]

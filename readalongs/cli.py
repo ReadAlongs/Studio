@@ -27,8 +27,6 @@ from tempfile import TemporaryFile
 
 import click
 from flask.cli import FlaskGroup
-from g2p.mappings.langs import LANGS_AVAILABLE, LANGS_NETWORK
-from networkx import has_path
 
 from readalongs._version import __version__
 from readalongs.align import (
@@ -45,18 +43,7 @@ from readalongs.epub.create_epub import create_epub
 from readalongs.log import LOGGER
 from readalongs.text.make_smil import make_smil
 from readalongs.text.util import save_minimal_index_html, save_txt, save_xml
-
-# get the key from all networks in text module that have a path to 'eng-arpabet'
-# which is needed for the readalongs
-LANGS = [
-    k
-    for x in LANGS_AVAILABLE
-    for k in x.keys()
-    if LANGS_NETWORK.has_node(k) and has_path(LANGS_NETWORK, k, "eng-arpabet")
-]
-
-# Hack to allow old English LexiconG2P
-LANGS += ["eng"]
+from readalongs.views import LANGS
 
 
 def create_app():
