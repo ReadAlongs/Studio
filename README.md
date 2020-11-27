@@ -1,7 +1,7 @@
 # ReadAlong-Studio
 
 [![codecov](https://codecov.io/gh/ReadAlongs/Studio/branch/master/graph/badge.svg)](https://codecov.io/gh/ReadAlongs/Studio)
-[![Build Status](https://travis-ci.org/ReadAlongs/Studio.svg?branch=master)](https://travis-ci.org/ReadAlongs/Studio)
+[![Build Status](https://travis-ci.com/ReadAlongs/Studio.svg?branch=master)](https://travis-ci.com/ReadAlongs/Studio)
 [![PyPI package](https://img.shields.io/pypi/v/readalongs.svg)](https://pypi.org/project/readalongs/)
 [![GitHub license](https://img.shields.io/github/license/ReadAlongs/Studio)](https://github.com/ReadAlongs/Studio/blob/master/LICENSE)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/ReadAlongs/Studio)
