@@ -49,10 +49,13 @@ for k, v in g2p_langs.LANGS.items():
 # get the key from all networks in g2p module that have a path to 'eng-arpabet',
 # which is needed for the readalongs
 # Filter out <lang>-ipa: we only want "normal" input languages.
+# Filter out *-norm and crk-no-symbols, these are just intermediate representations.
 LANGS = [
     x
     for x in LANGS_AVAILABLE
     if not x.endswith("-ipa")
+    and not x.endswith("-norm")
+    and not x.endswith("-no-symbols")
     and g2p_langs.LANGS_NETWORK.has_node(x)
     and has_path(g2p_langs.LANGS_NETWORK, x, "eng-arpabet")
 ]
