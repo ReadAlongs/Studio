@@ -19,22 +19,51 @@ from subprocess import run
 from tempfile import mkdtemp
 from zipfile import ZipFile
 
+import g2p.mappings.langs as g2p_langs
 from flask import abort, redirect, render_template, request, send_file, session, url_for
 from flask_socketio import emit
-from g2p.mappings.langs import LANGS_AVAILABLE, LANGS_NETWORK
 from networkx import has_path
 
 from readalongs.app import app, socketio
 from readalongs.log import LOGGER
 
-# get the key from all networks in g2p module that have a path to 'eng-arpabet'
+
+# LANGS_AVAILABLE in g2p lists langs inferred by the directory structure of
+# g2p/mappings/langs, but in ReadAlongs, we need all input languages to any mappings.
+# E.g., for Michif, we need to allow crg-dv and crg-tmd, but not crg, which is what
+# LANGS_AVAILABLE contains. So we define our own list of languages here.
+LANGS_AVAILABLE = []
+
+# Set up LANG_NAMES hash table for studio UI to
+# properly name the dropdown options
+LANG_NAMES = {"eng": "English"}
+
+for k, v in g2p_langs.LANGS.items():
+    for mapping in v["mappings"]:
+        # add mapping to names hash table
+        LANG_NAMES[mapping["in_lang"]] = mapping["language_name"]
+        # add input id to all available langs list
+        if mapping['in_lang'] not in LANGS_AVAILABLE:
+            LANGS_AVAILABLE.append(mapping["in_lang"])
+
+# get the key from all networks in g2p module that have a path to 'eng-arpabet',
 # which is needed for the readalongs
+# Filter out <lang>-ipa: we only want "normal" input languages.
+# Filter out *-norm and crk-no-symbols, these are just intermediate representations.
 LANGS = [
-    {"code": k, "name": v}
+    x
     for x in LANGS_AVAILABLE
-    for k, v in x.items()
-    if LANGS_NETWORK.has_node(k) and has_path(LANGS_NETWORK, k, "eng-arpabet")
+    if not x.endswith("-ipa")
+    and not x.endswith("-norm")
+    and not x.endswith("-no-symbols")
+    and g2p_langs.LANGS_NETWORK.has_node(x)
+    and has_path(g2p_langs.LANGS_NETWORK, x, "eng-arpabet")
 ]
+
+# Hack to allow old English LexiconG2P
+LANGS += ["eng"]
+# Sort LANGS so the -h messages list them alphabetically
+LANGS = sorted(LANGS)
 
 ALLOWED_TEXT = ["txt", "xml", "docx"]
 ALLOWED_AUDIO = ["wav", "mp3"]
@@ -163,12 +192,13 @@ def steps(step):
         session["temp_dir"] = mkdtemp()
         temp_dir = session["temp_dir"]
         return render_template(
-            "upload.html", uploaded=uploaded_files(temp_dir), maps=LANGS
+            "upload.html",
+            uploaded=uploaded_files(temp_dir),
+            maps=[{"code": m, "name": LANG_NAMES[m]} for m in LANGS],
         )
     elif step == 2:
         return render_template("preview.html")
     elif step == 3:
-        timestamp = str(int(datetime.now().timestamp()))
         if "audio" not in session or "text" not in session:
             log = "Sorry, it looks like something is wrong with your audio or text. Please try again"
         else:
@@ -180,6 +210,7 @@ def steps(step):
                 flags.append("--text-input")
                 flags.append("--language")
                 flags.append(session["config"]["lang"])
+            timestamp = str(int(datetime.now().timestamp()))
             output_base = "aligned" + timestamp
             args = (
                 ["readalongs", "align"]
@@ -222,7 +253,7 @@ def show_zip(base):
         "temp_dir" not in session
         or not os.path.exists(session["temp_dir"])
         or not files_to_download
-        or not any([x.startswith("aligned") for x in files_to_download])
+        or not any(x.startswith("aligned") for x in files_to_download)
     ):
         return abort(
             404, "Nothing to download. Please go to Step 1 of the Read Along Studio"

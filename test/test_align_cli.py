@@ -87,6 +87,14 @@ class TestAlignCli(TestCase):
         ) as f2:
             self.assertListEqual(list(f1), list(f2))
 
+    def test_align_help(self):
+        # Validates that readalongs align -h lists all in-langs that can map to eng-arpabet
+        results = self.runner.invoke(align, "-h")
+        self.assertEqual(results.exit_code, 0)
+        self.assertIn("|crg-tmd|", results.stdout)
+        self.assertIn("|crg-dv|", results.stdout)
+        self.assertNotIn("|crg|", results.stdout)
+
 
 if __name__ == "__main__":
     main()
