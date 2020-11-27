@@ -27,7 +27,6 @@ from networkx import has_path
 from readalongs.app import app, socketio
 from readalongs.log import LOGGER
 
-
 # LANGS_AVAILABLE in g2p lists langs inferred by the directory structure of
 # g2p/mappings/langs, but in ReadAlongs, we need all input languages to any mappings.
 # E.g., for Michif, we need to allow crg-dv and crg-tmd, but not crg, which is what
@@ -43,7 +42,7 @@ for k, v in g2p_langs.LANGS.items():
         # add mapping to names hash table
         LANG_NAMES[mapping["in_lang"]] = mapping["language_name"]
         # add input id to all available langs list
-        if mapping['in_lang'] not in LANGS_AVAILABLE:
+        if mapping["in_lang"] not in LANGS_AVAILABLE:
             LANGS_AVAILABLE.append(mapping["in_lang"])
 
 # get the key from all networks in g2p module that have a path to 'eng-arpabet',
