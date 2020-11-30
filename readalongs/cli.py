@@ -20,9 +20,11 @@
 #
 #######################################################################
 
+import io
 import json
 import os
 import shutil
+import sys
 from tempfile import TemporaryFile
 
 import click
@@ -44,7 +46,7 @@ from readalongs.epub.create_epub import create_epub
 from readalongs.log import LOGGER
 from readalongs.text.make_smil import make_smil
 from readalongs.text.tokenize_xml import tokenize_xml
-from readalongs.text.util import save_minimal_index_html, save_txt, save_xml
+from readalongs.text.util import save_minimal_index_html, save_txt, save_xml, write_xml
 from readalongs.views import LANGS
 
 
@@ -182,7 +184,9 @@ def align(**kwargs):
         if not kwargs["language"]:
             LOGGER.warn("No input language provided, using undetermined mapping")
         tempfile, kwargs["textfile"] = create_input_tei(
-            kwargs["textfile"], text_language=kwargs["language"], save_temps=temp_base,
+            input_file_name=kwargs["textfile"],
+            text_language=kwargs["language"],
+            save_temps=temp_base,
         )
     if kwargs["output_xhtml"]:
         tokenized_xml_path = "%s.xhtml" % output_base
@@ -284,8 +288,8 @@ def epub(**kwargs):
     context_settings=CONTEXT_SETTINGS,
     short_help="Prepare XML input to align from plain text.",
 )
-@click.argument("plaintextfile", type=click.Path(exists=True, readable=True))
-@click.argument("xmlfile", type=click.Path())
+@click.argument("plaintextfile", type=click.File("rb"))
+@click.argument("xmlfile", type=click.Path(), required=False, default="")
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
 @click.option(
     "-f", "--force-overwrite", is_flag=True, help="Force overwrite output files"
@@ -303,9 +307,9 @@ def prepare(**kwargs):
     paragraph breaks marked by a blank line, and page breaks marked by two
     blank lines.
 
-    PLAINTEXTFILE: Path to the plain text input file
+    PLAINTEXTFILE: Path to the plain text input file, or - for stdin
 
-    XMLFILE:       Path to the XML output file
+    XMLFILE:       Path to the XML output file, or - for stdout [default: PLAINTEXTFILE.xml]
     """
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
@@ -318,17 +322,42 @@ def prepare(**kwargs):
             )
         )
 
-    xmlpath = kwargs["xmlfile"]
-    if not xmlpath.endswith(".xml"):
-        xmlpath += ".xml"
-    if os.path.exists(xmlpath) and not kwargs["force_overwrite"]:
-        raise click.BadParameter(
-            "Output file %s exists already, use -f to overwrite." % xmlpath
+    input_file = kwargs["plaintextfile"]
+
+    out_file = kwargs["xmlfile"]
+    if not out_file:
+        try:
+            out_file = input_file.name
+        except Exception:  # For unit testing: simulated stdin stream has no .name attrib
+            out_file = "<stdin>"
+        if out_file == "<stdin>":  # actual intput_file.name when cli input is "-"
+            out_file = "-"
+        else:
+            if out_file.endswith(".txt"):
+                out_file = out_file[:-4]
+            out_file += ".xml"
+
+    if out_file == "-":
+        filehandle, filename = create_input_tei(
+            input_file_handle=input_file, text_language=kwargs["language"],
         )
-    filehandle, filename = create_input_tei(
-        kwargs["plaintextfile"], text_language=kwargs["language"], output_file=xmlpath
-    )
-    LOGGER.info("Wrote {}".format(xmlpath))
+        with io.open(filename) as f:
+            sys.stdout.write(f.read())
+    else:
+        if not out_file.endswith(".xml"):
+            out_file += ".xml"
+        if os.path.exists(out_file) and not kwargs["force_overwrite"]:
+            raise click.BadParameter(
+                "Output file %s exists already, use -f to overwrite." % out_file
+            )
+
+        filehandle, filename = create_input_tei(
+            input_file_handle=input_file,
+            text_language=kwargs["language"],
+            output_file=out_file,
+        )
+
+    LOGGER.info("Wrote {}".format(out_file))
 
 
 @app.cli.command(
@@ -347,21 +376,29 @@ def tokenize(**kwargs):
     TOKFILE can be augmented with word-specific language codes.
     'readalongs align' can be called with either XMLFILE or TOKFILE as XML input.
 
-    XMLFILE: Path to the XML file to tokenize
+    XMLFILE: Path to the XML file to tokenize, or - for stdin
 
-    TOKFILE: Path to the tokenized XML output file [XMLFILE.tokenized.xml]
+    TOKFILE: Output path for the tok'd XML, or - for stdout [default: XMLFILE.tokenized.xml]
     """
     xmlfile = kwargs["xmlfile"]
 
     if not kwargs["tokfile"]:
         output_tok_path = xmlfile.name
-        if output_tok_path.endswith(".xml"):
-            output_tok_path = output_tok_path[:-4]
-        output_tok_path += ".tokenized.xml"
+        if output_tok_path == "<stdin>":
+            output_tok_path = "-"
+        else:
+            if output_tok_path.endswith(".xml"):
+                output_tok_path = output_tok_path[:-4]
+            output_tok_path += ".tokenized.xml"
     else:
         output_tok_path = kwargs["tokfile"]
-    if not output_tok_path.endswith(".xml"):
-        output_tok_path += ".xml"
+        if not output_tok_path.endswith(".xml") and not output_tok_path == "-":
+            output_tok_path += ".xml"
+
+    if os.path.exists(output_tok_path) and not kwargs["force_overwrite"]:
+        raise click.BadParameter(
+            "Output file %s exists already, use -f to overwrite." % output_tok_path
+        )
 
     try:
         xml = etree.parse(xmlfile).getroot()
@@ -369,8 +406,8 @@ def tokenize(**kwargs):
         raise RuntimeError("Error parsing XML input file %s: %s." % (xmlfile, e))
     xml = tokenize_xml(xml)
 
-    if os.path.exists(output_tok_path) and not kwargs["force_overwrite"]:
-        raise click.BadParameter(
-            "Output file %s exists already, use -f to overwrite." % xmlpath
-        )
-    write_xml(output_tok_path, xml)
+    if output_tok_path == "-":
+        write_xml(sys.stdout.buffer, xml)
+    else:
+        save_xml(output_tok_path, xml)
+    LOGGER.info("Wrote {}".format(output_tok_path))

@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 import tempfile
+from shutil import copyfile
 from unittest import TestCase, main
 
 from readalongs.app import app
@@ -29,7 +31,7 @@ class TestPrepareCli(TestCase):
 
     def test_invoke_prepare(self):
         results = self.runner.invoke(
-            prepare, "-l atj -d /dev/null " + self.tempdir + "/delme"
+            prepare, "-l atj -d /dev/null " + os.path.join(self.tempdir, "delme")
         )
         self.assertEqual(results.exit_code, 0)
         self.assertRegex(results.stdout, "Running readalongs prepare")
@@ -43,25 +45,40 @@ class TestPrepareCli(TestCase):
     def test_inputfile_not_exist(self):
         results = self.runner.invoke(prepare, "-l atj /file/does/not/exist delme")
         self.assertNotEqual(results.exit_code, 0)
-        self.assertRegex(results.stdout, "FILE.*does not exist")
+        self.assertRegex(results.stdout, "No such file or directory")
 
     def test_outputfile_exists(self):
         results = self.runner.invoke(
-            prepare, "-l atj /dev/null " + self.tempdir + "/exists"
+            prepare, "-l atj /dev/null " + os.path.join(self.tempdir, "exists")
         )
         results = self.runner.invoke(
-            prepare, "-l atj /dev/null " + self.tempdir + "/exists"
+            prepare, "-l atj /dev/null " + os.path.join(self.tempdir, "exists")
         )
         self.assertNotEqual(results.exit_code, 0)
         self.assertRegex(results.stdout, "exists.*overwrite")
 
     def test_output_exists(self):
-        xmlfile = self.tempdir + "/fra.xml"
+        xmlfile = os.path.join(self.tempdir, "fra.xml")
         results = self.runner.invoke(
-            prepare, ["-l", "fra", self.data_dir + "/fra.txt", xmlfile]
+            prepare, ["-l", "fra", os.path.join(self.data_dir, "fra.txt"), xmlfile]
         )
         self.assertEqual(results.exit_code, 0)
         self.assertTrue(os.path.exists(xmlfile), "output xmlfile did not get created")
+
+    def test_input_is_stdin(self):
+        results = self.runner.invoke(prepare, "-l fra -", input="Ceci est un test.")
+        # LOGGER.warning("Output: {}".format(results.output))
+        LOGGER.warning("Exception: {}".format(results.exception))
+        self.assertEqual(results.exit_code, 0)
+        self.assertIn("<s>Ceci est un test", results.stdout)
+        self.assertIn('<text xml:lang="fra">', results.stdout)
+
+    def test_generate_output_name(self):
+        input_file = os.path.join(self.tempdir, "someinput.txt")
+        copyfile(os.path.join(self.data_dir, "fra.txt"), input_file)
+        results = self.runner.invoke(prepare, ["-l", "fra", input_file])
+        self.assertEqual(results.exit_code, 0)
+        self.assertRegex(results.stdout, "Wrote.*someinput[.]xml")
 
 
 if __name__ == "__main__":
