@@ -27,6 +27,7 @@ from tempfile import TemporaryFile
 
 import click
 from flask.cli import FlaskGroup
+from lxml import etree
 
 from readalongs._version import __version__
 from readalongs.align import (
@@ -42,6 +43,7 @@ from readalongs.audio_utils import read_audio_from_file
 from readalongs.epub.create_epub import create_epub
 from readalongs.log import LOGGER
 from readalongs.text.make_smil import make_smil
+from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import save_minimal_index_html, save_txt, save_xml
 from readalongs.views import LANGS
 
@@ -327,3 +329,48 @@ def prepare(**kwargs):
         kwargs["plaintextfile"], text_language=kwargs["language"], output_file=xmlpath
     )
     LOGGER.info("Wrote {}".format(xmlpath))
+
+
+@app.cli.command(
+    context_settings=CONTEXT_SETTINGS,
+    short_help="Tokenize XML file to align from XML file produced by prepare.",
+)
+@click.argument("xmlfile", type=click.File("rb"))
+@click.argument("tokfile", type=click.Path(), required=False, default="")
+@click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
+@click.option(
+    "-f", "--force-overwrite", is_flag=True, help="Force overwrite output files"
+)
+def tokenize(**kwargs):
+    """Tokenize XMLFILE for 'readalongs align' into TOKFILE.
+    XMLFILE should have been produce by 'readalongs prepare'.
+    TOKFILE can be augmented with word-specific language codes.
+    'readalongs align' can be called with either XMLFILE or TOKFILE as XML input.
+
+    XMLFILE: Path to the XML file to tokenize
+
+    TOKFILE: Path to the tokenized XML output file [XMLFILE.tokenized.xml]
+    """
+    xmlfile = kwargs["xmlfile"]
+
+    if not kwargs["tokfile"]:
+        output_tok_path = xmlfile.name
+        if output_tok_path.endswith(".xml"):
+            output_tok_path = output_tok_path[:-4]
+        output_tok_path += ".tokenized.xml"
+    else:
+        output_tok_path = kwargs["tokfile"]
+    if not output_tok_path.endswith(".xml"):
+        output_tok_path += ".xml"
+
+    try:
+        xml = etree.parse(xmlfile).getroot()
+    except etree.XMLSyntaxError as e:
+        raise RuntimeError("Error parsing XML input file %s: %s." % (xmlfile, e))
+    xml = tokenize_xml(xml)
+
+    if os.path.exists(output_tok_path) and not kwargs["force_overwrite"]:
+        raise click.BadParameter(
+            "Output file %s exists already, use -f to overwrite." % xmlpath
+        )
+    write_xml(output_tok_path, xml)
