@@ -113,11 +113,17 @@ def load_xml_with_encoding(input_path):
     return etree.parse(input_path)
 
 
+def write_xml(output_filelike, xml):
+    """ Write XML to already opened file-like object """
+    output_filelike.write(etree.tostring(xml, encoding="utf-8", xml_declaration=True))
+    output_filelike.write("\n".encode("utf-8"))
+
+
 def save_xml(output_path, xml):
+    """ Save XML to specific PATH """
     ensure_dirs(output_path)
     with open(output_path, "wb") as fout:
-        fout.write(etree.tostring(xml, encoding="utf-8", xml_declaration=True))
-        fout.write("\n".encode("utf-8"))
+        write_xml(fout, xml)
 
 
 def save_xml_zip(zip_path, output_path, xml):
