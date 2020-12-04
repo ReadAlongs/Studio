@@ -68,7 +68,7 @@ class TestPrepareCli(TestCase):
     def test_input_is_stdin(self):
         results = self.runner.invoke(prepare, "-l fra -", input="Ceci est un test.")
         # LOGGER.warning("Output: {}".format(results.output))
-        LOGGER.warning("Exception: {}".format(results.exception))
+        # LOGGER.warning("Exception: {}".format(results.exception))
         self.assertEqual(results.exit_code, 0)
         self.assertIn("<s>Ceci est un test", results.stdout)
         self.assertIn('<text xml:lang="fra">', results.stdout)
@@ -79,6 +79,7 @@ class TestPrepareCli(TestCase):
         results = self.runner.invoke(prepare, ["-l", "fra", input_file])
         self.assertEqual(results.exit_code, 0)
         self.assertRegex(results.stdout, "Wrote.*someinput[.]xml")
+        self.assertTrue(os.path.exists(os.path.join(self.tempdir, "someinput.xml")))
 
 
 if __name__ == "__main__":

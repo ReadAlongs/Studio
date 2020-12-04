@@ -383,7 +383,10 @@ def tokenize(**kwargs):
     xmlfile = kwargs["xmlfile"]
 
     if not kwargs["tokfile"]:
-        output_tok_path = xmlfile.name
+        try:
+            output_tok_path = xmlfile.name
+        except Exception:
+            output_tok_path = "<stdin>"
         if output_tok_path == "<stdin>":
             output_tok_path = "-"
         else:
@@ -403,7 +406,11 @@ def tokenize(**kwargs):
     try:
         xml = etree.parse(xmlfile).getroot()
     except etree.XMLSyntaxError as e:
-        raise RuntimeError("Error parsing XML input file %s: %s." % (xmlfile, e))
+        raise click.BadParameter(
+            "Error parsing input file %s as XML, please verify it. Parser error: %s"
+            % (xmlfile, e)
+        )
+
     xml = tokenize_xml(xml)
 
     if output_tok_path == "-":
