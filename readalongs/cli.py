@@ -387,9 +387,7 @@ def tokenize(**kwargs):
         LOGGER.setLevel("DEBUG")
         LOGGER.info(
             "Running readalongs tokenize(xmlfile={}, tokfile={}, force-overwrite={}).".format(
-                kwargs["xmlfile"],
-                kwargs["tokfile"],
-                kwargs["force_overwrite"],
+                kwargs["xmlfile"], kwargs["tokfile"], kwargs["force_overwrite"],
             )
         )
 

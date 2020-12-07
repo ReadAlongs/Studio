@@ -35,14 +35,17 @@ class TestPrepareCli(TestCase):
 
     def test_invoke_prepare(self):
         results = self.runner.invoke(
-            prepare, ["-l", "atj", "-d", self.empty_file, os.path.join(self.tempdir, "delme")]
+            prepare,
+            ["-l", "atj", "-d", self.empty_file, os.path.join(self.tempdir, "delme")],
         )
         self.assertEqual(results.exit_code, 0)
         self.assertRegex(results.stdout, "Running readalongs prepare")
         # print('Prepare.stdout: {}'.format(results.stdout))
 
     def test_no_lang(self):
-        results = self.runner.invoke(prepare, [self.empty_file, self.empty_file + ".xml"])
+        results = self.runner.invoke(
+            prepare, [self.empty_file, self.empty_file + ".xml"]
+        )
         self.assertNotEqual(results.exit_code, 0)
         self.assertRegex(results.stdout, "Missing.*language")
 
@@ -53,10 +56,12 @@ class TestPrepareCli(TestCase):
 
     def test_outputfile_exists(self):
         results = self.runner.invoke(
-            prepare, ["-l", "atj", self.empty_file, os.path.join(self.tempdir, "exists")]
+            prepare,
+            ["-l", "atj", self.empty_file, os.path.join(self.tempdir, "exists")],
         )
         results = self.runner.invoke(
-            prepare, ["-l", "atj", self.empty_file, os.path.join(self.tempdir, "exists")]
+            prepare,
+            ["-l", "atj", self.empty_file, os.path.join(self.tempdir, "exists")],
         )
         self.assertNotEqual(results.exit_code, 0)
         self.assertRegex(results.stdout, "exists.*overwrite")
