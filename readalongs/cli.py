@@ -311,6 +311,7 @@ def prepare(**kwargs):
 
     XMLFILE:       Path to the XML output file, or - for stdout [default: PLAINTEXTFILE.xml]
     """
+
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
         LOGGER.info(
@@ -381,6 +382,16 @@ def tokenize(**kwargs):
     TOKFILE: Output path for the tok'd XML, or - for stdout [default: XMLFILE.tokenized.xml]
     """
     xmlfile = kwargs["xmlfile"]
+
+    if kwargs["debug"]:
+        LOGGER.setLevel("DEBUG")
+        LOGGER.info(
+            "Running readalongs tokenize(xmlfile={}, tokfile={}, force-overwrite={}).".format(
+                kwargs["xmlfile"],
+                kwargs["tokfile"],
+                kwargs["force_overwrite"],
+            )
+        )
 
     if not kwargs["tokfile"]:
         try:

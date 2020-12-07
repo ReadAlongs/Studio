@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import io
 import os
 import sys
 import tempfile
@@ -25,20 +26,23 @@ class TestPrepareCli(TestCase):
         # Alternative tempdir code keeps it after running, for manual inspection:
         # self.tempdir = tempfile.mkdtemp(prefix="test_prepare_cli_tmpdir", dir=".")
         # print('tmpdir={}'.format(self.tempdir))
+        self.empty_file = os.path.join(self.tempdir, "empty.txt")
+        with io.open(self.empty_file, "wb") as f:
+            pass
 
     def tearDown(self):
         self.tempdirobj.cleanup()
 
     def test_invoke_prepare(self):
         results = self.runner.invoke(
-            prepare, "-l atj -d /dev/null " + os.path.join(self.tempdir, "delme")
+            prepare, ["-l", "atj", "-d", self.empty_file, os.path.join(self.tempdir, "delme")]
         )
         self.assertEqual(results.exit_code, 0)
         self.assertRegex(results.stdout, "Running readalongs prepare")
         # print('Prepare.stdout: {}'.format(results.stdout))
 
     def test_no_lang(self):
-        results = self.runner.invoke(prepare, "/dev/null /dev/null")
+        results = self.runner.invoke(prepare, [self.empty_file, self.empty_file + ".xml"])
         self.assertNotEqual(results.exit_code, 0)
         self.assertRegex(results.stdout, "Missing.*language")
 
@@ -49,10 +53,10 @@ class TestPrepareCli(TestCase):
 
     def test_outputfile_exists(self):
         results = self.runner.invoke(
-            prepare, "-l atj /dev/null " + os.path.join(self.tempdir, "exists")
+            prepare, ["-l", "atj", self.empty_file, os.path.join(self.tempdir, "exists")]
         )
         results = self.runner.invoke(
-            prepare, "-l atj /dev/null " + os.path.join(self.tempdir, "exists")
+            prepare, ["-l", "atj", self.empty_file, os.path.join(self.tempdir, "exists")]
         )
         self.assertNotEqual(results.exit_code, 0)
         self.assertRegex(results.stdout, "exists.*overwrite")
@@ -77,6 +81,8 @@ class TestPrepareCli(TestCase):
         input_file = os.path.join(self.tempdir, "someinput.txt")
         copyfile(os.path.join(self.data_dir, "fra.txt"), input_file)
         results = self.runner.invoke(prepare, ["-l", "fra", input_file])
+        LOGGER.warning("Output: {}".format(results.output))
+        LOGGER.warning("Exception: {}".format(results.exception))
         self.assertEqual(results.exit_code, 0)
         self.assertRegex(results.stdout, "Wrote.*someinput[.]xml")
         self.assertTrue(os.path.exists(os.path.join(self.tempdir, "someinput.xml")))
