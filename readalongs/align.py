@@ -548,7 +548,7 @@ def create_input_xml(
     return outfile, filename
 
 
-def create_input_tei(text, **kwargs):
+def create_input_tei(**kwargs):
     """ Create input xml in TEI standard.
         Uses readlines to infer paragraph and sentence structure from plain text.
         TODO: Check if path, if it's just plain text, then render that instead of reading from the file
@@ -557,8 +557,10 @@ def create_input_tei(text, **kwargs):
 
     Parameters
     ----------
-    text : str
-        raw input text
+    **input_file_name : Union[str, None]
+        raw input text file name
+    **input_file_handle : Union[file_handle, None]
+        opened input file handle for input text - only provide one of input_file_name or input_file_handle!
     **text_language in kwargs : str
         language for the text.
     **save_temps in kwargs : Union[str, None], optional
@@ -573,8 +575,16 @@ def create_input_tei(text, **kwargs):
     str
         filename
     """
-    with io.open(text, encoding="utf-8") as f:
-        text = f.readlines()
+    if kwargs.get("input_file_name", False):
+        with io.open(kwargs["input_file_name"]) as f:
+            text = f.readlines()
+    elif kwargs.get("input_file_handle", False):
+        text = kwargs["input_file_handle"].readlines()
+    else:
+        raise RuntimeError(
+            "Call create_input_tei with exactly one of input_file_name= or input_file_handle="
+        )
+
     save_temps = kwargs.get("save_temps", False)
     if kwargs.get("output_file", False):
         filename = kwargs.get("output_file")

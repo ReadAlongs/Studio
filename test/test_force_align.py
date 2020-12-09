@@ -44,7 +44,7 @@ class TestForceAlignment(unittest.TestCase):
         wav_path = os.path.join(self.data_dir, "ej-fra.m4a")
         # tempfh, temp_fn = create_input_xml(txt_path, text_language='git', save_temps="unit")
         tempfh, temp_fn = create_input_tei(
-            txt_path, text_language="fra", save_temps=None
+            input_file_name=txt_path, text_language="fra", save_temps=None
         )
         results = align_audio(temp_fn, wav_path, unit="w", save_temps=None)
 
