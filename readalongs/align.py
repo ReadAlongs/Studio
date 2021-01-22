@@ -25,6 +25,7 @@ from webvtt import Caption, WebVTT
 from readalongs.audio_utils import mute_section, read_audio_from_file, remove_section
 from readalongs.log import LOGGER
 from readalongs.tempfile import PortableNamedTemporaryFile
+from readalongs.text.add_elements_to_xml import add_images, add_supplementary_xml
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.lang_id import add_lang_ids
@@ -108,6 +109,10 @@ def align_audio(
         xml = etree.parse(xml_path).getroot()
     except etree.XMLSyntaxError as e:
         raise RuntimeError("Error parsing XML input file %s: %s." % (xml_path, e))
+    if config and "images" in config:
+        xml = add_images(xml, config)
+    if config and "xml" in config:
+        xml = add_supplementary_xml(xml, config)
     xml = add_lang_ids(xml, unit="s")
     xml = tokenize_xml(xml)
     if save_temps:
