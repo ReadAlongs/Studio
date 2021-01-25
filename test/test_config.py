@@ -22,10 +22,10 @@ class TestConfig(TestCase):
             new_xml = add_images(self.xml, {})
         new_xml = add_images(self.xml, {"images": {"0": "test.jpg"}})
         self.assertTrue(len(new_xml.xpath("//graphic")) == 1)
-        with self.assertRaises(Exception):
+        with self.assertRaises(TypeError):
             new_xml = add_images(self.xml, {"images": [{"0": "test.jpg"}]})
-        with self.assertRaises(Exception):
-            new_xml = add_images(self.xml, {"images": [{"a": "test.jpg"}]})
+        with self.assertRaises(ValueError):
+            new_xml = add_images(self.xml, {"images": {"a": "test.jpg"}})
 
     def test_arbitrary_xml(self):
         """Test arbitrary xml is added correctly"""
