@@ -17,6 +17,8 @@
 
 from lxml import etree
 
+from readalongs.log import LOGGER
+
 
 def add_images(element: etree, config: dict) -> etree:
     """Add images from configuration object to xml
@@ -33,10 +35,19 @@ def add_images(element: etree, config: dict) -> etree:
             "Configuration tried to add images, but no images were found in configuration"
         )
 
+    if not isinstance(config["images"], dict):
+        raise TypeError(
+            f"Image configuration is of type {type(config['images'])} but a dict is required."
+        )
+
     pages = element.xpath('//div[@type="page"]')
 
     for i, url in config["images"].items():
         image_el = etree.Element("graphic", url=url)
+        try:
+            i = int(i)
+        except ValueError:
+            raise ValueError(f"Images must be indexed using integers, you provided {i}")
         pages[int(i)].append(image_el)
 
     return element
@@ -58,6 +69,10 @@ def add_supplementary_xml(element: etree, config: dict) -> etree:
         )
     for el in config["xml"]:
         parents = element.xpath(el["xpath"])
+        if not parents:
+            LOGGER.warn(
+                f"No elements found at {el['xpath']}, please verify your configuration."
+            )
         for parent in parents:
             parent.append(etree.XML(el["value"]))
 
