@@ -26,6 +26,10 @@ class TestConfig(TestCase):
             new_xml = add_images(self.xml, {"images": [{"0": "test.jpg"}]})
         with self.assertRaises(ValueError):
             new_xml = add_images(self.xml, {"images": {"a": "test.jpg"}})
+        with self.assertRaises(IndexError):
+            new_xml = add_images(
+                self.xml, {"images": {"0": "test.jpg", "999": "out_of_range.jpg"}}
+            )
 
     def test_arbitrary_xml(self):
         """Test arbitrary xml is added correctly"""

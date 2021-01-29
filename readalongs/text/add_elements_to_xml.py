@@ -48,7 +48,12 @@ def add_images(element: etree, config: dict) -> etree:
             i = int(i)
         except ValueError:
             raise ValueError(f"Images must be indexed using integers, you provided {i}")
-        pages[int(i)].append(image_el)
+        try:
+            pages[int(i)].append(image_el)
+        except IndexError:
+            raise IndexError(
+                f"No page found at index {i}, please verify your configuration"
+            )
 
     return element
 
