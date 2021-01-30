@@ -48,13 +48,12 @@ ensure_using_supported_python_version()
 
 
 def create_app():
-    """ Returns the app
-    """
+    """Returns the app"""
     return app
 
 
 def get_click_file_name(click_file):
-    """ Wrapper around click_file.name with consistent handling for stdin
+    """Wrapper around click_file.name with consistent handling for stdin
 
     On Windows, if click_file is stdin, click_file.name == "-".
     On Linux, if click_file is stdin, click_file.name == "<stdin>".
@@ -74,8 +73,8 @@ def get_click_file_name(click_file):
 
 
 def parse_g2p_fallback(g2p_fallback_arg):
-    """ Parse the strings containing a colon-separated list of fallback args into a
-        Python list of language codes, or empty if None
+    """Parse the strings containing a colon-separated list of fallback args into a
+    Python list of language codes, or empty if None
     """
     if g2p_fallback_arg:
         g2p_fallbacks = g2p_fallback_arg.split(":")
@@ -153,6 +152,7 @@ def cli():
 @click.option(
     "-t", "--text-grid", is_flag=True, help="Export to Praat TextGrid & ELAN eaf file"
 )
+@click.option("-H", "--html", is_flag=True, help="Export to WebComponent HTML")
 @click.option(
     "-x", "--output-xhtml", is_flag=True, help="Output simple XHTML instead of XML"
 )
@@ -278,6 +278,7 @@ def align(**kwargs):  # noqa: C901
         closed_captioning=kwargs["closed_captioning"],
         output_xhtml=kwargs["output_xhtml"],
         audiofile=kwargs["audiofile"],
+        html=kwargs["html"],
     )
 
 
@@ -354,7 +355,8 @@ def prepare(**kwargs):
 
     if out_file == "-":
         _, filename = create_input_tei(
-            input_file_handle=input_file, text_language=kwargs["language"],
+            input_file_handle=input_file,
+            text_language=kwargs["language"],
         )
         with io.open(filename, encoding="utf8") as f:
             sys.stdout.write(f.read())
@@ -400,7 +402,9 @@ def tokenize(**kwargs):
         LOGGER.setLevel("DEBUG")
         LOGGER.info(
             "Running readalongs tokenize(xmlfile={}, tokfile={}, force-overwrite={}).".format(
-                kwargs["xmlfile"], kwargs["tokfile"], kwargs["force_overwrite"],
+                kwargs["xmlfile"],
+                kwargs["tokfile"],
+                kwargs["force_overwrite"],
             )
         )
 
@@ -478,7 +482,9 @@ def g2p(**kwargs):
         LOGGER.setLevel("DEBUG")
         LOGGER.info(
             "Running readalongs g2p(tokfile={}, g2pfile={}, force-overwrite={}).".format(
-                kwargs["tokfile"], kwargs["g2pfile"], kwargs["force_overwrite"],
+                kwargs["tokfile"],
+                kwargs["g2pfile"],
+                kwargs["force_overwrite"],
             )
         )
 
