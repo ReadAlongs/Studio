@@ -300,7 +300,11 @@ def compose_indices(i1, i2):
             results.append((i1_in, highest_i2_found))
             continue
         while i2_idx <= i1_out:
-            if i2_idx in i2_dict and i2_dict[i2_idx] > highest_i2_found:
+            if (
+                i2_idx in i2_dict
+                and i2_dict[i2_idx] is not None
+                and i2_dict[i2_idx] > highest_i2_found
+            ):
                 highest_i2_found = i2_dict[i2_idx]
             i2_idx += 1
         if results:
