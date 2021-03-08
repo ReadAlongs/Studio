@@ -25,7 +25,7 @@ class TestPrepareCli(TestCase):
         self.tempdir = self.tempdirobj.name
         # Alternative tempdir code keeps it after running, for manual inspection:
         # self.tempdir = tempfile.mkdtemp(prefix="test_prepare_cli_tmpdir", dir=".")
-        # print('tmpdir={}'.format(self.tempdir))
+        # print("tmpdir={}".format(self.tempdir))
         self.empty_file = os.path.join(self.tempdir, "empty.txt")
         with io.open(self.empty_file, "wb") as f:
             pass
@@ -73,6 +73,21 @@ class TestPrepareCli(TestCase):
         )
         self.assertEqual(results.exit_code, 0)
         self.assertTrue(os.path.exists(xmlfile), "output xmlfile did not get created")
+
+    def test_output_correct(self):
+        input_file = os.path.join(self.data_dir, "fra.txt")
+        xml_file = os.path.join(self.tempdir, "fra.xml")
+        results = self.runner.invoke(prepare, ["-l", "fra", input_file, xml_file])
+        self.assertEqual(results.exit_code, 0)
+
+        ref_file = os.path.join(self.data_dir, "fra-prepared.xml")
+        with open(xml_file) as output_f, open(ref_file) as ref_f:
+            self.maxDiff = None
+            self.assertListEqual(
+                list(output_f),
+                list(ref_f),
+                f"output {xml_file} and reference {ref_file} differ.",
+            )
 
     def test_input_is_stdin(self):
         results = self.runner.invoke(prepare, "-l fra -", input="Ceci est un test.")

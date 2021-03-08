@@ -5,6 +5,7 @@ source = readalongs
 omit = */readalongs/waveform2svg/*
 
 [report]
+precision = 2
 # Regexes for lines to exclude from consideration
 exclude_lines =
     # Don't complain if non-runnable code isn't run:
