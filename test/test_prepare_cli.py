@@ -7,6 +7,7 @@ import tempfile
 from shutil import copyfile
 from unittest import TestCase, main
 
+from readalongs.align import create_input_tei
 from readalongs.app import app
 from readalongs.cli import prepare
 from readalongs.log import LOGGER
@@ -27,7 +28,7 @@ class TestPrepareCli(TestCase):
         # self.tempdir = tempfile.mkdtemp(prefix="test_prepare_cli_tmpdir", dir=".")
         # print("tmpdir={}".format(self.tempdir))
         self.empty_file = os.path.join(self.tempdir, "empty.txt")
-        with io.open(self.empty_file, "wb") as f:
+        with io.open(self.empty_file, "wb"):
             pass
 
     def tearDown(self):
@@ -106,6 +107,10 @@ class TestPrepareCli(TestCase):
         self.assertEqual(results.exit_code, 0)
         self.assertRegex(results.stdout, "Wrote.*someinput[.]xml")
         self.assertTrue(os.path.exists(os.path.join(self.tempdir, "someinput.xml")))
+
+    def test_create_input_tei_no_input(self):
+        with self.assertRaises(RuntimeError):
+            (fh, fname) = create_input_tei()
 
 
 if __name__ == "__main__":
