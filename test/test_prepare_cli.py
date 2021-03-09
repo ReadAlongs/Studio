@@ -2,6 +2,7 @@
 
 import io
 import os
+import re
 import sys
 import tempfile
 from shutil import copyfile
@@ -107,6 +108,59 @@ class TestPrepareCli(TestCase):
         self.assertEqual(results.exit_code, 0)
         self.assertRegex(results.stdout, "Wrote.*someinput[.]xml")
         self.assertTrue(os.path.exists(os.path.join(self.tempdir, "someinput.xml")))
+
+    def test_prepare_with_different_newlines(self):
+        sent = "Ceci est une phrase."
+        linux_file = os.path.join(self.tempdir, "linux_file")
+        with open(linux_file, mode="wb") as f:
+            file_contents = sent + "\n\n" + sent + "\n\n\n" + sent + "\n"
+            f.write(file_contents.encode("ascii"))
+        linux_results = self.runner.invoke(prepare, ["-l", "fra", linux_file, "-"])
+        linux_output = linux_results.output
+        # The "Linux" output is the reference output, but we validate it a bit
+        # too, with a regex: it has to have 2 pages and 3 paragraphs
+        self.assertRegex(
+            linux_output,
+            re.compile(
+                '<div type="page">.*<p>.*<p>.*<div type="page">.*<p>', re.DOTALL
+            ),
+        )
+
+        no_eol_file = os.path.join(self.tempdir, "no_eol")
+        with open(no_eol_file, mode="wb") as f:
+            file_contents = sent + "\n\n" + sent + "\n\n\n" + sent
+            f.write(file_contents.encode("ascii"))
+        no_eol_results = self.runner.invoke(prepare, ["-l", "fra", no_eol_file, "-"])
+        no_eol_output = no_eol_results.output
+        self.assertEqual(
+            linux_output,
+            no_eol_output,
+            "leaving out the final newline should not affect prepare",
+        )
+
+        dos_file = os.path.join(self.tempdir, "dos_file")
+        with open(dos_file, mode="wb") as f:
+            file_contents = sent + "\r\n\r\n" + sent + "\r\n\r\n\r\n" + sent + "\r\n"
+            f.write(file_contents.encode("ascii"))
+        dos_results = self.runner.invoke(prepare, ["-l", "fra", dos_file, "-"])
+        dos_output = dos_results.output
+        self.assertEqual(
+            linux_output,
+            dos_output,
+            "Using DOS-style newlines should not affect prepare",
+        )
+
+        mac_file = os.path.join(self.tempdir, "mac_file")
+        with open(mac_file, mode="wb") as f:
+            file_contents = sent + "\r\r" + sent + "\r\r\r" + sent + "\r"
+            f.write(file_contents.encode("ascii"))
+        mac_results = self.runner.invoke(prepare, ["-l", "fra", mac_file, "-"])
+        mac_output = mac_results.output
+        self.assertEqual(
+            linux_output,
+            mac_output,
+            "Using old Mac-style newlines should not affect prepare",
+        )
 
     def test_create_input_tei_no_input(self):
         with self.assertRaises(RuntimeError):
