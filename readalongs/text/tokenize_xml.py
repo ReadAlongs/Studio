@@ -38,6 +38,7 @@ from copy import deepcopy
 
 from g2p.mappings import Mapping
 from g2p.mappings.langs import MAPPINGS_AVAILABLE
+from g2p.mappings.tokenizer import get_tokenizer
 from lxml import etree
 
 from readalongs.log import LOGGER
@@ -52,70 +53,7 @@ from readalongs.text.util import (
 )
 
 
-class DefaultTokenizer:
-    def __init__(self):
-        self.inventory = []
-        self.delim = ""
-        self.case_sensitive = False
-
-    def tokenize_aux(self, text):
-        return text
-
-    def is_word_character(self, c):
-        if not self.case_sensitive:
-            c = c.lower()
-        if c in self.inventory:
-            return True
-        if self.delim and c == self.delim:
-            return True
-        assert len(c) <= 1
-        if get_unicode_category(c) in ["letter", "number", "diacritic"]:
-            return True
-        return False
-
-    def tokenize_text(self, text):
-        matches = self.tokenize_aux(text)
-        units = [{"text": m, "is_word": self.is_word_character(m)} for m in matches]
-        units = merge_if_same_label(units, "text", "is_word")
-        return units
-
-
-class Tokenizer(DefaultTokenizer):
-    def __init__(self, mapping: Mapping):
-        self.inventory = mapping.inventory("in")
-        self.lang = mapping.kwargs.get("language_name", "")
-        self.delim = mapping.kwargs.get("in_delimiter", "")
-        self.case_sensitive = mapping.kwargs.get("case_sensitive", True)
-        # create regex
-
-        regex_pieces = sorted(self.inventory, key=lambda s: -len(s))
-        regex_pieces = [re.escape(p) for p in regex_pieces]
-        if self.delim:
-            regex_pieces.append(self.delim)
-        pattern = "|".join(regex_pieces + ["."])
-        pattern = "(" + pattern + ")"
-        flags = re.DOTALL
-        if not self.case_sensitive:
-            flags |= re.I
-        self.regex = re.compile(pattern, flags)
-
-    def tokenize_aux(self, text):
-        return self.regex.findall(text)
-
-
-class TokenizerLibrary:
-    def __init__(self):
-        self.tokenizers = {None: DefaultTokenizer()}
-        for x in MAPPINGS_AVAILABLE:
-            mapping = Mapping(in_lang=x["in_lang"], out_lang=x["out_lang"])
-            tokenizer_key = self.get_tokenizer_key(x["in_lang"], x["out_lang"])
-            self.tokenizers[tokenizer_key] = Tokenizer(mapping)
-
-    def get_tokenizer_key(self, in_lang, out_lang=None):
-        if not out_lang:
-            out_lang = in_lang + "-ipa"
-        return in_lang + "-to-" + out_lang
-
+class XMLTokenizer:
     def add_word_children(self, element):
         tag = etree.QName(element.tag).localname
         nsmap = element.nsmap if hasattr(element, "nsmap") else element.getroot().nsmap
@@ -134,11 +72,7 @@ class TokenizerLibrary:
             new_element.attrib[key] = value
 
         lang = get_lang_attrib(element)
-        if lang:
-            tokenizer_key = self.get_tokenizer_key(lang)
-        else:
-            tokenizer_key = None
-        tokenizer = self.tokenizers.get(tokenizer_key, self.tokenizers[None])
+        tokenizer = get_tokenizer(lang)
         if element.text:
             new_element.text = ""
             for unit in tokenizer.tokenize_text(element.text):
@@ -177,7 +111,7 @@ class TokenizerLibrary:
 
 
 def tokenize_xml(xml):
-    tokenizer = TokenizerLibrary()
+    tokenizer = XMLTokenizer()
     xml = deepcopy(xml)
     # FIXME: different langs have different normalizations, is this necessary?
     unicode_normalize_xml(xml)
