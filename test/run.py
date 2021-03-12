@@ -70,3 +70,4 @@ if __name__ == "__main__":
             raise Exception("Some tests failed. Please see log above.")
     except IndexError:
         print("Please specify a test suite to run: i.e. 'dev' or 'all'")
+
