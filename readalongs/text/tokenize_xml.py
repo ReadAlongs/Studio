@@ -44,10 +44,8 @@ from lxml import etree
 from readalongs.log import LOGGER
 from readalongs.text.util import (
     get_lang_attrib,
-    get_unicode_category,
     is_do_not_align,
     load_xml,
-    merge_if_same_label,
     save_xml,
     unicode_normalize_xml,
 )
