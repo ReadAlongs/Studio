@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TEI>
+    <!-- To exclude any element from alignment, add the do-not-align="true" attribute to
+         it, e.g., <p do-not-align="true">...</p>, or
+         <s>Some text <foo do-not-align="true">do not align this</foo> more text</s> -->
+    <text xml:lang="fra">
+        <body>
+            <div type="page">
+                <p>
+                    <s>Ceci est une phrase en français. Ceci est une autre phrase.</s>
+                    <s>Et voici une deuxième ligne dans le même paragraphe.</s>
+                </p>
+                <p>
+                    <s>Un deuxième paragraphe précédé d&#x27;une ligne vide est ici. Avec deux phrases.</s>
+                </p>
+            </div>
+            <div type="page">
+                <p>
+                    <s>Et voici une deuxième page.</s>
+                </p>
+                <p>
+                    <s>Qui contient elle aussi deux paragraphes.</s>
+                </p>
+            </div>
+        </body>
+    </text>
+</TEI>

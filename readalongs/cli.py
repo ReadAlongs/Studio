@@ -288,7 +288,7 @@ def epub(**kwargs):
     context_settings=CONTEXT_SETTINGS,
     short_help="Prepare XML input to align from plain text.",
 )
-@click.argument("plaintextfile", type=click.File("rb"))
+@click.argument("plaintextfile", type=click.File("r"))
 @click.argument("xmlfile", type=click.Path(), required=False, default="")
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
 @click.option(
