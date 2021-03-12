@@ -171,18 +171,6 @@ def copy_file_to_zip(zip_path, origin_path, destination_path):
         fout_zip.write(origin_path, destination_path)
 
 
-def load_tsv(input_path, labels):
-    results = []
-    with open(input_path, "r", encoding="utf-8") as fin:
-        for i, line in enumerate(fin, start=1):
-            pieces = line.strip("\n").strip(" ").split("\t")
-            if len(pieces) > len(labels):
-                LOGGER.error("More columns than labels on line %s" % i)
-                continue
-            results.append(OrderedDict(zip(labels, pieces)))
-    return results
-
-
 MINIMAL_INDEX_HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
     <head>
