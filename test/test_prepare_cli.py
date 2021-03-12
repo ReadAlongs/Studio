@@ -135,7 +135,7 @@ class TestPrepareCli(TestCase):
         self.assertEqual(
             linux_output,
             no_eol_output,
-            "leaving out the final newline should not affect prepare",
+            "An absent final newline should not affect prepare",
         )
 
         dos_file = os.path.join(self.tempdir, "dos_file")
