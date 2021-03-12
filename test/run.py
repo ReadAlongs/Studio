@@ -43,7 +43,10 @@ other_tests = [
 
 
 def run_tests(suite):
-    if suite == "e2e":
+    if suite == "prod":
+        # deliberately drastically reduce coverage to test codecov integration
+        suite = TestSuite([loader.loadTestsFromTestCase(TestConfig)])
+    elif suite == "e2e":
         suite = TestSuite(e2e_tests)
     elif suite == "dev":
         suite = TestSuite(indices_tests + other_tests + e2e_tests)
