@@ -54,23 +54,13 @@ from readalongs.text.util import (
     get_lang_attrib,
     increment_indices,
     increment_tiers,
+    iterate_over_text,
     load_xml,
     offset_indices,
     save_xml,
     trim_indices,
     unicode_normalize_xml,
 )
-
-
-def iterate_over_text(element):
-    lang = get_lang_attrib(element)
-    if element.text:
-        yield (lang, element.text)
-    for child in element:
-        for subchild in iterate_over_text(child):
-            yield subchild
-        if child.tail:
-            yield (lang, child.tail)
 
 
 def get_same_language_units(element):

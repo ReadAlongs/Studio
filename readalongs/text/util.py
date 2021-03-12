@@ -47,12 +47,12 @@ def xpath_default(xml, query, default_namespace_prefix="i"):
 def iterate_over_text(element):
     lang = get_lang_attrib(element)
     if element.text:
-        yield (lang, unicode(element.text))
+        yield (lang, element.text)
     for child in element:
         for subchild in iterate_over_text(child):
             yield subchild
         if child.tail:
-            yield (lang, unicode(child.tail))
+            yield (lang, child.tail)
 
 
 def get_lang_attrib(element):
@@ -259,16 +259,6 @@ def compose_tiers(tiers):
         reduced_indices = compose_indices(reduced_indices, tiers[counter])
         counter += 1
     return reduced_indices
-
-
-def concat_indices(i1, i2):
-    if not i1:
-        return i2
-    results = deepcopy(i1)
-    offset1, offset2 = results[-1]
-    for i1, i2 in i2[1:]:
-        results.append((i1 + offset1, i2 + offset2))
-    return results
 
 
 def offset_indices(idxs, n1, n2):
