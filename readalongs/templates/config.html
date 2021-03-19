@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <title>ReadAlong Web Component</title>
+
+</head>
+
+<body id="page-top" style='min-width: 800px; min-height: 800px; width: 800px; height: 800px; margin: 200px auto;'>
+  <div id="app" style='min-width: 800px; min-height: 800px; width: 800px; height: 800px;'></div>
+</body>
+
+<!-- REACT -->
+<script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+<!-- JSON schema forms-->
+<script src="https://unpkg.com/@rjsf/core/dist/react-jsonschema-form.js"></script>
+<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+<!-- FileSaver -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+
+<script type="text/jsx">
+const Form = JSONSchemaForm.default;
+const schema = {
+  title: "ReadAlong-Studio Config",
+  type: "object",
+  required: ["method"],
+  properties: {
+    method: {type: "string", title: "Do Not Align Method", default: "remove"},
+    segments: {type: "array",
+    items: {
+      type: "object",
+      properties: {
+          begin: {
+              type: "string"
+          },
+          end: {
+            type: "string"
+        }
+      }
+    }
+  }
+  }
+};
+
+const log = (type) => console.log.bind(console, type);
+var saveAs = window.saveAs;
+const onSubmit = ({formData}, e) => {
+  console.log("Data submitted: ",  formData)
+  var blob = new Blob([JSON.stringify(formData)], {type: "application/json"});
+  saveAs(blob, "config.json")
+};
+ReactDOM.render((
+  <Form schema={schema}
+        onChange={log("changed")}
+        onSubmit={onSubmit}
+        onError={log("errors")} />
+), document.getElementById("app"));
+</script>
+</html>
