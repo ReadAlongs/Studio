@@ -95,6 +95,37 @@ class TestAlignCli(TestCase):
         self.assertIn("|crg-dv|", results.stdout)
         self.assertNotIn("|crg|", results.stdout)
 
+    def test_align_english(self):
+        # Validates that LexiconG2P words for English language alignment
+        input = "This is some text that we will run through the English lexicon grapheme to morpheme approach."
+        input_filename = os.path.join(self.tempdir, "input")
+        with open(input_filename, "w") as f:
+            f.write(input)
+        output_dir = os.path.join(self.tempdir, "eng-output")
+        # Run align from plain text
+        self.runner.invoke(
+            align,
+            [
+                "-i",
+                "-s",
+                "-l",
+                "eng",
+                input_filename,
+                os.path.join(self.data_dir, "ej-fra.m4a"),
+                output_dir,
+            ],
+        )
+
+        g2p_ref = '<s id="t0b0d0p0s0"><w id="t0b0d0p0s0w0">DH IH S</w> <w id="t0b0d0p0s0w1">IH Z</w> <w id="t0b0d0p0s0w2">S AH M</w> <w id="t0b0d0p0s0w3">T EH K S T</w> <w id="t0b0d0p0s0w4">DH AE T</w> <w id="t0b0d0p0s0w5">W IY</w> <w id="t0b0d0p0s0w6">W IH L</w> <w id="t0b0d0p0s0w7">R AH N</w> <w id="t0b0d0p0s0w8">TH R UW</w> <w id="t0b0d0p0s0w9">DH AH</w> <w id="t0b0d0p0s0w10">IH NG G L IH SH</w> <w id="t0b0d0p0s0w11">L EH K S IH K AA N</w> <w id="t0b0d0p0s0w12">G R AE F IY M</w> <w id="t0b0d0p0s0w13">T UW</w> <w id="t0b0d0p0s0w14">M AO R F IY M</w> <w id="t0b0d0p0s0w15">AH P R OW CH</w>.</s>'
+
+        tokenized_file = os.path.join(
+            self.tempdir, "eng-output", "tempfiles", "eng-output.g2p.xml"
+        )
+        with open(tokenized_file, "r") as f:
+            tok_output = f.read()
+
+        self.assertIn(g2p_ref, tok_output)
+
 
 if __name__ == "__main__":
     main()

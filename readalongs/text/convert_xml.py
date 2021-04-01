@@ -54,23 +54,13 @@ from readalongs.text.util import (
     get_lang_attrib,
     increment_indices,
     increment_tiers,
+    iterate_over_text,
     load_xml,
     offset_indices,
     save_xml,
     trim_indices,
     unicode_normalize_xml,
 )
-
-
-def iterate_over_text(element):
-    lang = get_lang_attrib(element)
-    if element.text:
-        yield (lang, element.text)
-    for child in element:
-        for subchild in iterate_over_text(child):
-            yield subchild
-        if child.tail:
-            yield (lang, child.tail)
 
 
 def get_same_language_units(element):
@@ -102,32 +92,8 @@ def get_same_language_units(element):
     return same_language_units
 
 
-def add_word_boundaries(xml, word_unit="w"):
-    for word in xml.xpath(".//" + word_unit):
-        word.text = "#" + (word.text if word.text else "")
-        if word.getchildren():
-            last_child = word[-1]
-            last_child.tail = (last_child.tail if last_child.tail else "") + "#"
-        else:
-            word.text += "#"
-
-
-def remove_word_boundaries(xml, word_unit="w"):
-    for word in xml.xpath(".//" + word_unit):
-        if word.text and word.text.startswith("#"):
-            word.text = word.text[1:]
-        if word.text and word.text.endswith("#"):
-            word.text = word.text[:-1]
-        word.text = word.text.strip()
-        if word.getchildren():
-            last_child = word[-1]
-            if last_child.tail and last_child.tail.endswith("#"):
-                last_child.tail = last_child.tail[:-1]
-
-
 def convert_words(xml, word_unit="w", output_orthography="eng-arpabet"):
     for word in xml.xpath(".//" + word_unit):
-        # add_word_boundaries(word)
         # only convert text within words
         same_language_units = get_same_language_units(word)
         if not same_language_units:
@@ -207,9 +173,7 @@ def convert_xml(xml, word_unit="w", output_orthography="eng-arpabet"):
     xml_copy = copy.deepcopy(xml)
     # FIXME: different langs have different normalizations, is this necessary?
     unicode_normalize_xml(xml_copy)
-    # add_word_boundaries(xml_copy, word_unit)
     convert_words(xml_copy, word_unit, output_orthography)
-    # remove_word_boundaries(xml_copy, word_unit)
     return xml_copy
 
 
