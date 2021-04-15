@@ -30,13 +30,13 @@ class TestIndices(TestCase):
     def test_tiered_composition(self):
         transducer = make_g2p("dan", "eng-arpabet")
         tg = transducer("hej")
-        self.assertEqual(tg.output_string, "HH EH Y")
+        self.assertEqual(tg.output_string, "HH EH Y ")
         self.assertEqual(
             tg.edges,
             [
                 [(0, 0), (1, 1), (2, 2)],
                 [(0, 0), (1, 1), (2, 2)],
-                [(0, 0), (0, 1), (0, 2), (1, 3), (1, 4), (1, 5), (2, 6)],
+                [(0, 0), (0, 1), (0, 2), (1, 3), (1, 4), (1, 5), (2, 6), (2, 7)],
             ],
         )
         self.assertEqual(
@@ -52,21 +52,22 @@ class TestIndices(TestCase):
                     ["ɛ", "H"],
                     ["ɛ", " "],
                     ["j", "Y"],
+                    ["j", " "],
                 ],
             ],
         )
-        self.assertEqual(compose_tiers(tg.edges), [(0, 2), (1, 5), (2, 6)])
+        self.assertEqual(compose_tiers(tg.edges), [(0, 2), (1, 5), (2, 7)])
 
     def test_composition_with_none(self):
         transducer = make_g2p("ctp", "eng-arpabet")
         tg = transducer("Qne\u1D2C")
-        self.assertEqual(tg.output_string, "HH N EY")
+        self.assertEqual(tg.output_string, "HH N EY ")
         self.assertEqual(
             tg.edges,
             [
                 [(0, 0), (1, 1), (2, 2), (3, None)],
                 [(0, 0), (1, 1), (2, 2), (2, 3)],
-                [(0, 0), (0, 1), (0, 2), (1, 3), (1, 4), (2, 5), (3, 6)],
+                [(0, 0), (0, 1), (0, 2), (1, 3), (1, 4), (2, 5), (3, 6), (3, 7)],
             ],
         )
         self.assertEqual(
@@ -82,17 +83,18 @@ class TestIndices(TestCase):
                     ["n", " "],
                     ["e", "E"],
                     ["ː", "Y"],
+                    ["ː", " "],
                 ],
             ],
         )
-        self.assertEqual(compose_tiers(tg.edges), [(0, 2), (1, 4), (2, 6), (3, 6)])
+        self.assertEqual(compose_tiers(tg.edges), [(0, 2), (1, 4), (2, 7), (3, 7)])
 
     def test_fra(self):
         transducer = make_g2p("fra", "eng-arpabet")
         tg = transducer("mais")
-        self.assertEqual(tg.output_string, "M EH")
+        self.assertEqual(tg.output_string, "M EH ")
         self.assertEqual(
-            compose_tiers(increment_tiers(tg.edges)), [(1, 2), (2, 4), (3, 4), (4, 4)]
+            compose_tiers(increment_tiers(tg.edges)), [(1, 2), (2, 5), (3, 5), (4, 5)]
         )
 
 
