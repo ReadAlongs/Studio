@@ -158,7 +158,7 @@ def align_audio(
     cfg.set_float("-samprate", audio.frame_rate)
 
     # Process audio
-    do_not_align_segments = None
+    do_not_align_segments = []
     if config and "do-not-align" in config:
         # Reverse sort un-alignable segments
         do_not_align_segments = sorted(
@@ -254,7 +254,20 @@ def align_audio(
         # Split adjoining silence/noise between words
         last_end = 0.0
         last_word = dict()
+        do_not_align_segments = [
+            {"start": x["begin"] / 1000, "end": x["end"] / 1000}
+            for x in do_not_align_segments
+        ]  # merge with dna segments
         for word in results["words"]:
+            for (
+                seg
+            ) in (
+                do_not_align_segments
+            ):  # find do-not-align segments and only join silence up to the last dna segment
+                if (
+                    seg["start"] >= last_end and seg["end"] <= word["start"]
+                ):  # only do this if the dna segment intervenes the last word
+                    last_end = seg["end"]
             silence = word["start"] - last_end
             midpoint = last_end + silence / 2
             if silence > 0:
