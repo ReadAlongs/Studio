@@ -91,6 +91,7 @@ class LexiconG2P:
         len_text = len(text)
         text = text.strip("#").strip()
         text = text.upper()
+        text = normalize("NFKC", text)
         if text not in self.entries:
             raise KeyError(
                 "Word %s not found in lexicon %s" % (text, self.metadata["src"])
