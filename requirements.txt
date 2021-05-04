@@ -6,7 +6,7 @@ flask-socketio==4.3.2
 g2p>=0.5.*
 iso-639==0.4.5
 lxml==4.6.3
-networkx==2.3
+networkx==2.5
 numpy>=1.16.4
 panphon>=0.14
 soundswallower==0.1.1
