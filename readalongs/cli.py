@@ -12,6 +12,8 @@
 #    - align  : main command to align text and audio
 #    - epub   : convert aligned file to epub format
 #    - prepare: prepare XML input for align from plain text
+#    - tokenize: tokenize the prepared file
+#    - g2p    : apply g2p to the tokenized file
 #
 #   Default CLI commands provided by Flask:
 #    - routes : show available routes in the this readalongs Flask app
@@ -44,6 +46,8 @@ from readalongs.app import app
 from readalongs.audio_utils import read_audio_from_file
 from readalongs.epub.create_epub import create_epub
 from readalongs.log import LOGGER
+from readalongs.text.add_ids_to_xml import add_ids
+from readalongs.text.convert_xml import convert_xml
 from readalongs.text.make_smil import make_smil
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import save_minimal_index_html, save_txt, save_xml, write_xml
@@ -54,6 +58,13 @@ def create_app():
     """ Returns the app
     """
     return app
+
+
+def get_click_file_name(click_file):
+    try:
+        return click_file.name
+    except Exception:  # For unit testing: simulated stdin stream has no .name attrib
+        return "<stdin>"
 
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -286,7 +297,7 @@ def epub(**kwargs):
 
 @app.cli.command(
     context_settings=CONTEXT_SETTINGS,
-    short_help="Prepare XML input to align from plain text.",
+    short_help="Convert a plain text file into the XML format for alignment.",
 )
 @click.argument("plaintextfile", type=click.File("r"))
 @click.argument("xmlfile", type=click.Path(), required=False, default="")
@@ -327,10 +338,7 @@ def prepare(**kwargs):
 
     out_file = kwargs["xmlfile"]
     if not out_file:
-        try:
-            out_file = input_file.name
-        except Exception:  # For unit testing: simulated stdin stream has no .name attrib
-            out_file = "<stdin>"
+        out_file = get_click_file_name(input_file)
         if out_file == "<stdin>":  # actual intput_file.name when cli input is "-"
             out_file = "-"
         else:
@@ -363,7 +371,7 @@ def prepare(**kwargs):
 
 @app.cli.command(
     context_settings=CONTEXT_SETTINGS,
-    short_help="Tokenize XML file to align from XML file produced by prepare.",
+    short_help="Tokenize a prepared XML file, in preparation for alignment.",
 )
 @click.argument("xmlfile", type=click.File("rb"))
 @click.argument("tokfile", type=click.Path(), required=False, default="")
@@ -373,15 +381,14 @@ def prepare(**kwargs):
 )
 def tokenize(**kwargs):
     """Tokenize XMLFILE for 'readalongs align' into TOKFILE.
-    XMLFILE should have been produce by 'readalongs prepare'.
-    TOKFILE can be augmented with word-specific language codes.
+    XMLFILE should have been produced by 'readalongs prepare'.
+    TOKFILE can then be augmented with word-specific language codes.
     'readalongs align' can be called with either XMLFILE or TOKFILE as XML input.
 
     XMLFILE: Path to the XML file to tokenize, or - for stdin
 
     TOKFILE: Output path for the tok'd XML, or - for stdout [default: XMLFILE.tokenized.xml]
     """
-    xmlfile = kwargs["xmlfile"]
 
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
@@ -391,39 +398,109 @@ def tokenize(**kwargs):
             )
         )
 
-    if not kwargs["tokfile"]:
-        try:
-            output_tok_path = xmlfile.name
-        except Exception:
-            output_tok_path = "<stdin>"
-        if output_tok_path == "<stdin>":
-            output_tok_path = "-"
-        else:
-            if output_tok_path.endswith(".xml"):
-                output_tok_path = output_tok_path[:-4]
-            output_tok_path += ".tokenized.xml"
-    else:
-        output_tok_path = kwargs["tokfile"]
-        if not output_tok_path.endswith(".xml") and not output_tok_path == "-":
-            output_tok_path += ".xml"
+    input_file = kwargs["xmlfile"]
 
-    if os.path.exists(output_tok_path) and not kwargs["force_overwrite"]:
+    if not kwargs["tokfile"]:
+        output_path = get_click_file_name(input_file)
+        if output_path == "<stdin>":
+            output_path = "-"
+        else:
+            if output_path.endswith(".xml"):
+                output_path = output_path[:-4]
+            output_path += ".tokenized.xml"
+    else:
+        output_path = kwargs["tokfile"]
+        if not output_path.endswith(".xml") and not output_path == "-":
+            output_path += ".xml"
+
+    if os.path.exists(output_path) and not kwargs["force_overwrite"]:
         raise click.BadParameter(
-            "Output file %s exists already, use -f to overwrite." % output_tok_path
+            "Output file %s exists already, use -f to overwrite." % output_path
         )
 
     try:
-        xml = etree.parse(xmlfile).getroot()
+        xml = etree.parse(input_file).getroot()
     except etree.XMLSyntaxError as e:
         raise click.BadParameter(
             "Error parsing input file %s as XML, please verify it. Parser error: %s"
-            % (xmlfile, e)
+            % (get_click_file_name(input_file), e)
         )
 
+    # Tokenize the XML file - all this code for such a tiny body!!!
     xml = tokenize_xml(xml)
 
-    if output_tok_path == "-":
+    if output_path == "-":
         write_xml(sys.stdout.buffer, xml)
     else:
-        save_xml(output_tok_path, xml)
-    LOGGER.info("Wrote {}".format(output_tok_path))
+        save_xml(output_path, xml)
+    LOGGER.info("Wrote {}".format(output_path))
+
+
+@app.cli.command(
+    context_settings=CONTEXT_SETTINGS,
+    short_help="Apply g2p to a tokenized file, in preparation for alignment.",
+)
+@click.argument("tokfile", type=click.File("rb"))
+@click.argument("g2pfile", type=click.Path(), required=False, default="")
+@click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
+@click.option(
+    "-f", "--force-overwrite", is_flag=True, help="Force overwrite output files"
+)
+def g2p(**kwargs):
+    """Apply g2p mappings to TOKFILE into G2PFILE.
+    TOKFILE should have been produced by 'readalongs tokenize'.
+    G2PFILE can then be modified to adjust the phonetic representation as needed.
+    'readalongs align' can be called with G2PFILE in stead of TOKFILE as XML input.
+
+    TOKFILE: Path to the input tokenized XML file, or - for stdin
+
+    G2PFile: Output path for the g2p'd XML, or - for stdout [default: TOKFILE with .g2p. inserted]
+    """
+    if kwargs["debug"]:
+        LOGGER.setLevel("DEBUG")
+        LOGGER.info(
+            "Running readalongs g2p(tokfile={}, g2pfile={}, force-overwrite={}).".format(
+                kwargs["tokfile"], kwargs["g2pfile"], kwargs["force_overwrite"],
+            )
+        )
+
+    input_file = kwargs["tokfile"]
+
+    if not kwargs["g2pfile"]:
+        output_path = get_click_file_name(input_file)
+        if output_path == "<stdin>":
+            output_path = "-"
+        else:
+            if output_path.endswith(".xml"):
+                output_path = output_path[:-4]
+            if output_path.endswith(".tokenized"):
+                output_path = output_path[: -len(".tokenized")]
+            output_path += ".g2p.xml"
+    else:
+        output_path = kwargs["g2pfile"]
+        if not output_path.endswith(".xml") and not output_path == "-":
+            output_path += ".xml"
+
+    if os.path.exists(output_path) and not kwargs["force_overwrite"]:
+        raise click.BadParameter(
+            "Output file %s exists already, use -f to overwrite." % output_path
+        )
+
+    try:
+        xml = etree.parse(input_file).getroot()
+    except etree.XMLSyntaxError as e:
+        raise click.BadParameter(
+            "Error parsing input file %s as XML, please verify it. Parser error: %s"
+            % (get_click_file_name(input_file), e)
+        )
+
+    # Add the IDs to paragraph, sentences, word, etc.
+    xml = add_ids(xml)
+    # Apply the g2p mappings.
+    xml = convert_xml(xml)
+
+    if output_path == "-":
+        write_xml(sys.stdout.buffer, xml)
+    else:
+        save_xml(output_path, xml)
+        LOGGER.info("Wrote {}".format(output_path))
