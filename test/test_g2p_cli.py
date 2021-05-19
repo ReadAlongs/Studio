@@ -13,7 +13,7 @@ class TestG2pCli(TestCase):
 
     # Set this to True to keep the temp dirs after running, for manual inspection
     # but please never push a commit setting this to True!
-    keep_temp_dir_after_running = True
+    keep_temp_dir_after_running = False
 
     def setUp(self):
         app.logger.setLevel("DEBUG")
@@ -37,27 +37,27 @@ class TestG2pCli(TestCase):
         input_file = os.path.join(self.data_dir, "fra-tokenized.xml")
         g2p_file = os.path.join(self.tempdir, "fra-g2p.xml")
         results = self.runner.invoke(g2p, [input_file, g2p_file])
-        print(f"g2p results.output='{results.output}'")
+        # print(f"g2p results.output='{results.output}'")
         self.assertEqual(results.exit_code, 0)
         self.assertTrue(os.path.exists(os.path.join(self.tempdir, "fra-g2p.xml")))
 
         # Testing that it fails when the file already exists has to be in the same test,
         # otherwise we have a different tempdir and the file won't already exist
         results = self.runner.invoke(g2p, [input_file, g2p_file])
-        print(f"g2p results.output='{results.output}'")
+        # print(f"g2p results.output='{results.output}'")
         self.assertNotEqual(results.exit_code, 0)
         self.assertIn("use -f to overwrite", results.output)
 
         # And add -f to force the overwrite
         results = self.runner.invoke(g2p, ["-f", input_file, g2p_file])
-        print(f"g2p results.output='{results.output}'")
+        # print(f"g2p results.output='{results.output}'")
         self.assertEqual(results.exit_code, 0)
 
     def test_mixed_langs(self):
         input_file = os.path.join(self.data_dir, "mixed-langs.tokenized.xml")
         g2p_file = os.path.join(self.tempdir, "mixed-langs.g2p.xml")
         results = self.runner.invoke(g2p, [input_file, g2p_file])
-        print(f"g2p results.output='{results.output}'")
+        # print(f"g2p results.output='{results.output}'")
         self.assertEqual(results.exit_code, 0)
         self.assertTrue(os.path.exists(g2p_file))
 
