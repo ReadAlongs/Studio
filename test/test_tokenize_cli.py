@@ -20,11 +20,11 @@ class TestTokenizeCli(TestCase):
         app.logger.setLevel("DEBUG")
         self.runner = app.test_cli_runner()
         self.tempdirobj = tempfile.TemporaryDirectory(
-            prefix="test_tokenize_cli_tmpdir", dir="."
+            prefix="tmpdir_test_tokenize_cli_", dir="."
         )
         self.tempdir = self.tempdirobj.name
         # Alternative tempdir code keeps it after running, for manual inspection:
-        # self.tempdir = tempfile.mkdtemp(prefix="test_tokenize_cli_tmpdir", dir=".")
+        # self.tempdir = tempfile.mkdtemp(prefix="tmpdir_test_tokenize_cli_", dir=".")
         # print('tmpdir={}'.format(self.tempdir))
 
         self.xmlfile = os.path.join(self.tempdir, "fra.xml")

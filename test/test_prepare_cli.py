@@ -22,11 +22,11 @@ class TestPrepareCli(TestCase):
         app.logger.setLevel("DEBUG")
         self.runner = app.test_cli_runner()
         self.tempdirobj = tempfile.TemporaryDirectory(
-            prefix="test_prepare_cli_tmpdir", dir="."
+            prefix="tmpdir_test_prepare_cli_", dir="."
         )
         self.tempdir = self.tempdirobj.name
         # Alternative tempdir code keeps it after running, for manual inspection:
-        # self.tempdir = tempfile.mkdtemp(prefix="test_prepare_cli_tmpdir", dir=".")
+        # self.tempdir = tempfile.mkdtemp(prefix="tmpdir_test_prepare_cli_", dir=".")
         # print("tmpdir={}".format(self.tempdir))
         self.empty_file = os.path.join(self.tempdir, "empty.txt")
         with io.open(self.empty_file, "wb"):

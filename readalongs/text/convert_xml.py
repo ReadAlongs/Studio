@@ -44,6 +44,7 @@ import os
 import unicodedata as ud
 
 from g2p import make_g2p
+from g2p.mappings.langs.utils import is_arpabet
 from g2p.transducer import CompositeTransductionGraph, TransductionGraph
 
 from readalongs.text.lexicon_g2p import LexiconG2P
@@ -92,6 +93,31 @@ def get_same_language_units(element):
     return same_language_units
 
 
+def convert_word(word: str, lang: str, output_orthography: str):
+    if lang == "eng":
+        # Hack to use old English LexiconG2P
+        # Note: adding eng_ prefix to vars that are used in both blocks to make mypy
+        # happy. Since the two sides of the if and in the same scope, it complains about
+        # type checking otherwise.
+        assert output_orthography == "eng-arpabet"
+        eng_tg = False
+        eng_converter = LexiconG2P(
+            os.path.join(os.path.dirname(LEXICON_PATH), "cmu_sphinx.metadata.json")
+        )
+        eng_text, eng_indices = eng_converter.convert(word)
+        eng_valid = is_arpabet(eng_text)
+        return eng_converter, eng_tg, eng_text, eng_indices, eng_valid
+    else:
+        converter = make_g2p(lang, output_orthography)
+        tg = converter(word)
+        text = tg.output_string.strip()
+        indices = tg.edges
+        valid = converter.check(tg, shallow=True)
+        if not valid:
+            converter.check(tg, shallow=False, display_warnings=True)
+        return converter, tg, text, indices, valid
+
+
 def convert_words(xml, word_unit="w", output_orthography="eng-arpabet"):
     for word in xml.xpath(".//" + word_unit):
         # only convert text within words
@@ -101,20 +127,12 @@ def convert_words(xml, word_unit="w", output_orthography="eng-arpabet"):
         all_text = ""
         all_indices = []
         for unit in same_language_units:
-            # Hack to use old English LexiconG2P
-            if unit["lang"] != "eng":
-                converter = make_g2p(unit["lang"], output_orthography)
-                tg = converter(unit["text"])
-                text = tg.output_string
-                indices = tg.edges
-            else:
-                tg = False
-                converter = LexiconG2P(
-                    os.path.join(
-                        os.path.dirname(LEXICON_PATH), "cmu_sphinx.metadata.json"
-                    )
-                )
-                text, indices = converter.convert(unit["text"])
+            converter, tg, text, indices, valid = convert_word(
+                unit["text"], unit["lang"], output_orthography
+            )
+            if not valid:
+                # This is where we apply the g2p cascade
+                pass
             all_text += text
             all_indices += indices
         if tg and isinstance(tg, CompositeTransductionGraph):
@@ -128,7 +146,7 @@ def convert_words(xml, word_unit="w", output_orthography="eng-arpabet"):
         else:
             norm_form = None
             all_indices = indices
-        if norm_form:
+        if norm_form and norm_form != "none":
             word.text = ud.normalize(norm_form, word.text)
         replace_text_in_node(word, all_text, all_indices)
     return xml

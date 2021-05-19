@@ -13,7 +13,7 @@ from readalongs.log import LOGGER
 class TestAlignCli(TestCase):
     LOGGER.setLevel("DEBUG")
     data_dir = os.path.join(os.path.dirname(__file__), "data")
-    tempdirobj = tempfile.TemporaryDirectory(prefix="test_align_cli_tmpdir", dir=".")
+    tempdirobj = tempfile.TemporaryDirectory(prefix="tmpdir_test_align_cli_", dir=".")
     tempdir = tempdirobj.name
 
     def setUp(self):
