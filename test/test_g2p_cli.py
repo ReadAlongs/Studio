@@ -14,6 +14,9 @@ class TestG2pCli(TestCase):
     # Set this to True to keep the temp dirs after running, for manual inspection
     # but please never push a commit setting this to True!
     keep_temp_dir_after_running = False
+    # Set this to True to display the output of many commands invoked here, for building
+    # and debugging this test suite
+    show_invoke_output = False
 
     def setUp(self):
         app.logger.setLevel("DEBUG")
@@ -86,13 +89,28 @@ class TestG2pCli(TestCase):
         g2p_file = os.path.join(self.tempdir, "g2p.xml")
         self.write_prepare_tokenize("This is a froobnelicious OOV.", "eng", tok_file)
         results = self.runner.invoke(g2p, [tok_file, g2p_file])
-        print(
-            f"test_english_oov: g2p "
-            f"results.output='{results.output}' "
-            f"results.exception={results.exception!r}"
-        )
+        if self.show_invoke_output:
+            print(
+                f"test_english_oov: g2p "
+                f"results.output='{results.output}' "
+                f"results.exception={results.exception!r}"
+            )
         self.assertNotEqual(results.exit_code, 0)
-        self.assertTrue(isinstance(results.exception, KeyError))
+        self.assertIn("could not be g2p", results.output)
+        # self.assertTrue(isinstance(results.exception, KeyError))
+
+        # with a fall back to und, it works
+        g2p_file2 = os.path.join(self.tempdir, "g2p-fallback.xml")
+        results = self.runner.invoke(
+            g2p, ["--g2p-fallback", "und", tok_file, g2p_file2]
+        )
+        if self.show_invoke_output:
+            print(
+                f"test_english_oov with fallback: g2p "
+                f"results.output='{results.output}' "
+                f"results.exception={results.exception!r}"
+            )
+        self.assertEqual(results.exit_code, 0)
 
     def test_french_oov(self):
         tok_file = os.path.join(self.tempdir, "tok.xml")
@@ -101,12 +119,62 @@ class TestG2pCli(TestCase):
             "Le ñ n'est pas dans l'alphabet français.", "fra", tok_file
         )
         results = self.runner.invoke(g2p, [tok_file, g2p_file])
-        print(
-            f"test_french_oov: g2p "
-            f"results.output='{results.output}' "
-            f"results.exception={results.exception!r}"
+        if self.show_invoke_output:
+            print(
+                f"test_french_oov: g2p "
+                f"results.output='{results.output}' "
+                f"results.exception={results.exception!r}"
+            )
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("could not be g2p", results.output)
+
+        # with a fall back to und, it works
+        g2p_file2 = os.path.join(self.tempdir, "g2p-fallback.xml")
+        results = self.runner.invoke(
+            g2p, ["--g2p-fallback", "und", tok_file, g2p_file2]
         )
-        self.assertIn("not fully valid", results.output)
+        if self.show_invoke_output:
+            print(
+                f"test_french_oov with fallback: g2p "
+                f"results.output='{results.output}' "
+                f"results.exception={results.exception!r}"
+            )
+        # This actually fails, because currently "und" is buggy: it does not strip accents
+        # the way it should! We have to first process text through UnidecodeG2P because
+        # mapping through g2p's und mapping.
+        # self.assertEqual(results.exit_code, 0)
+
+    def test_three_way_fallback(self):
+        tok_file = os.path.join(self.tempdir, "tok.xml")
+        g2p_file = os.path.join(self.tempdir, "g2p.xml")
+        self.write_prepare_tokenize(
+            "In French été works but ᓄᓇᕗᑦ does not.", "eng", tok_file
+        )
+        results = self.runner.invoke(
+            g2p, ["--g2p-fallback", "fra:iku", tok_file, g2p_file]
+        )
+        if self.show_invoke_output:
+            print(
+                f"test_three_way_fallback: g2p "
+                f"results.output='{results.output}' "
+                f"results.exception={results.exception!r}"
+            )
+        self.assertEqual(results.exit_code, 0)
+        self.assertNotIn("not recognized as IPA", results.output)
+        self.assertNotIn("not fully valid eng-arpabet", results.output)
+
+        results = self.runner.invoke(
+            g2p, ["--g2p-fallback=fra:iku", "--verbose", tok_file, "verbose" + g2p_file]
+        )
+        if self.show_invoke_output:
+            print(
+                f"test_three_way_fallback: g2p "
+                f"results.output='{results.output}' "
+                f"results.exception={results.exception!r}"
+            )
+        self.assertEqual(results.exit_code, 0)
+        self.assertIn("not recognized as IPA", results.output)
+        self.assertIn("not fully valid eng-arpabet", results.output)
 
 
 if __name__ == "__main__":

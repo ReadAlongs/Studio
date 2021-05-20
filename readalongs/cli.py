@@ -442,10 +442,22 @@ def tokenize(**kwargs):
 )
 @click.argument("tokfile", type=click.File("rb"))
 @click.argument("g2pfile", type=click.Path(), required=False, default="")
-@click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
+@click.option(
+    "--g2p-fallback",
+    default=None,
+    help="Colon-separated list of fallback langs for g2p",
+)
 @click.option(
     "-f", "--force-overwrite", is_flag=True, help="Force overwrite output files"
 )
+@click.option(
+    "-v",
+    "--verbose",
+    is_flag=True,
+    default=False,
+    help="Display verbose messages about g2p errors.",
+)
+@click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
 def g2p(**kwargs):
     """Apply g2p mappings to TOKFILE into G2PFILE.
     TOKFILE should have been produced by 'readalongs tokenize'.
@@ -454,7 +466,12 @@ def g2p(**kwargs):
 
     TOKFILE: Path to the input tokenized XML file, or - for stdin
 
-    G2PFile: Output path for the g2p'd XML, or - for stdout [default: TOKFILE with .g2p. inserted]
+    G2PFILE: Output path for the g2p'd XML, or - for stdout [default: TOKFILE with .g2p. inserted]
+
+    g2p-fallback: if specified, re-g2p any word that is not valid ARPABET in each
+    colon-separated language specified. E.g., --g2p-fallback eng:und will take words that
+    don't g2p correctly in the language(s) specified in TOKFILE and try to g2p them as
+    English, and if that also fails, as Undetermined.
     """
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
@@ -486,6 +503,16 @@ def g2p(**kwargs):
             "Output file %s exists already, use -f to overwrite." % output_path
         )
 
+    if kwargs["g2p_fallback"]:
+        g2p_fallbacks = kwargs["g2p_fallback"].split(":")
+        for lang in g2p_fallbacks:
+            if lang not in LANGS:
+                raise click.BadParameter(
+                    f'g2p fallback lang "{lang}" is not valid; choose among {", ".join(LANGS)}'
+                )
+    else:
+        g2p_fallbacks = []
+
     try:
         xml = etree.parse(input_file).getroot()
     except etree.XMLSyntaxError as e:
@@ -497,10 +524,23 @@ def g2p(**kwargs):
     # Add the IDs to paragraph, sentences, word, etc.
     xml = add_ids(xml)
     # Apply the g2p mappings.
-    xml = convert_xml(xml)
+    xml, valid = convert_xml(
+        xml, g2p_fallbacks=g2p_fallbacks, verbose_warnings=kwargs["verbose"]
+    )
 
     if output_path == "-":
         write_xml(sys.stdout.buffer, xml)
     else:
         save_xml(output_path, xml)
         LOGGER.info("Wrote {}".format(output_path))
+
+    if not valid:
+        LOGGER.error(
+            "Some word(s) could not be g2p'd correctly."
+            + (
+                " Run again with --verbose to get more detailed error messages."
+                if not kwargs["verbose"]
+                else ""
+            )
+        )
+        exit(1)

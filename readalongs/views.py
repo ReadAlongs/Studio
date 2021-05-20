@@ -53,7 +53,7 @@ LANGS = [
     x
     for x in LANGS_AVAILABLE
     if not x.endswith("-ipa")
-    and not x.endswith("-norm")
+    and not x.endswith("-equiv")
     and not x.endswith("-no-symbols")
     and g2p_langs.LANGS_NETWORK.has_node(x)
     and has_path(g2p_langs.LANGS_NETWORK, x, "eng-arpabet")
