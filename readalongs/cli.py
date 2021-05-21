@@ -134,7 +134,7 @@ def cli():
 @click.option(
     "-x", "--output-xhtml", is_flag=True, help="Output simple XHTML instead of XML"
 )
-def align(**kwargs):
+def align(**kwargs):  # noqa: C901
     """Align TEXTFILE and AUDIOFILE and create output files as OUTPUT_BASE.* in directory
     OUTPUT_BASE/.
 
