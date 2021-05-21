@@ -63,7 +63,7 @@ def calculate_adjustment(timestamp: int, do_not_align_segments: List[dict]) -> i
     )
 
 
-def align_audio(
+def align_audio(  # noqa: C901
     xml_path, audio_path, unit="w", bare=False, config=None, save_temps=None,
 ):
     """ Align an XML input file to an audio file.
@@ -120,7 +120,7 @@ def align_audio(
     results["tokenized"] = xml = add_ids(xml)
     if save_temps:
         save_xml(save_temps + ".ids.xml", xml)
-    xml = convert_xml(xml)
+    xml, valid = convert_xml(xml)
     if save_temps:
         save_xml(save_temps + ".g2p.xml", xml)
 

@@ -452,7 +452,7 @@ def tokenize(**kwargs):
 )
 @click.option(
     "-v",
-    "--verbose",
+    "--g2p-verbose",
     is_flag=True,
     default=False,
     help="Display verbose messages about g2p errors.",
@@ -525,7 +525,7 @@ def g2p(**kwargs):
     xml = add_ids(xml)
     # Apply the g2p mappings.
     xml, valid = convert_xml(
-        xml, g2p_fallbacks=g2p_fallbacks, verbose_warnings=kwargs["verbose"]
+        xml, g2p_fallbacks=g2p_fallbacks, verbose_warnings=kwargs["g2p_verbose"]
     )
 
     if output_path == "-":
@@ -538,8 +538,8 @@ def g2p(**kwargs):
         LOGGER.error(
             "Some word(s) could not be g2p'd correctly."
             + (
-                " Run again with --verbose to get more detailed error messages."
-                if not kwargs["verbose"]
+                " Run again with --g2p-verbose to get more detailed error messages."
+                if not kwargs["g2p_verbose"]
                 else ""
             )
         )

@@ -13,8 +13,18 @@ from readalongs.log import LOGGER
 class TestAlignCli(TestCase):
     LOGGER.setLevel("DEBUG")
     data_dir = os.path.join(os.path.dirname(__file__), "data")
-    tempdirobj = tempfile.TemporaryDirectory(prefix="tmpdir_test_align_cli_", dir=".")
-    tempdir = tempdirobj.name
+
+    # Set this to True to keep the temp dirs after running, for manual inspection
+    # but please don't push a commit setting this to True!
+    keep_temp_dir_after_running = False
+    if not keep_temp_dir_after_running:
+        tempdirobj = tempfile.TemporaryDirectory(
+            prefix="tmpdir_test_align_cli_", dir="."
+        )
+        tempdir = tempdirobj.name
+    else:
+        tempdir = tempfile.mkdtemp(prefix="tmpdir_test_g2p_cli_", dir=".")
+        print("tmpdir={}".format(tempdir))
 
     def setUp(self):
         app.logger.setLevel("DEBUG")

@@ -12,7 +12,7 @@ class TestG2pCli(TestCase):
     data_dir = os.path.join(os.path.dirname(__file__), "data")
 
     # Set this to True to keep the temp dirs after running, for manual inspection
-    # but please never push a commit setting this to True!
+    # but please don't push a commit setting this to True!
     keep_temp_dir_after_running = False
     # Set this to True to display the output of many commands invoked here, for building
     # and debugging this test suite
@@ -164,7 +164,8 @@ class TestG2pCli(TestCase):
         self.assertNotIn("not fully valid eng-arpabet", results.output)
 
         results = self.runner.invoke(
-            g2p, ["--g2p-fallback=fra:iku", "--verbose", tok_file, "verbose" + g2p_file]
+            g2p,
+            ["--g2p-fallback=fra:iku", "--g2p-verbose", tok_file, "verbose" + g2p_file],
         )
         if self.show_invoke_output:
             print(

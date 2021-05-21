@@ -42,7 +42,7 @@ def end_to_end(xml, input_filename, unit, word_unit, out_orth):
     xml = add_lang_ids(xml, unit="p")
     xml = tokenize_xml(xml)
     xml = add_ids(xml)
-    converted_xml = convert_xml(xml, word_unit, out_orth)
+    converted_xml, valid = convert_xml(xml, word_unit, out_orth)
     # save_xml("test.xml", converted_xml)
     fsg = make_fsg(converted_xml, input_filename, unit)
     pronouncing_dictionary = make_dict(converted_xml, input_filename, unit)
