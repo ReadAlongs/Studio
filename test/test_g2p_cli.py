@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
+import io
 import os
 import tempfile
 from unittest import TestCase, main
 
 from readalongs.app import app
-from readalongs.cli import g2p, prepare, tokenize
+from readalongs.cli import align, g2p, prepare, tokenize
 
 
 class TestG2pCli(TestCase):
@@ -16,7 +17,7 @@ class TestG2pCli(TestCase):
     keep_temp_dir_after_running = False
     # Set this to True to display the output of many commands invoked here, for building
     # and debugging this test suite
-    show_invoke_output = False
+    show_invoke_output = True
 
     def setUp(self):
         app.logger.setLevel("DEBUG")
@@ -176,6 +177,50 @@ class TestG2pCli(TestCase):
         self.assertEqual(results.exit_code, 0)
         self.assertIn("not recognized as IPA", results.output)
         self.assertIn("not fully valid eng-arpabet", results.output)
+
+    def test_align_with_error(self):
+        text_file = os.path.join(self.tempdir, "input.txt")
+        with io.open(text_file, "w") as f:
+            print("In French été works but ᓄᓇᕗᑦ does not.", file=f)
+        empty_wav = os.path.join(self.tempdir, "empty.wav")
+        with io.open(empty_wav, "wb"):
+            pass
+        output_dir = os.path.join(self.tempdir, "aligned")
+        results = self.runner.invoke(
+            align, ["-l", "eng", "-i", text_file, empty_wav, output_dir]
+        )
+        if self.show_invoke_output:
+            print(
+                f"align with wrong language: "
+                f"results.output='{results.output}' "
+                f"results.exception={results.exception!r}"
+            )
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("could not be g2p", results.output)
+
+        results = self.runner.invoke(
+            align,
+            [
+                "-l",
+                "eng",
+                "-i",
+                "-f",
+                "--g2p-fallback=fra:iku",
+                text_file,
+                empty_wav,
+                output_dir,
+            ],
+        )
+        if self.show_invoke_output:
+            print(
+                f"align with wrong language, plus fallback: "
+                f"results.output='{results.output}' "
+                f"results.exception={results.exception!r}"
+            )
+        self.assertIn("Trying fallback: fra", results.output)
+        self.assertIn("Trying fallback: iku", results.output)
+        # We get the error about reading the audio file only if g2p succeeded:
+        self.assertIn("Error reading audio file", results.output)
 
 
 if __name__ == "__main__":

@@ -61,10 +61,27 @@ def create_app():
 
 
 def get_click_file_name(click_file):
+    """ Return click_file.name, falling back to <stdin> if the .name attribute is missing. """
     try:
         return click_file.name
     except Exception:  # For unit testing: simulated stdin stream has no .name attrib
         return "<stdin>"
+
+
+def parse_g2p_fallback(g2p_fallback_arg):
+    """ Parse the strings containing a colon-separated list of fallback args into a
+        Python list of language codes, or empty if None
+    """
+    if g2p_fallback_arg:
+        g2p_fallbacks = g2p_fallback_arg.split(":")
+        for lang in g2p_fallbacks:
+            if lang not in LANGS:
+                raise click.BadParameter(
+                    f'g2p fallback lang "{lang}" is not valid; choose among {", ".join(LANGS)}'
+                )
+        return g2p_fallbacks
+    else:
+        return []
 
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -133,6 +150,17 @@ def cli():
 )
 @click.option(
     "-x", "--output-xhtml", is_flag=True, help="Output simple XHTML instead of XML"
+)
+@click.option(
+    "--g2p-fallback",
+    default=None,
+    help="Colon-separated list of fallback langs for g2p; enables the g2p cascade",
+)
+@click.option(
+    "--g2p-verbose",
+    is_flag=True,
+    default=False,
+    help="Display verbose messages about g2p errors.",
 )
 def align(**kwargs):  # noqa: C901
     """Align TEXTFILE and AUDIOFILE and create output files as OUTPUT_BASE.* in directory
@@ -233,6 +261,8 @@ def align(**kwargs):  # noqa: C901
             bare=bare,
             config=config,
             save_temps=temp_base,
+            g2p_fallbacks=parse_g2p_fallback(kwargs["g2p_fallback"]),
+            verbose_g2p_warnings=kwargs["g2p_verbose"],
         )
     except RuntimeError as e:
         LOGGER.error(e)
@@ -445,13 +475,12 @@ def tokenize(**kwargs):
 @click.option(
     "--g2p-fallback",
     default=None,
-    help="Colon-separated list of fallback langs for g2p",
+    help="Colon-separated list of fallback langs for g2p; enables the g2p cascade",
 )
 @click.option(
     "-f", "--force-overwrite", is_flag=True, help="Force overwrite output files"
 )
 @click.option(
-    "-v",
     "--g2p-verbose",
     is_flag=True,
     default=False,
@@ -467,11 +496,6 @@ def g2p(**kwargs):
     TOKFILE: Path to the input tokenized XML file, or - for stdin
 
     G2PFILE: Output path for the g2p'd XML, or - for stdout [default: TOKFILE with .g2p. inserted]
-
-    g2p-fallback: if specified, re-g2p any word that is not valid ARPABET in each
-    colon-separated language specified. E.g., --g2p-fallback eng:und will take words that
-    don't g2p correctly in the language(s) specified in TOKFILE and try to g2p them as
-    English, and if that also fails, as Undetermined.
     """
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
@@ -503,16 +527,6 @@ def g2p(**kwargs):
             "Output file %s exists already, use -f to overwrite." % output_path
         )
 
-    if kwargs["g2p_fallback"]:
-        g2p_fallbacks = kwargs["g2p_fallback"].split(":")
-        for lang in g2p_fallbacks:
-            if lang not in LANGS:
-                raise click.BadParameter(
-                    f'g2p fallback lang "{lang}" is not valid; choose among {", ".join(LANGS)}'
-                )
-    else:
-        g2p_fallbacks = []
-
     try:
         xml = etree.parse(input_file).getroot()
     except etree.XMLSyntaxError as e:
@@ -525,7 +539,9 @@ def g2p(**kwargs):
     xml = add_ids(xml)
     # Apply the g2p mappings.
     xml, valid = convert_xml(
-        xml, g2p_fallbacks=g2p_fallbacks, verbose_warnings=kwargs["g2p_verbose"]
+        xml,
+        g2p_fallbacks=parse_g2p_fallback(kwargs["g2p_fallback"]),
+        verbose_warnings=kwargs["g2p_verbose"],
     )
 
     if output_path == "-":
