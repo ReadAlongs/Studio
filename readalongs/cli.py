@@ -232,27 +232,11 @@ def align(**kwargs):  # noqa: C901
     else:
         _, input_ext = os.path.splitext(kwargs["textfile"])
         tokenized_xml_path = "%s%s" % (output_base, input_ext)
-    if os.path.exists(tokenized_xml_path) and not kwargs["force_overwrite"]:
-        raise click.BadParameter(
-            "Output file %s exists already, use -f to overwrite." % tokenized_xml_path
-        )
     smil_path = output_base + ".smil"
-    if os.path.exists(smil_path) and not kwargs["force_overwrite"]:
-        raise click.BadParameter(
-            "Output file %s exists already, use -f to overwrite." % smil_path
-        )
     _, audio_ext = os.path.splitext(kwargs["audiofile"])
     audio_path = output_base + audio_ext
-    if os.path.exists(audio_path) and not kwargs["force_overwrite"]:
-        raise click.BadParameter(
-            "Output file %s exists already, use -f to overwrite." % audio_path
-        )
-    unit = kwargs.get("unit", "w")
+    unit = kwargs.get("unit", "w") or "w"  # Sometimes .get() still returns None here
     bare = kwargs.get("bare", False)
-    if (
-        not unit
-    ):  # .get() above should handle this but apparently the way kwargs is implemented
-        unit = "w"  # unit could still be None here.
     try:
         results = align_audio(
             kwargs["textfile"],

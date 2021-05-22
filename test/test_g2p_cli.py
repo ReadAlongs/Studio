@@ -17,7 +17,7 @@ class TestG2pCli(TestCase):
     keep_temp_dir_after_running = False
     # Set this to True to display the output of many commands invoked here, for building
     # and debugging this test suite
-    show_invoke_output = True
+    show_invoke_output = False
 
     def setUp(self):
         app.logger.setLevel("DEBUG")
@@ -57,6 +57,20 @@ class TestG2pCli(TestCase):
         # print(f"g2p results.output='{results.output}'")
         self.assertEqual(results.exit_code, 0)
 
+    def test_bad_fallback_lang(self):
+        input_file = os.path.join(self.data_dir, "fra-tokenized.xml")
+        results = self.runner.invoke(
+            g2p, ["--g2p-fallback=fra:notalang:und", input_file, "-"]
+        )
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("Invalid value: g2p fallback lang", results.output)
+
+    def test_bad_xml_input(self):
+        input_file = os.path.join(self.data_dir, "ej-fra.txt")
+        results = self.runner.invoke(g2p, ["--debug", input_file, "-"])
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("Error parsing input file", results.output)
+
     def test_mixed_langs(self):
         input_file = os.path.join(self.data_dir, "mixed-langs.tokenized.xml")
         g2p_file = os.path.join(self.tempdir, "mixed-langs.g2p.xml")
@@ -87,9 +101,8 @@ class TestG2pCli(TestCase):
 
     def test_english_oov(self):
         tok_file = os.path.join(self.tempdir, "tok.xml")
-        g2p_file = os.path.join(self.tempdir, "g2p.xml")
         self.write_prepare_tokenize("This is a froobnelicious OOV.", "eng", tok_file)
-        results = self.runner.invoke(g2p, [tok_file, g2p_file])
+        results = self.runner.invoke(g2p, [tok_file])
         if self.show_invoke_output:
             print(
                 f"test_english_oov: g2p "
@@ -101,10 +114,7 @@ class TestG2pCli(TestCase):
         # self.assertTrue(isinstance(results.exception, KeyError))
 
         # with a fall back to und, it works
-        g2p_file2 = os.path.join(self.tempdir, "g2p-fallback.xml")
-        results = self.runner.invoke(
-            g2p, ["--g2p-fallback", "und", tok_file, g2p_file2]
-        )
+        results = self.runner.invoke(g2p, ["--g2p-fallback", "und", tok_file, "-"])
         if self.show_invoke_output:
             print(
                 f"test_english_oov with fallback: g2p "

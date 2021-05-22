@@ -43,7 +43,7 @@ class TestTokenizeCli(TestCase):
         self.assertTrue(os.path.exists(os.path.join(self.tempdir, "delme.xml")))
 
     def test_generate_output_name(self):
-        results = self.runner.invoke(tokenize, [self.xmlfile])
+        results = self.runner.invoke(tokenize, ["--debug", self.xmlfile])
         self.assertEqual(results.exit_code, 0)
         self.assertTrue(os.path.exists(os.path.join(self.tempdir, "fra.tokenized.xml")))
 

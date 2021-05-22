@@ -97,6 +97,50 @@ class TestAlignCli(TestCase):
         ) as f2:
             self.assertListEqual(list(f1), list(f2))
 
+        # We test error situations in the same test case, since we reuse the same outputs
+        results_output_exists = self.runner.invoke(
+            align,
+            [
+                os.path.join(self.data_dir, "ej-fra-dna.xml"),
+                os.path.join(self.data_dir, "ej-fra.m4a"),
+                output,
+            ],
+        )
+        self.assertNotEqual(results_output_exists.exit_code, 0)
+        self.assertIn(
+            "already exists, use -f to overwrite", results_output_exists.output
+        )
+
+        # Output path exists as a regular file
+        results_output_is_regular_file = self.runner.invoke(
+            align,
+            [
+                os.path.join(self.data_dir, "ej-fra-dna.xml"),
+                os.path.join(self.data_dir, "ej-fra.m4a"),
+                os.path.join(output, "output.smil"),
+            ],
+        )
+        self.assertNotEqual(results_output_is_regular_file, 0)
+        self.assertIn(
+            "already exists but is a not a directory",
+            results_output_is_regular_file.output,
+        )
+
+    def test_permission_denied(self):
+        dirname = os.path.join(self.tempdir, "permission_denied")
+        os.mkdir(dirname, mode=0o444)
+        results = self.runner.invoke(
+            align,
+            [
+                "-f",
+                os.path.join(self.data_dir, "ej-fra-dna.xml"),
+                os.path.join(self.data_dir, "ej-fra.m4a"),
+                dirname,
+            ],
+        )
+        self.assertNotEqual(results, 0)
+        self.assertIn("Cannot write into output folder", results.output)
+
     def test_align_help(self):
         # Validates that readalongs align -h lists all in-langs that can map to eng-arpabet
         results = self.runner.invoke(align, "-h")

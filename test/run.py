@@ -12,6 +12,7 @@ from test_g2p_cli import TestG2pCli
 from test_indices import TestIndices
 from test_prepare_cli import TestPrepareCli
 from test_temp_file import TestTempFile
+from test_tokenize_cli import TestTokenizeCli
 from test_tokenize_xml import TestTokenizer
 
 from readalongs.log import LOGGER
@@ -29,6 +30,7 @@ other_tests = [
     for test in [
         TestConfig,
         TestTokenizer,
+        TestTokenizeCli,
         TestTempFile,
         TestPrepareCli,
         TestAudio,
