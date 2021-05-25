@@ -28,7 +28,6 @@ from readalongs.tempfile import PortableNamedTemporaryFile
 from readalongs.text.add_elements_to_xml import add_images, add_supplementary_xml
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
-from readalongs.text.lang_id import add_lang_ids
 from readalongs.text.make_dict import make_dict
 from readalongs.text.make_fsg import make_fsg
 from readalongs.text.tokenize_xml import tokenize_xml
@@ -124,7 +123,6 @@ def align_audio(  # noqa: C901
         xml = add_images(xml, config)
     if config and "xml" in config:
         xml = add_supplementary_xml(xml, config)
-    xml = add_lang_ids(xml, unit="s")
     xml = tokenize_xml(xml)
     if save_temps:
         save_xml(save_temps + ".tokenized.xml", xml)

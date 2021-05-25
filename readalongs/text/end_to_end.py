@@ -31,7 +31,6 @@ import argparse
 from readalongs.log import LOGGER
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
-from readalongs.text.lang_id import add_lang_ids
 from readalongs.text.make_dict import make_dict
 from readalongs.text.make_fsg import make_fsg
 from readalongs.text.tokenize_xml import tokenize_xml
@@ -39,7 +38,6 @@ from readalongs.text.util import load_xml, save_txt, save_xml
 
 
 def end_to_end(xml, input_filename, unit, word_unit, out_orth):
-    xml = add_lang_ids(xml, unit="p")
     xml = tokenize_xml(xml)
     xml = add_ids(xml)
     converted_xml, valid = convert_xml(xml, word_unit, out_orth)

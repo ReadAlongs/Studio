@@ -48,7 +48,6 @@ from readalongs.epub.create_epub import create_epub
 from readalongs.log import LOGGER
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
-from readalongs.text.lang_id import add_lang_ids
 from readalongs.text.make_smil import make_smil
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import save_minimal_index_html, save_txt, save_xml, write_xml
@@ -441,8 +440,6 @@ def tokenize(**kwargs):
             % (get_click_file_name(input_file), e)
         )
 
-    # If language IDs are declared, add then by guessing
-    xml = add_lang_ids(xml, unit="s")
     # Tokenize the XML file - all this code for such a tiny body!!!
     xml = tokenize_xml(xml)
 

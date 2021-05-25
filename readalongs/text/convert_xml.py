@@ -142,7 +142,7 @@ def convert_words(
         all_text = ""
         all_indices = []
         for unit in same_language_units:
-            g2p_lang = unit["lang"]
+            g2p_lang = unit["lang"] or "und"  # default to Undetermined if lang missing
             text_to_g2p = unit["text"]
             converter, tg, text, indices, valid = convert_word(
                 text_to_g2p, g2p_lang, output_orthography, verbose_warnings

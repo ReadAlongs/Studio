@@ -75,21 +75,6 @@ class TestTokenizeCli(TestCase):
         # LOGGER.warning("Output: {}".format(results.output))
         # LOGGER.warning("Exception: {}".format(results.exception))
 
-    def test_lang_id(self):
-        xml_file = os.path.join(self.tempdir, "no_lang_id.xml")
-        with open(xml_file, "w") as f:
-            print(
-                "<?xml version='1.0' encoding='utf-8'?><TEI><text><body><div type=\"page\"><p>\n"
-                "<s>this is a test</s>\n"
-                "<s>en français été évident?</s>\n"
-                "<s>ᓄᓇᕗᑦ</s>\n"
-                "</p></div></body></text></TEI>",
-                file=f,
-            )
-        results = self.runner.invoke(tokenize, [xml_file, "-"])
-        self.assertEqual(results.exit_code, 0)
-        self.assertIn("s xml:lang=", results.output)
-
 
 if __name__ == "__main__":
     main()
