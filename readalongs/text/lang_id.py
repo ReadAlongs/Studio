@@ -40,7 +40,11 @@ class LanguageIdentifier:
     def __init__(self, seen_factor=1.0, unseen_factor=0.01):
         self.seen_factor = seen_factor
         self.unseen_factor = unseen_factor
+        self.inventories_loaded = False
+        # Use lazy initialization so this expensive code is only run when really needed
+        # self.load_inventories()
 
+    def load_inventories(self):
         self.chars = {}
         self.inventories = {}
         for x in MAPPINGS_AVAILABLE:
@@ -58,6 +62,7 @@ class LanguageIdentifier:
                             self.chars[c] = len(self.chars)
         self.langs = {k: i for i, k in enumerate(self.inventories.keys())}
         self.calculate_prior_probs()
+        self.inventories_loaded = True
 
     def calculate_prior_probs(self):
         probs = np.full((len(self.langs), len(self.chars)), self.unseen_factor)
@@ -68,6 +73,9 @@ class LanguageIdentifier:
         self.logprobs = np.log(probs)
 
     def identify_text(self, s):
+        if not self.inventories_loaded:
+            # Trigger real initialization, we really need it now.
+            self.load_inventories()
         # get the probabilities for each language
         logprobs = np.zeros((len(self.langs),))
         for c in s:

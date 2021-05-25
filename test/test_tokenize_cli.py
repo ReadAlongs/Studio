@@ -16,16 +16,22 @@ class TestTokenizeCli(TestCase):
     LOGGER.setLevel("DEBUG")
     data_dir = os.path.join(os.path.dirname(__file__), "data")
 
+    # Set this to True to keep the temp dirs after running, for manual inspection
+    # but please don't push a commit setting this to True!
+    keep_temp_dir_after_running = False
+
     def setUp(self):
         app.logger.setLevel("DEBUG")
         self.runner = app.test_cli_runner()
-        self.tempdirobj = tempfile.TemporaryDirectory(
-            prefix="tmpdir_test_tokenize_cli_", dir="."
-        )
-        self.tempdir = self.tempdirobj.name
-        # Alternative tempdir code keeps it after running, for manual inspection:
-        # self.tempdir = tempfile.mkdtemp(prefix="tmpdir_test_tokenize_cli_", dir=".")
-        # print('tmpdir={}'.format(self.tempdir))
+        if not self.keep_temp_dir_after_running:
+            self.tempdirobj = tempfile.TemporaryDirectory(
+                prefix="tmpdir_test_tokenize_cli_", dir="."
+            )
+            self.tempdir = self.tempdirobj.name
+        else:
+            # Alternative tempdir code keeps it after running, for manual inspection:
+            self.tempdir = tempfile.mkdtemp(prefix="tmpdir_test_tokenize_cli_", dir=".")
+            print("tmpdir={}".format(self.tempdir))
 
         self.xmlfile = os.path.join(self.tempdir, "fra.xml")
         _ = self.runner.invoke(
@@ -33,7 +39,8 @@ class TestTokenizeCli(TestCase):
         )
 
     def tearDown(self):
-        self.tempdirobj.cleanup()
+        if not self.keep_temp_dir_after_running:
+            self.tempdirobj.cleanup()
 
     def test_invoke_tok(self):
         results = self.runner.invoke(
@@ -67,6 +74,21 @@ class TestTokenizeCli(TestCase):
         self.assertIn("Error parsing", results.output)
         # LOGGER.warning("Output: {}".format(results.output))
         # LOGGER.warning("Exception: {}".format(results.exception))
+
+    def test_lang_id(self):
+        xml_file = os.path.join(self.tempdir, "no_lang_id.xml")
+        with open(xml_file, "w") as f:
+            print(
+                "<?xml version='1.0' encoding='utf-8'?><TEI><text><body><div type=\"page\"><p>\n"
+                "<s>this is a test</s>\n"
+                "<s>en français été évident?</s>\n"
+                "<s>ᓄᓇᕗᑦ</s>\n"
+                "</p></div></body></text></TEI>",
+                file=f,
+            )
+        results = self.runner.invoke(tokenize, [xml_file, "-"])
+        self.assertEqual(results.exit_code, 0)
+        self.assertIn("s xml:lang=", results.output)
 
 
 if __name__ == "__main__":
