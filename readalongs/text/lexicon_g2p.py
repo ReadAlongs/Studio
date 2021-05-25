@@ -99,3 +99,12 @@ class LexiconG2P:
         result = self.entries[text][0]
         indices = [(0, 0), (len_text, len(result))]
         return result, indices
+
+
+_LexiconG2P_cache = {}
+
+
+def getLexiconG2P(metadata_path):
+    if metadata_path not in _LexiconG2P_cache:
+        _LexiconG2P_cache[metadata_path] = LexiconG2P(metadata_path)
+    return _LexiconG2P_cache[metadata_path]

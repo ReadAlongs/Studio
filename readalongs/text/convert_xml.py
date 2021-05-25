@@ -48,7 +48,7 @@ from g2p.mappings.langs.utils import is_arpabet
 from g2p.transducer import CompositeTransductionGraph, TransductionGraph
 
 from readalongs.log import LOGGER
-from readalongs.text.lexicon_g2p import LexiconG2P
+from readalongs.text.lexicon_g2p import getLexiconG2P
 from readalongs.text.lexicon_g2p_mappings import __file__ as LEXICON_PATH
 from readalongs.text.util import (
     compose_indices,
@@ -102,7 +102,7 @@ def convert_word(word: str, lang: str, output_orthography: str, verbose_warnings
         # type checking otherwise.
         assert output_orthography == "eng-arpabet"
         eng_tg = False
-        eng_converter = LexiconG2P(
+        eng_converter = getLexiconG2P(
             os.path.join(os.path.dirname(LEXICON_PATH), "cmu_sphinx.metadata.json")
         )
         try:
