@@ -150,10 +150,7 @@ class TestG2pCli(TestCase):
                 f"results.output='{results.output}' "
                 f"results.exception={results.exception!r}"
             )
-        # This actually fails, because currently "und" is buggy: it does not strip accents
-        # the way it should! We have to first process text through UnidecodeG2P because
-        # mapping through g2p's und mapping.
-        # self.assertEqual(results.exit_code, 0)
+        self.assertEqual(results.exit_code, 0)
 
     def test_three_way_fallback(self):
         tok_file = os.path.join(self.tempdir, "tok.xml")
@@ -174,9 +171,10 @@ class TestG2pCli(TestCase):
         self.assertNotIn("not recognized as IPA", results.output)
         self.assertNotIn("not fully valid eng-arpabet", results.output)
 
+        # Run with verbose output and look for the warning messages
         results = self.runner.invoke(
             g2p,
-            ["--g2p-fallback=fra:iku", "--g2p-verbose", tok_file, "verbose" + g2p_file],
+            ["--g2p-fallback=fra:iku", "--g2p-verbose", tok_file, g2p_file + "verbose"],
         )
         if self.show_invoke_output:
             print(
@@ -187,6 +185,11 @@ class TestG2pCli(TestCase):
         self.assertEqual(results.exit_code, 0)
         self.assertIn("not recognized as IPA", results.output)
         self.assertIn("not fully valid eng-arpabet", results.output)
+
+        # this text also works with "und", now that we use unidecode
+        results = self.runner.invoke(g2p, ["--g2p-fallback=und", tok_file, "-"])
+        self.assertEqual(results.exit_code, 0)
+        self.assertIn("Trying fallback: und", results.output)
 
     def test_align_with_error(self):
         text_file = os.path.join(self.tempdir, "input.txt")
