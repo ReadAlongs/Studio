@@ -7,6 +7,7 @@ from unittest import TestLoader, TestSuite, TextTestRunner
 from test_align_cli import TestAlignCli
 from test_audio import TestAudio
 from test_config import TestConfig
+from test_dna_text import TestDNAText
 from test_force_align import TestForceAlignment, TestXHTML
 from test_g2p_cli import TestG2pCli
 from test_indices import TestIndices
@@ -29,6 +30,7 @@ other_tests = [
     loader.loadTestsFromTestCase(test)
     for test in [
         TestConfig,
+        TestDNAText,
         TestTokenizer,
         TestTokenizeCli,
         TestTempFile,
