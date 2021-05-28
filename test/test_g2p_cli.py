@@ -153,14 +153,13 @@ class TestG2pCli(TestCase):
         self.assertEqual(results.exit_code, 0)
 
     def test_three_way_fallback(self):
-        tok_file = os.path.join(self.tempdir, "tok.xml")
-        g2p_file = os.path.join(self.tempdir, "g2p.xml")
+        tok_file = os.path.join(self.tempdir, "text.tokenized.xml")
+        g2p_file = os.path.join(self.tempdir, "text.g2p.xml")
         self.write_prepare_tokenize(
             "In French été works but ᓄᓇᕗᑦ does not.", "eng", tok_file
         )
-        results = self.runner.invoke(
-            g2p, ["--g2p-fallback", "fra:iku", tok_file, g2p_file]
-        )
+        # Here we also test generating the output filename from the input filename
+        results = self.runner.invoke(g2p, ["--g2p-fallback", "fra:iku", tok_file])
         if self.show_invoke_output:
             print(
                 f"test_three_way_fallback: g2p "
@@ -168,6 +167,7 @@ class TestG2pCli(TestCase):
                 f"results.exception={results.exception!r}"
             )
         self.assertEqual(results.exit_code, 0)
+        self.assertTrue(os.path.exists(g2p_file))
         self.assertNotIn("not recognized as IPA", results.output)
         self.assertNotIn("not fully valid eng-arpabet", results.output)
 
@@ -234,6 +234,14 @@ class TestG2pCli(TestCase):
         self.assertIn("Trying fallback: iku", results.output)
         # We get the error about reading the audio file only if g2p succeeded:
         self.assertIn("Error reading audio file", results.output)
+
+    def test_with_stdin(self):
+        input_file = os.path.join(self.data_dir, "fra-tokenized.xml")
+        with io.open(input_file) as f:
+            inputtext = f.read()
+        results = self.runner.invoke(g2p, "-", input=inputtext)
+        self.assertEqual(results.exit_code, 0)
+        self.assertIn("S AH S IY", results.output)
 
 
 if __name__ == "__main__":
