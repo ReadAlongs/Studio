@@ -452,7 +452,8 @@ def tokenize(**kwargs):
 
 @app.cli.command(
     context_settings=CONTEXT_SETTINGS,
-    short_help="Apply g2p to a tokenized file, in preparation for alignment.",
+    short_help="Apply g2p to a tokenized file, like 'align' does.",
+    # NOT TRUE YET: "Apply g2p to a tokenized file, in preparation for alignment."
 )
 @click.argument("tokfile", type=click.File("rb"))
 @click.argument("g2pfile", type=click.Path(), required=False, default="")
@@ -475,12 +476,14 @@ def g2p(**kwargs):
     """Apply g2p mappings to TOKFILE into G2PFILE.
     TOKFILE should have been produced by 'readalongs tokenize'.
     G2PFILE can then be modified to adjust the phonetic representation as needed.
-    'readalongs align' can be called with G2PFILE in stead of TOKFILE as XML input.
+
+    WARNING: the output is not yet compatible with align and cannot be used as input to align.
 
     TOKFILE: Path to the input tokenized XML file, or - for stdin
 
     G2PFILE: Output path for the g2p'd XML, or - for stdout [default: TOKFILE with .g2p. inserted]
     """
+    # NOT TRUE YET: 'readalongs align' can be called with G2PFILE in stead of TOKFILE as XML input.
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
         LOGGER.info(
