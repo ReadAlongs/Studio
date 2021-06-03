@@ -156,7 +156,7 @@ class TestG2pCli(TestCase):
         tok_file = os.path.join(self.tempdir, "text.tokenized.xml")
         g2p_file = os.path.join(self.tempdir, "text.g2p.xml")
         self.write_prepare_tokenize(
-            "In French été works but ᓄᓇᕗᑦ does not.", "eng", tok_file
+            "In French été works but Nunavut ᓄᓇᕗᑦ does not.", "eng", tok_file
         )
         # Here we also test generating the output filename from the input filename
         results = self.runner.invoke(g2p, ["--g2p-fallback", "fra:iku", tok_file])
@@ -194,7 +194,7 @@ class TestG2pCli(TestCase):
     def test_align_with_error(self):
         text_file = os.path.join(self.tempdir, "input.txt")
         with io.open(text_file, "w") as f:
-            print("In French été works but ᓄᓇᕗᑦ does not.", file=f)
+            print("In French été works but Nunavut ᓄᓇᕗᑦ does not.", file=f)
         empty_wav = os.path.join(self.tempdir, "empty.wav")
         with io.open(empty_wav, "wb"):
             pass
