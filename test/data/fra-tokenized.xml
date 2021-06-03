@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TEI>
+    <!-- To exclude any element from alignment, add the do-not-align="true" attribute to
+         it, e.g., <p do-not-align="true">...</p>, or
+         <s>Some text <foo do-not-align="true">do not align this</foo> more text</s> -->
+    <text xml:lang="fra">
+        <body>
+            <div type="page">
+                <p>
+                    <s><w>Ceci</w> <w>est</w> <w>une</w> <w>phrase</w> <w>en</w> <w>français</w>. <w>Ceci</w> <w>est</w> <w>une</w> <w>autre</w> <w>phrase</w>.</s>
+                    <s><w>Et</w> <w>voici</w> <w>une</w> <w>deuxième</w> <w>ligne</w> <w>dans</w> <w>le</w> <w>même</w> <w>paragraphe</w>.</s>
+                </p>
+                <p>
+                    <s><w>Un</w> <w>deuxième</w> <w>paragraphe</w> <w>précédé</w> <w>d</w>'<w>une</w> <w>ligne</w> <w>vide</w> <w>est</w> <w>ici</w>. <w>Avec</w> <w>deux</w> <w>phrases</w>.</s>
+                </p>
+            </div>
+            <div type="page">
+                <p>
+                    <s><w>Et</w> <w>voici</w> <w>une</w> <w>deuxième</w> <w>page</w>.</s>
+                </p>
+                <p>
+                    <s><w>Qui</w> <w>contient</w> <w>elle</w> <w>aussi</w> <w>deux</w> <w>paragraphes</w>.</s>
+                </p>
+            </div>
+        </body>
+    </text>
+</TEI>

@@ -85,7 +85,7 @@ class TestAudio(TestCase):
         # Check Result
         smilpath = Path(output_path)
         smil_files = smilpath.glob("*.smil")
-        self.assertGreaterEqual(len([x for x in smil_files]), 1)
+        self.assertTrue(next(smil_files, False), "No *.smil files found")
         self.assertFalse("error" in str(log).lower())
 
     def test_align_removed(self):
@@ -105,7 +105,7 @@ class TestAudio(TestCase):
         # Check Result
         smilpath = Path(output_path)
         smil_files = smilpath.glob("*.smil")
-        self.assertGreaterEqual(len([x for x in smil_files]), 1)
+        self.assertTrue(next(smil_files, False), "No *.smil files found")
         self.assertFalse("error" in str(log).lower())
 
     def test_align_muted(self):
@@ -125,7 +125,7 @@ class TestAudio(TestCase):
         # Check Result
         smilpath = Path(output_path)
         smil_files = smilpath.glob("*.smil")
-        self.assertGreaterEqual(len([x for x in smil_files]), 1)
+        self.assertTrue(next(smil_files, False), "No *.smil files found")
         self.assertFalse("error" in str(log).lower())
 
     def test_adjustment_calculation(self):

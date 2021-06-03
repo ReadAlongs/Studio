@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='utf-8'?>
+<TEI>
+    <!-- To exclude any element from alignment, add the do-not-align="true" attribute to
+         it, e.g., <p do-not-align="true">...</p>, or
+         <s>Some text <foo do-not-align="true">do not align this</foo> more text</s> -->
+    <text id="t0">
+        <body id="t0b0">
+            <div type="page" id="t0b0d0">
+                <p id="t0b0d0p0">
+                    <s xml:lang="fra" id="t0b0d0p0s0"><w id="t0b0d0p0s0w0">S AH S IY</w> <w id="t0b0d0p0s0w1">EH</w> <w id="t0b0d0p0s0w2">AO N</w> <w id="t0b0d0p0s0w3">T EH</w>.</s>
+                    <s xml:lang="eng" id="t0b0d0p0s1"><w id="t0b0d0p0s1w0">DH IH S</w> <w id="t0b0d0p0s1w1">IH Z</w> <w id="t0b0d0p0s1w2">AH</w> <w id="t0b0d0p0s1w3">T EH S T</w>.</s>
+                    <s xml:lang="dan" id="t0b0d0p0s2"><w id="t0b0d0p0s2w0">HH EH Y</w>. <w id="t0b0d0p0s2w1">Y EH Y</w> <w id="t0b0d0p0s2w2">HH EH DH Y</w> <w id="t0b0d0p0s2w3">P Y</w>.</s>
+                </p>
+            </div>
+        </body>
+    </text>
+</TEI>

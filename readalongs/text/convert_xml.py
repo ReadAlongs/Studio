@@ -43,10 +43,13 @@ import copy
 import os
 import unicodedata as ud
 
+import text_unidecode
 from g2p import make_g2p
+from g2p.mappings.langs.utils import is_arpabet
 from g2p.transducer import CompositeTransductionGraph, TransductionGraph
 
-from readalongs.text.lexicon_g2p import LexiconG2P
+from readalongs.log import LOGGER
+from readalongs.text.lexicon_g2p import getLexiconG2P
 from readalongs.text.lexicon_g2p_mappings import __file__ as LEXICON_PATH
 from readalongs.text.util import (
     compose_indices,
@@ -92,7 +95,62 @@ def get_same_language_units(element):
     return same_language_units
 
 
-def convert_words(xml, word_unit="w", output_orthography="eng-arpabet"):
+def convert_word(word: str, lang: str, output_orthography: str, verbose_warnings: bool):
+    if lang == "eng":
+        # Hack to use old English LexiconG2P
+        # Note: adding eng_ prefix to vars that are used in both blocks to make mypy
+        # happy. Since the two sides of the if and in the same scope, it complains about
+        # type checking otherwise.
+        assert output_orthography == "eng-arpabet"
+        eng_tg = False
+        eng_converter = getLexiconG2P(
+            os.path.join(os.path.dirname(LEXICON_PATH), "cmu_sphinx.metadata.json")
+        )
+        try:
+            eng_text, eng_indices = eng_converter.convert(word)
+            eng_valid = is_arpabet(eng_text)
+        except KeyError as e:
+            if verbose_warnings:
+                LOGGER.warning(f'Could not g2p "{word}" as English: {e.args[0]}')
+            eng_text = word
+            eng_indices = []
+            eng_valid = False
+        return eng_converter, eng_tg, eng_text, eng_indices, eng_valid
+    else:
+        if lang == "und":
+            # First, we apply unidecode to map characters all all known alphabets in the
+            # Unicode standard to their English representation, then we use g2p.
+            text_to_g2p = text_unidecode.unidecode(word)
+        else:
+            text_to_g2p = word
+
+        converter = make_g2p(lang, output_orthography)
+        tg = converter(text_to_g2p)
+        text = tg.output_string.strip()
+        indices = tg.edges
+        valid = converter.check(tg, shallow=True)
+        if not valid and verbose_warnings:
+            converter.check(tg, shallow=False, display_warnings=verbose_warnings)
+
+        if lang == "und":
+            # for now, we don't handle indices through unidecode, so overwrite the indices
+            # converter returneed by just beginning-end index pairs
+            # TODO: instead of this hack, prepend the indices from word to text_to_g2p to
+            # indices.
+            indices = [(0, 0), (len(word), len(text))]
+            tg = None
+
+        return converter, tg, text, indices, valid
+
+
+def convert_words(
+    xml,
+    word_unit="w",
+    output_orthography="eng-arpabet",
+    g2p_fallbacks=[],
+    verbose_warnings=False,
+):
+    all_g2p_valid = True
     for word in xml.xpath(".//" + word_unit):
         # only convert text within words
         same_language_units = get_same_language_units(word)
@@ -101,20 +159,31 @@ def convert_words(xml, word_unit="w", output_orthography="eng-arpabet"):
         all_text = ""
         all_indices = []
         for unit in same_language_units:
-            # Hack to use old English LexiconG2P
-            if unit["lang"] != "eng":
-                converter = make_g2p(unit["lang"], output_orthography)
-                tg = converter(unit["text"])
-                text = tg.output_string
-                indices = tg.edges
-            else:
-                tg = False
-                converter = LexiconG2P(
-                    os.path.join(
-                        os.path.dirname(LEXICON_PATH), "cmu_sphinx.metadata.json"
+            g2p_lang = unit["lang"] or "und"  # default to Undetermined if lang missing
+            text_to_g2p = unit["text"]
+            converter, tg, text, indices, valid = convert_word(
+                text_to_g2p, g2p_lang, output_orthography, verbose_warnings
+            )
+            if not valid:
+                # This is where we apply the g2p cascade
+                for lang in g2p_fallbacks:
+                    LOGGER.warning(
+                        f'Could not g2p "{text_to_g2p}" as {g2p_lang}. Trying fallback: {lang}.'
                     )
-                )
-                text, indices = converter.convert(unit["text"])
+                    g2p_lang = lang
+                    converter, tg, text, indices, valid = convert_word(
+                        text_to_g2p, g2p_lang, output_orthography, verbose_warnings
+                    )
+                    if valid:
+                        break
+                else:
+                    all_g2p_valid = False
+                    LOGGER.warning(
+                        f'No valid g2p conversion found for "{unit["text"]}". '
+                        f"Check its orthography and language code, "
+                        f"or pick suitable g2p fallback languages."
+                    )
+
             all_text += text
             all_indices += indices
         if tg and isinstance(tg, CompositeTransductionGraph):
@@ -128,10 +197,10 @@ def convert_words(xml, word_unit="w", output_orthography="eng-arpabet"):
         else:
             norm_form = None
             all_indices = indices
-        if norm_form:
+        if norm_form and norm_form != "none":
             word.text = ud.normalize(norm_form, word.text)
         replace_text_in_node(word, all_text, all_indices)
-    return xml
+    return xml, all_g2p_valid
 
 
 def replace_text_in_node(word, text, indices):
@@ -169,12 +238,20 @@ def replace_text_in_node(word, text, indices):
     return text, new_indices
 
 
-def convert_xml(xml, word_unit="w", output_orthography="eng-arpabet"):
+def convert_xml(
+    xml,
+    word_unit="w",
+    output_orthography="eng-arpabet",
+    g2p_fallbacks=[],
+    verbose_warnings=False,
+):
     xml_copy = copy.deepcopy(xml)
     # FIXME: different langs have different normalizations, is this necessary?
     unicode_normalize_xml(xml_copy)
-    convert_words(xml_copy, word_unit, output_orthography)
-    return xml_copy
+    xml_copy, valid = convert_words(
+        xml_copy, word_unit, output_orthography, g2p_fallbacks, verbose_warnings
+    )
+    return xml_copy, valid
 
 
 def go(

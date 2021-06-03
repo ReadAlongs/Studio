@@ -28,7 +28,6 @@ from readalongs.tempfile import PortableNamedTemporaryFile
 from readalongs.text.add_elements_to_xml import add_images, add_supplementary_xml
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
-from readalongs.text.lang_id import add_lang_ids
 from readalongs.text.make_dict import make_dict
 from readalongs.text.make_fsg import make_fsg
 from readalongs.text.tokenize_xml import tokenize_xml
@@ -63,8 +62,15 @@ def calculate_adjustment(timestamp: int, do_not_align_segments: List[dict]) -> i
     )
 
 
-def align_audio(
-    xml_path, audio_path, unit="w", bare=False, config=None, save_temps=None,
+def align_audio(  # noqa: C901
+    xml_path,
+    audio_path,
+    unit="w",
+    bare=False,
+    config=None,
+    save_temps=None,
+    g2p_fallbacks=[],
+    verbose_g2p_warnings=False,
 ):
     """ Align an XML input file to an audio file.
 
@@ -83,6 +89,10 @@ def align_audio(
         Uses ReadAlong-Studio configuration
     save_temps : Union[str, None], optional
         save temporary files, by default None
+    g2p_fallbacks : list, optional
+        Cascade of fallback languages for g2p conversion, in case of errors
+    verbose_g2p_warnings : boolean, optional
+        display all g2p errors and warnings iff True
 
     #TODO: document return
     Returns
@@ -113,16 +123,22 @@ def align_audio(
         xml = add_images(xml, config)
     if config and "xml" in config:
         xml = add_supplementary_xml(xml, config)
-    xml = add_lang_ids(xml, unit="s")
     xml = tokenize_xml(xml)
     if save_temps:
         save_xml(save_temps + ".tokenized.xml", xml)
     results["tokenized"] = xml = add_ids(xml)
     if save_temps:
         save_xml(save_temps + ".ids.xml", xml)
-    xml = convert_xml(xml)
+    xml, valid = convert_xml(
+        xml, g2p_fallbacks=g2p_fallbacks, verbose_warnings=verbose_g2p_warnings
+    )
     if save_temps:
         save_xml(save_temps + ".g2p.xml", xml)
+    if not valid:
+        raise RuntimeError(
+            "Some words could not be g2p'd correctly. Aborting. "
+            "Run with --g2p-verbose for detailed g2p error logs."
+        )
 
     # Now generate dictionary and FSG
     dict_data = make_dict(xml, xml_path, unit=unit)

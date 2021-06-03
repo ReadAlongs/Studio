@@ -16,16 +16,22 @@ class TestTokenizeCli(TestCase):
     LOGGER.setLevel("DEBUG")
     data_dir = os.path.join(os.path.dirname(__file__), "data")
 
+    # Set this to True to keep the temp dirs after running, for manual inspection
+    # but please don't push a commit setting this to True!
+    keep_temp_dir_after_running = False
+
     def setUp(self):
         app.logger.setLevel("DEBUG")
         self.runner = app.test_cli_runner()
-        self.tempdirobj = tempfile.TemporaryDirectory(
-            prefix="test_tokenize_cli_tmpdir", dir="."
-        )
-        self.tempdir = self.tempdirobj.name
-        # Alternative tempdir code keeps it after running, for manual inspection:
-        # self.tempdir = tempfile.mkdtemp(prefix="test_tokenize_cli_tmpdir", dir=".")
-        # print('tmpdir={}'.format(self.tempdir))
+        if not self.keep_temp_dir_after_running:
+            self.tempdirobj = tempfile.TemporaryDirectory(
+                prefix="tmpdir_test_tokenize_cli_", dir="."
+            )
+            self.tempdir = self.tempdirobj.name
+        else:
+            # Alternative tempdir code keeps it after running, for manual inspection:
+            self.tempdir = tempfile.mkdtemp(prefix="tmpdir_test_tokenize_cli_", dir=".")
+            print("tmpdir={}".format(self.tempdir))
 
         self.xmlfile = os.path.join(self.tempdir, "fra.xml")
         _ = self.runner.invoke(
@@ -33,7 +39,8 @@ class TestTokenizeCli(TestCase):
         )
 
     def tearDown(self):
-        self.tempdirobj.cleanup()
+        if not self.keep_temp_dir_after_running:
+            self.tempdirobj.cleanup()
 
     def test_invoke_tok(self):
         results = self.runner.invoke(
@@ -43,7 +50,7 @@ class TestTokenizeCli(TestCase):
         self.assertTrue(os.path.exists(os.path.join(self.tempdir, "delme.xml")))
 
     def test_generate_output_name(self):
-        results = self.runner.invoke(tokenize, [self.xmlfile])
+        results = self.runner.invoke(tokenize, ["--debug", self.xmlfile])
         self.assertEqual(results.exit_code, 0)
         self.assertTrue(os.path.exists(os.path.join(self.tempdir, "fra.tokenized.xml")))
 

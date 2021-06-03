@@ -13,8 +13,18 @@ from readalongs.log import LOGGER
 class TestAlignCli(TestCase):
     LOGGER.setLevel("DEBUG")
     data_dir = os.path.join(os.path.dirname(__file__), "data")
-    tempdirobj = tempfile.TemporaryDirectory(prefix="test_align_cli_tmpdir", dir=".")
-    tempdir = tempdirobj.name
+
+    # Set this to True to keep the temp dirs after running, for manual inspection
+    # but please don't push a commit setting this to True!
+    keep_temp_dir_after_running = False
+    if not keep_temp_dir_after_running:
+        tempdirobj = tempfile.TemporaryDirectory(
+            prefix="tmpdir_test_align_cli_", dir="."
+        )
+        tempdir = tempdirobj.name
+    else:
+        tempdir = tempfile.mkdtemp(prefix="tmpdir_test_g2p_cli_", dir=".")
+        print("tmpdir={}".format(tempdir))
 
     def setUp(self):
         app.logger.setLevel("DEBUG")
@@ -86,6 +96,50 @@ class TestAlignCli(TestCase):
             os.path.join(output, "output.smil")
         ) as f2:
             self.assertListEqual(list(f1), list(f2))
+
+        # We test error situations in the same test case, since we reuse the same outputs
+        results_output_exists = self.runner.invoke(
+            align,
+            [
+                os.path.join(self.data_dir, "ej-fra-dna.xml"),
+                os.path.join(self.data_dir, "ej-fra.m4a"),
+                output,
+            ],
+        )
+        self.assertNotEqual(results_output_exists.exit_code, 0)
+        self.assertIn(
+            "already exists, use -f to overwrite", results_output_exists.output
+        )
+
+        # Output path exists as a regular file
+        results_output_is_regular_file = self.runner.invoke(
+            align,
+            [
+                os.path.join(self.data_dir, "ej-fra-dna.xml"),
+                os.path.join(self.data_dir, "ej-fra.m4a"),
+                os.path.join(output, "output.smil"),
+            ],
+        )
+        self.assertNotEqual(results_output_is_regular_file, 0)
+        self.assertIn(
+            "already exists but is a not a directory",
+            results_output_is_regular_file.output,
+        )
+
+    def test_permission_denied(self):
+        dirname = os.path.join(self.tempdir, "permission_denied")
+        os.mkdir(dirname, mode=0o444)
+        results = self.runner.invoke(
+            align,
+            [
+                "-f",
+                os.path.join(self.data_dir, "ej-fra-dna.xml"),
+                os.path.join(self.data_dir, "ej-fra.m4a"),
+                dirname,
+            ],
+        )
+        self.assertNotEqual(results, 0)
+        self.assertIn("Cannot write into output folder", results.output)
 
     def test_align_help(self):
         # Validates that readalongs align -h lists all in-langs that can map to eng-arpabet
