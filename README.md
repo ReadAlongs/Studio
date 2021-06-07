@@ -26,6 +26,8 @@ This library is an end-to-end audio/text aligner. It is meant to be used togethe
     - [Contributors](#contributors)
   - [License](#license)
 
+Note: additional draft documentation is available [here](https://github.com/finguist/ReadAlong-Studio-Documentation/blob/main/prepare.md)
+
 ## Background
 
 The concept is a web application with a series of stages of
@@ -77,7 +79,7 @@ ReadAlong-Studio can be used either through the command line, a distributed web 
 
 ### CLI
 
-Below shows some basic commands. For more information about how the command line interface works, please check the [documentation](https://readthedocs.org/). Additionally, you can add the `--help` flag to any command for more information.
+Below shows some basic commands. For more information about how the command line interface works, please check this [incomplete documentation](https://readalong-studio.readthedocs.io/en/latest/index.html) and [this draft documentation](https://github.com/finguist/ReadAlong-Studio-Documentation/blob/main/prepare.md) [TODO: complete and fix all this documentation!]. Additionally, you can add the `--help` flag to any command for more information.
 
 #### Alignment
 
