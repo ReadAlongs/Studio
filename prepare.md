@@ -2,11 +2,7 @@
 
 ---
 ---
-title: 'ReadAlong Studio Documentation'
-disqus: hackmd
----
-
-ReadAlong Studio Documentation
+Read-Along Studio Documentation
 ===
 
 This library is an end-to-end audio/text aligner. It is meant to be used together with the ReadAlong-Web-Component to interactively visualize the alignment.
@@ -179,7 +175,96 @@ A full command would be something like:
 
 `readalongs align -l alq -f -c Studio/story.xml Studio/story.mp3 Studio/story/aligned`
 
+### The `config.json` file
 
+Create a JSON file called `config.json` in the same folder as your other ReadAlong input files. The config file currently accepts two components: adding images to your ReadAlongs, and DNA audio (see above add hyperlink).
+
+To add images, simply indicate the page number as the key, and the name of the image file as the value, as an entry in the `"images"` dictionary.
+
+```
+{ "images": { "0": "p1.jpg", "1": "p2.jpg" } }
+```
+
+The image has to be a JPEG (`.jpg`) file (check which formats are supported!!!).
+
+Both images and DNA audio can be specified in the same config file, such as in the example below:
+
+```
+{ 
+    "images": 
+        {
+            "0": "image-for-page1.jpg", 
+            "1": "image-for-page1.jpg", 
+            "2": "image-for-page2.jpg",
+            "3": "image-for-page3.jpg"
+        },
+        
+    "do-not-align": 
+        {
+        "method": "remove",
+        "segments": 
+            [
+                {   "begin": 1,     "end": 17000   },
+                {   "begin": 57456, "end": 68000   }
+            ]
+        }
+}               
+```
+
+Warning: mind your commas! The JSON format is very picky: commas separate elements in a list or dictionnary, but if you accidentally have a comma after the last element (e.g., by cutting and pasting whole lines), you will get a syntax error.
+
+## Pre-processing your data
+
+Manipulating the text and/or audio data that you are trying to align can sometimes produce longer, more accurate ReadAlongs, that throw less errors when aligning. While some of the most successful techniques we have tried are outlined here, you may also need to customize your pre-processing to suit your specific data.
+
+### Audio pre-processing
+
+#### Adding silences
+
+Adding 1 second segments of silence in between phrases or paragraphs sometimes improves the performance of the aligner. We do this using the [Pydub](https://github.com/jiaaro/pydub) library which can be pip-installed. Keep in mind that Pydub uses milliseconds.
+
+If your data is currently 1 audio file, you will need to split it into segments where you want to put the silences. 
+
+```
+ten_seconds = 10 * 1000
+first_10_seconds = soundtrack[:ten_seconds]
+last_5_seconds = soundtrack[-5000:]
+
+```
+Once you have your segments, create an MP3 file containing only 1 second of silence. 
+
+```
+from pydub import AudioSegment
+
+wfile = "appended_1000ms.mp3"
+silence = AudioSegment.silent(duration=1000)
+soundtrack = silence
+```
+Then you loop the audio files you want to append (segments and silence).
+
+```
+seg = AudioSegment.from_mp3(mp3file)
+soundtrack = soundtrack + silence + seg
+```
+Write the soundtrack file as an MP3. This will then be the audio input for your Read-Along.
+
+```
+soundtrack.export(wfile, format="mp3")
+```
+
+### Text pre-processing
+
+#### Numbers
+
+ReadAlong Studio cannot align numbers written as digits (ex. "123"). Instead, you will need to write them out (ex. "one two three" or "one hundred and twenty three") depending on how they are read in your audio file.
+
+If you have lots of data, and the numbers are spoken in English (or any of their supported languages), consider adding a library like [num2words](https://github.com/savoirfairelinux/num2words) to your pre-processing.
+
+```
+num2words 123456789
+one hundred and twenty-three million, four hundred and fifty-six thousand, seven hundred and eighty-nine
+
+```
 
 
 ## Troubleshooting
@@ -211,5 +296,27 @@ This error is most likely caused not by a bug in your ReadAlong input files, but
 7. Run `g2p convert dog xyz xyz-ipa`. Ensure the result is what you expect. If not, your error may arise from a problem in this mapping. refer_to_g2p_troubleshooting. If the result is what you expect, continue to the next step.
 8. Note the result from running the command in 7. Check that the characters (appear/being mapped by generated -- use debugger or just look at mapping)
 
+### g2p cascade
 
+To get it, checkout branch dev.g2p-cascade in Studio.
+
+Usage:
+
+```
+readalongs g2p --g2p-fallback fra:eng:und myfile.tokenize.xml myfile.g2p.xml
+readalongs align --g2p-fallback fra:eng:end myfile.xml myfile.wav output
+```
+ 
+
+The new g2p command in readalongs will run just the g2p step, from a tokenized file:
+
+```
+readalongs prepare -l lang  file.txt file.xml
+readalongs tokenize file.xml file.tokenized.xml
+readalongs g2p file.tokenized.xml file.g2p.xml
+```
+
+And the --g2p-fallback switch to g2p and align turns on the g2p cascade: if a word fails to g2p to valid ARPABET, the fallback languages are attempted in order, until the results is valid ARPABET. If no valid g2p conversion is found, you get an error message, the g2p output is written as is, but align aborts without trying, since we know soundswallower will just spew incomprehensible error messages.
+
+The warning messages g2p and align give you indicate which words are the problem in a concise way. If you want (possibly too much) more details, add --g2p-verbose, and you’ll get a whole ton more information about g2p’ing the words that fail, for each language where g2p was attempted.
 
