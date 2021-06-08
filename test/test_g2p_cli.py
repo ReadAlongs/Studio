@@ -258,12 +258,26 @@ class TestG2pCli(TestCase):
 
         results = self.runner.invoke(g2p, [input_file, "-"])
         self.assertNotEqual(results.exit_code, 0)
+        # print(results.output)
         self.assertIn("could not be g2p", results.output)
+        self.assertIn('<w id="s0w0" ARPABET="W OW D D">word</w>', results.output)
+        self.assertIn('<w ARPABET="G OW D" id="s0w1">good</w>', results.output)
+        self.assertIn('<w ARPABET="NOT ARPABET" id="s0w2">error</w>', results.output)
 
         audio_file = os.path.join(self.data_dir, "ej-fra.m4a")
         with self.assertRaises(RuntimeError) as e:
             results = align_audio(input_file, audio_file)
-        self.assertIn("could not be g2p", str(e.exception))
+        self.assertIn("could not be g2p'd", str(e.exception))
+
+    def test_align_with_preg2p(self):
+        text_file = os.path.join(self.data_dir, "mixed-langs.tokenized.xml")
+        audio_file = os.path.join(self.data_dir, "ej-fra.m4a")
+        _ = align_audio(
+            text_file, audio_file, save_temps=os.path.join(self.tempdir, "foo")
+        )
+        with open(os.path.join(self.tempdir, "foo.dict"), "r") as f:
+            dict_file = f.read()
+            self.assertIn("D G IY T UW P IY D", dict_file)
 
 
 if __name__ == "__main__":
