@@ -38,7 +38,7 @@ i.e. a package of:
 - TEI file describing text
 - Audio file (WAV or MP3)
 
-Which can be loaded using the read-along [web component](https://github.com/roedoejet/ReadAlong-Web-Component).
+Which can be loaded using the read-along [web component](https://github.com/roedoejet/ReadAlong-Web-Component). See also [Studio Output Realizations](docs/outputs.rst).
 
 Optionally a book can be generated as a standalone HTML page or
 as an ePub file.
