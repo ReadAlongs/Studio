@@ -152,6 +152,15 @@ def convert_words(
 ):
     all_g2p_valid = True
     for word in xml.xpath(".//" + word_unit):
+        # if the word was already g2p'd, skip and keep existing ARPABET representation
+        if "ARPABET" in word.attrib:
+            arpabet = word.attrib["ARPABET"]
+            if not is_arpabet(arpabet):
+                LOGGER.warning(
+                    f"Pre-g2p'd text {word.text} has invalid ARPABET conversion {arpabet}"
+                )
+                all_g2p_valid = False
+            continue
         # only convert text within words
         same_language_units = get_same_language_units(word)
         if not same_language_units:
@@ -175,6 +184,7 @@ def convert_words(
                         text_to_g2p, g2p_lang, output_orthography, verbose_warnings
                     )
                     if valid:
+                        word.attrib["effective_g2p_lang"] = g2p_lang
                         break
                 else:
                     all_g2p_valid = False
@@ -199,7 +209,9 @@ def convert_words(
             all_indices = indices
         if norm_form and norm_form != "none":
             word.text = ud.normalize(norm_form, word.text)
-        replace_text_in_node(word, all_text, all_indices)
+        # replace_text_in_node(word, all_text, all_indices)
+        # word.text = all_text
+        word.attrib["ARPABET"] = all_text
     return xml, all_g2p_valid
 
 

@@ -36,7 +36,7 @@ def make_dict(xml, input_filename, unit="m"):
             LOGGER.error(
                 "%s-type element without id in file %s" % (unit, input_filename)
             )
-        text = e.text.strip()
+        text = e.attrib.get("ARPABET", "").strip()
         if not text:
             continue
         nwords += 1
