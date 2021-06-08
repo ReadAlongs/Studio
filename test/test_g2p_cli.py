@@ -5,6 +5,9 @@ import os
 import tempfile
 from unittest import TestCase, main
 
+from lxml import etree
+
+from readalongs.align import align_audio
 from readalongs.app import app
 from readalongs.cli import align, g2p, prepare, tokenize
 
@@ -242,6 +245,25 @@ class TestG2pCli(TestCase):
         results = self.runner.invoke(g2p, "-", input=inputtext)
         self.assertEqual(results.exit_code, 0)
         self.assertIn("S AH S IY", results.output)
+
+    def test_align_with_invalid_preg2p(self):
+        txt = """<document><s xml:lang="und">
+            <w>word</w>
+            <w ARPABET="G OW D">good</w>
+            <w ARPABET="NOT ARPABET">error</w>
+        </s></document>"""
+        input_file = os.path.join(self.tempdir, "pre-g2p.xml")
+        with open(input_file, "w") as f:
+            print(txt, file=f)
+
+        results = self.runner.invoke(g2p, [input_file, "-"])
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("could not be g2p", results.output)
+
+        audio_file = os.path.join(self.data_dir, "ej-fra.m4a")
+        with self.assertRaises(RuntimeError) as e:
+            results = align_audio(input_file, audio_file)
+        self.assertIn("could not be g2p", str(e.exception))
 
 
 if __name__ == "__main__":

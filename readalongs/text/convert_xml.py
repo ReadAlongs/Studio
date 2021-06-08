@@ -157,7 +157,7 @@ def convert_words(
             arpabet = word.attrib["ARPABET"]
             if not is_arpabet(arpabet):
                 LOGGER.warning(
-                    f"Pre-g2p'd text {word.text} has invalid ARPABET conversion {arpabet}"
+                    f'Pre-g2p\'d text "{word.text}" has invalid ARPABET conversion "{arpabet}"'
                 )
                 all_g2p_valid = False
             continue
