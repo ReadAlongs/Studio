@@ -15,6 +15,7 @@ from test_prepare_cli import TestPrepareCli
 from test_temp_file import TestTempFile
 from test_tokenize_cli import TestTokenizeCli
 from test_tokenize_xml import TestTokenizer
+from test_utils import TestTextUtils
 
 from readalongs.log import LOGGER
 
@@ -38,6 +39,7 @@ other_tests = [
         TestAudio,
         TestAlignCli,
         TestG2pCli,
+        TestTextUtils,
     ]
 ]
 
