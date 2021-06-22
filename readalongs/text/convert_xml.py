@@ -52,47 +52,11 @@ from readalongs.log import LOGGER
 from readalongs.text.lexicon_g2p import getLexiconG2P
 from readalongs.text.lexicon_g2p_mappings import __file__ as LEXICON_PATH
 from readalongs.text.util import (
-    compose_indices,
-    compose_tiers,
     get_lang_attrib,
-    increment_indices,
-    increment_tiers,
-    iterate_over_text,
     load_xml,
-    offset_indices,
     save_xml,
-    trim_indices,
     unicode_normalize_xml,
 )
-
-
-def get_same_language_units(element):
-    character_counter = 0
-    same_language_units = []
-    current_sublang, current_subword = None, None
-    for sublang, subword in iterate_over_text(element):
-        if current_subword and sublang == current_sublang:
-            current_subword += subword
-            continue
-        if current_subword:
-            same_language_units.append(
-                {
-                    "index": character_counter,
-                    "lang": current_sublang,
-                    "text": current_subword,
-                }
-            )
-            character_counter += len(current_subword)
-        current_sublang, current_subword = sublang, subword
-    if current_subword:
-        same_language_units.append(
-            {
-                "index": character_counter,
-                "lang": current_sublang,
-                "text": current_subword,
-            }
-        )
-    return same_language_units
 
 
 def convert_word(word: str, lang: str, output_orthography: str, verbose_warnings: bool):
@@ -162,92 +126,39 @@ def convert_words(
                 all_g2p_valid = False
             continue
         # only convert text within words
-        same_language_units = get_same_language_units(word)
-        if not same_language_units:
-            return
-        all_text = ""
-        all_indices = []
-        for unit in same_language_units:
-            g2p_lang = unit["lang"] or "und"  # default to Undetermined if lang missing
-            text_to_g2p = unit["text"]
-            converter, tg, text, indices, valid = convert_word(
-                text_to_g2p, g2p_lang, output_orthography, verbose_warnings
-            )
-            if not valid:
-                # This is where we apply the g2p cascade
-                for lang in g2p_fallbacks:
-                    LOGGER.warning(
-                        f'Could not g2p "{text_to_g2p}" as {g2p_lang}. Trying fallback: {lang}.'
-                    )
-                    g2p_lang = lang
-                    converter, tg, text, indices, valid = convert_word(
-                        text_to_g2p, g2p_lang, output_orthography, verbose_warnings
-                    )
-                    if valid:
-                        word.attrib["effective_g2p_lang"] = g2p_lang
-                        break
-                else:
-                    all_g2p_valid = False
-                    LOGGER.warning(
-                        f'No valid g2p conversion found for "{unit["text"]}". '
-                        f"Check its orthography and language code, "
-                        f"or pick suitable g2p fallback languages."
-                    )
-
-            all_text += text
-            all_indices += indices
-        if tg and isinstance(tg, CompositeTransductionGraph):
-            norm_form = converter._transducers[0].norm_form
-            indices = increment_tiers(indices)
-            all_indices = compose_tiers(indices)
-        elif tg and isinstance(tg, TransductionGraph):
-            norm_form = converter.norm_form
-            indices = increment_indices(indices)
-            all_indices = compose_indices([], indices)
-        else:
-            norm_form = None
-            all_indices = indices
-        if norm_form and norm_form != "none":
-            word.text = ud.normalize(norm_form, word.text)
-        # replace_text_in_node(word, all_text, all_indices)
-        # word.text = all_text
-        word.attrib["ARPABET"] = all_text
-    return xml, all_g2p_valid
-
-
-def replace_text_in_node(word, text, indices):
-    old_text = ""
-    new_text = ""
-    # filter inputs
-    new_indices = [x for x in {item[0]: item[1] for item in indices}.items()]
-    # handle the text
-    if word.text:
-        for i1, i2 in new_indices:
-            if i1 >= len(word.text):
-                old_text = word.text[:i1]
-                new_text = text[:i2]
-                text = text[i2:]
-                new_indices = offset_indices(indices, -len(old_text), -len(new_text))
-                new_indices = trim_indices(new_indices)
-                # word.attrib["orig"] = old_text
-                word.text = new_text
-                break
-
-    for child in word:
-        text, new_indices = replace_text_in_node(child, text, new_indices)
-        if child.tail:
-            for i1, i2 in new_indices:
-                if i1 >= len(child.tail):
-                    old_text = child.tail[:i1]
-                    new_text = text[:i2]
-                    text = text[i2:]
-                    new_indices = offset_indices(
-                        indices, -len(old_text), -len(new_text)
-                    )
-                    new_indices = trim_indices(new_indices)
-                    child.tail = new_text
+        if not word.text:
+            continue
+        g2p_lang = (
+            get_lang_attrib(word) or "und"
+        )  # default to Undetermined if lang missing
+        text_to_g2p = word.text
+        converter, tg, g2p_text, indices, valid = convert_word(
+            text_to_g2p, g2p_lang, output_orthography, verbose_warnings
+        )
+        if not valid:
+            # This is where we apply the g2p cascade
+            for lang in g2p_fallbacks:
+                LOGGER.warning(
+                    f'Could not g2p "{text_to_g2p}" as {g2p_lang}. Trying fallback: {lang}.'
+                )
+                g2p_lang = lang
+                converter, tg, g2p_text, indices, valid = convert_word(
+                    text_to_g2p, g2p_lang, output_orthography, verbose_warnings
+                )
+                if valid:
+                    word.attrib["effective_g2p_lang"] = g2p_lang
                     break
-    return text, new_indices
+            else:
+                all_g2p_valid = False
+                LOGGER.warning(
+                    f'No valid g2p conversion found for "{text_to_g2p}". '
+                    f"Check its orthography and language code, "
+                    f"or pick suitable g2p fallback languages."
+                )
+
+        word.attrib["ARPABET"] = g2p_text
+
+    return xml, all_g2p_valid
 
 
 def convert_xml(
@@ -259,7 +170,9 @@ def convert_xml(
 ):
     xml_copy = copy.deepcopy(xml)
     # FIXME: different langs have different normalizations, is this necessary?
-    unicode_normalize_xml(xml_copy)
+    # Since we now say each word only has to have text, and nothing else, this is no
+    # longer necessary.
+    # unicode_normalize_xml(xml_copy)
     xml_copy, valid = convert_words(
         xml_copy, word_unit, output_orthography, g2p_fallbacks, verbose_warnings
     )
