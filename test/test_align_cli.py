@@ -16,7 +16,7 @@ class TestAlignCli(TestCase):
 
     # Set this to True to keep the temp dirs after running, for manual inspection
     # but please don't push a commit setting this to True!
-    keep_temp_dir_after_running = False
+    keep_temp_dir_after_running = True
     if not keep_temp_dir_after_running:
         tempdirobj = tempfile.TemporaryDirectory(
             prefix="tmpdir_test_align_cli_", dir="."
@@ -43,6 +43,8 @@ class TestAlignCli(TestCase):
                 "-s",
                 "-l",
                 "fra",
+                "--config",
+                os.path.join(self.data_dir, "sample-config.json"),
                 os.path.join(self.data_dir, "ej-fra.txt"),
                 os.path.join(self.data_dir, "ej-fra.m4a"),
                 output,
@@ -66,6 +68,7 @@ class TestAlignCli(TestCase):
             os.path.exists(os.path.join(output, "tempfiles", "output.tokenized.xml")),
             "alignment with -s should have created tempfiles/output.tokenized.xml",
         )
+        print(results.stdout)
 
         # Move the alignment output to compare with further down
         # We cannot just output to a different name because changing the output file name
@@ -79,6 +82,8 @@ class TestAlignCli(TestCase):
             align,
             [
                 "-s",
+                "--config",
+                os.path.join(self.data_dir, "sample-config.json"),
                 os.path.join(self.data_dir, "ej-fra-dna.xml"),
                 os.path.join(self.data_dir, "ej-fra.m4a"),
                 output,
@@ -179,6 +184,36 @@ class TestAlignCli(TestCase):
             tok_output = f.read()
 
         self.assertIn(g2p_ref, tok_output)
+
+    def test_invalid_config(self):
+        # --config parameter needs to be <somefile>.json, text with .txt instead
+        result = self.runner.invoke(
+            align,
+            [
+                "--config",
+                os.path.join(self.data_dir, "fra.txt"),
+                os.path.join(self.data_dir, "fra.txt"),
+                os.path.join(self.data_dir, "noise.mp3"),
+                os.path.join(self.tempdir, "out-invalid-config-1"),
+            ],
+        )
+        self.assertIn("must be in JSON format", result.stdout)
+
+        # --config parameters needs to contain valid json, test with garbage
+        config_file = os.path.join(self.tempdir, "bad-config.json")
+        with open(config_file, "w") as f:
+            print("not valid json", file=f)
+        result = self.runner.invoke(
+            align,
+            [
+                "--config",
+                config_file,
+                os.path.join(self.data_dir, "fra.txt"),
+                os.path.join(self.data_dir, "noise.mp3"),
+                os.path.join(self.tempdir, "out-invalid-config-2"),
+            ],
+        )
+        self.assertIn("is not in valid JSON format", result.stdout)
 
 
 if __name__ == "__main__":

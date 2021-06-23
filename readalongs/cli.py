@@ -179,7 +179,9 @@ def align(**kwargs):  # noqa: C901
                 with open(config) as f:
                     config = json.load(f)
             except json.decoder.JSONDecodeError:
-                LOGGER.error(f"Config file at {config} is not valid json.")
+                raise click.BadParameter(
+                    f"Config file at {config} is not in valid JSON format."
+                )
         else:
             raise click.BadParameter(f"Config file '{config}' must be in JSON format")
 
@@ -285,6 +287,10 @@ def align(**kwargs):  # noqa: C901
     )
     shutil.copy(kwargs["audiofile"], audio_path)
     save_txt(smil_path, smil)
+
+    # Copy the image files to the output's asset directory, if any are found
+    if config and "images" in config:
+        pass
 
 
 @app.cli.command(

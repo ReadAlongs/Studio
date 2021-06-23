@@ -1,0 +1,17 @@
+{
+    "images":
+        {
+            "0": "image-for-page1.jpg",
+            "1": "https://server.foo.bar/image-for-page2.jpg"
+        },
+
+    "do-not-align":
+        {
+        "method": "remove",
+        "segments":
+            [
+                {   "begin": 1,     "end": 2    },
+                {   "begin": 10,    "end": 11   }
+            ]
+        }
+}
