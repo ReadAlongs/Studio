@@ -108,6 +108,10 @@ To build the Docker container, run:
 
     docker build . --tag=readalong-studio
 
+To run the Flask web app from the Docker container:
+
+    docker run -p 5000:5000 -it readalong-studio
+
 To run the Flask web app from the Docker container with real-time update:
 
     docker run -p 5000:5000 -it -v $(pwd):/opt/readalong-studio readalong-studio
