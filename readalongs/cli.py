@@ -290,7 +290,29 @@ def align(**kwargs):  # noqa: C901
 
     # Copy the image files to the output's asset directory, if any are found
     if config and "images" in config:
-        pass
+        assets_dir = os.path.join(output_dir, "assets")
+        try:
+            os.mkdir(assets_dir)
+        except FileExistsError:
+            if not os.path.isdir(assets_dir):
+                raise
+        for page, image in config["images"].items():
+            if image[0:4] == "http":
+                LOGGER.warn(
+                    f"Please make sure {image} is accessible to clients using your read-along."
+                )
+            else:
+                try:
+                    shutil.copy(image, assets_dir)
+                except Exception as e:
+                    LOGGER.warn(
+                        f"Please copy {image} to {assets_dir} before deploying your read-along. ({e})"
+                    )
+                if os.path.basename(image) != image:
+                    LOGGER.warn(
+                        f"Read-along images were tested with absolute urls (starting with http(s):// "
+                        f"and filenames without a path. {image} might not work as specified."
+                    )
 
 
 @app.cli.command(
