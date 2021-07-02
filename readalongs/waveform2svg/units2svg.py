@@ -28,6 +28,7 @@ from audio_util import save_txt
 from lxml import etree
 
 from readalongs.log import LOGGER
+from readalongs.text.util import xpath_default
 
 FMIN = 80
 FMAX = 1000
@@ -62,14 +63,6 @@ def render_svg(data, width=512, height=100, radius=4):
 def load_xml(input_path):
     with open(input_path, "r", encoding="utf-8") as fin:
         return etree.fromstring(fin.read())
-
-
-def xpath_default(xml, query, default_namespace_prefix="i"):
-    nsmap = dict(
-        ((x, y) if x else (default_namespace_prefix, y)) for (x, y) in xml.nsmap.items()
-    )
-    for e in xml.xpath(query, namespaces=nsmap):
-        yield e
 
 
 def parse_smil(input_path):
