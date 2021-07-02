@@ -223,7 +223,7 @@ def align(**kwargs):  # noqa: C901
         LOGGER.setLevel("DEBUG")
     if kwargs["text_input"]:
         if not kwargs["language"]:
-            LOGGER.warn("No input language provided, using undetermined mapping")
+            LOGGER.warning("No input language provided, using undetermined mapping")
         tempfile, kwargs["textfile"] = create_input_tei(
             input_file_name=kwargs["textfile"],
             text_language=kwargs["language"],
@@ -298,18 +298,18 @@ def align(**kwargs):  # noqa: C901
                 raise
         for page, image in config["images"].items():
             if image[0:4] == "http":
-                LOGGER.warn(
+                LOGGER.warning(
                     f"Please make sure {image} is accessible to clients using your read-along."
                 )
             else:
                 try:
                     shutil.copy(image, assets_dir)
                 except Exception as e:
-                    LOGGER.warn(
+                    LOGGER.warning(
                         f"Please copy {image} to {assets_dir} before deploying your read-along. ({e})"
                     )
                 if os.path.basename(image) != image:
-                    LOGGER.warn(
+                    LOGGER.warning(
                         f"Read-along images were tested with absolute urls (starting with http(s):// "
                         f"and filenames without a path. {image} might not work as specified."
                     )

@@ -75,7 +75,7 @@ def add_supplementary_xml(element: etree, config: dict) -> etree:
     for el in config["xml"]:
         parents = element.xpath(el["xpath"])
         if not parents:
-            LOGGER.warn(
+            LOGGER.warning(
                 f"No elements found at {el['xpath']}, please verify your configuration."
             )
         for parent in parents:
