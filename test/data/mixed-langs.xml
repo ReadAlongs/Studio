@@ -10,6 +10,7 @@
                     <s xml:lang="fra">Ceci est un test.</s>
                     <s xml:lang="eng">This is a test.</s>
                     <s xml:lang="dan">Hej. Jeg hedder Per.</s>
+                    <s>A pre-g2p&#x27;d test.</s>
                 </p>
             </div>
         </body>

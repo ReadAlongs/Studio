@@ -168,6 +168,16 @@ def align(**kwargs):  # noqa: C901
 
     TEXTFILE:    Input text file path (in XML, or plain text with -i)
 
+    With -i, TEXTFILE should be plain text;
+    without -i, TEXTFILE can be in one of three XML formats:
+    the output of 'readalongs prepare',
+    the output of 'readalongs tokenize', or
+    the output of 'readalongs g2p'.
+
+    One can also add the known ARPABET encoding for words (<w> elements) that
+    are not correctly handled by g2p in the output of 'readalongs tokenize' or
+    'readalongs g2p', via the ARPABET attribute.
+
     AUDIOFILE:   Input audio file path, in any format supported by ffmpeg
 
     OUTPUT_BASE: Base name for output files
@@ -504,6 +514,7 @@ def g2p(**kwargs):
     """Apply g2p mappings to TOKFILE into G2PFILE.
     TOKFILE should have been produced by 'readalongs tokenize'.
     G2PFILE can then be modified to adjust the phonetic representation as needed.
+    'readalongs align' can be called with G2PFILE instead of TOKFILE as XML input.
 
     WARNING: the output is not yet compatible with align and cannot be used as input to align.
 
@@ -511,7 +522,6 @@ def g2p(**kwargs):
 
     G2PFILE: Output path for the g2p'd XML, or - for stdout [default: TOKFILE with .g2p. inserted]
     """
-    # NOT TRUE YET: 'readalongs align' can be called with G2PFILE in stead of TOKFILE as XML input.
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
         LOGGER.info(

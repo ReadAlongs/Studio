@@ -191,7 +191,7 @@ class TestAlignCli(TestCase):
             ],
         )
 
-        g2p_ref = '<s id="t0b0d0p0s0"><w id="t0b0d0p0s0w0">DH IH S</w> <w id="t0b0d0p0s0w1">IH Z</w> <w id="t0b0d0p0s0w2">S AH M</w> <w id="t0b0d0p0s0w3">T EH K S T</w> <w id="t0b0d0p0s0w4">DH AE T</w> <w id="t0b0d0p0s0w5">W IY</w> <w id="t0b0d0p0s0w6">W IH L</w> <w id="t0b0d0p0s0w7">R AH N</w> <w id="t0b0d0p0s0w8">TH R UW</w> <w id="t0b0d0p0s0w9">DH AH</w> <w id="t0b0d0p0s0w10">IH NG G L IH SH</w> <w id="t0b0d0p0s0w11">L EH K S IH K AA N</w> <w id="t0b0d0p0s0w12">G R AE F IY M</w> <w id="t0b0d0p0s0w13">T UW</w> <w id="t0b0d0p0s0w14">M AO R F IY M</w> <w id="t0b0d0p0s0w15">AH P R OW CH</w>.</s>'
+        g2p_ref = '<s id="t0b0d0p0s0"><w id="t0b0d0p0s0w0" ARPABET="DH IH S">This</w> <w id="t0b0d0p0s0w1" ARPABET="IH Z">is</w> <w id="t0b0d0p0s0w2" ARPABET="S AH M">some</w> <w id="t0b0d0p0s0w3" ARPABET="T EH K S T">text</w> <w id="t0b0d0p0s0w4" ARPABET="DH AE T">that</w> <w id="t0b0d0p0s0w5" ARPABET="W IY">we</w> <w id="t0b0d0p0s0w6" ARPABET="W IH L">will</w> <w id="t0b0d0p0s0w7" ARPABET="R AH N">run</w> <w id="t0b0d0p0s0w8" ARPABET="TH R UW">through</w> <w id="t0b0d0p0s0w9" ARPABET="DH AH">the</w> <w id="t0b0d0p0s0w10" ARPABET="IH NG G L IH SH">English</w> <w id="t0b0d0p0s0w11" ARPABET="L EH K S IH K AA N">lexicon</w> <w id="t0b0d0p0s0w12" ARPABET="G R AE F IY M">grapheme</w> <w id="t0b0d0p0s0w13" ARPABET="T UW">to</w> <w id="t0b0d0p0s0w14" ARPABET="M AO R F IY M">morpheme</w> <w id="t0b0d0p0s0w15" ARPABET="AH P R OW CH">approach</w>.</s>'
 
         tokenized_file = join(
             self.tempdir, "eng-output", "tempfiles", "eng-output.g2p.xml"

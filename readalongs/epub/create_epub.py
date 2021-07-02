@@ -23,6 +23,7 @@ from readalongs.text.util import (
     load_xml_with_encoding,
     save_txt,
     save_txt_zip,
+    xpath_default,
 )
 
 EPUB_PATH = "EPUB"
@@ -35,15 +36,6 @@ PACKAGE_ORIGIN_PATH = os.path.join(RESOURCES, "templates/package.opf")
 PACKAGE_DEST_PATH = os.path.join(EPUB_PATH, "package.opf")
 STYLESHEET_ORIGIN_PATH = os.path.join(RESOURCES, "templates/stylesheet.css")
 STYLESHEET_DEST_PATH = os.path.join(EPUB_PATH, "stylesheet.css")
-
-
-def xpath_default(xml, query, default_namespace_prefix="i"):
-    nsmap = xml.nsmap if hasattr(xml, "nsmap") else xml.getroot().nsmap
-    nsmap = dict(
-        ((x, y) if x else (default_namespace_prefix, y)) for (x, y) in nsmap.items()
-    )
-    for e in xml.xpath(query, namespaces=nsmap):
-        yield e
 
 
 def process_src_attrib(src_text, id_prefix, mimetypes):
