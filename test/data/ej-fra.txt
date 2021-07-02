@@ -2,6 +2,7 @@ Bonjour.
 Je m'appelle Éric Joanis.
 Je suis programmeur au sein de l'équipe des technologies pour les langues autochtones au CNRC.
 
+
 J'ai fait une bonne partie de ma carrière en traduction automatique statistique, mais maintenant cette approche est déclassée par l'apprentissage profond.
 En ce moment je travaille à l'alignement du hansard du Nunavut pour produire un corpus bilingue anglais-inuktitut.
 Ce corpus permettra d'entraîner la TA, neuronale ou statistique, ainsi que d'autres applications de traitement du langage naturel.

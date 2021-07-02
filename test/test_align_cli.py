@@ -3,6 +3,7 @@
 import io
 import os
 import tempfile
+from os.path import exists, join
 from unittest import TestCase, main
 
 from readalongs.app import app
@@ -12,7 +13,7 @@ from readalongs.log import LOGGER
 
 class TestAlignCli(TestCase):
     LOGGER.setLevel("DEBUG")
-    data_dir = os.path.join(os.path.dirname(__file__), "data")
+    data_dir = join(os.path.dirname(__file__), "data")
 
     # Set this to True to keep the temp dirs after running, for manual inspection
     # but please don't push a commit setting this to True!
@@ -34,7 +35,9 @@ class TestAlignCli(TestCase):
         pass
 
     def test_invoke_align(self):
-        output = os.path.join(self.tempdir, "output")
+        output = join(self.tempdir, "output")
+        with open("image-for-page1.jpg", "w"):
+            pass
         # Run align from plain text
         results = self.runner.invoke(
             align,
@@ -43,57 +46,75 @@ class TestAlignCli(TestCase):
                 "-s",
                 "-l",
                 "fra",
-                os.path.join(self.data_dir, "ej-fra.txt"),
-                os.path.join(self.data_dir, "ej-fra.m4a"),
+                "--config",
+                join(self.data_dir, "sample-config.json"),
+                join(self.data_dir, "ej-fra.txt"),
+                join(self.data_dir, "ej-fra.m4a"),
                 output,
             ],
         )
         self.assertEqual(results.exit_code, 0)
         self.assertTrue(
-            os.path.exists(os.path.join(output, "output.smil")),
+            exists(join(output, "output.smil")),
             "successful alignment should have created output.smil",
         )
         self.assertTrue(
-            os.path.exists(os.path.join(output, "index.html")),
+            exists(join(output, "index.html")),
             "successful alignment should have created index.html",
         )
-        with open(os.path.join(output, "index.html")) as f:
+        with open(join(output, "index.html")) as f:
             self.assertIn(
                 '<read-along text="output.xml" alignment="output.smil" audio="output.m4a"',
                 f.read(),
             )
         self.assertTrue(
-            os.path.exists(os.path.join(output, "tempfiles", "output.tokenized.xml")),
+            exists(join(output, "tempfiles", "output.tokenized.xml")),
             "alignment with -s should have created tempfiles/output.tokenized.xml",
         )
+        self.assertTrue(
+            exists(join(output, "assets", "image-for-page1.jpg")),
+            "alignment with image files should have copied image-for-page1.jpg to assets",
+        )
+        self.assertIn("image-for-page2.jpg is accessible ", results.stdout)
+        os.unlink("image-for-page1.jpg")
+        self.assertFalse(exists("image-for-page1.jpg"))
+        # print(results.stdout)
 
         # Move the alignment output to compare with further down
         # We cannot just output to a different name because changing the output file name
         # changes the contents of the output.
         output1 = output + "1"
         os.rename(output, output1)
-        self.assertFalse(os.path.exists(output), "os.rename() should have moved dir")
+        self.assertFalse(exists(output), "os.rename() should have moved dir")
 
         # Run align again, but on an XML input file with various added DNA text
         results_dna = self.runner.invoke(
             align,
             [
                 "-s",
-                os.path.join(self.data_dir, "ej-fra-dna.xml"),
-                os.path.join(self.data_dir, "ej-fra.m4a"),
+                "--config",
+                join(self.data_dir, "sample-config.json"),
+                join(self.data_dir, "ej-fra-dna.xml"),
+                join(self.data_dir, "ej-fra.m4a"),
                 output,
             ],
         )
         self.assertEqual(results_dna.exit_code, 0)
+        # print(results_dna.stdout)
         self.assertTrue(
-            os.path.exists(os.path.join(output, "output.smil")),
+            exists(join(output, "output.smil")),
             "successful alignment with DNA should have created output.smil",
+        )
+        self.assertIn("Please copy image-for-page1.jpg to ", results_dna.stdout)
+        self.assertFalse(
+            exists(join(output, "assets", "image-for-page1.jpg")),
+            "image-for-page1.jpg was not on disk, cannot have been copied",
         )
 
         # Functionally the same as self.assertTrue(filecmp.cmp(f1, f2)), but show where
         # the differences are if the files are not identical
-        with open(os.path.join(output1, "output.smil")) as f1, open(
-            os.path.join(output, "output.smil")
+        with open(join(output1, "output.smil")) as f1, open(
+            join(output, "output.smil")
         ) as f2:
             self.assertListEqual(list(f1), list(f2))
 
@@ -101,8 +122,8 @@ class TestAlignCli(TestCase):
         results_output_exists = self.runner.invoke(
             align,
             [
-                os.path.join(self.data_dir, "ej-fra-dna.xml"),
-                os.path.join(self.data_dir, "ej-fra.m4a"),
+                join(self.data_dir, "ej-fra-dna.xml"),
+                join(self.data_dir, "ej-fra.m4a"),
                 output,
             ],
         )
@@ -115,9 +136,9 @@ class TestAlignCli(TestCase):
         results_output_is_regular_file = self.runner.invoke(
             align,
             [
-                os.path.join(self.data_dir, "ej-fra-dna.xml"),
-                os.path.join(self.data_dir, "ej-fra.m4a"),
-                os.path.join(output, "output.smil"),
+                join(self.data_dir, "ej-fra-dna.xml"),
+                join(self.data_dir, "ej-fra.m4a"),
+                join(output, "output.smil"),
             ],
         )
         self.assertNotEqual(results_output_is_regular_file, 0)
@@ -127,15 +148,15 @@ class TestAlignCli(TestCase):
         )
 
     def test_permission_denied(self):
-        dirname = os.path.join(self.tempdir, "permission_denied")
-        os.mkdir(dirname, mode=0o444)
+        dir = join(self.tempdir, "permission_denied")
+        os.mkdir(dir, mode=0o444)
         results = self.runner.invoke(
             align,
             [
                 "-f",
-                os.path.join(self.data_dir, "ej-fra-dna.xml"),
-                os.path.join(self.data_dir, "ej-fra.m4a"),
-                dirname,
+                join(self.data_dir, "ej-fra-dna.xml"),
+                join(self.data_dir, "ej-fra.m4a"),
+                dir,
             ],
         )
         self.assertNotEqual(results, 0)
@@ -152,10 +173,10 @@ class TestAlignCli(TestCase):
     def test_align_english(self):
         # Validates that LexiconG2P words for English language alignment
         input = "This is some text that we will run through the English lexicon grapheme to morpheme approach."
-        input_filename = os.path.join(self.tempdir, "input")
+        input_filename = join(self.tempdir, "input")
         with open(input_filename, "w") as f:
             f.write(input)
-        output_dir = os.path.join(self.tempdir, "eng-output")
+        output_dir = join(self.tempdir, "eng-output")
         # Run align from plain text
         self.runner.invoke(
             align,
@@ -165,20 +186,50 @@ class TestAlignCli(TestCase):
                 "-l",
                 "eng",
                 input_filename,
-                os.path.join(self.data_dir, "ej-fra.m4a"),
+                join(self.data_dir, "ej-fra.m4a"),
                 output_dir,
             ],
         )
 
         g2p_ref = '<s id="t0b0d0p0s0"><w id="t0b0d0p0s0w0">DH IH S</w> <w id="t0b0d0p0s0w1">IH Z</w> <w id="t0b0d0p0s0w2">S AH M</w> <w id="t0b0d0p0s0w3">T EH K S T</w> <w id="t0b0d0p0s0w4">DH AE T</w> <w id="t0b0d0p0s0w5">W IY</w> <w id="t0b0d0p0s0w6">W IH L</w> <w id="t0b0d0p0s0w7">R AH N</w> <w id="t0b0d0p0s0w8">TH R UW</w> <w id="t0b0d0p0s0w9">DH AH</w> <w id="t0b0d0p0s0w10">IH NG G L IH SH</w> <w id="t0b0d0p0s0w11">L EH K S IH K AA N</w> <w id="t0b0d0p0s0w12">G R AE F IY M</w> <w id="t0b0d0p0s0w13">T UW</w> <w id="t0b0d0p0s0w14">M AO R F IY M</w> <w id="t0b0d0p0s0w15">AH P R OW CH</w>.</s>'
 
-        tokenized_file = os.path.join(
+        tokenized_file = join(
             self.tempdir, "eng-output", "tempfiles", "eng-output.g2p.xml"
         )
         with open(tokenized_file, "r") as f:
             tok_output = f.read()
 
         self.assertIn(g2p_ref, tok_output)
+
+    def test_invalid_config(self):
+        # --config parameter needs to be <somefile>.json, text with .txt instead
+        result = self.runner.invoke(
+            align,
+            [
+                "--config",
+                join(self.data_dir, "fra.txt"),
+                join(self.data_dir, "fra.txt"),
+                join(self.data_dir, "noise.mp3"),
+                join(self.tempdir, "out-invalid-config-1"),
+            ],
+        )
+        self.assertIn("must be in JSON format", result.stdout)
+
+        # --config parameters needs to contain valid json, test with garbage
+        config_file = join(self.tempdir, "bad-config.json")
+        with open(config_file, "w") as f:
+            print("not valid json", file=f)
+        result = self.runner.invoke(
+            align,
+            [
+                "--config",
+                config_file,
+                join(self.data_dir, "fra.txt"),
+                join(self.data_dir, "noise.mp3"),
+                join(self.tempdir, "out-invalid-config-2"),
+            ],
+        )
+        self.assertIn("is not in valid JSON format", result.stdout)
 
 
 if __name__ == "__main__":
