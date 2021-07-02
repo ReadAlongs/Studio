@@ -169,10 +169,6 @@ def convert_xml(
     verbose_warnings=False,
 ):
     xml_copy = copy.deepcopy(xml)
-    # FIXME: different langs have different normalizations, is this necessary?
-    # Since we now say each word only has to have text, and nothing else, this is no
-    # longer necessary.
-    # unicode_normalize_xml(xml_copy)
     xml_copy, valid = convert_words(
         xml_copy, word_unit, output_orthography, g2p_fallbacks, verbose_warnings
     )
