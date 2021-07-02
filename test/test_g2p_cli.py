@@ -10,6 +10,7 @@ from lxml import etree
 from readalongs.align import align_audio
 from readalongs.app import app
 from readalongs.cli import align, g2p, prepare, tokenize
+from readalongs.text.convert_xml import convert_xml
 
 
 class TestG2pCli(TestCase):
@@ -278,6 +279,42 @@ class TestG2pCli(TestCase):
         with open(os.path.join(self.tempdir, "foo.dict"), "r") as f:
             dict_file = f.read()
             self.assertIn("D G IY T UW P IY D", dict_file)
+
+    def run_convert_xml(self, str):
+        return etree.tounicode(convert_xml(etree.fromstring(str))[0])
+
+    def test_convert_xml(self):
+        self.assertEqual(
+            self.run_convert_xml("<t><w>word</w><w></w><n>not word</n></t>"),
+            '<t><w ARPABET="W OW D D">word</w><w/><n>not word</n></t>',
+        )
+
+        self.assertEqual(
+            self.run_convert_xml(
+                '<s><w xml:lang="eng">Patrick</w><w xml:lang="kwk-umista">xtła̱n</w></s>'
+            ),
+            '<s><w xml:lang="eng" ARPABET="P AE T R IH K">Patrick</w><w xml:lang="kwk-umista" ARPABET="K Y T S AH N">xtła̱n</w></s>',
+        )
+
+        self.assertEqual(
+            self.run_convert_xml('<s><w xml:lang="und">Patrickxtła̱n</w></s>'),
+            '<s><w xml:lang="und" ARPABET="P AA T D IY CH K K T L AA N">Patrickxtła̱n</w></s>',
+        )
+
+    def test_convert_xml_invalid(self):
+        xml = etree.fromstring('<s><w ARPABET="V AA L IY D">valid</w></s>')
+        c_xml, valid = convert_xml(xml)
+        self.assertEqual(
+            etree.tounicode(c_xml), '<s><w ARPABET="V AA L IY D">valid</w></s>'
+        )
+        self.assertTrue(valid, "convert_xml with valid pre-g2p'd text")
+
+        xml = etree.fromstring('<s><w ARPABET="invalid">invalid</w></s>')
+        c_xml, valid = convert_xml(xml)
+        self.assertEqual(
+            etree.tounicode(c_xml), '<s><w ARPABET="invalid">invalid</w></s>'
+        )
+        self.assertFalse(valid, "convert_xml with invalid pre-g2p'd text")
 
 
 if __name__ == "__main__":
