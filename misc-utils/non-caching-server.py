@@ -42,11 +42,12 @@
 
 import contextlib
 import os
+import socket
 import urllib
 from functools import partial
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
-from http.server import test  # type: ignore
 from http import HTTPStatus
+from http.server import test  # type: ignore
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 
 class NonCachingHTTPRequestHandler(SimpleHTTPRequestHandler):
@@ -75,11 +76,10 @@ class NonCachingHTTPRequestHandler(SimpleHTTPRequestHandler):
         f = None
         if os.path.isdir(path):
             parts = urllib.parse.urlsplit(self.path)
-            if not parts.path.endswith('/'):
+            if not parts.path.endswith("/"):
                 # redirect browser - doing basically what apache does
                 self.send_response(HTTPStatus.MOVED_PERMANENTLY)
-                new_parts = (parts[0], parts[1], parts[2] + '/',
-                             parts[3], parts[4])
+                new_parts = (parts[0], parts[1], parts[2] + "/", parts[3], parts[4])
                 new_url = urllib.parse.urlunsplit(new_parts)
                 self.send_header("Location", new_url)
                 self.end_headers()
@@ -101,7 +101,7 @@ class NonCachingHTTPRequestHandler(SimpleHTTPRequestHandler):
             self.send_error(HTTPStatus.NOT_FOUND, "File not found")
             return None
         try:
-            f = open(path, 'rb')
+            f = open(path, "rb")
         except OSError:
             self.send_error(HTTPStatus.NOT_FOUND, "File not found")
             return None
@@ -115,36 +115,44 @@ class NonCachingHTTPRequestHandler(SimpleHTTPRequestHandler):
             self.send_caching_headers()
             self.end_headers()
             return f
-        except:
+        except:  # noqa E722
             f.close()
             raise
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--bind', '-b', metavar='ADDRESS',
-                        help='Specify alternate bind address '
-                             '[default: all interfaces]')
-    parser.add_argument('--directory', '-d', default=os.getcwd(),
-                        help='Specify alternative directory '
-                        '[default:current directory]')
-    parser.add_argument('port', action='store',
-                        default=8000, type=int,
-                        nargs='?',
-                        help='Specify alternate port [default: 8000]')
+    parser.add_argument(
+        "--bind",
+        "-b",
+        metavar="ADDRESS",
+        help="Specify alternate bind address " "[default: all interfaces]",
+    )
+    parser.add_argument(
+        "--directory",
+        "-d",
+        default=os.getcwd(),
+        help="Specify alternative directory " "[default:current directory]",
+    )
+    parser.add_argument(
+        "port",
+        action="store",
+        default=8000,
+        type=int,
+        nargs="?",
+        help="Specify alternate port [default: 8000]",
+    )
     args = parser.parse_args()
-    handler_class = partial(NonCachingHTTPRequestHandler,
-                            directory=args.directory)
+    handler_class = partial(NonCachingHTTPRequestHandler, directory=args.directory)
 
     # ensure dual-stack is not disabled; ref #38907
     class DualStackServer(ThreadingHTTPServer):
         def server_bind(self):
             # suppress exception when protocol is IPv4
             with contextlib.suppress(Exception):
-                self.socket.setsockopt(
-                    socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+                self.socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
             return super().server_bind()
 
     test(
