@@ -59,19 +59,19 @@ import argparse
 import codecs
 import itertools
 import unicodedata
-from lxml import etree
 import xml.etree.ElementTree
-from io import StringIO, BytesIO
+from io import BytesIO, StringIO
 
+from lxml import etree
 
 # -*- coding: utf-8 -*-
 # created at UC Berkeley 2015
 # Authors: Christopher Hench, Alex Estes
 
-'''This program syllabifies words based on the Sonority Sequencing Principle (SSP)'''
+"""This program syllabifies words based on the Sonority Sequencing Principle (SSP)"""
 
-def sonoripy(word):
 
+def sonoripy(word):  # noqa: C901
     def no_syll_no_vowel(ss):
         # no syllable if no vowel
         nss = []
@@ -94,12 +94,12 @@ def sonoripy(word):
 
     # SONORITY HIERARCHY, MODIFY FOR LANGUAGE BELOW
     # categories can be collapsed into more general groups
-    vowels = 'aeiouyèùòìà'
-    approximates = ''
-    nasals = 'lmnrw'  # resonants and nasals
-    fricatives = 'zvsf'
-    affricates = ''
-    stops = 'bcdgtkpqxhj'  # rest of consonants
+    vowels = "aeiouyèùòìà"
+    approximates = ""
+    nasals = "lmnrw"  # resonants and nasals
+    fricatives = "zvsf"
+    affricates = ""
+    stops = "bcdgtkpqxhj"  # rest of consonants
 
     vowelcount = 0  # if vowel count is 1, syllable is automatically 1
     sylset = []  # to collect letters and corresponding values
@@ -125,7 +125,7 @@ def sonoripy(word):
     if vowelcount <= 1:  # finalize word immediately if monosyllabic
         newsylset.append(word)
     else:
-        syllable = ''  # prepare empty syllable to build upon
+        syllable = ""  # prepare empty syllable to build upon
         for i, tup in enumerate(sylset):
             if i == 0:  # if it's the first letter, append automatically
                 syllable += tup[0]
@@ -139,30 +139,51 @@ def sonoripy(word):
 
                 # MAIN ALGORITHM BELOW
                 # these cases DO NOT trigger syllable breaks
-                elif (i < len(sylset) - 1) and tup[1] < sylset[i + 1][1] and \
-                        tup[1] > sylset[i - 1][1]:
+                elif (
+                    (i < len(sylset) - 1)
+                    and tup[1] < sylset[i + 1][1]
+                    and tup[1] > sylset[i - 1][1]
+                ):
                     syllable += tup[0]
-                elif (i < len(sylset) - 1) and tup[1] > sylset[i + 1][1] and \
-                        tup[1] < sylset[i - 1][1]:
+                elif (
+                    (i < len(sylset) - 1)
+                    and tup[1] > sylset[i + 1][1]
+                    and tup[1] < sylset[i - 1][1]
+                ):
                     syllable += tup[0]
-                elif (i < len(sylset) - 1) and tup[1] > sylset[i + 1][1] and \
-                        tup[1] > sylset[i - 1][1]:
+                elif (
+                    (i < len(sylset) - 1)
+                    and tup[1] > sylset[i + 1][1]
+                    and tup[1] > sylset[i - 1][1]
+                ):
                     syllable += tup[0]
-                elif (i < len(sylset) - 1) and tup[1] > sylset[i + 1][1] and \
-                        tup[1] == sylset[i - 1][1]:
+                elif (
+                    (i < len(sylset) - 1)
+                    and tup[1] > sylset[i + 1][1]
+                    and tup[1] == sylset[i - 1][1]
+                ):
                     syllable += tup[0]
-                elif (i < len(sylset) - 1) and tup[1] == sylset[i + 1][1] and \
-                        tup[1] > sylset[i - 1][1]:
+                elif (
+                    (i < len(sylset) - 1)
+                    and tup[1] == sylset[i + 1][1]
+                    and tup[1] > sylset[i - 1][1]
+                ):
                     syllable += tup[0]
-                elif (i < len(sylset) - 1) and tup[1] < sylset[i + 1][1] and \
-                        tup[1] == sylset[i - 1][1]:
+                elif (
+                    (i < len(sylset) - 1)
+                    and tup[1] < sylset[i + 1][1]
+                    and tup[1] == sylset[i - 1][1]
+                ):
                     syllable += tup[0]
 
                 # these cases DO trigger syllable break
                 # if phoneme value is equal to value of preceding AND following
                 # phoneme
-                elif (i < len(sylset) - 1) and tup[1] == sylset[i + 1][1] and \
-                        tup[1] == sylset[i - 1][1]:
+                elif (
+                    (i < len(sylset) - 1)
+                    and tup[1] == sylset[i + 1][1]
+                    and tup[1] == sylset[i - 1][1]
+                ):
                     syllable += tup[0]
                     # append and break syllable BEFORE appending letter at
                     # index in new syllable
@@ -171,8 +192,11 @@ def sonoripy(word):
 
                 # if phoneme value is less than preceding AND following value
                 # (trough)
-                elif (i < len(sylset) - 1) and tup[1] < sylset[i + 1][1] and \
-                        tup[1] < sylset[i - 1][1]:
+                elif (
+                    (i < len(sylset) - 1)
+                    and tup[1] < sylset[i + 1][1]
+                    and tup[1] < sylset[i - 1][1]
+                ):
                     # append and break syllable BEFORE appending letter at
                     # index in new syllable
                     newsylset.append(syllable)
@@ -181,31 +205,39 @@ def sonoripy(word):
 
                 # if phoneme value is less than preceding value AND equal to
                 # following value
-                elif (i < len(sylset) - 1) and tup[1] == sylset[i + 1][1] and \
-                        tup[1] < sylset[i - 1][1]:
+                elif (
+                    (i < len(sylset) - 1)
+                    and tup[1] == sylset[i + 1][1]
+                    and tup[1] < sylset[i - 1][1]
+                ):
                     syllable += tup[0]
                     # append and break syllable BEFORE appending letter at
                     # index in new syllable
                     newsylset.append(syllable)
                     syllable = ""
 
-
         newsylset = no_syll_no_vowel(newsylset)
 
-    return (newsylset)
+    return newsylset
 
 
 ### Modifications by Fineen Davis at National Research Council Canada
 
 # Basic argument parser added by Eric Joanis to support this usage:
 # syll_parse.py input.xml [output.xml]
-parser = argparse.ArgumentParser(description="syllabify a readalongs tokenized XML file")
+parser = argparse.ArgumentParser(
+    description="syllabify a readalongs tokenized XML file"
+)
 parser.add_argument(
-    "input_file", type=argparse.FileType("r"),
+    "input_file",
+    type=argparse.FileType("r"),
     help="Input tokenized XML file to syllabify (use - for stdin)",
 )
 parser.add_argument(
-    "output_file", type=str, default="-", nargs="?",
+    "output_file",
+    type=str,
+    default="-",
+    nargs="?",
     help="Output syllabified tokenized XML file (use - for stdout)",
 )
 args = parser.parse_args()
@@ -213,7 +245,7 @@ args = parser.parse_args()
 # Load XML file and read it
 equiv_text = unicodedata.normalize("NFC", args.input_file.read())
 
-#root = etree.fromstring(equiv_text)
+# root = etree.fromstring(equiv_text)
 root = etree.fromstring(equiv_text.encode("UTF-8"))
 
 
@@ -221,28 +253,28 @@ root = etree.fromstring(equiv_text.encode("UTF-8"))
 for word in root.findall(".//w"):
     if "id" in word.attrib:
         del word.attrib["id"]
-    #get the text for each word
+    # get the text for each word
     word_text = word.text
-    #remove text from word element
-    word.text = ''
+    # remove text from word element
+    word.text = ""
 
-    word_sylls = sonoripy(word_text) #word_sylls is a list of lists []
+    word_sylls = sonoripy(word_text)  # word_sylls is a list of lists []
 
-    #Adds sylls to <syll> elements which are children of the <w> element
-    #for syll in word_sylls:
-            # syll_element = etree.Element('syll')
-            # syll_element.text = syll
-            # word.append(syll_element)
+    # Adds sylls to <syll> elements which are children of the <w> element
+    # for syll in word_sylls:
+    # syll_element = etree.Element('syll')
+    # syll_element.text = syll
+    # word.append(syll_element)
 
-    #Adds sylls as <w> elements for alignment purposes
+    # Adds sylls as <w> elements for alignment purposes
     prev_word = word
     prev_word.text = word_sylls.pop(0)
 
     for syll in word_sylls:
-            next_word = etree.Element('w')
-            next_word.text = syll
-            prev_word.addnext(next_word)
-            prev_word = next_word
+        next_word = etree.Element("w")
+        next_word.text = syll
+        prev_word.addnext(next_word)
+        prev_word = next_word
 
 
 tree = etree.ElementTree(root)
