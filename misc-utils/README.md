@@ -12,7 +12,9 @@ the files.
 Syllabify a tokenized readalongs XML file, so that highlighting can happen
 syllable by syllable instead of word by word. This script should work reasonably
 well for languages in the latin script where syllabification follows the
-Sonority Sequencing Principle (SSP). For example, this works on Algonquin.
+Sonority Sequencing Principle (SSP). For example, this works on Algonquin, and
+is currently setup to support Algonquin spelling. Modify the sets of letter by
+categories under "Sonority Hierarchy" to support other languages.
 
 Must be called manually after
 readalongs tokenize and before readalongs align or readalong g2p:
