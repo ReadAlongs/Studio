@@ -1,5 +1,45 @@
 #!/usr/bin/env python3
 
+# This script is copied and modified from
+# https://github.com/python/cpython/blob/3.9/Lib/http/server.py
+# The original script is Copyright (c) Python Software Foundation and licensed
+# under the Python Software Foundation License Version 2.
+# See https://github.com/python/cpython/blob/main/LICENSE for the full details.
+
+# The modification made at National Research Council Canada are released under
+# the MIT License.
+
+# MIT License
+#
+# Copyright (c) 2021, National Research Council Canada (only for the NRC
+# modifications to this script)
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+# Description of modifications by NRC
+# - Eddie Antonio Santos, 2021: extract the minimum http server code and modify
+#   it to disable client-side caching by systematically adding the header
+#       Cache-Control: no-store, max-age=0
+#   to all requests.
+#   This is to work around an issue on Mac computers where sometimes even a hard
+#   refresh will not fetch manually updated pages.
+
 import contextlib
 import os
 import urllib
