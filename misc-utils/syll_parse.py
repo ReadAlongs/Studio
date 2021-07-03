@@ -48,11 +48,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-# Description of modifications by Fineen Davis at NRC
+# Description of modifications by NRC
 # - The original script by Estes&Hench provided the sonoropy() function
-# - the modifications at NRC handle loading a readalongs tokenized XML file,
-#   syllabifying each word, and writing the results back as a tokenized XML
-#   file for readalongs.
+# - Fineed Davis 2020:
+#   - adapt the script to Algonquin alphabet
+#   - handle loading a readalongs tokenized XML file, syllabifying each word,
+#     and writing the results back as a tokenized XML file for readalongs.
+# - Eric Joanis 2021:
+#   - add a basic command line interface
+#   - reformat whole file with black and isort and and quiet flake8 on sonoripy()
 
 
 import argparse
