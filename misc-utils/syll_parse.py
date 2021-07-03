@@ -1,3 +1,61 @@
+#!/usr/bin/env python3
+
+# Original Copyright and License from https://github.com/alexestes/SonoriPy:
+#
+# MIT License
+#
+# Copyright (c) 2016 Alex Estes and Christopher Hench
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Copyright for modifications at NRC:
+#
+# MIT License
+#
+# Copyright (c) 2021 National Research Council Canada (NRC)
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+# Description of modifications by Fineen Davis at NRC
+# - The original script by Estes&Hench provided the sonoropy() function
+# - the modifications at NRC handle loading a readalongs tokenized XML file,
+#   syllabifying each word, and writing the results back as a tokenized XML
+#   file for readalongs.
+
+
+import argparse
 import codecs
 import itertools
 import unicodedata
@@ -130,16 +188,30 @@ def sonoripy(word):
                     # index in new syllable
                     newsylset.append(syllable)
                     syllable = ""
-                 
+
 
         newsylset = no_syll_no_vowel(newsylset)
 
     return (newsylset)
 
 
+### Modifications by Fineen Davis at National Research Council Canada
+
+# Basic argument parser added by Eric Joanis to support this usage:
+# syll_parse.py input.xml [output.xml]
+parser = argparse.ArgumentParser(description="syllabify a readalongs tokenized XML file")
+parser.add_argument(
+    "input_file", type=argparse.FileType("r"),
+    help="Input tokenized XML file to syllabify (use - for stdin)",
+)
+parser.add_argument(
+    "output_file", type=str, default="-", nargs="?",
+    help="Output syllabified tokenized XML file (use - for stdout)",
+)
+args = parser.parse_args()
+
 # Load XML file and read it
-with open("/Volumes/Data/github_repos/Studio/word.xml", encoding="UTF-8") as fh:
-    equiv_text = unicodedata.normalize("NFC", fh.read())
+equiv_text = unicodedata.normalize("NFC", args.input_file.read())
 
 #root = etree.fromstring(equiv_text)
 root = etree.fromstring(equiv_text.encode("UTF-8"))
@@ -147,7 +219,8 @@ root = etree.fromstring(equiv_text.encode("UTF-8"))
 
 # Find <w> elements in XML file
 for word in root.findall(".//w"):
-    del word.attrib["id"]
+    if "id" in word.attrib:
+        del word.attrib["id"]
     #get the text for each word
     word_text = word.text
     #remove text from word element
@@ -172,11 +245,5 @@ for word in root.findall(".//w"):
             prev_word = next_word
 
 
-        
-
-
-
-
-
 tree = etree.ElementTree(root)
-tree.write("/Volumes/Data/github_repos/Studio/word.xml", pretty_print=True)
+tree.write(args.output_file, pretty_print=True)
