@@ -116,11 +116,11 @@ To run the Flask web app from the Docker container with real-time update:
 
     docker run -p 5000:5000 -it -v $(pwd):/opt/readalong-studio readalong-studio
 
+Then you should be able to visit http://localhost:5000/.
+
 To run the interactive shell from the Docker container with real-time update:
 
     docker run -p 5000:5000 -it -v $(pwd):/opt/readalong-studio readalong-studio sh
-
-Then you should be able to visit http://localhost:5000/.
 
 ## Maintainers
 
