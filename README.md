@@ -102,25 +102,34 @@ ReadAlong-Studio has a web interface for creating interactive audiobooks. The we
 
 ### Docker
 
-If you are having trouble installing the package, you can also clone the repo and run the studio using Docker.
+If you are having trouble installing the package, you can also clone the repo and run the
+studio using Docker.
 
-To build the Docker container, run:
+Working with in a Docker container has the advantage that no matter what your OS is, and
+what you have installed or configured, you will run on the standard ReadAlong-Studio
+configuration.
+
+To build the Docker image, run:
 
     docker build . --tag=readalong-studio
 
-To run the Flask web app from the Docker container:
+To run the Flask web app in a Docker container using that image:
 
     docker run -p 5000:5000 -it readalong-studio
 
-To run the Flask web app from the Docker container with real-time update:
+To run the Flask web app with real-time update:
 
     docker run -p 5000:5000 -it -v $(pwd):/opt/readalong-studio readalong-studio
 
 Then you should be able to visit http://localhost:5000/.
 
-To run the interactive shell from the Docker container with real-time update:
+To run the interactive shell with real-time update:
 
     docker run -p 5000:5000 -it -v $(pwd):/opt/readalong-studio readalong-studio sh
+
+To run an interactive bash shell, using your local user inside Docker:
+
+    docker run -p 5000:5000 -it -v $(pwd):/opt/readalong-studio -u $(id -u):$(id -g) readalong-studio bash
 
 ## Maintainers
 
