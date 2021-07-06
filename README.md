@@ -13,6 +13,7 @@
 This library is an end-to-end audio/text aligner. It is meant to be used together with the [ReadAlong-Web-Component](https://github.com/roedoejet/ReadAlong-Web-Component) to interactively visualize the alignment.
 
 ## Table of Contents
+
 - [ReadAlong-Studio](#readalong-studio)
   - [Table of Contents](#table-of-contents)
   - [Background](#background)
@@ -66,9 +67,10 @@ $ pip install -e .
 ```
 
 If you don't already have it, you will also need [FFmpeg](https://ffmpeg.org/).
- - Windows: [FFmpeg builds for Windows](https://ffmpeg.zeranoe.com/builds/) ([helpful instructions](https://windowsloop.com/install-ffmpeg-windows-10/))
- - Mac: `brew install ffmpeg`
- - Linux: `<your package manager> install ffmpeg`
+
+- Windows: [FFmpeg builds for Windows](https://ffmpeg.zeranoe.com/builds/) ([helpful instructions](https://windowsloop.com/install-ffmpeg-windows-10/))
+- Mac: `brew install ffmpeg`
+- Linux: `<your package manager> install ffmpeg`
 
 On Windows, you might also need [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017) (search for "Build Tools", select C++ when prompted) and [swigwin](http://www.swig.org/download.html).
 (TODO: verify whether these are still needed now that `soundswallower` has replaced `pocketsphinx`.)
@@ -100,18 +102,34 @@ ReadAlong-Studio has a web interface for creating interactive audiobooks. The we
 
 ### Docker
 
-If you are having trouble installing the package, you can also clone the repo and run the studio using Docker.
+If you are having trouble installing the package, you can also clone the repo and run the
+studio using Docker.
 
-To build the Docker container, run:
+Working with in a Docker container has the advantage that no matter what your OS is, and
+what you have installed or configured, you will run on the standard ReadAlong-Studio
+configuration.
+
+To build the Docker image, run:
 
     docker build . --tag=readalong-studio
 
-To run the Flask web app from the Docker container:
+To run the Flask web app in a Docker container using that image:
 
     docker run -p 5000:5000 -it readalong-studio
 
+To run the Flask web app with real-time update:
+
+    docker run -p 5000:5000 -it -v $(pwd):/opt/readalong-studio readalong-studio
+
 Then you should be able to visit http://localhost:5000/.
 
+To run the interactive shell with real-time update:
+
+    docker run -p 5000:5000 -it -v $(pwd):/opt/readalong-studio readalong-studio sh
+
+To run an interactive bash shell, using your local user inside Docker:
+
+    docker run -p 5000:5000 -it -v $(pwd):/opt/readalong-studio -u $(id -u):$(id -g) readalong-studio bash
 
 ## Maintainers
 

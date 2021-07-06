@@ -30,6 +30,4 @@ COPY . $APPHOME
 WORKDIR $APPHOME
 RUN python3 -m pip install -e .
 RUN python3 -m pip install gevent
-RUN python3 -m pip uninstall -y Werkzeug
-RUN python3 -m pip install Werkzeug==0.16.0
 CMD gunicorn -k gevent -w 1 readalongs.app:app --bind 0.0.0.0:5000
