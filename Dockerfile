@@ -19,15 +19,20 @@ RUN apt-get update && apt-get install -y \
 
 # Install 3rd party dependencies in their own layer, for faster rebuilds when we
 # change ReadAlong-Studio source code
+RUN python3 -m pip install gevent
 ADD requirements.txt $APPHOME/requirements.txt
 RUN python3 -m pip install -r $APPHOME/requirements.txt
 # RUN python3 -m pip install gunicorn # If you want to run production server
-RUN git clone https://github.com/roedoejet/g2p.git
-RUN cd g2p && python3 -m pip install -e .
 
-# Install ReadAlong-Studio itself
+# We don't want Docker to cache the installation of g2p or Studio, so place them
+# after COPY . $APPHOME, which almost invariable invalidates the cache.
 COPY . $APPHOME
 WORKDIR $APPHOME
+# Get and install the latest g2p
+RUN git clone https://github.com/roedoejet/g2p.git
+RUN cd g2p && python3 -m pip install -e .
+# Install ReadAlong-Studio itself
 RUN python3 -m pip install -e .
-RUN python3 -m pip install gevent
+
+# Run the gui by default
 CMD gunicorn -k gevent -w 1 readalongs.app:app --bind 0.0.0.0:5000
