@@ -10,6 +10,7 @@
                     <s xml:lang="fra"><w>Ceci</w> <w>est</w> <w>un</w> <w>test</w>.</s>
                     <s xml:lang="eng"><w>This</w> <w>is</w> <w>a</w> <w>test</w>.</s>
                     <s xml:lang="dan"><w>Hej</w>. <w>Jeg</w> <w>hedder</w> <w>Per</w>.</s>
+                    <s><w>A</w> <w>pre</w>-<w ARPABET="D G IY T UW P IY D">g2p'd</w> <w>test</w>.</s>
                 </p>
             </div>
         </body>

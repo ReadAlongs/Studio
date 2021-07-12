@@ -5,8 +5,12 @@ import os
 import tempfile
 from unittest import TestCase, main
 
+from lxml import etree
+
+from readalongs.align import align_audio
 from readalongs.app import app
 from readalongs.cli import align, g2p, prepare, tokenize
+from readalongs.text.convert_xml import convert_xml
 
 
 class TestG2pCli(TestCase):
@@ -242,6 +246,75 @@ class TestG2pCli(TestCase):
         results = self.runner.invoke(g2p, "-", input=inputtext)
         self.assertEqual(results.exit_code, 0)
         self.assertIn("S AH S IY", results.output)
+
+    def test_align_with_invalid_preg2p(self):
+        txt = """<document><s xml:lang="und">
+            <w>word</w>
+            <w ARPABET="G OW D">good</w>
+            <w ARPABET="NOT ARPABET">error</w>
+        </s></document>"""
+        input_file = os.path.join(self.tempdir, "pre-g2p.xml")
+        with open(input_file, "w") as f:
+            print(txt, file=f)
+
+        results = self.runner.invoke(g2p, [input_file, "-"])
+        self.assertNotEqual(results.exit_code, 0)
+        # print(results.output)
+        self.assertIn("could not be g2p", results.output)
+        self.assertIn('<w id="s0w0" ARPABET="W OW D D">word</w>', results.output)
+        self.assertIn('<w ARPABET="G OW D" id="s0w1">good</w>', results.output)
+        self.assertIn('<w ARPABET="NOT ARPABET" id="s0w2">error</w>', results.output)
+
+        audio_file = os.path.join(self.data_dir, "ej-fra.m4a")
+        with self.assertRaises(RuntimeError) as e:
+            results = align_audio(input_file, audio_file)
+        self.assertIn("could not be g2p'd", str(e.exception))
+
+    def test_align_with_preg2p(self):
+        text_file = os.path.join(self.data_dir, "mixed-langs.tokenized.xml")
+        audio_file = os.path.join(self.data_dir, "ej-fra.m4a")
+        _ = align_audio(
+            text_file, audio_file, save_temps=os.path.join(self.tempdir, "foo")
+        )
+        with open(os.path.join(self.tempdir, "foo.dict"), "r") as f:
+            dict_file = f.read()
+            self.assertIn("D G IY T UW P IY D", dict_file)
+
+    def run_convert_xml(self, str):
+        return etree.tounicode(convert_xml(etree.fromstring(str))[0])
+
+    def test_convert_xml(self):
+        self.assertEqual(
+            self.run_convert_xml("<t><w>word</w><w></w><n>not word</n></t>"),
+            '<t><w ARPABET="W OW D D">word</w><w/><n>not word</n></t>',
+        )
+
+        self.assertEqual(
+            self.run_convert_xml(
+                '<s><w xml:lang="eng">Patrick</w><w xml:lang="kwk-umista">xtła̱n</w></s>'
+            ),
+            '<s><w xml:lang="eng" ARPABET="P AE T R IH K">Patrick</w><w xml:lang="kwk-umista" ARPABET="K Y T S AH N">xtła̱n</w></s>',
+        )
+
+        self.assertEqual(
+            self.run_convert_xml('<s><w xml:lang="und">Patrickxtła̱n</w></s>'),
+            '<s><w xml:lang="und" ARPABET="P AA T D IY CH K K T L AA N">Patrickxtła̱n</w></s>',
+        )
+
+    def test_convert_xml_invalid(self):
+        xml = etree.fromstring('<s><w ARPABET="V AA L IY D">valid</w></s>')
+        c_xml, valid = convert_xml(xml)
+        self.assertEqual(
+            etree.tounicode(c_xml), '<s><w ARPABET="V AA L IY D">valid</w></s>'
+        )
+        self.assertTrue(valid, "convert_xml with valid pre-g2p'd text")
+
+        xml = etree.fromstring('<s><w ARPABET="invalid">invalid</w></s>')
+        c_xml, valid = convert_xml(xml)
+        self.assertEqual(
+            etree.tounicode(c_xml), '<s><w ARPABET="invalid">invalid</w></s>'
+        )
+        self.assertFalse(valid, "convert_xml with invalid pre-g2p'd text")
 
 
 if __name__ == "__main__":

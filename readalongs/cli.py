@@ -168,6 +168,16 @@ def align(**kwargs):  # noqa: C901
 
     TEXTFILE:    Input text file path (in XML, or plain text with -i)
 
+    With -i, TEXTFILE should be plain text;
+    without -i, TEXTFILE can be in one of three XML formats:
+    the output of 'readalongs prepare',
+    the output of 'readalongs tokenize', or
+    the output of 'readalongs g2p'.
+
+    One can also add the known ARPABET encoding for words (<w> elements) that
+    are not correctly handled by g2p in the output of 'readalongs tokenize' or
+    'readalongs g2p', via the ARPABET attribute.
+
     AUDIOFILE:   Input audio file path, in any format supported by ffmpeg
 
     OUTPUT_BASE: Base name for output files
@@ -179,7 +189,9 @@ def align(**kwargs):  # noqa: C901
                 with open(config) as f:
                     config = json.load(f)
             except json.decoder.JSONDecodeError:
-                LOGGER.error(f"Config file at {config} is not valid json.")
+                raise click.BadParameter(
+                    f"Config file at {config} is not in valid JSON format."
+                )
         else:
             raise click.BadParameter(f"Config file '{config}' must be in JSON format")
 
@@ -221,7 +233,7 @@ def align(**kwargs):  # noqa: C901
         LOGGER.setLevel("DEBUG")
     if kwargs["text_input"]:
         if not kwargs["language"]:
-            LOGGER.warn("No input language provided, using undetermined mapping")
+            LOGGER.warning("No input language provided, using undetermined mapping")
         tempfile, kwargs["textfile"] = create_input_tei(
             input_file_name=kwargs["textfile"],
             text_language=kwargs["language"],
@@ -285,6 +297,32 @@ def align(**kwargs):  # noqa: C901
     )
     shutil.copy(kwargs["audiofile"], audio_path)
     save_txt(smil_path, smil)
+
+    # Copy the image files to the output's asset directory, if any are found
+    if config and "images" in config:
+        assets_dir = os.path.join(output_dir, "assets")
+        try:
+            os.mkdir(assets_dir)
+        except FileExistsError:
+            if not os.path.isdir(assets_dir):
+                raise
+        for page, image in config["images"].items():
+            if image[0:4] == "http":
+                LOGGER.warning(
+                    f"Please make sure {image} is accessible to clients using your read-along."
+                )
+            else:
+                try:
+                    shutil.copy(image, assets_dir)
+                except Exception as e:
+                    LOGGER.warning(
+                        f"Please copy {image} to {assets_dir} before deploying your read-along. ({e})"
+                    )
+                if os.path.basename(image) != image:
+                    LOGGER.warning(
+                        f"Read-along images were tested with absolute urls (starting with http(s):// "
+                        f"and filenames without a path. {image} might not work as specified."
+                    )
 
 
 @app.cli.command(
@@ -476,6 +514,7 @@ def g2p(**kwargs):
     """Apply g2p mappings to TOKFILE into G2PFILE.
     TOKFILE should have been produced by 'readalongs tokenize'.
     G2PFILE can then be modified to adjust the phonetic representation as needed.
+    'readalongs align' can be called with G2PFILE instead of TOKFILE as XML input.
 
     WARNING: the output is not yet compatible with align and cannot be used as input to align.
 
@@ -483,7 +522,6 @@ def g2p(**kwargs):
 
     G2PFILE: Output path for the g2p'd XML, or - for stdout [default: TOKFILE with .g2p. inserted]
     """
-    # NOT TRUE YET: 'readalongs align' can be called with G2PFILE in stead of TOKFILE as XML input.
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
         LOGGER.info(

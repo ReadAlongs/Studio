@@ -44,17 +44,6 @@ def xpath_default(xml, query, default_namespace_prefix="i"):
         yield e
 
 
-def iterate_over_text(element):
-    lang = get_lang_attrib(element)
-    if element.text:
-        yield (lang, element.text)
-    for child in element:
-        for subchild in iterate_over_text(child):
-            yield subchild
-        if child.tail:
-            yield (lang, child.tail)
-
-
 def get_lang_attrib(element):
     lang_path = element.xpath("./@xml:lang")
     if not lang_path and "lang" in element.attrib:
@@ -69,13 +58,6 @@ def get_lang_attrib(element):
 def is_do_not_align(element):
     dna = element.attrib.get("do-not-align", "")
     return dna == "true" or dna == "True" or dna == "TRUE" or dna == "1"
-
-
-def set_lang_attrib(element, lang):
-    nsmap = element.nsmap if hasattr(element, "nsmap") else element.getroot().nsmap
-    xml_ns = nsmap.get("xml", "http://www.w3.org/XML/1998/namespace")
-    key = "{%s}lang" % xml_ns
-    element.attrib[key] = lang
 
 
 def load_xml(input_path):
@@ -212,73 +194,3 @@ def unicode_normalize_xml(element):
         unicode_normalize_xml(child)
         if child.tail:
             child.tail = normalize("NFD", unicode(child.tail))
-
-
-def compose_indices(i1, i2):
-    if not i1:
-        return i2
-    i2_dict = dict(i2)
-    i2_idx = 0
-    results = []
-    for i1_in, i1_out in i1:
-        highest_i2_found = 0 if not results else results[-1][1]
-        if i1_out is None:
-            results.append((i1_in, highest_i2_found))
-            continue
-        while i2_idx <= i1_out:
-            if (
-                i2_idx in i2_dict
-                and i2_dict[i2_idx] is not None
-                and i2_dict[i2_idx] > highest_i2_found
-            ):
-                highest_i2_found = i2_dict[i2_idx]
-            i2_idx += 1
-        if results:
-            assert i1_in >= results[-1][0]
-            assert highest_i2_found >= results[-1][1]
-        results.append((i1_in, highest_i2_found))
-    return results
-
-
-def compose_tiers(tiers):
-    counter = 2
-    reduced_indices = compose_indices(tiers[0], tiers[1])
-    while counter < len(tiers):
-        reduced_indices = compose_indices(reduced_indices, tiers[counter])
-        counter += 1
-    return reduced_indices
-
-
-def offset_indices(idxs, n1, n2):
-    return [(i1 + n1, i2 + n2) for i1, i2 in idxs]
-
-
-def increment_indices(indices):
-    new_indices = []
-    for i, index in enumerate(indices):
-        inp = index[0]
-        outp = index[1]
-        if indices[i][0] is not None:
-            inp += 1
-        if indices[i][1] is not None:
-            outp += 1
-        new_indices.append((inp, outp))
-    return new_indices
-
-
-def increment_tiers(tiers):
-    incremented = []
-    for i, tier in enumerate(tiers):
-        incremented.append(increment_indices(tier))
-    return incremented
-
-
-def trim_indices(idxs):
-    result = []
-    for i1, i2 in idxs:
-        i1 = max(i1, 0)
-        i2 = max(i2, 0)
-        if (i1, i2) in result:
-            continue
-        result.append((i1, i2))
-    return result

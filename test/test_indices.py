@@ -7,12 +7,6 @@ from g2p.mappings import Mapping
 from g2p.transducer import Transducer
 
 from readalongs.log import LOGGER
-from readalongs.text.util import (
-    compose_indices,
-    compose_tiers,
-    increment_indices,
-    increment_tiers,
-)
 
 
 class TestIndices(TestCase):
@@ -25,7 +19,6 @@ class TestIndices(TestCase):
         tg = transducer("abba")
         self.assertEqual(tg.output_string, "bbbb")
         self.assertEqual(tg.edges, [(0, 0), (1, 1), (2, 2), (3, 3)])
-        self.assertEqual(tg.edges, compose_indices(tg.edges, tg.edges))
 
     def test_tiered_composition(self):
         transducer = make_g2p("dan", "eng-arpabet")
@@ -56,7 +49,6 @@ class TestIndices(TestCase):
                 ],
             ],
         )
-        self.assertEqual(compose_tiers(tg.edges), [(0, 2), (1, 5), (2, 7)])
 
     def test_composition_with_none(self):
         transducer = make_g2p("ctp", "eng-arpabet")
@@ -87,15 +79,11 @@ class TestIndices(TestCase):
                 ],
             ],
         )
-        self.assertEqual(compose_tiers(tg.edges), [(0, 2), (1, 4), (2, 7), (3, 7)])
 
     def test_fra(self):
         transducer = make_g2p("fra", "eng-arpabet")
         tg = transducer("mais")
         self.assertEqual(tg.output_string, "M EH ")
-        self.assertEqual(
-            compose_tiers(increment_tiers(tg.edges)), [(1, 2), (2, 5), (3, 5), (4, 5)]
-        )
 
 
 if __name__ == "__main__":

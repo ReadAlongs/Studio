@@ -23,6 +23,8 @@ import librosa
 import numpy as np
 from lxml import etree
 
+from readalongs.text.util import xpath_default
+
 SAMPLE_RATE = 16000
 
 
@@ -71,14 +73,6 @@ def ensure_dirs(path):
     dirname = os.path.dirname(path)
     if dirname and not os.path.exists(dirname):
         os.makedirs(dirname)
-
-
-def xpath_default(xml, query, default_namespace_prefix="i"):
-    nsmap = dict(
-        ((x, y) if x else (default_namespace_prefix, y)) for (x, y) in xml.nsmap.items()
-    )
-    for e in xml.xpath(query, namespaces=nsmap):
-        yield e
 
 
 def load_xml(input_path):
