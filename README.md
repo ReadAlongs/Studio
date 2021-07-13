@@ -56,14 +56,14 @@ as an ePub file.
 
 ## Install
 
-The best thing to do is install with pip `pip install readalongs`.
+The ~~best thing~~ to do is install with pip: `pip install readalongs`.
 
-Otherwise, clone the repo and pip install it locally.
+~~Otherwise~~ Yes, for development version (e.g. if you want to use `readalongs g2p` or `readalongs tokenize` functionalities), clone the repo and pip install it locally.
 
 ```sh
 $ git clone https://github.com/ReadAlongs/Studio.git
 $ cd Studio
-$ pip install -e .
+$ pip3 install -e .
 ```
 
 If you don't already have it, you will also need [FFmpeg](https://ffmpeg.org/).
@@ -130,6 +130,39 @@ To run the interactive shell with real-time update:
 To run an interactive bash shell, using your local user inside Docker:
 
     docker run -p 5000:5000 -it -v $(pwd):/opt/readalong-studio -u $(id -u):$(id -g) readalong-studio bash
+
+## Example Run:
+```sh
+2001  cd Studio/
+2002  cd test
+2007  readalongs -h
+2008  readalongs align -h
+2009  ls data
+2010  cat data/ej-fra.txt
+2011  readalongs align -l fra -i data/ej-fra.txt data/ej-fra.m4a output-for-mrw
+2012  ls output-for-mrw/
+2013  cd output-for-mrw/
+2015  less output-for-mrw.xml
+2017  less output-for-mrw.smil
+2041  python3 -m http.server
+      # open brower to hostname:8000 to view this read-along
+2019  cd ..
+2020  readalongs prepare -h
+2022  readalongs prepare -l fra data/ej-fra.txt -
+2027  less output-for-mrw/output-for-mrw.smil
+2028  less output-for-mrw/output-for-mrw.xml
+2029  readalongs prepare -l fra data/ej-fra.txt ej-prep.xml
+2030  cat ej-prep.xml
+2031  readalongs tokenize ej-prep.xml ej-tok.xml
+2032  cat ej-tok.xml
+2033  readalongs g2p ej-tok.xml ej-g2p.xml
+2034  cat ej-g2p.xml
+2024  vi data/patrickxtlan.xml
+2036  readalongs g2p data/patrickxtlan.xml  -
+2037  g2p convert travaille fra fra-ipa
+2038  g2p convert travaille fra eng-arpabet
+```
+Notice that you may need to install develop version `g2p` package to make this example work.
 
 ## Maintainers
 
