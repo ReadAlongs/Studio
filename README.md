@@ -56,9 +56,11 @@ as an ePub file.
 
 ## Install
 
-The best thing to do is install with pip `pip install readalongs`.
+To install the latest version published to PyPI, you can run a standard pip
+installation: `pip install readalongs`.
 
-Otherwise, clone the repo and pip install it locally.
+To install the current development version, clone the repo and pip install it
+locally:
 
 ```sh
 $ git clone https://github.com/ReadAlongs/Studio.git
