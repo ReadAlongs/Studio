@@ -49,19 +49,13 @@ def mute_section(audio: AudioSegment, start: int, end: int) -> AudioSegment:
     """ Given an AudioSegment, reduce the gain between a given interval by 120db.
         Effectively, make it silent.
 
-    Parameters
-    ----------
-    audio : AudioSegment
-        audio segment to mute
-    start : int
-        start timestamp of audio (ms)
-    end : int
-        end timestamp of audio (ms)
+    Args:
+        audio (AudioSegment): audio segment to mute
+        start (int): start timestamp of audio (ms)
+        end (int): end timestamp of audio (ms)
 
-    Returns
-    -------
-    AudioSegment
-        A muted audio segment
+    Returns:
+        AudioSegment: A muted audio segment
     """
     try:
         return audio[:start] + audio[start:end].apply_gain(-120) + audio[end:]
@@ -75,8 +69,12 @@ def mute_section(audio: AudioSegment, start: int, end: int) -> AudioSegment:
 
 def write_audio_to_file(audio: AudioSegment, path: str) -> None:
     """ Write AudioSegment to file
-        TODO: Add params/file type kwargs
-        TODO: Add exception handling
+
+    Args:
+        audio (AudioSegment): audio segment to write
+        path (str): path where to write the audio file
+
+    TODO: Add exception handling
     """
     audio.export(path)
 
@@ -84,20 +82,14 @@ def write_audio_to_file(audio: AudioSegment, path: str) -> None:
 def read_audio_from_file(path: str) -> AudioSegment:
     """ Read in AudioSegment from file
 
-    Parameters
-    ----------
-    str
-        Path to audiofile
+    Args:
+        path (str): Path to audiofile
 
-    Returns
-    -------
-    AudioSegment
-        An AudioSegment object of the audiofile
+    Returns:
+        AudioSegment: An AudioSegment object of the audiofile
 
-    Raises
-    ------
-    RuntimeError
-        catches empty audio files and other problems with them.
+    Raises:
+        RuntimeError: catches empty audio files and other problems with them.
     """
     try:
         return AudioSegment.from_file(path)
