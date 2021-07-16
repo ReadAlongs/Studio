@@ -10,6 +10,7 @@ from unittest import TestCase, main
 from readalongs.audio_utils import (
     calculate_adjustment,
     correct_adjustments,
+    extract_section,
     join_section,
     mute_section,
     read_audio_from_file,
@@ -226,6 +227,14 @@ class TestAudio(TestCase):
         self.assertNotEqual(
             correct_adjustments(0.975, 1.150, [{"begin": 1000, "end": 1100}]),
             (1100, 1150),
+        )
+
+    def test_extract_section(self):
+        self.assertEqual(len(extract_section(self.audio_segment, 1000, 2000)), 1000)
+        self.assertEqual(len(extract_section(self.audio_segment, None, 500)), 500)
+        self.assertEqual(
+            len(extract_section(self.audio_segment, 1000, None)),
+            len(self.audio_segment) - 1000,
         )
 
 

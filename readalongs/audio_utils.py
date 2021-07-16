@@ -12,7 +12,7 @@
 #######################################################################
 
 import copy
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 from pydub import AudioSegment
 
@@ -63,6 +63,29 @@ def mute_section(audio: AudioSegment, start: int, end: int) -> AudioSegment:
         LOGGER.error(
             f"Tried to mute audio between {start} and {end}, but audio is only {len(audio)}ms long. \
                      Returning unmuted audio instead."
+        )
+        return audio
+
+
+def extract_section(audio: AudioSegment, start: int, end: int) -> AudioSegment:
+    """ Given an AudioSegment, extract and keep only the [start, end) interval
+
+    Args:
+        audio (AudioSegment): audio segment to extract a section from
+        start (Union[None,int]): start timestamp of audio to extract (ms)
+            (beginning if None)
+        end (Union[None,int]): end timestamp of audio to extract (ms)
+            (end of audio if None)
+
+    Returns:
+        AudioSegment: the extracted audio segment
+    """
+    try:
+        return audio[start:end]
+    except IndexError:
+        LOGGER.error(
+            f"Tried to extract audio between {start} and {end}, but audio is only {len(audio)}ms long. "
+            "Returning whole audio instead."
         )
         return audio
 
