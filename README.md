@@ -56,9 +56,11 @@ as an ePub file.
 
 ## Install
 
-The ~~best thing~~ to do is install with pip: `pip install readalongs`.
+To install the latest version published to PyPI, you can run a standard pip
+installation: `pip install readalongs`.
 
-~~Otherwise~~ Yes, for development version (e.g. if you want to use `readalongs g2p` or `readalongs tokenize` functionalities), clone the repo and pip install it locally.
+To install the current development version, clone the repo and pip install it
+locally:
 
 ```sh
 $ git clone https://github.com/ReadAlongs/Studio.git
@@ -132,6 +134,7 @@ To run an interactive bash shell, using your local user inside Docker:
     docker run -p 5000:5000 -it -v $(pwd):/opt/readalong-studio -u $(id -u):$(id -g) readalong-studio bash
 
 ## Example Run:
+
 ```sh
 2001  cd Studio/
 2002  cd test
@@ -162,6 +165,7 @@ To run an interactive bash shell, using your local user inside Docker:
 2037  g2p convert travaille fra fra-ipa
 2038  g2p convert travaille fra eng-arpabet
 ```
+
 Notice that you may need to install develop version `g2p` package to make this example work.
 
 ## Maintainers
