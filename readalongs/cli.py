@@ -365,7 +365,8 @@ def epub(**kwargs):
     help="Set language for input file",
 )
 def prepare(**kwargs):
-    """Prepare XMLFILE for 'readalongs align' from PLAINTEXTFILE.
+    """
+    Prepare XMLFILE for 'readalongs align' from PLAINTEXTFILE.
     PLAINTEXTFILE must be plain text encoded in utf-8, with one sentence per line,
     paragraph breaks marked by a blank line, and page breaks marked by two
     blank lines.
