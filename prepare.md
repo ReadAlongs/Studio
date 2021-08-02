@@ -32,9 +32,9 @@ A book is generated as a standalone HTML page by default, but can optionally be 
 * Spinning up a server
 
 ## Installing
-The best thing to do is install with pip: `pip install readalongs`.
+To install the latest version published to PyPI, you can run a standard pip installation: `pip install readalongs`. Be warned, however, that this project is currectly very active so the published versino is out-of-date. It's probably best to install the current development version.
 
-Otherwise, clone the repo and pip install it locally.
+To install the current development version, clone the repo and pip install it locally:
 
 ```
 $ git clone https://github.com/ReadAlongs/Studio.git
