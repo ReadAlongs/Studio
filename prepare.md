@@ -32,7 +32,7 @@ A book is generated as a standalone HTML page by default, but can optionally be 
 * Spinning up a server
 
 ## Installing
-To install the latest version published to PyPI, you can run a standard pip installation: `pip install readalongs`. Be warned, however, that this project is currectly very active so the published versino is out-of-date. It's probably best to install the current development version.
+To install the latest version published to PyPI, you can run a standard pip installation: `pip install readalongs`. Be warned, however, that this project is currectly very active so the published version is out-of-date. It's probably best to install the current development version instead.
 
 To install the current development version, clone the repo and pip install it locally:
 
