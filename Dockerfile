@@ -34,5 +34,6 @@ RUN cd g2p && python3 -m pip install -e .
 # Install ReadAlong-Studio itself
 RUN python3 -m pip install -e .
 
-# Run the gui by default
-CMD gunicorn -k gevent -w 1 readalongs.app:app --bind 0.0.0.0:5000
+# Run the default gui
+#CMD gunicorn -k gevent -w 1 readalongs.app:app --bind 0.0.0.0:5000  #Disabled for now
+CMD python3 ./run.py
