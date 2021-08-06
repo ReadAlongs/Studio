@@ -10,7 +10,7 @@ MINIMUM_PYTHON_VERSION_REQUIRED = (3, 7, 0)
 
 def ensure_using_supported_python_version():
     if sys.version_info < MINIMUM_PYTHON_VERSION_REQUIRED:
-        raise Exception(
+        sys.exit(
             "Python "
             + _version_to_str(MINIMUM_PYTHON_VERSION_REQUIRED)
             + " required (you are currently using Python "
