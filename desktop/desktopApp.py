@@ -3,6 +3,8 @@ import os, sys
 from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QMainWindow, QMessageBox
 from PyQt5.QtWidgets import QGridLayout, QPushButton, QComboBox, QFileDialog
 from PyQt5.QtCore import Qt
+from readalongs.align import create_input_tei
+from readalongs.text.util import save_txt, save_xml, save_minimal_index_html
 
 
 # window.setLayout(layout)
@@ -26,6 +28,7 @@ class readalongsUI(QMainWindow):
             "language": "",
             "textfile": "",
             "audiofile": "",
+            "xmlfile": "",
             "text_input": True,
             "force_overwrite": True,
             "output_base": os.path.join(os.getcwd(), "desktop", "current"),
@@ -135,6 +138,7 @@ class readalongsUI(QMainWindow):
         popup.exec_()
 
     def callMajorProcess(self):
+
         """
         1. align
         2. prepare
@@ -167,7 +171,6 @@ class readalongsUI(QMainWindow):
         # subprocess.run(["python3", "-m", "http.server"])
 
     def align(self):
-        from readalongs.align import create_input_tei
 
         temp_base = None
         tempfile, self.config["textfile"] = create_input_tei(
@@ -198,7 +201,6 @@ class readalongsUI(QMainWindow):
         smil = make_smil(
             os.path.basename(tokenized_xml_path), os.path.basename(audio_path), results
         )
-        from readalongs.text.util import save_txt, save_xml, save_minimal_index_html
 
         smil_path = os.path.join(self.config["output_base"], "current.smil")
         save_xml(tokenized_xml_path, results["tokenized"])
@@ -216,10 +218,27 @@ class readalongsUI(QMainWindow):
         )
 
     def prepare(self):
-        pass
+        input_file = self.config["textfile"]
+        if not self.config.get("xmlfile"):
+            self.config["xmlfile"] = self.config["textfile"].replace(
+                ".txt", "-prep.xml"
+            )
+        out_file = self.config["xmlfile"]
+        filehandle, filename = create_input_tei(
+            input_file_name=input_file,
+            text_language=self.config["language"],
+            output_file=out_file,
+        )
 
     def tokenize(self):
-        pass
+        from lxml import etree
+        from readalongs.text.tokenize_xml import tokenize_xml
+
+        if not self.config.get("tokfile"):
+            self.config["tokfile"] = self.config["xmlfile"].replace("prep", "tok")
+        xml = etree.parse(self.config["xmlfile"]).getroot()
+        xml = tokenize_xml(xml)
+        save_xml(self.config["tokfile"], xml)
 
     def g2p(self):
         pass
