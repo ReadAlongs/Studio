@@ -1,6 +1,6 @@
 import os, sys
 
-from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QMainWindow
+from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QMainWindow, QMessageBox
 from PyQt5.QtWidgets import QGridLayout, QPushButton, QComboBox, QFileDialog
 from PyQt5.QtCore import Qt
 
@@ -20,7 +20,26 @@ class readalongsUI(QMainWindow):
 
         self._createDisplay()
         self._createButtons()
-        self.data = {}
+        # TODO: here we only mimic the config from Studio
+        #       need to add options later.
+        self.config = {
+            "language": "",
+            "textfile": "",
+            "audiofile": "",
+            "text_input": True,
+            "force_overwrite": True,
+            "output_base": os.path.join(os.getcwd(), "desktop", "current"),
+            "bare": False,
+            "config": None,
+            "closed_captioning": False,
+            "debug": True,
+            "unit": "w",
+            "save_temps": False,
+            "text_grid": False,
+            "output_xhtml": False,
+            "g2p_fallback": None,
+            "g2p_verbose": False,
+        }
 
     def _createDisplay(self):
         helloMsg = QLabel(
@@ -78,8 +97,9 @@ class readalongsUI(QMainWindow):
 
         # unnecessary to do option, language is a plain 3-letter text
         print("OK")
-        self.data["language"] = self.mappingDropDown.currentText()
-        print("LANGS = ", self.data["language"])
+        self.config["language"] = self.mappingDropDown.currentText()
+        print()
+        self.popupMessage("LANGS = " + self.config["language"])
 
     def getTextFile(self):
         response = QFileDialog.getOpenFileName(
@@ -89,7 +109,7 @@ class readalongsUI(QMainWindow):
             filter="Text File (*.txt *csv);;Just another type (*.mp3 *.mp4)",
             initialFilter="Text File (*.txt *csv)",
         )
-        self.data["textFilePath"] = response[0]
+        self.config["textfile"] = response[0]
         self.textPathDisplay.setText("<i>Text file path:</i> " + response[0])
         print(response[0])
         return response
@@ -102,10 +122,17 @@ class readalongsUI(QMainWindow):
             filter="Audio File (*.mp3 *.mp4)",
             initialFilter="Audio File (*.mp3 *.mp4)",
         )
-        self.data["audioFilePath"] = response[0]
+        self.config["audiofile"] = response[0]
         self.audioPathDisplay.setText("<i>Audio file path:</i> " + response[0])
         print(response[0])
         return response
+
+    def popupMessage(self, message):
+        popup = QMessageBox()
+        popup.setWindowTitle("Message:")
+        popup.setText(message)
+        popup.setGeometry(100, 200, 100, 100)
+        popup.exec_()
 
     def callMajorProcess(self):
         """
@@ -115,9 +142,87 @@ class readalongsUI(QMainWindow):
         4. g2p
         5. call an interactive web
         """
-        import subprocess
+        # input check
+        print("hummm")
+        if not all(
+            [
+                self.config["language"],
+                self.config["textfile"],
+                self.config["audiofile"],
+            ]
+        ):
+            self.popupMessage(
+                "At least one of the following three parameters is \
+                    missing: text file path, audio file path, mapping."
+            )
+            return  # kill and go back
 
-        subprocess.run(["python3", "-m", "http.server"])
+        self.align()
+        self.prepare()
+        self.tokenize()
+        self.g2p()
+
+        # import subprocess
+
+        # subprocess.run(["python3", "-m", "http.server"])
+
+    def align(self):
+        from readalongs.align import create_input_tei
+
+        temp_base = None
+        tempfile, self.config["textfile"] = create_input_tei(
+            input_file_name=self.config["textfile"],
+            text_language=self.config["language"],
+            save_temps=temp_base,
+        )
+        from readalongs.align import align_audio
+        from readalongs.utility import parse_g2p_fallback
+
+        results = align_audio(
+            self.config["textfile"],
+            self.config["audiofile"],
+            unit=self.config["unit"],
+            bare=self.config["bare"],
+            config=self.config["config"],
+            save_temps=temp_base,
+            g2p_fallbacks=parse_g2p_fallback(self.config["g2p_fallback"]),
+            verbose_g2p_warnings=self.config["g2p_verbose"],
+        )
+
+        # save the files into local address
+        from readalongs.text.make_smil import make_smil
+
+        # TODO: replace the "current" in the saving pathes
+        tokenized_xml_path = os.path.join(self.config["output_base"], "current.xml")
+        audio_path = os.path.join(self.config["output_base"], "current.m4a")
+        smil = make_smil(
+            os.path.basename(tokenized_xml_path), os.path.basename(audio_path), results
+        )
+        from readalongs.text.util import save_txt, save_xml, save_minimal_index_html
+
+        smil_path = os.path.join(self.config["output_base"], "current.smil")
+        save_xml(tokenized_xml_path, results["tokenized"])
+
+        import shutil
+
+        shutil.copy(self.config["audiofile"], audio_path)
+
+        save_txt(smil_path, smil)
+        save_minimal_index_html(
+            os.path.join(self.config["output_base"], "index.html"),
+            os.path.basename(tokenized_xml_path),
+            os.path.basename(smil_path),
+            os.path.basename(audio_path),
+        )
+
+    def prepare(self):
+        pass
+
+    def tokenize(self):
+        pass
+
+    def g2p(self):
+        pass
 
 
 def main():

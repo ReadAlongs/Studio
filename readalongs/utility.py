@@ -40,3 +40,19 @@ def getLangs():
     # Sort LANGS so the -h messages list them alphabetically
     LANGS = sorted(LANGS)
     return LANGS
+
+
+def parse_g2p_fallback(g2p_fallback_arg):
+    """Parse the strings containing a colon-separated list of fallback args into a
+    Python list of language codes, or empty if None
+    """
+    if g2p_fallback_arg:
+        g2p_fallbacks = g2p_fallback_arg.split(":")
+        for lang in g2p_fallbacks:
+            if lang not in LANGS:
+                raise click.BadParameter(
+                    f'g2p fallback lang "{lang}" is not valid; choose among {", ".join(LANGS)}'
+                )
+        return g2p_fallbacks
+    else:
+        return []
