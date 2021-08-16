@@ -29,6 +29,7 @@ class readalongsUI(QMainWindow):
             "textfile": "",
             "audiofile": "",
             "xmlfile": "",
+            "tokfile": "",
             "text_input": True,
             "force_overwrite": True,
             "output_base": os.path.join(os.getcwd(), "desktop", "current"),
@@ -166,14 +167,28 @@ class readalongsUI(QMainWindow):
         self.tokenize()
         self.g2p()
 
-        # import subprocess
+        import http.server
+        import socketserver
 
-        # subprocess.run(["python3", "-m", "http.server"])
+        PORT = 7000
+        DIRECTORY = "desktop/current"
+
+        class Handler(http.server.SimpleHTTPRequestHandler):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, directory=DIRECTORY, **kwargs)
+
+        with socketserver.TCPServer(("", PORT), Handler) as httpd:
+            print("serving at port", PORT)
+            httpd.serve_forever()
+
+    # import subprocess
+
+    # subprocess.run(["python3", "-m", "http.server"])
 
     def align(self):
 
         temp_base = None
-        tempfile, self.config["textfile"] = create_input_tei(
+        tempfile, tmpTextFile = create_input_tei(
             input_file_name=self.config["textfile"],
             text_language=self.config["language"],
             save_temps=temp_base,
@@ -182,7 +197,7 @@ class readalongsUI(QMainWindow):
         from readalongs.utility import parse_g2p_fallback
 
         results = align_audio(
-            self.config["textfile"],
+            tmpTextFile,
             self.config["audiofile"],
             unit=self.config["unit"],
             bare=self.config["bare"],
@@ -220,9 +235,10 @@ class readalongsUI(QMainWindow):
     def prepare(self):
         input_file = self.config["textfile"]
         if not self.config.get("xmlfile"):
-            self.config["xmlfile"] = self.config["textfile"].replace(
-                ".txt", "-prep.xml"
+            self.config["xmlfile"] = os.path.join(
+                self.config["output_base"], "current-prep.xml"
             )
+
         out_file = self.config["xmlfile"]
         filehandle, filename = create_input_tei(
             input_file_name=input_file,
@@ -241,7 +257,32 @@ class readalongsUI(QMainWindow):
         save_xml(self.config["tokfile"], xml)
 
     def g2p(self):
-        pass
+        import io
+        from lxml import etree
+
+        g2p_kwargs = {
+            "tokfile": io.BufferedReader(io.FileIO(self.config["tokfile"])),
+            "g2pfile": self.config["xmlfile"].replace("prep", "g2p"),
+            "g2p_fallback": None,
+            "force_overwrite": True,
+            "g2p_verbose": False,
+            "debug": False,
+        }
+        g2p_xml = etree.parse(g2p_kwargs["tokfile"]).getroot()
+        from readalongs.text.add_ids_to_xml import add_ids
+
+        g2p_xml = add_ids(g2p_xml)
+        from readalongs.text.convert_xml import convert_xml
+        from readalongs.utility import parse_g2p_fallback
+
+        g2p_xml, valid = convert_xml(
+            g2p_xml,
+            g2p_fallbacks=parse_g2p_fallback(g2p_kwargs["g2p_fallback"]),
+            verbose_warnings=g2p_kwargs["g2p_verbose"],
+        )
+        from readalongs.text.util import save_xml
+
+        save_xml(g2p_kwargs["g2pfile"], g2p_xml)
 
 
 def main():
