@@ -46,12 +46,15 @@ from readalongs.app import app
 from readalongs.audio_utils import read_audio_from_file
 from readalongs.epub.create_epub import create_epub
 from readalongs.log import LOGGER
+from readalongs.python_version import ensure_using_supported_python_version
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.make_smil import make_smil
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import save_minimal_index_html, save_txt, save_xml, write_xml
 from readalongs.views import LANGS
+
+ensure_using_supported_python_version()
 
 
 def create_app():

@@ -56,6 +56,8 @@ as an ePub file.
 
 ## Install
 
+You will need: **Python 3.7 or higher**.
+
 To install the latest version published to PyPI, you can run a standard pip
 installation: `pip install readalongs`.
 
