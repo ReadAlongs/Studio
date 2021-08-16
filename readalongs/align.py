@@ -24,7 +24,7 @@ from webvtt import Caption, WebVTT
 
 from readalongs.audio_utils import mute_section, read_audio_from_file, remove_section
 from readalongs.log import LOGGER
-from readalongs.tempfile import PortableNamedTemporaryFile
+from readalongs.portable_tempfile import PortableNamedTemporaryFile
 from readalongs.text.add_elements_to_xml import add_images, add_supplementary_xml
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml

@@ -17,7 +17,7 @@ from readalongs.align import (
     create_input_xml,
 )
 from readalongs.log import LOGGER
-from readalongs.tempfile import PortableNamedTemporaryFile
+from readalongs.portable_tempfile import PortableNamedTemporaryFile
 from readalongs.text.util import load_txt, save_xml
 
 
