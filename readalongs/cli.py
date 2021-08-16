@@ -55,33 +55,34 @@ from readalongs.views import LANGS
 
 
 def create_app():
-    """ Returns the app
-    """
+    """Returns the app"""
     return app
 
 
 def get_click_file_name(click_file):
-    """ Return click_file.name, falling back to <stdin> if the .name attribute is missing. """
+    """Return click_file.name, falling back to <stdin> if the .name attribute is missing."""
     try:
         return click_file.name
     except Exception:  # For unit testing: simulated stdin stream has no .name attrib
         return "<stdin>"
 
 
-def parse_g2p_fallback(g2p_fallback_arg):
-    """ Parse the strings containing a colon-separated list of fallback args into a
-        Python list of language codes, or empty if None
-    """
-    if g2p_fallback_arg:
-        g2p_fallbacks = g2p_fallback_arg.split(":")
-        for lang in g2p_fallbacks:
-            if lang not in LANGS:
-                raise click.BadParameter(
-                    f'g2p fallback lang "{lang}" is not valid; choose among {", ".join(LANGS)}'
-                )
-        return g2p_fallbacks
-    else:
-        return []
+from readalongs.utility import parse_g2p_fallback
+
+# def parse_g2p_fallback(g2p_fallback_arg):
+#     """Parse the strings containing a colon-separated list of fallback args into a
+#     Python list of language codes, or empty if None
+#     """
+#     if g2p_fallback_arg:
+#         g2p_fallbacks = g2p_fallback_arg.split(":")
+#         for lang in g2p_fallbacks:
+#             if lang not in LANGS:
+#                 raise click.BadParameter(
+#                     f'g2p fallback lang "{lang}" is not valid; choose among {", ".join(LANGS)}'
+#                 )
+#         return g2p_fallbacks
+#     else:
+#         return []
 
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -401,7 +402,8 @@ def prepare(**kwargs):
 
     if out_file == "-":
         filehandle, filename = create_input_tei(
-            input_file_handle=input_file, text_language=kwargs["language"],
+            input_file_handle=input_file,
+            text_language=kwargs["language"],
         )
         with io.open(filename) as f:
             sys.stdout.write(f.read())
@@ -447,7 +449,9 @@ def tokenize(**kwargs):
         LOGGER.setLevel("DEBUG")
         LOGGER.info(
             "Running readalongs tokenize(xmlfile={}, tokfile={}, force-overwrite={}).".format(
-                kwargs["xmlfile"], kwargs["tokfile"], kwargs["force_overwrite"],
+                kwargs["xmlfile"],
+                kwargs["tokfile"],
+                kwargs["force_overwrite"],
             )
         )
 
@@ -527,7 +531,9 @@ def g2p(**kwargs):
         LOGGER.setLevel("DEBUG")
         LOGGER.info(
             "Running readalongs g2p(tokfile={}, g2pfile={}, force-overwrite={}).".format(
-                kwargs["tokfile"], kwargs["g2pfile"], kwargs["force_overwrite"],
+                kwargs["tokfile"],
+                kwargs["g2pfile"],
+                kwargs["force_overwrite"],
             )
         )
 
