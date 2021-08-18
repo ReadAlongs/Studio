@@ -11,6 +11,7 @@
 
 import io
 import os
+import shutil
 from datetime import timedelta
 from typing import Dict, List, Tuple, Union
 
@@ -30,8 +31,9 @@ from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.make_dict import make_dict
 from readalongs.text.make_fsg import make_fsg
+from readalongs.text.make_smil import make_smil
 from readalongs.text.tokenize_xml import tokenize_xml
-from readalongs.text.util import save_xml
+from readalongs.text.util import save_minimal_index_html, save_txt, save_xml
 
 
 def correct_adjustments(
@@ -273,6 +275,112 @@ def align_audio(  # noqa: C901
         os.unlink(fsg_file.name)
 
     return results
+
+
+def save_readalong(
+    # this * forces all arguments to be passed by name, because I don't want any
+    # code to depend on their order in the future
+    *,
+    align_results: Dict[str, List],
+    output_dir: str,
+    output_basename: str,
+    config=None,
+    text_grid: bool = False,
+    closed_captioning: bool = False,
+    output_xhtml: bool = False,
+    audiofile: str,
+):
+    """ Save the results from align_audio() into the otuput files required for a
+        readalong
+
+    Args:
+        align_results(Dict[str,List]): return value from align_audio()
+        output_dir (str): directory where to save the readalong,
+            output_dir should already exist, files it contains may be overwritten
+        output_basename (str): basename of the files to save in output_dir
+        config ([type TODO], optional): alignment configuration loaded from the json
+        text_grid (bool, optional): if True, also save in Praat TextGrid and ELAN EAF formats
+        closed_captioning (bool, optional): if True, also save in .vtt and .srt subtitle formats
+        output_xhtml (bool, optional): if True, convert XML into XHTML format before writing
+        audiofile (str): path to the audio file passed to align_audio()
+
+    Returns:
+        None
+
+    Raises:
+        [TODO]
+    """
+
+    output_base = os.path.join(output_dir, output_basename)
+
+    if text_grid:
+        audio = read_audio_from_file(audiofile)
+        duration = audio.frame_count() / audio.frame_rate
+        words, sentences = return_words_and_sentences(align_results)
+        textgrid = write_to_text_grid(words, sentences, duration)
+        textgrid.to_file(output_base + ".TextGrid")
+        textgrid.to_eaf().to_file(output_base + ".eaf")
+
+    if closed_captioning:
+        words, sentences = return_words_and_sentences(align_results)
+        webvtt_sentences = write_to_subtitles(sentences)
+        webvtt_sentences.save(output_base + "_sentences.vtt")
+        webvtt_sentences.save_as_srt(output_base + "_sentences.srt")
+        webvtt_words = write_to_subtitles(words)
+        webvtt_words.save(output_base + "_words.vtt")
+        webvtt_words.save_as_srt(output_base + "_words.srt")
+
+    if output_xhtml:
+        convert_to_xhtml(align_results["tokenized"])
+        tokenized_xml_path = output_base + ".xhtml"
+    else:
+        tokenized_xml_path = output_base + ".xml"
+    save_xml(tokenized_xml_path, align_results["tokenized"])
+
+    _, audio_ext = os.path.splitext(audiofile)
+    audio_path = output_base + audio_ext
+    shutil.copy(audiofile, audio_path)
+
+    smil_path = output_base + ".smil"
+    smil = make_smil(
+        os.path.basename(tokenized_xml_path),
+        os.path.basename(audio_path),
+        align_results,
+    )
+    save_txt(smil_path, smil)
+
+    save_minimal_index_html(
+        os.path.join(output_dir, "index.html"),
+        os.path.basename(tokenized_xml_path),
+        os.path.basename(smil_path),
+        os.path.basename(audio_path),
+    )
+
+    # Copy the image files to the output's asset directory, if any are found
+    if config and "images" in config:
+        assets_dir = os.path.join(output_dir, "assets")
+        try:
+            os.mkdir(assets_dir)
+        except FileExistsError:
+            if not os.path.isdir(assets_dir):
+                raise
+        for page, image in config["images"].items():
+            if image[0:4] == "http":
+                LOGGER.warning(
+                    f"Please make sure {image} is accessible to clients using your read-along."
+                )
+            else:
+                try:
+                    shutil.copy(image, assets_dir)
+                except Exception as e:
+                    LOGGER.warning(
+                        f"Please copy {image} to {assets_dir} before deploying your read-along. ({e})"
+                    )
+                if os.path.basename(image) != image:
+                    LOGGER.warning(
+                        f"Read-along images were tested with absolute urls (starting with http(s):// "
+                        f"and filenames without a path. {image} might not work as specified."
+                    )
 
 
 def return_word_from_id(xml: etree, el_id: str) -> str:
