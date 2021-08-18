@@ -44,6 +44,8 @@ class TestAlignCli(TestCase):
             [
                 "-i",
                 "-s",
+                "-C",
+                "-t",
                 "-l",
                 "fra",
                 "--config",
@@ -54,14 +56,22 @@ class TestAlignCli(TestCase):
             ],
         )
         self.assertEqual(results.exit_code, 0)
-        self.assertTrue(
-            exists(join(output, "output.smil")),
-            "successful alignment should have created output.smil",
-        )
-        self.assertTrue(
-            exists(join(output, "index.html")),
-            "successful alignment should have created index.html",
-        )
+        expected_output_files = [
+            "output.smil",
+            "output.xml",
+            "output.m4a",
+            "index.html",
+            "output.TextGrid",
+            "output.eaf",
+            "output_sentences.srt",
+            "output_sentences.vtt",
+            "output_words.srt",
+            "output_words.vtt",
+        ]
+        for f in expected_output_files:
+            self.assertTrue(
+                exists(join(output, f)), f"successful alignment should have created {f}"
+            )
         with open(join(output, "index.html")) as f:
             self.assertIn(
                 '<read-along text="output.xml" alignment="output.smil" audio="output.m4a"',
@@ -91,6 +101,7 @@ class TestAlignCli(TestCase):
         results_dna = self.runner.invoke(
             align,
             [
+                "-x",
                 "-s",
                 "--config",
                 join(self.data_dir, "sample-config.json"),
@@ -105,6 +116,10 @@ class TestAlignCli(TestCase):
             exists(join(output, "output.smil")),
             "successful alignment with DNA should have created output.smil",
         )
+        self.assertTrue(
+            exists(join(output, "output.xhtml")),
+            "successful alignment with -x should have created output.xhtml",
+        )
         self.assertIn("Please copy image-for-page1.jpg to ", results_dna.stdout)
         self.assertFalse(
             exists(join(output, "assets", "image-for-page1.jpg")),
@@ -113,10 +128,14 @@ class TestAlignCli(TestCase):
 
         # Functionally the same as self.assertTrue(filecmp.cmp(f1, f2)), but show where
         # the differences are if the files are not identical
+        # Since f2 was created using -x, we need to substitute .xhtml back to .xml during
+        # the comparison of the contents of the .smil files.
         with open(join(output1, "output.smil")) as f1, open(
             join(output, "output.smil")
         ) as f2:
-            self.assertListEqual(list(f1), list(f2))
+            self.assertListEqual(
+                list(f1), [line.replace(".xhtml", ".xml") for line in f2]
+            )
 
         # We test error situations in the same test case, since we reuse the same outputs
         results_output_exists = self.runner.invoke(
