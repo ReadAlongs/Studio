@@ -235,19 +235,25 @@ def align(**kwargs):  # noqa: C901
 
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
+
     if kwargs["text_input"]:
         if not kwargs["language"]:
             LOGGER.warning("No input language provided, using undetermined mapping")
-        tempfile, kwargs["textfile"] = create_input_tei(
-            input_file_name=kwargs["textfile"],
+        plain_textfile = kwargs["textfile"]
+        _, xml_textfile = create_input_tei(
+            input_file_name=plain_textfile,
             text_language=kwargs["language"],
             save_temps=temp_base,
         )
+    else:
+        xml_textfile = kwargs["textfile"]
+
     unit = kwargs.get("unit", "w") or "w"  # Sometimes .get() still returns None here
     bare = kwargs.get("bare", False)
+
     try:
         results = align_audio(
-            kwargs["textfile"],
+            xml_textfile,
             kwargs["audiofile"],
             unit=unit,
             bare=bare,
