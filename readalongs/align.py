@@ -11,6 +11,7 @@
 
 import io
 import os
+import shutil
 from datetime import timedelta
 from typing import Dict, List, Tuple, Union
 
@@ -30,8 +31,9 @@ from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.make_dict import make_dict
 from readalongs.text.make_fsg import make_fsg
+from readalongs.text.make_smil import make_smil
 from readalongs.text.tokenize_xml import tokenize_xml
-from readalongs.text.util import save_xml
+from readalongs.text.util import save_minimal_index_html, save_txt, save_xml
 
 
 def correct_adjustments(
@@ -74,43 +76,25 @@ def align_audio(  # noqa: C901
 ):
     """ Align an XML input file to an audio file.
 
-    Parameters
-    ----------
-    xml_path : str
-        Path to XML input file in TEI-like format
-    audio_path : str
-        Path to audio input. Must be in a format supported by ffmpeg
-    unit : str, optional
-        Element to create alignments for, by default 'w'
-    bare : boolean, optional
-        If False, split silence into adjoining tokens (default)
-        If True, keep the bare tokens without adjoining silences.
-    config : object, optional
-        Uses ReadAlong-Studio configuration
-    save_temps : Union[str, None], optional
-        save temporary files, by default None
-    g2p_fallbacks : list, optional
-        Cascade of fallback languages for g2p conversion, in case of errors
-    verbose_g2p_warnings : boolean, optional
-        display all g2p errors and warnings iff True
+    Args:
+        xml_path (str): Path to XML input file in TEI-like format
+        audio_path (str): Path to audio input. Must be in a format supported by ffmpeg
+        unit (str, optional): Element to create alignments for, by default 'w'
+        bare (boolean, optional):
+            If False, split silence into adjoining tokens (default)
+            If True, keep the bare tokens without adjoining silences.
+        config (object, optional): ReadAlong-Studio configuration to use
+        save_temps (Union[str, None], optional): save temporary files, by default None
+        g2p_fallbacks (list, optional): Cascade of fallback languages for g2p conversion,
+            in case of g2p errors
+        verbose_g2p_warnings (boolean, optional): display all g2p errors and warnings
+            iff True
 
-    #TODO: document return
-    Returns
-    -------
-    [type]
-        [description]
+    Returns:
+        Dict[str, List]: TODO
 
-    #TODO: document exceptions
-    Raises
-    ------
-    RuntimeError
-        [description]
-    RuntimeError
-        [description]
-    RuntimeError
-        [description]
-    RuntimeError
-        [description]
+    Raises:
+        TODO
     """
     results: Dict[str, List] = {"words": []}
 
@@ -293,20 +277,121 @@ def align_audio(  # noqa: C901
     return results
 
 
+def save_readalong(
+    # this * forces all arguments to be passed by name, because I don't want any
+    # code to depend on their order in the future
+    *,
+    align_results: Dict[str, List],
+    output_dir: str,
+    output_basename: str,
+    config=None,
+    text_grid: bool = False,
+    closed_captioning: bool = False,
+    output_xhtml: bool = False,
+    audiofile: str,
+):
+    """ Save the results from align_audio() into the otuput files required for a
+        readalong
+
+    Args:
+        align_results(Dict[str,List]): return value from align_audio()
+        output_dir (str): directory where to save the readalong,
+            output_dir should already exist, files it contains may be overwritten
+        output_basename (str): basename of the files to save in output_dir
+        config ([type TODO], optional): alignment configuration loaded from the json
+        text_grid (bool, optional): if True, also save in Praat TextGrid and ELAN EAF formats
+        closed_captioning (bool, optional): if True, also save in .vtt and .srt subtitle formats
+        output_xhtml (bool, optional): if True, convert XML into XHTML format before writing
+        audiofile (str): path to the audio file passed to align_audio()
+
+    Returns:
+        None
+
+    Raises:
+        [TODO]
+    """
+
+    output_base = os.path.join(output_dir, output_basename)
+
+    if text_grid:
+        audio = read_audio_from_file(audiofile)
+        duration = audio.frame_count() / audio.frame_rate
+        words, sentences = return_words_and_sentences(align_results)
+        textgrid = write_to_text_grid(words, sentences, duration)
+        textgrid.to_file(output_base + ".TextGrid")
+        textgrid.to_eaf().to_file(output_base + ".eaf")
+
+    if closed_captioning:
+        words, sentences = return_words_and_sentences(align_results)
+        webvtt_sentences = write_to_subtitles(sentences)
+        webvtt_sentences.save(output_base + "_sentences.vtt")
+        webvtt_sentences.save_as_srt(output_base + "_sentences.srt")
+        webvtt_words = write_to_subtitles(words)
+        webvtt_words.save(output_base + "_words.vtt")
+        webvtt_words.save_as_srt(output_base + "_words.srt")
+
+    if output_xhtml:
+        convert_to_xhtml(align_results["tokenized"])
+        tokenized_xml_path = output_base + ".xhtml"
+    else:
+        tokenized_xml_path = output_base + ".xml"
+    save_xml(tokenized_xml_path, align_results["tokenized"])
+
+    _, audio_ext = os.path.splitext(audiofile)
+    audio_path = output_base + audio_ext
+    shutil.copy(audiofile, audio_path)
+
+    smil_path = output_base + ".smil"
+    smil = make_smil(
+        os.path.basename(tokenized_xml_path),
+        os.path.basename(audio_path),
+        align_results,
+    )
+    save_txt(smil_path, smil)
+
+    save_minimal_index_html(
+        os.path.join(output_dir, "index.html"),
+        os.path.basename(tokenized_xml_path),
+        os.path.basename(smil_path),
+        os.path.basename(audio_path),
+    )
+
+    # Copy the image files to the output's asset directory, if any are found
+    if config and "images" in config:
+        assets_dir = os.path.join(output_dir, "assets")
+        try:
+            os.mkdir(assets_dir)
+        except FileExistsError:
+            if not os.path.isdir(assets_dir):
+                raise
+        for page, image in config["images"].items():
+            if image[0:4] == "http":
+                LOGGER.warning(
+                    f"Please make sure {image} is accessible to clients using your read-along."
+                )
+            else:
+                try:
+                    shutil.copy(image, assets_dir)
+                except Exception as e:
+                    LOGGER.warning(
+                        f"Please copy {image} to {assets_dir} before deploying your read-along. ({e})"
+                    )
+                if os.path.basename(image) != image:
+                    LOGGER.warning(
+                        f"Read-along images were tested with absolute urls (starting with http(s):// "
+                        f"and filenames without a path. {image} might not work as specified."
+                    )
+
+
 def return_word_from_id(xml: etree, el_id: str) -> str:
     """ Given an XML document, return the innertext at id
 
-    Parameters
-    ----------
-    xml : etree
-        XML document
-    el_id : str
-        ID
+    Args:
+        xml (etree): XML document
+        el_id (str): ID
 
-    Returns
-    -------
-    str
-        Innertext of element with el_id in xml
+    Returns:
+        str: Innertext of element with el_id in xml
     """
     return xml.xpath('//*[@id="%s"]/text()' % el_id)[0]
 
@@ -314,17 +399,11 @@ def return_word_from_id(xml: etree, el_id: str) -> str:
 def return_words_and_sentences(results):
     """ Parse xml into word and sentence 'tier' data
 
-    #TODO: document params
-    Parameters
-    ----------
-    results : [type]
-        [description]
+    Args:
+        results([TODO type]): [TODO description]
 
-    #TODO: document return
-    Returns
-    -------
-    [type]
-        [description]
+    Returns:
+        [TODO type]: [TODO description]
     """
     result_id_pattern = re.compile(
         r"""
@@ -365,19 +444,13 @@ def return_words_and_sentences(results):
 def write_to_text_grid(words: List[dict], sentences: List[dict], duration: float):
     """ Write results to Praat TextGrid. Because we are using pympi, we can also export to Elan EAF.
 
-    Parameters
-    ----------
-    words : List[dict]
-        List of word times containing start, end, and value keys
-    sentences : List[dict]
-        List of sentence times containing start, end, and value keys
-    duration : float
-        duration of entire audio
+    Args:
+        words (List[dict]): List of word times containing start, end, and value keys
+        sentences (List[dict]): List of sentence times containing start, end, and value keys
+        duration (float): duration of entire audio
 
-    Returns
-    -------
-    TextGrid
-        Praat TextGrid with word and sentence alignments
+    Returns:
+        TextGrid: Praat TextGrid with word and sentence alignments
     """
     text_grid = TextGrid(xmax=duration)
     sentence_tier = text_grid.add_tier(name="Sentence")
@@ -398,15 +471,11 @@ def write_to_text_grid(words: List[dict], sentences: List[dict], duration: float
 def float_to_timedelta(n: float) -> str:
     """Float to timedelta, for subtitle formats
 
-    Parameters
-    ----------
-    n : float
-        any float
+    Args:
+        n (float): any float
 
-    Returns
-    -------
-    str
-        timedelta string
+    Returns:
+        str: timedelta string
     """
     td = timedelta(seconds=n)
     if not td.microseconds:
@@ -417,17 +486,14 @@ def float_to_timedelta(n: float) -> str:
 def write_to_subtitles(data: Union[List[dict], List[List[dict]]]):
     """ Returns WebVTT object from data.
 
-    Parameters
-    ----------
-    data : Union[List[dict], List[List[dict]]]
-        Data must be either a 'word'-type tier with
-        a list of dicts that have keys for 'start', 'end' and
-       'text'. Or a 'sentence'-type tier with a list of lists of dicts.
+    Args:
+        data (Union[List[dict], List[List[dict]]]):
+            data must be either a 'word'-type tier with
+            a list of dicts that have keys for 'start', 'end' and
+           'text'. Or a 'sentence'-type tier with a list of lists of dicts.
 
-    Returns
-    -------
-    WebVTT
-        WebVTT subtitles
+    Returns:
+        WebVTT: WebVTT subtitles
     """
     vtt = WebVTT()
     for caption in data:
@@ -450,14 +516,9 @@ def write_to_subtitles(data: Union[List[dict], List[List[dict]]]):
 def convert_to_xhtml(tokenized_xml, title="Book"):
     """ Do a simple and not at all foolproof conversion to XHTML.
 
-    Parameters
-    ----------
-    tokenized_xml : etree
-        xml etree with tokens
-    title : str, optional
-        title for xhtml, by default 'Book'
-
-    #TODO: AP: Should this be returning something? It's unused seemingly.
+    Args:
+        tokenized_xml (etree): xml etree with tokens, converted in place
+        title (str, optional): title for xhtml, by default 'Book'
     """
     tokenized_xml.tag = "html"
     tokenized_xml.attrib["xmlns"] = "http://www.w3.org/1999/xhtml"
@@ -520,21 +581,14 @@ def create_input_xml(
 ):
     """Create input XML
 
-    Parameters
-    ----------
-    inputfile : str
-        path to file
-    text_language : Union[str, None], optional
-        language of inputfile text, by default None
-    save_temps : Union[str, None], optional
-        save temporary files, by default None
+    Args:
+        inputfile (str): path to file
+        text_language (Union[str, None], optional): language of inputfile text, by default None
+        save_temps (Union[str, None], optional): save temporary files, by default None
 
-    Returns
-    -------
-    file
-        outfile
-    str
-        filename
+    Returns:
+        file: outfile object
+        str: filename of outfile
     """
     if save_temps:
         filename = save_temps + ".input.xml"
@@ -573,28 +627,23 @@ def create_input_tei(**kwargs):
     """ Create input xml in TEI standard.
         Uses readlines to infer paragraph and sentence structure from plain text.
         TODO: Check if path, if it's just plain text, then render that instead of reading from the file
-        Assumes single page.
+        Assumes a double blank line marks a page break, and a single blank line
+        marks a paragraph break.
         Outputs to uft-8 XML using pymustache.
 
-    Parameters
-    ----------
-    **input_file_name : Union[str, None]
-        raw input text file name
-    **input_file_handle : Union[file_handle, None]
-        opened input file handle for input text - only provide one of input_file_name or input_file_handle!
-    **text_language in kwargs : str
-        language for the text.
-    **save_temps in kwargs : Union[str, None], optional
-        prefix for output file name, which will be kept; or None to create a temporary file
-    **output_file in kwargs : Union[str, None], optional
-        if specified, the output file will have exactly this name
+    Args:
+        **input_file_name (Union[str, None]): input text file name
+        **input_file_handle (Union[file_handle, None]): opened file handle for input text
+            Only provide one of input_file_name or input_file_handle!
+        **text_language in kwargs (str): language for the text.
+        **save_temps in kwargs (Union[str, None], optional): prefix for output
+            file name, which will be kept; or None to create a temporary file
+        **output_file in kwargs (Union[str, None], optional): if specified, the
+            output file will have exactly this name
 
-    Returns
-    -------
-    file
-        outfile (file handle)
-    str
-        filename
+    Returns:
+        file: outfile (file handle)
+        str: output file name
     """
     if kwargs.get("input_file_name", False):
         with io.open(kwargs["input_file_name"]) as f:

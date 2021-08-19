@@ -25,7 +25,6 @@
 import io
 import json
 import os
-import shutil
 import sys
 from tempfile import TemporaryFile
 
@@ -39,6 +38,7 @@ from readalongs.align import (
     convert_to_xhtml,
     create_input_tei,
     return_words_and_sentences,
+    save_readalong,
     write_to_subtitles,
     write_to_text_grid,
 )
@@ -49,9 +49,8 @@ from readalongs.log import LOGGER
 from readalongs.python_version import ensure_using_supported_python_version
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
-from readalongs.text.make_smil import make_smil
 from readalongs.text.tokenize_xml import tokenize_xml
-from readalongs.text.util import save_minimal_index_html, save_txt, save_xml, write_xml
+from readalongs.text.util import save_xml, write_xml
 from readalongs.views import LANGS
 
 ensure_using_supported_python_version()
@@ -185,18 +184,21 @@ def align(**kwargs):  # noqa: C901
 
     OUTPUT_BASE: Base name for output files
     """
-    config = kwargs.get("config", None)
-    if config:
-        if config.endswith("json"):
+    config_file = kwargs.get("config", None)
+    config = None
+    if config_file:
+        if config_file.endswith("json"):
             try:
-                with open(config) as f:
+                with open(config_file) as f:
                     config = json.load(f)
             except json.decoder.JSONDecodeError:
                 raise click.BadParameter(
-                    f"Config file at {config} is not in valid JSON format."
+                    f"Config file at {config_file} is not in valid JSON format."
                 )
         else:
-            raise click.BadParameter(f"Config file '{config}' must be in JSON format")
+            raise click.BadParameter(
+                f"Config file '{config_file}' must be in JSON format"
+            )
 
     output_dir = kwargs["output_base"]
     if os.path.exists(output_dir):
@@ -222,7 +224,6 @@ def align(**kwargs):  # noqa: C901
         )
 
     output_basename = os.path.basename(output_dir)
-    output_base = os.path.join(output_dir, output_basename)
     temp_base = None
     if kwargs["save_temps"]:
         temp_dir = os.path.join(output_dir, "tempfiles")
@@ -234,27 +235,25 @@ def align(**kwargs):  # noqa: C901
 
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
+
     if kwargs["text_input"]:
         if not kwargs["language"]:
             LOGGER.warning("No input language provided, using undetermined mapping")
-        tempfile, kwargs["textfile"] = create_input_tei(
-            input_file_name=kwargs["textfile"],
+        plain_textfile = kwargs["textfile"]
+        _, xml_textfile = create_input_tei(
+            input_file_name=plain_textfile,
             text_language=kwargs["language"],
             save_temps=temp_base,
         )
-    if kwargs["output_xhtml"]:
-        tokenized_xml_path = "%s.xhtml" % output_base
     else:
-        _, input_ext = os.path.splitext(kwargs["textfile"])
-        tokenized_xml_path = "%s%s" % (output_base, input_ext)
-    smil_path = output_base + ".smil"
-    _, audio_ext = os.path.splitext(kwargs["audiofile"])
-    audio_path = output_base + audio_ext
+        xml_textfile = kwargs["textfile"]
+
     unit = kwargs.get("unit", "w") or "w"  # Sometimes .get() still returns None here
     bare = kwargs.get("bare", False)
+
     try:
         results = align_audio(
-            kwargs["textfile"],
+            xml_textfile,
             kwargs["audiofile"],
             unit=unit,
             bare=bare,
@@ -267,65 +266,16 @@ def align(**kwargs):  # noqa: C901
         LOGGER.error(e)
         exit(1)
 
-    if kwargs["text_grid"]:
-        audio = read_audio_from_file(kwargs["audiofile"])
-        duration = audio.frame_count() / audio.frame_rate
-        words, sentences = return_words_and_sentences(results)
-        textgrid = write_to_text_grid(words, sentences, duration)
-        textgrid.to_file(output_base + ".TextGrid")
-        textgrid.to_eaf().to_file(output_base + ".eaf")
-
-    if kwargs["closed_captioning"]:
-        words, sentences = return_words_and_sentences(results)
-        webvtt_sentences = write_to_subtitles(sentences)
-        webvtt_sentences.save(output_base + "_sentences.vtt")
-        webvtt_sentences.save_as_srt(output_base + "_sentences.srt")
-        webvtt_words = write_to_subtitles(words)
-        webvtt_words.save(output_base + "_words.vtt")
-        webvtt_words.save_as_srt(output_base + "_words.srt")
-
-    if kwargs["output_xhtml"]:
-        convert_to_xhtml(results["tokenized"])
-
-    save_minimal_index_html(
-        os.path.join(output_dir, "index.html"),
-        os.path.basename(tokenized_xml_path),
-        os.path.basename(smil_path),
-        os.path.basename(audio_path),
+    save_readalong(
+        align_results=results,
+        output_dir=output_dir,
+        output_basename=output_basename,
+        config=config,
+        text_grid=kwargs["text_grid"],
+        closed_captioning=kwargs["closed_captioning"],
+        output_xhtml=kwargs["output_xhtml"],
+        audiofile=kwargs["audiofile"],
     )
-
-    save_xml(tokenized_xml_path, results["tokenized"])
-    smil = make_smil(
-        os.path.basename(tokenized_xml_path), os.path.basename(audio_path), results
-    )
-    shutil.copy(kwargs["audiofile"], audio_path)
-    save_txt(smil_path, smil)
-
-    # Copy the image files to the output's asset directory, if any are found
-    if config and "images" in config:
-        assets_dir = os.path.join(output_dir, "assets")
-        try:
-            os.mkdir(assets_dir)
-        except FileExistsError:
-            if not os.path.isdir(assets_dir):
-                raise
-        for page, image in config["images"].items():
-            if image[0:4] == "http":
-                LOGGER.warning(
-                    f"Please make sure {image} is accessible to clients using your read-along."
-                )
-            else:
-                try:
-                    shutil.copy(image, assets_dir)
-                except Exception as e:
-                    LOGGER.warning(
-                        f"Please copy {image} to {assets_dir} before deploying your read-along. ({e})"
-                    )
-                if os.path.basename(image) != image:
-                    LOGGER.warning(
-                        f"Read-along images were tested with absolute urls (starting with http(s):// "
-                        f"and filenames without a path. {image} might not work as specified."
-                    )
 
 
 @app.cli.command(
