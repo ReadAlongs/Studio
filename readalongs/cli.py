@@ -304,7 +304,7 @@ def epub(**kwargs):
     context_settings=CONTEXT_SETTINGS,
     short_help="Convert a plain text file into the XML format for alignment.",
 )
-@click.argument("plaintextfile", type=click.File("r", encoding="utf8"))
+@click.argument("plaintextfile", type=click.File("r", encoding="utf8", lazy=True))
 @click.argument("xmlfile", type=click.Path(), required=False, default="")
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
 @click.option(
@@ -344,7 +344,8 @@ def prepare(**kwargs):
     out_file = kwargs["xmlfile"]
     if not out_file:
         out_file = get_click_file_name(input_file)
-        if out_file == "<stdin>":  # actual intput_file.name when cli input is "-"
+        print(f"input_file={out_file}")
+        if out_file in ("<stdin>", "-"):  # intput_file.name is <stdin> on Linux, - on Windows, when cli input is "-"
             out_file = "-"
         else:
             if out_file.endswith(".txt"):
