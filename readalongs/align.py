@@ -646,7 +646,7 @@ def create_input_tei(**kwargs):
         str: output file name
     """
     if kwargs.get("input_file_name", False):
-        with io.open(kwargs["input_file_name"]) as f:
+        with io.open(kwargs["input_file_name"], encoding="utf8") as f:
             text = f.readlines()
     elif kwargs.get("input_file_handle", False):
         text = kwargs["input_file_handle"].readlines()
