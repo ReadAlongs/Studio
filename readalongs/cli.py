@@ -304,7 +304,7 @@ def epub(**kwargs):
     context_settings=CONTEXT_SETTINGS,
     short_help="Convert a plain text file into the XML format for alignment.",
 )
-@click.argument("plaintextfile", type=click.File("r"))
+@click.argument("plaintextfile", type=click.File("r", encoding="utf8"))
 @click.argument("xmlfile", type=click.Path(), required=False, default="")
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
 @click.option(
@@ -352,10 +352,10 @@ def prepare(**kwargs):
             out_file += ".xml"
 
     if out_file == "-":
-        filehandle, filename = create_input_tei(
+        _, filename = create_input_tei(
             input_file_handle=input_file, text_language=kwargs["language"],
         )
-        with io.open(filename) as f:
+        with io.open(filename, encoding="utf8") as f:
             sys.stdout.write(f.read())
     else:
         if not out_file.endswith(".xml"):
@@ -365,7 +365,7 @@ def prepare(**kwargs):
                 "Output file %s exists already, use -f to overwrite." % out_file
             )
 
-        filehandle, filename = create_input_tei(
+        _, filename = create_input_tei(
             input_file_handle=input_file,
             text_language=kwargs["language"],
             output_file=out_file,
