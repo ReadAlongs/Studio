@@ -167,6 +167,12 @@ class TestAlignCli(TestCase):
         )
 
     def test_permission_denied(self):
+        import platform
+
+        if platform.system() == "Windows":
+            # Cannot change the permission on a directory in Windows though
+            # os.mkdir() or os.chmod(), so skip this test
+            return
         dir = join(self.tempdir, "permission_denied")
         os.mkdir(dir, mode=0o444)
         results = self.runner.invoke(

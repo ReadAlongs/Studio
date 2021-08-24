@@ -63,11 +63,23 @@ def create_app():
 
 
 def get_click_file_name(click_file):
-    """ Return click_file.name, falling back to <stdin> if the .name attribute is missing. """
+    """ Wrapper around click_file.name with consistent handling for stdin
+
+    On Windows, if click_file is stdin, click_file.name == "-".
+    On Linux, if click_file is stdin, click_file.name == "<stdin>".
+    During unit testing, the simulated stdin stream has no .name attribute
+
+    Args:
+        click_file(click.File): the click file whose name we need
+
+    Returns:
+        "-" if click_file represents stdin, click_file.name otherwise
+    """
     try:
-        return click_file.name
-    except Exception:  # For unit testing: simulated stdin stream has no .name attrib
-        return "<stdin>"
+        name = click_file.name
+    except Exception:
+        name = "-"
+    return "-" if name == "<stdin>" else name
 
 
 def parse_g2p_fallback(g2p_fallback_arg):
@@ -344,10 +356,7 @@ def prepare(**kwargs):
     out_file = kwargs["xmlfile"]
     if not out_file:
         out_file = get_click_file_name(input_file)
-        print(f"input_file={out_file}")
-        if out_file in ("<stdin>", "-"):  # intput_file.name is <stdin> on Linux, - on Windows, when cli input is "-"
-            out_file = "-"
-        else:
+        if out_file != "-":
             if out_file.endswith(".txt"):
                 out_file = out_file[:-4]
             out_file += ".xml"
@@ -408,9 +417,7 @@ def tokenize(**kwargs):
 
     if not kwargs["tokfile"]:
         output_path = get_click_file_name(input_file)
-        if output_path == "<stdin>":
-            output_path = "-"
-        else:
+        if output_path != "-":
             if output_path.endswith(".xml"):
                 output_path = output_path[:-4]
             output_path += ".tokenized.xml"
@@ -447,7 +454,7 @@ def tokenize(**kwargs):
     short_help="Apply g2p to a tokenized file, like 'align' does.",
     # NOT TRUE YET: "Apply g2p to a tokenized file, in preparation for alignment."
 )
-@click.argument("tokfile", type=click.File("rb"))
+@click.argument("tokfile", type=click.File("rb", encoding="utf8", lazy=True))
 @click.argument("g2pfile", type=click.Path(), required=False, default="")
 @click.option(
     "--g2p-fallback",
@@ -488,9 +495,7 @@ def g2p(**kwargs):
 
     if not kwargs["g2pfile"]:
         output_path = get_click_file_name(input_file)
-        if output_path == "<stdin>":
-            output_path = "-"
-        else:
+        if output_path != "-":
             if output_path.endswith(".xml"):
                 output_path = output_path[:-4]
             if output_path.endswith(".tokenized"):
