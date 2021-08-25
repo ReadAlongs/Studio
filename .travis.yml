@@ -16,13 +16,16 @@ before_install:
 install:
   # Install Python dependencies
   - pip3 install -r requirements.txt
+  # Install Studio
+  - pip3 install -e .
+  # Legal check: make sure we don't have or introduce GPL dependencies
+  - pip3 install pip-licenses
+  - if pip-licenses | grep -v 'Artistic License' | grep -v LGPL | grep GNU; then echo 'Please avoid introducing *GPL dependencies'; false; fi
   # Install testing requirements
   - pip3 install -r requirements.dev.txt
   - pip3 install coverage
   - pip3 install codecov
   - pip3 install gunicorn
-  # Install Studio
-  - pip3 install -e .
 
 before_script:
   - gunicorn readalongs.app:app --bind 0.0.0.0:5000 --daemon
