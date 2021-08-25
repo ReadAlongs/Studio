@@ -63,11 +63,23 @@ def create_app():
 
 
 def get_click_file_name(click_file):
-    """ Return click_file.name, falling back to <stdin> if the .name attribute is missing. """
+    """ Wrapper around click_file.name with consistent handling for stdin
+
+    On Windows, if click_file is stdin, click_file.name == "-".
+    On Linux, if click_file is stdin, click_file.name == "<stdin>".
+    During unit testing, the simulated stdin stream has no .name attribute
+
+    Args:
+        click_file(click.File): the click file whose name we need
+
+    Returns:
+        "-" if click_file represents stdin, click_file.name otherwise
+    """
     try:
-        return click_file.name
-    except Exception:  # For unit testing: simulated stdin stream has no .name attrib
-        return "<stdin>"
+        name = click_file.name
+    except Exception:
+        name = "-"
+    return "-" if name == "<stdin>" else name
 
 
 def parse_g2p_fallback(g2p_fallback_arg):
@@ -304,7 +316,7 @@ def epub(**kwargs):
     context_settings=CONTEXT_SETTINGS,
     short_help="Convert a plain text file into the XML format for alignment.",
 )
-@click.argument("plaintextfile", type=click.File("r"))
+@click.argument("plaintextfile", type=click.File("r", encoding="utf8", lazy=True))
 @click.argument("xmlfile", type=click.Path(), required=False, default="")
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
 @click.option(
@@ -344,18 +356,16 @@ def prepare(**kwargs):
     out_file = kwargs["xmlfile"]
     if not out_file:
         out_file = get_click_file_name(input_file)
-        if out_file == "<stdin>":  # actual intput_file.name when cli input is "-"
-            out_file = "-"
-        else:
+        if out_file != "-":
             if out_file.endswith(".txt"):
                 out_file = out_file[:-4]
             out_file += ".xml"
 
     if out_file == "-":
-        filehandle, filename = create_input_tei(
+        _, filename = create_input_tei(
             input_file_handle=input_file, text_language=kwargs["language"],
         )
-        with io.open(filename) as f:
+        with io.open(filename, encoding="utf8") as f:
             sys.stdout.write(f.read())
     else:
         if not out_file.endswith(".xml"):
@@ -365,7 +375,7 @@ def prepare(**kwargs):
                 "Output file %s exists already, use -f to overwrite." % out_file
             )
 
-        filehandle, filename = create_input_tei(
+        _, filename = create_input_tei(
             input_file_handle=input_file,
             text_language=kwargs["language"],
             output_file=out_file,
@@ -407,9 +417,7 @@ def tokenize(**kwargs):
 
     if not kwargs["tokfile"]:
         output_path = get_click_file_name(input_file)
-        if output_path == "<stdin>":
-            output_path = "-"
-        else:
+        if output_path != "-":
             if output_path.endswith(".xml"):
                 output_path = output_path[:-4]
             output_path += ".tokenized.xml"
@@ -446,7 +454,7 @@ def tokenize(**kwargs):
     short_help="Apply g2p to a tokenized file, like 'align' does.",
     # NOT TRUE YET: "Apply g2p to a tokenized file, in preparation for alignment."
 )
-@click.argument("tokfile", type=click.File("rb"))
+@click.argument("tokfile", type=click.File("rb", encoding="utf8", lazy=True))
 @click.argument("g2pfile", type=click.Path(), required=False, default="")
 @click.option(
     "--g2p-fallback",
@@ -487,9 +495,7 @@ def g2p(**kwargs):
 
     if not kwargs["g2pfile"]:
         output_path = get_click_file_name(input_file)
-        if output_path == "<stdin>":
-            output_path = "-"
-        else:
+        if output_path != "-":
             if output_path.endswith(".xml"):
                 output_path = output_path[:-4]
             if output_path.endswith(".tokenized"):

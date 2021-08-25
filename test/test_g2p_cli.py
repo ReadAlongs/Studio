@@ -96,7 +96,7 @@ class TestG2pCli(TestCase):
     # saving the final results into filename.
     # filename is assumed to be inside self.tempdir, so we count on tearDown() to clean up.
     def write_prepare_tokenize(self, text, lang, filename):
-        with open(filename + ".input.txt", "w") as f:
+        with open(filename + ".input.txt", "w", encoding="utf8") as f:
             print(text, file=f)
         self.runner.invoke(
             prepare, ["-l", lang, filename + ".input.txt", filename + ".prepared.xml"]
@@ -197,7 +197,7 @@ class TestG2pCli(TestCase):
 
     def test_align_with_error(self):
         text_file = os.path.join(self.tempdir, "input.txt")
-        with io.open(text_file, "w") as f:
+        with io.open(text_file, "w", encoding="utf8") as f:
             print("In French été works but Nunavut ᓄᓇᕗᑦ does not.", file=f)
         empty_wav = os.path.join(self.tempdir, "empty.wav")
         with io.open(empty_wav, "wb"):
@@ -241,7 +241,7 @@ class TestG2pCli(TestCase):
 
     def test_with_stdin(self):
         input_file = os.path.join(self.data_dir, "fra-tokenized.xml")
-        with io.open(input_file) as f:
+        with io.open(input_file, encoding="utf8") as f:
             inputtext = f.read()
         results = self.runner.invoke(g2p, "-", input=inputtext)
         self.assertEqual(results.exit_code, 0)

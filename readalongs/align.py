@@ -186,7 +186,10 @@ def align_audio(  # noqa: C901
                         save_temps + "_processed" + ext, format=ext[1:]
                     )
                 except CouldntEncodeError:
-                    os.remove(save_temps + "_processed" + ext)
+                    try:
+                        os.remove(save_temps + "_processed" + ext)
+                    except:
+                        pass
                     LOGGER.warning(
                         f"Couldn't find encoder for '{ext[1:]}', defaulting to 'wav'"
                     )
