@@ -224,7 +224,7 @@ def align_audio(  # noqa: C901
                 prefix="readalongs_dict_", delete=False
             )
         dict_file.write(dict_data.encode("utf-8"))
-        dict_file.flush()
+        dict_file.close()
 
         fsg_data = make_fsg(word_sequence.words, xml_path)
         if save_temps:
@@ -234,7 +234,7 @@ def align_audio(  # noqa: C901
                 prefix="readalongs_fsg_", delete=False
             )
         fsg_file.write(fsg_data.encode("utf-8"))
-        fsg_file.flush()
+        fsg_file.close()
 
         # Extract the part of the audio corresponding to this word sequence
         # segment_audio =
@@ -307,12 +307,6 @@ def align_audio(  # noqa: C901
         if silence > 0:
             if last_word is not None:
                 last_word["end"] += silence / 2
-    dict_file.close()
-    if not save_temps:
-        os.unlink(dict_file.name)
-    fsg_file.close()
-    if not save_temps:
-        os.unlink(fsg_file.name)
 
     return results
 
@@ -658,7 +652,6 @@ def create_input_xml(
             sentences.append(data)
         xml = pystache.render(XML_TEMPLATE, {"sentences": sentences})
         outfile.write(xml.encode("utf-8"))
-        outfile.flush()
         outfile.close()
     return outfile, filename
 
