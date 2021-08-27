@@ -142,19 +142,38 @@ class TestAudio(TestCase):
         self.assertEqual(
             calculate_adjustment(2000, [{"begin": 1000, "end": 1100}]), 100
         )
-        # Function only accepts args in ms
-        self.assertNotEqual(
+        # Function only accepts args in ms, so 1.0 and 2.0 are the same as 1 and 2 ms
+        self.assertEqual(
             calculate_adjustment(
                 1.0, [{"begin": 1000, "end": 1100}, {"begin": 1500, "end": 1700}]
             ),
-            100,
+            0,
         )
-        self.assertNotEqual(
+        self.assertEqual(
             calculate_adjustment(
                 2.0, [{"begin": 1000, "end": 1100}, {"begin": 1500, "end": 2100}]
             ),
-            700,
+            0,
         )
+        # When there are multiple dna segments, the timestamp to adjust has to shift with the adjustment
+        # e.g.:
+        #    if DNA= [1000,2000)+[4000,5000)
+        #    then 0-999 -> 0-999, 1000-2999 -> 2000-3999, and 3000+ -> 5000+
+        for value, adjustment in [
+            (0, 0),
+            (999, 0),
+            (1000, 1000),
+            (2999, 1000),
+            (3000, 2000),
+            (4000, 2000),
+        ]:
+            self.assertEqual(
+                calculate_adjustment(
+                    value, [{"begin": 1000, "end": 2000}, {"begin": 4000, "end": 5000}]
+                ),
+                adjustment,
+                f"DNA removal adjustment for t={value}ms should have been {adjustment}ms",
+            )
 
     def test_adjustment_correction(self):
         """ Try correcting adjusted alignments of re-built audio
