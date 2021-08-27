@@ -7,7 +7,11 @@ from shutil import rmtree
 from subprocess import run
 from unittest import TestCase, main
 
-from readalongs.align import calculate_adjustment, correct_adjustments
+from readalongs.align import (
+    calculate_adjustment,
+    correct_adjustments,
+    sort_and_join_dna_segments,
+)
 from readalongs.audio_utils import (
     join_section,
     mute_section,
@@ -127,6 +131,38 @@ class TestAudio(TestCase):
         smil_files = smilpath.glob("*.smil")
         self.assertTrue(next(smil_files, False), "No *.smil files found")
         self.assertFalse("error" in str(log).lower())
+
+    def test_sort_and_join_dna_segments(self):
+        """ Make sure sorting and joining DNA segments works. """
+        self.assertEqual(
+            sort_and_join_dna_segments(
+                [{"begin": 1000, "end": 1100}, {"begin": 1500, "end": 2100}]
+            ),
+            [{"begin": 1000, "end": 1100}, {"begin": 1500, "end": 2100}],
+        )
+        self.assertEqual(
+            sort_and_join_dna_segments(
+                [{"begin": 1500, "end": 2100}, {"begin": 1000, "end": 1100}]
+            ),
+            [{"begin": 1000, "end": 1100}, {"begin": 1500, "end": 2100}],
+        )
+        self.assertEqual(
+            sort_and_join_dna_segments(
+                [
+                    {"begin": 2, "end": 3},
+                    {"begin": 11, "end": 14},
+                    {"begin": 23, "end": 25},
+                    {"begin": 1, "end": 4},
+                    {"begin": 12, "end": 13},
+                    {"begin": 24, "end": 26},
+                ]
+            ),
+            [
+                {"begin": 1, "end": 4},
+                {"begin": 11, "end": 14},
+                {"begin": 23, "end": 26},
+            ],
+        )
 
     def test_adjustment_calculation(self):
         """ Try adjusting alignments of re-built audio
