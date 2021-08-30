@@ -23,7 +23,14 @@ from pydub.exceptions import CouldntEncodeError
 from pympi.Praat import TextGrid
 from webvtt import Caption, WebVTT
 
-from readalongs.audio_utils import mute_section, read_audio_from_file, remove_section
+from readalongs.audio_utils import (
+    calculate_adjustment,
+    correct_adjustments,
+    mute_section,
+    read_audio_from_file,
+    remove_section,
+    sort_and_join_dna_segments,
+)
 from readalongs.log import LOGGER
 from readalongs.portable_tempfile import PortableNamedTemporaryFile
 from readalongs.text.add_elements_to_xml import add_images, add_supplementary_xml
@@ -34,34 +41,6 @@ from readalongs.text.make_fsg import make_fsg
 from readalongs.text.make_smil import make_smil
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import save_minimal_index_html, save_txt, save_xml
-
-
-def correct_adjustments(
-    start: int, end: int, do_not_align_segments: List[dict]
-) -> Tuple[int, int]:
-    """ Given the start and end of a segment (in ms) and a list of do-not-align segments,
-        If one of the do-not-align segments occurs inside one of the start-end range,
-        align the start or end with the do-not-align segment, whichever requires minimal change
-    """
-    for seg in do_not_align_segments:
-        if start < seg["begin"] and end > seg["end"]:
-            if seg["begin"] - start > end - seg["end"]:
-                return start, seg["begin"]
-            else:
-                return seg["end"], end
-    return start, end
-
-
-def calculate_adjustment(timestamp: int, do_not_align_segments: List[dict]) -> int:
-    """ Given a time (in ms) and a list of do-not-align segments,
-        return the sum (ms) of the lengths of the do-not-align segments
-        that start before the timestamp
-    """
-    return sum(
-        (seg["end"] - seg["begin"])
-        for seg in do_not_align_segments
-        if seg["begin"] <= timestamp
-    )
 
 
 def align_audio(  # noqa: C901
@@ -160,9 +139,9 @@ def align_audio(  # noqa: C901
     # Process audio
     do_not_align_segments = None
     if config and "do-not-align" in config:
-        # Reverse sort un-alignable segments
-        do_not_align_segments = sorted(
-            config["do-not-align"]["segments"], key=lambda x: x["begin"], reverse=True
+        # Sort un-alignable segments and join overlapping ones
+        do_not_align_segments = sort_and_join_dna_segments(
+            config["do-not-align"]["segments"]
         )
         method = config["do-not-align"].get("method", "remove")
         # Determine do-not-align method
@@ -175,7 +154,9 @@ def align_audio(  # noqa: C901
         # Process audio and save temporary files
         if method == "mute" or method == "remove":
             processed_audio = audio
-            for seg in do_not_align_segments:
+            # Process the DNA segments in reverse order so we don't have to correct
+            # for previously processed ones when using the "remove" method.
+            for seg in reversed(do_not_align_segments):
                 processed_audio = dna_method(
                     processed_audio, int(seg["begin"]), int(seg["end"])
                 )
