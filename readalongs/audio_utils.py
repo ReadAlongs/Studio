@@ -7,7 +7,12 @@
 #
 #   Various utility functions for manipulating audio
 #
+#   And also utility functions for manipulating and apply do-not-align segments
+#
 #######################################################################
+
+import copy
+from typing import List, Tuple
 
 from pydub import AudioSegment
 
@@ -99,3 +104,58 @@ def read_audio_from_file(path: str) -> AudioSegment:
     except Exception as e:
         # need repr(e) here instead of e since these exceptions don't all have messages
         raise RuntimeError("Error reading audio file %s: %s" % (path, repr(e)))
+
+
+#######################################################################
+#
+# The following functions manipulate not actual audio files, but lists of
+# do-not-align segment lists about audio files
+#
+#######################################################################
+
+
+def sort_and_join_dna_segments(do_not_align_segments: List[dict]) -> List[dict]:
+    """ Give a list of DNA segments, sort them and join any overlapping ones """
+    results = []
+    for seg in sorted(do_not_align_segments, key=lambda x: x["begin"]):
+        if results and results[-1]["end"] >= seg["begin"]:
+            results[-1]["end"] = max(results[-1]["end"], seg["end"])
+        else:
+            results.append(copy.deepcopy(seg))
+    return results
+
+
+def correct_adjustments(
+    start: int, end: int, do_not_align_segments: List[dict]
+) -> Tuple[int, int]:
+    """ Given the start and end of a segment (in ms) and a list of do-not-align segments,
+        If one of the do-not-align segments occurs inside one of the start-end range,
+        align the start or end with the do-not-align segment, whichever requires minimal change
+    """
+    for seg in do_not_align_segments:
+        if start < seg["begin"] and end > seg["end"]:
+            if seg["begin"] - start > end - seg["end"]:
+                return start, seg["begin"]
+            else:
+                return seg["end"], end
+    return start, end
+
+
+def calculate_adjustment(timestamp: int, do_not_align_segments: List[dict]) -> int:
+    """ Given a time (in ms) and a list of do-not-align segments,
+        return the sum (ms) of the lengths of the do-not-align segments
+        that start before the timestamp
+
+    Preconditions:
+        do_not_align_segments are sorted in ascending order of their "begin" and do not overlap
+    """
+    results = 0
+    prev_end = -1
+    for seg in do_not_align_segments:
+        assert prev_end < seg["begin"]
+        prev_end = seg["end"]
+        if seg["begin"] <= timestamp:
+            delta = seg["end"] - seg["begin"]
+            results += delta
+            timestamp += delta
+    return results
