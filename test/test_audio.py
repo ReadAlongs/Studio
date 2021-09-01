@@ -10,6 +10,7 @@ from unittest import TestCase, main
 from readalongs.audio_utils import (
     calculate_adjustment,
     correct_adjustments,
+    dna_intersection,
     extract_section,
     join_section,
     mute_section,
@@ -227,6 +228,41 @@ class TestAudio(TestCase):
         self.assertNotEqual(
             correct_adjustments(0.975, 1.150, [{"begin": 1000, "end": 1100}]),
             (1100, 1150),
+        )
+
+    def test_dna_intersection(self):
+        self.assertEqual(
+            dna_intersection(1000, 2000, 3000, [{"begin": 1100, "end": 1200}]),
+            [
+                {"begin": 0, "end": 1000},
+                {"begin": 1100, "end": 1200},
+                {"begin": 2000, "end": 3000},
+            ],
+        )
+        self.assertEqual(
+            dna_intersection(None, 2000, 3000, [{"begin": 1100, "end": 1200}]),
+            [{"begin": 1100, "end": 1200}, {"begin": 2000, "end": 3000}],
+        )
+        self.assertEqual(
+            dna_intersection(1000, None, 3000, [{"begin": 1100, "end": 1200}]),
+            [{"begin": 0, "end": 1000}, {"begin": 1100, "end": 1200}],
+        )
+        self.assertEqual(
+            dna_intersection(
+                1000,
+                2000,
+                3000,
+                [
+                    {"begin": 900, "end": 1100},
+                    {"begin": 1200, "end": 1300},
+                    {"begin": 1900, "end": 2100},
+                ],
+            ),
+            [
+                {"begin": 0, "end": 1100},
+                {"begin": 1200, "end": 1300},
+                {"begin": 1900, "end": 3000},
+            ],
         )
 
     def test_extract_section(self):

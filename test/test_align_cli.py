@@ -24,7 +24,7 @@ class TestAlignCli(TestCase):
         )
         tempdir = tempdirobj.name
     else:
-        tempdir = tempfile.mkdtemp(prefix="tmpdir_test_g2p_cli_", dir=".")
+        tempdir = tempfile.mkdtemp(prefix="tmpdir_test_align_cli_", dir=".")
         print("tmpdir={}".format(tempdir))
 
     def setUp(self):

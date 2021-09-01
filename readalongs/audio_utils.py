@@ -67,19 +67,25 @@ def mute_section(audio: AudioSegment, start: int, end: int) -> AudioSegment:
         return audio
 
 
-def extract_section(audio: AudioSegment, start: int, end: int) -> AudioSegment:
+def extract_section(
+    audio: AudioSegment, start: Union[None, int], end: Union[None, int]
+) -> AudioSegment:
     """ Given an AudioSegment, extract and keep only the [start, end) interval
 
     Args:
         audio (AudioSegment): audio segment to extract a section from
         start (Union[None,int]): start timestamp of audio to extract (ms)
-            (beginning if None)
+            (None means begining of audio)
         end (Union[None,int]): end timestamp of audio to extract (ms)
-            (end of audio if None)
+            (None means end of audio)
 
     Returns:
         AudioSegment: the extracted audio segment
     """
+    # Optimization: don't copy the data if we're extracting from None to None
+    if start is None and end is None:
+        return audio
+
     try:
         return audio[start:end]
     except IndexError:
@@ -174,3 +180,37 @@ def calculate_adjustment(timestamp: int, do_not_align_segments: List[dict]) -> i
             results += delta
             timestamp += delta
     return results
+
+
+def dna_intersection(
+    start, end, audio_length: int, do_not_align_segments: List[dict]
+) -> List[dict]:
+    """ Given time range [start, end) to keep, and a list of do-not-align-segments, calculate
+        the equivalent do-not-align-segment list to keeping only what's in
+        [start, end) and removing what's outside it.
+    """
+    current_list = do_not_align_segments
+    if start:
+        new_list = []
+        new_list.append({"begin": 0, "end": start})
+        for seg in current_list:
+            if seg["end"] <= start:
+                pass  # dna segments that end before start are subsumed by [0,start)
+            elif seg["begin"] <= start:
+                start = seg["end"]
+                new_list[0]["end"] = start
+            else:
+                new_list.append(seg)
+        current_list = new_list
+    if end:
+        new_list = []
+        for seg in current_list:
+            if seg["begin"] >= end:
+                pass  # dna segments after end are subsumed by [end, audio_length)
+            elif seg["end"] >= end:
+                end = seg["begin"]
+            else:
+                new_list.append(seg)
+        new_list.append({"begin": end, "end": audio_length})
+        current_list = new_list
+    return current_list
