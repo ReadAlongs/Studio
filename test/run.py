@@ -4,6 +4,7 @@ import os
 import sys
 from unittest import TestLoader, TestSuite, TextTestRunner
 
+from readalongs.log import LOGGER
 from test_align_cli import TestAlignCli
 from test_audio import TestAudio
 from test_config import TestConfig
@@ -11,12 +12,11 @@ from test_dna_text import TestDNAText
 from test_force_align import TestForceAlignment, TestXHTML
 from test_g2p_cli import TestG2pCli
 from test_indices import TestIndices
+from test_misc import TestMisc
 from test_prepare_cli import TestPrepareCli
 from test_temp_file import TestTempFile
 from test_tokenize_cli import TestTokenizeCli
 from test_tokenize_xml import TestTokenizer
-
-from readalongs.log import LOGGER
 
 loader = TestLoader()
 
@@ -38,6 +38,7 @@ other_tests = [
         TestAudio,
         TestAlignCli,
         TestG2pCli,
+        TestMisc,
     ]
 ]
 

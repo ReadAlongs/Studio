@@ -14,6 +14,7 @@ from __future__ import division, print_function, unicode_literals
 
 import json
 import os
+import re
 import zipfile
 from collections import OrderedDict
 from copy import deepcopy
@@ -194,3 +195,39 @@ def unicode_normalize_xml(element):
         unicode_normalize_xml(child)
         if child.tail:
             child.tail = normalize("NFD", unicode(child.tail))
+
+
+def parse_time(time_string):
+    """ Parse a time stamp in seconds (default) or milliseconds (with "ms" unit)
+        The "s" unit is optional and implied if left out.
+
+    Args:
+        time_string(str): timestamp, e.g., "0.23s", "5.234" (implied s), "1234 ms"
+            must be a number followed by "s", "ms" or nothing.
+
+    Returns:
+        time represented by time_string in milliseconds
+    """
+    time_pattern = re.compile(
+        r"""
+            \s*           # ignore leading spaces
+            ([0-9.]+)     # Numerical part
+            \s*           # optional spaces
+            (
+                (s|ms)    # optional units: s (seconds) or ms (milliseconds)
+                \s*       # ignore trailing spaces
+            )?
+        """,
+        re.VERBOSE,
+    )
+    match = time_pattern.fullmatch(time_string)
+    if match:
+        units = match[3]
+        if units == "ms":
+            return int(match[1])
+        else:
+            return int(1000 * float(match[1]))
+    else:
+        raise ValueError(
+            f'cannot convert "{time_string}" to a time in seconds or milliseconds'
+        )
