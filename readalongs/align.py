@@ -26,6 +26,8 @@ from webvtt import Caption, WebVTT
 from readalongs.audio_utils import (
     calculate_adjustment,
     correct_adjustments,
+    dna_intersection,
+    extract_section,
     mute_section,
     read_audio_from_file,
     remove_section,
@@ -40,17 +42,17 @@ from readalongs.text.make_dict import make_dict
 from readalongs.text.make_fsg import make_fsg
 from readalongs.text.make_smil import make_smil
 from readalongs.text.tokenize_xml import tokenize_xml
-from readalongs.text.util import save_minimal_index_html, save_txt, save_xml
+from readalongs.text.util import parse_time, save_minimal_index_html, save_txt, save_xml
 
 
 class WordSequence:
     """ Sequence of "unit" XML elements (by default, <w> elements) with the
-        start and stop time for that sequence.
+        start and end time for that sequence.
     """
 
-    def __init__(self, start, stop, words):
+    def __init__(self, start, end, words):
         self.start = start
-        self.stop = stop
+        self.end = end
         self.words = words
 
 
@@ -58,23 +60,39 @@ def get_sequences(xml, xml_filename, unit="w", anchor="anchor"):
     sequences = []
     start = None
     words = []
+    all_good = True
     for e in xml.xpath(f".//{unit} | .//{anchor}"):
         if e.tag == unit:
             words.append(e)
         else:
             assert e.tag == anchor
-            if "time" not in e.attrib:
+            try:
+                end = parse_time(e.attrib["time"])
+            except KeyError:
                 LOGGER.error(
-                    f'{anchor} element in {xml_filename} is missing the "time" attribute, ignoring it'
+                    f'Invalid {anchor} element in {xml_filename}: missing "time" attribute'
                 )
+                all_good = False
                 continue
-            stop = e.attrib["time"]
+            except ValueError as err:
+                LOGGER.error(
+                    f'Invalid {anchor} element in {xml_filename}: invalid "time" attribute '
+                    f'"{e.attrib["time"]}": {err}'
+                )
+                all_good = False
+                continue
             if words:
-                sequences.append(WordSequence(start, stop, words))
+                sequences.append(WordSequence(start, end, words))
             words = []
-            start = stop
+            start = end
     if words:
         sequences.append(WordSequence(start, None, words))
+
+    if not all_good:
+        raise RuntimeError(
+            f"Could not parse all anchors in {xml_filename}, please make sure each anchor "
+            'element is properly formatted, e.g., <anchor time="34.5s"/>.  Aborting.'
+        )
 
     return sequences
 
@@ -152,11 +170,13 @@ def align_audio(  # noqa: C901
     # Read the audio file
     audio = read_audio_from_file(audio_path)
     audio = audio.set_channels(1).set_sample_width(2)
+    audio_length_in_ms = len(audio.raw_data)
     #  Downsampling is (probably) not necessary
     cfg.set_float("-samprate", audio.frame_rate)
 
     # Process audio, silencing or removing any DNA segments
-    do_not_align_segments = None
+    do_not_align_segments = []
+    removed_segments = []
     if config and "do-not-align" in config:
         # Sort un-alignable segments and join overlapping ones
         do_not_align_segments = sort_and_join_dna_segments(
@@ -194,9 +214,10 @@ def align_audio(  # noqa: C901
                         f"Couldn't find encoder for '{ext[1:]}', defaulting to 'wav'"
                     )
                     processed_audio.export(save_temps + "_processed" + ".wav")
-        raw_data = processed_audio.raw_data
+            removed_segments = do_not_align_segments
+        raw_audio_data = processed_audio.raw_data
     else:
-        raw_data = audio.raw_data
+        raw_audio_data = audio.raw_data
 
     # Initialize the SoundSwallower decoder with the sample rate from the audio
     frame_points = int(cfg.get_float("-samprate") * cfg.get_float("-wlen"))
@@ -237,17 +258,17 @@ def align_audio(  # noqa: C901
         fsg_file.close()
 
         # Extract the part of the audio corresponding to this word sequence
-        # segment_audio =
-        # TODO
+        audio_segment = extract_section(
+            raw_audio_data, word_sequence.start, word_sequence.end
+        )
 
-        # TODO not adjusted the following code yet
         # Configure soundswallower for this sequence's dict and fsg
         cfg.set_string("-dict", dict_file.name)
         cfg.set_string("-fsg", fsg_file.name)
         ps = soundswallower.Decoder(cfg)
         # Align this word sequence
         ps.start_utt()
-        ps.process_raw(raw_data, no_search=False, full_utt=True)
+        ps.process_raw(audio_segment, no_search=False, full_utt=True)
         ps.end_utt()
 
         if not ps.seg():
@@ -256,35 +277,40 @@ def align_audio(  # noqa: C901
                 "please examine dictionary and input audio and text."
             )
 
+        # List of removed segments for the sequence we are currently processing
+        curr_removed_segments = dna_intersection(
+            word_sequence.start, word_sequence.end, audio_length_in_ms, removed_segments
+        )
+
         for seg in ps.seg():
+            if seg.word in ("<sil>", "[NOISE]"):
+                continue
             start = frames_to_time(seg.start_frame)
             end = frames_to_time(seg.end_frame + 1)
             # change to ms
             start_ms = start * 1000
             end_ms = end * 1000
-            if do_not_align_segments and method == "remove":
-                start_ms += calculate_adjustment(start_ms, do_not_align_segments)
-                end_ms += calculate_adjustment(end_ms, do_not_align_segments)
+            if curr_removed_segments:
+                start_ms += calculate_adjustment(start_ms, curr_removed_segments)
+                end_ms += calculate_adjustment(end_ms, curr_removed_segments)
                 start_ms, end_ms = correct_adjustments(
-                    start_ms, end_ms, do_not_align_segments
+                    start_ms, end_ms, curr_removed_segments
                 )
                 # change back to seconds to write to smil
                 start = start_ms / 1000
                 end = end_ms / 1000
-            if seg.word in ("<sil>", "[NOISE]"):
-                continue
-            else:
-                results["words"].append({"id": seg.word, "start": start, "end": end})
+            results["words"].append({"id": seg.word, "start": start, "end": end})
             LOGGER.info("Segment: %s (%.3f : %.3f)", seg.word, start, end)
 
     if len(results["words"]) == 0:
         raise RuntimeError(
             "Alignment produced only noise or silence segments, "
-            "please examine dictionary and input audio and text."
+            "please verify that the text is an actual transcript of the audio."
         )
     if len(results["words"]) != len(results["tokenized"].xpath("//" + unit)):
         raise RuntimeError(
-            "Alignment produced a different number of segments and tokens, "
+            "Alignment produced a different number of segments and tokens "
+            "than were in the input. This should not happen, "
             "please examine dictionary and input audio and text."
         )
 
