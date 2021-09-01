@@ -32,6 +32,7 @@ from readalongs.audio_utils import (
     read_audio_from_file,
     remove_section,
     sort_and_join_dna_segments,
+    write_audio_to_file,
 )
 from readalongs.log import LOGGER
 from readalongs.portable_tempfile import PortableNamedTemporaryFile
@@ -215,9 +216,9 @@ def align_audio(  # noqa: C901
                     )
                     processed_audio.export(save_temps + "_processed" + ".wav")
             removed_segments = do_not_align_segments
-        raw_audio_data = processed_audio.raw_data
+        audio_data = processed_audio
     else:
-        raw_audio_data = audio.raw_data
+        audio_data = audio
 
     # Initialize the SoundSwallower decoder with the sample rate from the audio
     frame_points = int(cfg.get_float("-samprate") * cfg.get_float("-wlen"))
@@ -259,8 +260,10 @@ def align_audio(  # noqa: C901
 
         # Extract the part of the audio corresponding to this word sequence
         audio_segment = extract_section(
-            raw_audio_data, word_sequence.start, word_sequence.end
+            audio_data, word_sequence.start, word_sequence.end
         )
+        if save_temps and audio_segment is not audio_data:
+            write_audio_to_file(audio_segment, save_temps + ".wav" + i_suffix)
 
         # Configure soundswallower for this sequence's dict and fsg
         cfg.set_string("-dict", dict_file.name)
@@ -268,7 +271,7 @@ def align_audio(  # noqa: C901
         ps = soundswallower.Decoder(cfg)
         # Align this word sequence
         ps.start_utt()
-        ps.process_raw(audio_segment, no_search=False, full_utt=True)
+        ps.process_raw(audio_segment.raw_data, no_search=False, full_utt=True)
         ps.end_utt()
 
         if not ps.seg():
@@ -282,6 +285,7 @@ def align_audio(  # noqa: C901
             word_sequence.start, word_sequence.end, audio_length_in_ms, removed_segments
         )
 
+        prev_segment_count = len(results["words"])
         for seg in ps.seg():
             if seg.word in ("<sil>", "[NOISE]"):
                 continue
@@ -301,6 +305,14 @@ def align_audio(  # noqa: C901
                 end = end_ms / 1000
             results["words"].append({"id": seg.word, "start": start, "end": end})
             LOGGER.info("Segment: %s (%.3f : %.3f)", seg.word, start, end)
+        aligned_segment_count = len(results["words"]) - prev_segment_count
+        if aligned_segment_count != len(word_sequence.words):
+            LOGGER.warning(
+                f"Word sequence {i+1} had {len(word_sequence.words)} tokens "
+                f"but produced {aligned_segment_count} segments. "
+                "Check that the anchors are well positioned or "
+                "that the audio corresponds to the text."
+            )
 
     if len(results["words"]) == 0:
         raise RuntimeError(
@@ -308,14 +320,15 @@ def align_audio(  # noqa: C901
             "please verify that the text is an actual transcript of the audio."
         )
     if len(results["words"]) != len(results["tokenized"].xpath("//" + unit)):
-        raise RuntimeError(
-            "Alignment produced a different number of segments and tokens "
-            "than were in the input. This should not happen, "
-            "please examine dictionary and input audio and text."
+        LOGGER.warning(
+            "Alignment produced a different number of segments and tokens than "
+            "were in the input. Sequences between some anchors probably did not "
+            "align successfully. Look for more anchors-related warnings above in the log."
         )
 
     final_end = end
 
+    # This should not split silences accross anchors or DNA segments...
     if not bare:
         # Split adjoining silence/noise between words
         last_end = 0.0

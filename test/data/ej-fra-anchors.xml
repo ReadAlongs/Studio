@@ -8,12 +8,12 @@
             <div type="page">
                 <p>
                     <s>Bonjour.</s>
-                    <anchor time="1.2s"/>
+                    <anchor time="1.62s"/>
                     <s>Je m&#x27;appelle Éric Joanis.</s>
-                    <s>Je suis programmeur <anchor time="3.4s"/> <anchor time="4.5s"/> au sein de l&#x27;équipe des technologies pour les langues autochtones au CNRC.</s>
+                    <s>Je suis programmeur <anchor time="3.81s"/> <anchor time="3.82s"/> au sein de l&#x27;équipe des technologies pour les langues autochtones au CNRC.</s>
                 </p>
             </div>
-            <anchor time="7s"/>
+            <anchor time="6.74s"/>
             <div type="page">
                 <p>
                     <s>J&#x27;ai fait une bonne partie de ma carrière en traduction automatique statistique, mais maintenant cette approche est déclassée par l&#x27;apprentissage profond.</s>
