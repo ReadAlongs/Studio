@@ -26,7 +26,7 @@ from webvtt import Caption, WebVTT
 from readalongs.audio_utils import (
     calculate_adjustment,
     correct_adjustments,
-    dna_intersection,
+    dna_union,
     extract_section,
     mute_section,
     read_audio_from_file,
@@ -281,7 +281,7 @@ def align_audio(  # noqa: C901
             )
 
         # List of removed segments for the sequence we are currently processing
-        curr_removed_segments = dna_intersection(
+        curr_removed_segments = dna_union(
             word_sequence.start, word_sequence.end, audio_length_in_ms, removed_segments
         )
 

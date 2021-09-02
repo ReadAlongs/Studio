@@ -10,16 +10,21 @@ from unittest import TestCase, main
 from readalongs.audio_utils import (
     calculate_adjustment,
     correct_adjustments,
-    dna_intersection,
+    dna_union,
     extract_section,
     join_section,
     mute_section,
     read_audio_from_file,
     remove_section,
+    segment_intersection,
     sort_and_join_dna_segments,
     write_audio_to_file,
 )
 from readalongs.log import LOGGER
+
+
+def segments_from_pairs(*pairs):
+    return list({"begin": b, "end": e} for b, e in pairs)
 
 
 class TestAudio(TestCase):
@@ -85,7 +90,7 @@ class TestAudio(TestCase):
         flags = ["-i", "-l", "eng"]
         output_path = os.path.join(self.tempdir, "output")
         log = self.align(input_text_path, input_audio_path, output_path, flags)
-        LOGGER.info(str(log))
+        # LOGGER.info(str(log))
         # Check Result
         smilpath = Path(output_path)
         smil_files = smilpath.glob("*.smil")
@@ -98,14 +103,15 @@ class TestAudio(TestCase):
         # Process Audio
         removed_segment = remove_section(self.noisy_segment, 1500, 2500)
         audio_output_path = os.path.join(self.tempdir, "removed_sample.mp3")
-        removed_segment.export(audio_output_path)
+        with open(audio_output_path, "wb") as f:
+            removed_segment.export(f)
         # Align
         input_text_path = os.path.join(self.data_path, "audio_sample.txt")
         input_audio_path = audio_output_path
         flags = ["-i", "-l", "eng"]
         output_path = os.path.join(self.tempdir, "output_removed")
         log = self.align(input_text_path, input_audio_path, output_path, flags)
-        LOGGER.info(str(log))
+        # LOGGER.info(str(log))
         # Check Result
         smilpath = Path(output_path)
         smil_files = smilpath.glob("*.smil")
@@ -118,14 +124,15 @@ class TestAudio(TestCase):
         # Process Audio
         muted_segment = mute_section(self.noisy_segment, 1500, 2500)
         audio_output_path = os.path.join(self.tempdir, "muted_sample.mp3")
-        muted_segment.export(audio_output_path)
+        with open(audio_output_path, "wb") as f:
+            muted_segment.export(f)
         # Align
         input_text_path = os.path.join(self.data_path, "audio_sample.txt")
         input_audio_path = audio_output_path
         flags = ["-i", "-l", "eng", "-b"]
         output_path = os.path.join(self.tempdir, "output_muted")
         log = self.align(input_text_path, input_audio_path, output_path, flags)
-        LOGGER.info(str(log))
+        # LOGGER.info(str(log))
         # Check Result
         smilpath = Path(output_path)
         smil_files = smilpath.glob("*.smil")
@@ -135,33 +142,20 @@ class TestAudio(TestCase):
     def test_sort_and_join_dna_segments(self):
         """ Make sure sorting and joining DNA segments works. """
         self.assertEqual(
-            sort_and_join_dna_segments(
-                [{"begin": 1000, "end": 1100}, {"begin": 1500, "end": 2100}]
-            ),
-            [{"begin": 1000, "end": 1100}, {"begin": 1500, "end": 2100}],
+            sort_and_join_dna_segments(segments_from_pairs((1000, 1100), (1500, 2100))),
+            segments_from_pairs((1000, 1100), (1500, 2100)),
+        )
+        self.assertEqual(
+            sort_and_join_dna_segments(segments_from_pairs((1500, 2100), (1000, 1100))),
+            segments_from_pairs((1000, 1100), (1500, 2100)),
         )
         self.assertEqual(
             sort_and_join_dna_segments(
-                [{"begin": 1500, "end": 2100}, {"begin": 1000, "end": 1100}]
+                segments_from_pairs(
+                    (2, 3), (11, 14), (23, 25), (1, 4), (12, 13), (24, 26)
+                )
             ),
-            [{"begin": 1000, "end": 1100}, {"begin": 1500, "end": 2100}],
-        )
-        self.assertEqual(
-            sort_and_join_dna_segments(
-                [
-                    {"begin": 2, "end": 3},
-                    {"begin": 11, "end": 14},
-                    {"begin": 23, "end": 25},
-                    {"begin": 1, "end": 4},
-                    {"begin": 12, "end": 13},
-                    {"begin": 24, "end": 26},
-                ]
-            ),
-            [
-                {"begin": 1, "end": 4},
-                {"begin": 11, "end": 14},
-                {"begin": 23, "end": 26},
-            ],
+            segments_from_pairs((1, 4), (11, 14), (23, 26)),
         )
 
     def test_adjustment_calculation(self):
@@ -230,39 +224,43 @@ class TestAudio(TestCase):
             (1100, 1150),
         )
 
-    def test_dna_intersection(self):
+    def test_segment_intersection(self):
+        self.assertEqual(segment_intersection([], []), [])
+        self.assertEqual(segment_intersection(segments_from_pairs((1, 3)), []), [])
+        self.assertEqual(segment_intersection([], segments_from_pairs((1, 3))), [])
         self.assertEqual(
-            dna_intersection(1000, 2000, 3000, [{"begin": 1100, "end": 1200}]),
-            [
-                {"begin": 0, "end": 1000},
-                {"begin": 1100, "end": 1200},
-                {"begin": 2000, "end": 3000},
-            ],
+            segment_intersection(
+                segments_from_pairs(
+                    (15, 16), (30, 40), (42, 48), (50, 60), (65, 66), (84, 89), (90, 91)
+                ),
+                segments_from_pairs(
+                    (20, 21), (23, 24), (45, 50), (55, 57), (60, 70), (80, 85), (93, 94)
+                ),
+            ),
+            segments_from_pairs((45, 48), (55, 57), (65, 66), (84, 85)),
+        )
+
+    def test_dna_union(self):
+        self.assertEqual(
+            dna_union(1000, 2000, 3000, [{"begin": 1100, "end": 1200}]),
+            segments_from_pairs((0, 1000), (1100, 1200), (2000, 3000)),
         )
         self.assertEqual(
-            dna_intersection(None, 2000, 3000, [{"begin": 1100, "end": 1200}]),
-            [{"begin": 1100, "end": 1200}, {"begin": 2000, "end": 3000}],
+            dna_union(None, 2000, 3000, [{"begin": 1100, "end": 1200}]),
+            segments_from_pairs((1100, 1200), (2000, 3000)),
         )
         self.assertEqual(
-            dna_intersection(1000, None, 3000, [{"begin": 1100, "end": 1200}]),
-            [{"begin": 0, "end": 1000}, {"begin": 1100, "end": 1200}],
+            dna_union(1000, None, 3000, [{"begin": 1100, "end": 1200}]),
+            segments_from_pairs((0, 1000), (1100, 1200)),
         )
         self.assertEqual(
-            dna_intersection(
+            dna_union(
                 1000,
                 2000,
                 3000,
-                [
-                    {"begin": 900, "end": 1100},
-                    {"begin": 1200, "end": 1300},
-                    {"begin": 1900, "end": 2100},
-                ],
+                segments_from_pairs((900, 1100), (1200, 1300), (1900, 2100)),
             ),
-            [
-                {"begin": 0, "end": 1100},
-                {"begin": 1200, "end": 1300},
-                {"begin": 1900, "end": 3000},
-            ],
+            segments_from_pairs((0, 1100), (1200, 1300), (1900, 3000)),
         )
 
     def test_extract_section(self):

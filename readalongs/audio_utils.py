@@ -105,7 +105,11 @@ def write_audio_to_file(audio: AudioSegment, path: str) -> None:
 
     TODO: Add exception handling
     """
-    audio.export(path)
+    # open path in a context manager to make sure the file handle gets closed before
+    # this function exists.
+    # audio.export(filename) does not close its file handle, so we can't count on that.
+    with open(path, "wb") as f:
+        audio.export(f)
 
 
 def read_audio_from_file(path: str) -> AudioSegment:
@@ -182,7 +186,38 @@ def calculate_adjustment(timestamp: int, do_not_align_segments: List[dict]) -> i
     return results
 
 
-def dna_intersection(
+def segment_intersection(segments1: List[dict], segments2: List[dict]) -> List[dict]:
+    """ Return the intersection of two lists of segments
+
+    Precondition:
+        segments1 and segments2 contain sorted, non-overlapping ranges
+    """
+    i1 = 0
+    i2 = 0
+    l1 = len(segments1)
+    l2 = len(segments2)
+
+    results = []
+    while i1 < l1 and i2 < l2:
+        if segments1[i1]["end"] <= segments2[i2]["begin"]:
+            i1 += 1
+        elif segments1[i1]["begin"] >= segments2[i2]["end"]:
+            i2 += 1
+        else:
+            results.append(
+                {
+                    "begin": max(segments1[i1]["begin"], segments2[i2]["begin"]),
+                    "end": min(segments1[i1]["end"], segments2[i2]["end"]),
+                }
+            )
+            if segments1[i1]["end"] < segments2[i2]["end"]:
+                i1 += 1
+            else:
+                i2 += 1
+    return results
+
+
+def dna_union(
     start, end, audio_length: int, do_not_align_segments: List[dict]
 ) -> List[dict]:
     """ Given time range [start, end) to keep, and a list of do-not-align-segments, calculate
