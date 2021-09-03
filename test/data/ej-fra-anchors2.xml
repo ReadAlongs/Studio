@@ -11,7 +11,7 @@
                     <s>Bonjour.</s>
                     <anchor time="1.2s"/>
                     <s>Je m&#x27;appelle Éric Joanis.</s>
-                    <s>Je suis programmeur <anchor time="3.4s"/> <anchor time="4.5s"/> au sein de l&#x27;équipe des technologies pour les langues autochtones au CNRC.</s>
+                    <s>Je suis programmeur <anchor time="3.6s"/> <anchor time="3.9s"/> au sein de l&#x27;équipe des technologies pour les langues autochtones au CNRC.</s>
                 </p>
             </div>
             <anchor time="7s"/>
@@ -23,7 +23,7 @@
                 </p>
                 <p>
                     <s>En parallèle, j&#x27;aide à écrire des tests pour rendre le ReadAlong-Studio plus robuste.</s>
-                    <anchor time="33.1s"/>
+                    <anchor time="33.2s"/>
                 </p>
             </div>
         </body>
