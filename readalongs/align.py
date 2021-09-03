@@ -100,11 +100,6 @@ def get_sequences(xml, xml_filename, unit="w", anchor="anchor"):
     return sequences
 
 
-def round_to_three_digits(num: float) -> float:
-    """ round num to three digits of precision """
-    return float(int(num * 1000)) / 1000
-
-
 def split_silences(words: List[dict], final_end, excluded_segments: List[dict]) -> None:
     """ split the silences between words, making sure we don't step over any
         excluded segment boundaries
@@ -124,7 +119,7 @@ def split_silences(words: List[dict], final_end, excluded_segments: List[dict]) 
         start = word["start"]
         if start > last_end:
             gap = start - last_end
-            midpoint = round_to_three_digits(last_end + gap / 2)
+            midpoint = round(last_end + gap / 2, 3)
             excluded_within_gap = segment_intersection(
                 [{"begin": last_end * 1000, "end": start * 1000}], excluded_segments
             )
@@ -431,6 +426,12 @@ def save_readalong(
     Raises:
         [TODO]
     """
+
+    # Round all times to three digits, anything more is excess precision
+    # poluting the output files, and usually due to float rounding errors anyway.
+    for w in align_results["words"]:
+        w["start"] = round(w["start"], 3)
+        w["end"] = round(w["end"], 3)
 
     output_base = os.path.join(output_dir, output_basename)
 
