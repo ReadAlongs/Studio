@@ -9,6 +9,7 @@
 #
 #######################################################################
 
+import copy
 import io
 import os
 import shutil
@@ -31,6 +32,7 @@ from readalongs.audio_utils import (
     mute_section,
     read_audio_from_file,
     remove_section,
+    segment_intersection,
     sort_and_join_dna_segments,
     write_audio_to_file,
 )
@@ -96,6 +98,50 @@ def get_sequences(xml, xml_filename, unit="w", anchor="anchor"):
         )
 
     return sequences
+
+
+def round_to_three_digits(num: float) -> float:
+    """ round num to three digits of precision """
+    return float(int(num * 1000)) / 1000
+
+
+def split_silences(words: List[dict], final_end, excluded_segments: List[dict]) -> None:
+    """ split the silences between words, making sure we don't step over any
+        excluded segment boundaries
+
+    Args:
+        words(List[dict]): word list, with each word having ["start"] and ["end"] times
+            in seconds. Modified in place.
+        final_end(float): end of last segment from SoundSwallower, possibly a silence,
+            in seconds
+        excluded_segments: list of segments to exclude, having ["begin"] and ["end"]
+            times in milliseconds
+    """
+    last_end = 0.0
+    last_word: dict = dict()
+    words.append({"id": "dummy", "start": final_end, "end": final_end})
+    for word in words:
+        start = word["start"]
+        if start > last_end:
+            gap = start - last_end
+            midpoint = round_to_three_digits(last_end + gap / 2)
+            excluded_within_gap = segment_intersection(
+                [{"begin": last_end * 1000, "end": start * 1000}], excluded_segments
+            )
+            if not excluded_within_gap:
+                # Base case, there were no excluded segments between last_word and word
+                if last_word:
+                    last_word["end"] = midpoint
+                word["start"] = midpoint
+            else:
+                if last_word:
+                    last_word["end"] = min(
+                        midpoint, excluded_within_gap[0]["begin"] / 1000
+                    )
+                word["start"] = max(midpoint, excluded_within_gap[-1]["end"] / 1000)
+        last_word = word
+        last_end = word["end"]
+    _ = words.pop()
 
 
 def align_audio(  # noqa: C901
@@ -176,13 +222,11 @@ def align_audio(  # noqa: C901
     cfg.set_float("-samprate", audio.frame_rate)
 
     # Process audio, silencing or removing any DNA segments
-    do_not_align_segments = []
+    dna_segments = []
     removed_segments = []
     if config and "do-not-align" in config:
         # Sort un-alignable segments and join overlapping ones
-        do_not_align_segments = sort_and_join_dna_segments(
-            config["do-not-align"]["segments"]
-        )
+        dna_segments = sort_and_join_dna_segments(config["do-not-align"]["segments"])
         method = config["do-not-align"].get("method", "remove")
         # Determine do-not-align method
         if method == "mute":
@@ -196,7 +240,7 @@ def align_audio(  # noqa: C901
             processed_audio = audio
             # Process the DNA segments in reverse order so we don't have to correct
             # for previously processed ones when using the "remove" method.
-            for seg in reversed(do_not_align_segments):
+            for seg in reversed(dna_segments):
                 processed_audio = dna_method(
                     processed_audio, int(seg["begin"]), int(seg["end"])
                 )
@@ -209,13 +253,13 @@ def align_audio(  # noqa: C901
                 except CouldntEncodeError:
                     try:
                         os.remove(save_temps + "_processed" + ext)
-                    except:
+                    except BaseException:
                         pass
                     LOGGER.warning(
                         f"Couldn't find encoder for '{ext[1:]}', defaulting to 'wav'"
                     )
                     processed_audio.export(save_temps + "_processed" + ".wav")
-            removed_segments = do_not_align_segments
+            removed_segments = dna_segments
         audio_data = processed_audio
     else:
         audio_data = audio
@@ -228,6 +272,11 @@ def align_audio(  # noqa: C901
     cfg.set_int("-nfft", fft_size)
     frame_size = 1.0 / cfg.get_int("-frate")
 
+    # Note: the frames are typically 0.01s long (i.e., the frame rate is typically 100),
+    # while the audio segments manipulated using pydub are sliced and accessed in
+    # millisecond intervals. For audio segments, the ms slice assumption is hard-coded
+    # all over, while frames_to_time() is used to convert segment boundaries returned by
+    # soundswallower, which are indexes in frames, into durations in seconds.
     def frames_to_time(frames):
         return frames * frame_size
 
@@ -313,6 +362,7 @@ def align_audio(  # noqa: C901
                 "Check that the anchors are well positioned or "
                 "that the audio corresponds to the text."
             )
+    final_end = end
 
     if len(results["words"]) == 0:
         raise RuntimeError(
@@ -326,26 +376,24 @@ def align_audio(  # noqa: C901
             "align successfully. Look for more anchors-related warnings above in the log."
         )
 
-    final_end = end
-
-    # This should not split silences accross anchors or DNA segments...
     if not bare:
-        # Split adjoining silence/noise between words
-        last_end = 0.0
-        last_word = dict()
-        for word in results["words"]:
-            silence = word["start"] - last_end
-            midpoint = last_end + silence / 2
-            if silence > 0:
-                if last_word:
-                    last_word["end"] = midpoint
-                word["start"] = midpoint
-            last_word = word
-            last_end = word["end"]
-        silence = final_end - last_end
-        if silence > 0:
-            if last_word is not None:
-                last_word["end"] += silence / 2
+        # Take all the boundaries (anchors) around segments and add them as DNA
+        # segments for the purpose of splitting silences
+        dna_for_silence_splitting = copy.deepcopy(dna_segments)
+        last_end = None
+        for seq in word_sequences:
+            if last_end or seq.start:
+                dna_for_silence_splitting.append(
+                    {"begin": (last_end or seq.start), "end": (seq.start or last_end)}
+                )
+            last_end = seq.end
+        if last_end:
+            dna_for_silence_splitting.append({"begin": last_end, "end": last_end})
+        dna_for_silence_splitting = sort_and_join_dna_segments(
+            dna_for_silence_splitting
+        )
+
+        split_silences(results["words"], final_end, dna_for_silence_splitting)
 
     return results
 

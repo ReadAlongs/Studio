@@ -141,7 +141,7 @@ def read_audio_from_file(path: str) -> AudioSegment:
 
 def sort_and_join_dna_segments(do_not_align_segments: List[dict]) -> List[dict]:
     """ Give a list of DNA segments, sort them and join any overlapping ones """
-    results = []
+    results: List[dict] = []
     for seg in sorted(do_not_align_segments, key=lambda x: x["begin"]):
         if results and results[-1]["end"] >= seg["begin"]:
             results[-1]["end"] = max(results[-1]["end"], seg["end"])
