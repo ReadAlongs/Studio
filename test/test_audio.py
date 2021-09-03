@@ -237,13 +237,28 @@ class TestAudio(TestCase):
                     (20, 21), (23, 24), (45, 50), (55, 57), (60, 70), (80, 85), (93, 94)
                 ),
             ),
-            segments_from_pairs((45, 48), (55, 57), (65, 66), (84, 85)),
+            segments_from_pairs(
+                (45, 48), (50, 50), (55, 57), (60, 60), (65, 66), (84, 85)
+            ),
         )
         self.assertEqual(
             segment_intersection(
                 segments_from_pairs((10, 30)), segments_from_pairs((19, 19)),
             ),
             segments_from_pairs((19, 19)),
+        )
+        self.assertEqual(
+            segment_intersection(
+                segments_from_pairs((1610, 1620)), segments_from_pairs((1620, 1620))
+            ),
+            segments_from_pairs((1620, 1620)),
+        )
+        self.assertEqual(
+            segment_intersection(
+                segments_from_pairs((1610, 1620)),
+                segments_from_pairs((1610, 1610), (1620, 1620)),
+            ),
+            segments_from_pairs((1610, 1610), (1620, 1620)),
         )
 
     def test_dna_union(self):

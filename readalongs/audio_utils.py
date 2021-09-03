@@ -199,9 +199,9 @@ def segment_intersection(segments1: List[dict], segments2: List[dict]) -> List[d
 
     results = []
     while i1 < l1 and i2 < l2:
-        if segments1[i1]["end"] <= segments2[i2]["begin"]:
+        if segments1[i1]["end"] < segments2[i2]["begin"]:
             i1 += 1
-        elif segments1[i1]["begin"] >= segments2[i2]["end"]:
+        elif segments1[i1]["begin"] > segments2[i2]["end"]:
             i2 += 1
         else:
             results.append(
