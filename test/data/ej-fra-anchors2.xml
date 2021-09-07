@@ -4,7 +4,7 @@
          it, e.g., <p do-not-align="true">...</p>, or
          <s>Some text <foo do-not-align="true">do not align this</foo> more text</s> -->
     <text xml:lang="fra">
-        <anchor time=".1s"/>
+        <anchor time=".5s"/>
         <body>
             <div type="page">
                 <p>

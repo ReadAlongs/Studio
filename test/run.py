@@ -4,8 +4,8 @@ import os
 import sys
 from unittest import TestLoader, TestSuite, TextTestRunner
 
-from readalongs.log import LOGGER
 from test_align_cli import TestAlignCli
+from test_anchors import TestAnchors
 from test_audio import TestAudio
 from test_config import TestConfig
 from test_dna_text import TestDNAText
@@ -18,6 +18,8 @@ from test_temp_file import TestTempFile
 from test_tokenize_cli import TestTokenizeCli
 from test_tokenize_xml import TestTokenizer
 
+from readalongs.log import LOGGER
+
 loader = TestLoader()
 
 e2e_tests = [
@@ -29,6 +31,7 @@ indices_tests = [loader.loadTestsFromTestCase(test) for test in [TestIndices]]
 other_tests = [
     loader.loadTestsFromTestCase(test)
     for test in [
+        TestAnchors,
         TestConfig,
         TestDNAText,
         TestTokenizer,
