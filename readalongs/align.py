@@ -753,14 +753,15 @@ def create_input_tei(**kwargs):
         Outputs to uft-8 XML using pymustache.
 
     Args:
-        **input_file_name (Union[str, None]): input text file name
-        **input_file_handle (Union[file_handle, None]): opened file handle for input text
-            Only provide one of input_file_name or input_file_handle!
-        **text_language in kwargs (str): language for the text.
-        **save_temps in kwargs (Union[str, None], optional): prefix for output
-            file name, which will be kept; or None to create a temporary file
-        **output_file in kwargs (Union[str, None], optional): if specified, the
-            output file will have exactly this name
+        **kwargs: dict containing these arguments:
+            input_file_name (str, optional): input text file name
+            input_file_handle (file_handle, optional): opened file handle for input text
+                Only provide one of input_file_name or input_file_handle!
+            text_language (str): language for the text.
+            save_temps (str, optional): prefix for output file name,
+                which will be kept; or None to create a temporary file
+            output_file (str, optional): if specified, the output file
+                will have exactly this name
 
     Returns:
         file: outfile (file handle)
