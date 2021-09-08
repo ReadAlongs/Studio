@@ -76,8 +76,7 @@ If you don't already have it, you will also need [FFmpeg](https://ffmpeg.org/).
 - Mac: `brew install ffmpeg`
 - Linux: `<your package manager> install ffmpeg`
 
-On Windows, you might also need [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017) (search for "Build Tools", select C++ when prompted) and [swigwin](http://www.swig.org/download.html).
-(TODO: verify whether these are still needed now that `soundswallower` has replaced `pocketsphinx`.)
+On Windows, you might also need [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017) (search for "Build Tools", select C++ when prompted).
 
 ## Usage
 
