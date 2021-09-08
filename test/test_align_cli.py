@@ -169,7 +169,7 @@ class TestAlignCli(TestCase):
     def test_permission_denied(self):
         import platform
 
-        if platform.system() == "Windows":
+        if platform.system() == "Windows" or "WSL2" in platform.release():
             # Cannot change the permission on a directory in Windows though
             # os.mkdir() or os.chmod(), so skip this test
             return
