@@ -10,12 +10,7 @@ import unittest
 
 from lxml import etree
 
-from readalongs.align import (
-    align_audio,
-    convert_to_xhtml,
-    create_input_tei,
-    create_input_xml,
-)
+from readalongs.align import align_audio, convert_to_xhtml, create_input_tei
 from readalongs.log import LOGGER
 from readalongs.portable_tempfile import PortableNamedTemporaryFile
 from readalongs.text.util import load_txt, save_xml
@@ -42,7 +37,6 @@ class TestForceAlignment(unittest.TestCase):
     def testAlignText(self):
         txt_path = os.path.join(self.data_dir, "ej-fra.txt")
         wav_path = os.path.join(self.data_dir, "ej-fra.m4a")
-        # tempfh, temp_fn = create_input_xml(txt_path, text_language='git', save_temps="unit")
         tempfh, temp_fn = create_input_tei(
             input_file_name=txt_path, text_language="fra", save_temps=None
         )

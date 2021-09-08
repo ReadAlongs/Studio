@@ -667,13 +667,6 @@ def convert_to_xhtml(tokenized_xml, title="Book"):
     head.append(link_element)
 
 
-XML_TEMPLATE = """<document>
-{{#sentences}}
-<s{{#lang}} xml:lang="{{lang}}"{{/lang}}>{{text}}</s>
-{{/sentences}}
-</document>
-"""
-
 TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 <TEI>
     <!-- To exclude any element from alignment, add the do-not-align="true" attribute to
@@ -696,52 +689,6 @@ TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
     </text>
 </TEI>
 """
-
-
-def create_input_xml(
-    inputfile, text_language=None, save_temps=None,
-):
-    """Create input XML
-
-    Args:
-        inputfile (str): path to file
-        text_language (Union[str, None], optional): language of inputfile text, by default None
-        save_temps (Union[str, None], optional): save temporary files, by default None
-
-    Returns:
-        file: outfile object
-        str: filename of outfile
-    """
-    if save_temps:
-        filename = save_temps + ".input.xml"
-        outfile = io.open(filename, "wb")
-    else:
-        outfile = PortableNamedTemporaryFile(
-            prefix="readalongs_xml_", suffix=".xml", delete=True
-        )
-        filename = outfile.name
-    with io.open(inputfile, encoding="utf-8") as fin:
-        text = []
-        para = []
-        for line in fin:
-            line = line.strip()
-            if line == "":
-                text.append(" ".join(para))
-                del para[:]
-            else:
-                para.append(line)
-        if para:
-            text.append(" ".join(para))
-        sentences = []
-        for p in text:
-            data = {"text": p}
-            if text_language is not None:
-                data["lang"] = text_language
-            sentences.append(data)
-        xml = pystache.render(XML_TEMPLATE, {"sentences": sentences})
-        outfile.write(xml.encode("utf-8"))
-        outfile.close()
-    return outfile, filename
 
 
 def create_input_tei(**kwargs):
