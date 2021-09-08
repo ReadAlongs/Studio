@@ -11,6 +11,15 @@ commits.
  - [commitlint](#commitlint) is used as a commit message hook to validate that
    commit messages follow the convention.
 
+## TL;DR
+
+Run these commands in each of your sandboxes to enable our pre-commit hooks and commitlint:
+
+```sh
+pre-commit install
+npm install
+```
+
 ## Pre-commit hooks
 
 The ReadAlong Studio team has agreed to systematically use a number of pre-commit hooks to
