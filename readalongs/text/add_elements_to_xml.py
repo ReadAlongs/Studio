@@ -46,14 +46,16 @@ def add_images(element: etree, config: dict) -> etree:
         image_el = etree.Element("graphic", url=url)
         try:
             i = int(i)
-        except ValueError:
-            raise ValueError(f"Images must be indexed using integers, you provided {i}")
+        except ValueError as e:
+            raise ValueError(
+                f"Images must be indexed using integers, you provided {i}"
+            ) from e
         try:
             pages[int(i)].append(image_el)
-        except IndexError:
+        except IndexError as e:
             raise IndexError(
                 f"No page found at index {i}, please verify your configuration"
-            )
+            ) from e
 
     return element
 
@@ -70,7 +72,8 @@ def add_supplementary_xml(element: etree, config: dict) -> etree:
     """
     if "xml" not in config:
         raise KeyError(
-            "Configuration tried to add supplementary xml, but no declarations were found in configuration"
+            "Configuration tried to add supplementary xml, but no declarations "
+            "were found in configuration"
         )
     for el in config["xml"]:
         parents = element.xpath(el["xpath"])

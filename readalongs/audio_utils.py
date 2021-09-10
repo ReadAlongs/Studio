@@ -18,8 +18,8 @@ def join_section(audio: AudioSegment, audio_to_insert: AudioSegment, start: int)
         return audio[:start] + audio_to_insert + audio[start:]
     except IndexError:
         LOGGER.error(
-            f"Tried to insert audio at {start}, but audio is only {len(audio)}ms long. \
-                     Returning unchanged audio instead."
+            f"Tried to insert audio at {start}, but audio is only {len(audio)}ms long. "
+            "Returning unchanged audio instead."
         )
         return audio
 
@@ -31,8 +31,8 @@ def remove_section(audio: AudioSegment, start: int, end: int) -> AudioSegment:
         return audio[:start] + audio[end:]
     except IndexError:
         LOGGER.error(
-            f"Tried to remove audio between {start} and {end}, but audio is only {len(audio)}ms long. \
-                     Returning unchanged audio instead."
+            f"Tried to remove audio between {start} and {end}, but audio is only "
+            f"{len(audio)}ms long. Returning unchanged audio instead."
         )
         return audio
 
@@ -82,8 +82,8 @@ def extract_section(
         return audio[start:end]
     except IndexError:
         LOGGER.error(
-            f"Tried to extract audio between {start} and {end}, but audio is only {len(audio)}ms long. "
-            "Returning whole audio instead."
+            f"Tried to extract audio between {start} and {end}, but audio is only "
+            f"{len(audio)}ms long. Returning whole audio instead."
         )
         return audio
 
@@ -120,4 +120,4 @@ def read_audio_from_file(path: str) -> AudioSegment:
         return AudioSegment.from_file(path)
     except Exception as e:
         # need repr(e) here instead of e since these exceptions don't all have messages
-        raise RuntimeError("Error reading audio file %s: %s" % (path, repr(e)))
+        raise RuntimeError("Error reading audio file %s: %s" % (path, repr(e))) from e

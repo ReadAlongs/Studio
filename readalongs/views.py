@@ -209,7 +209,7 @@ def steps(step):
                 ]
             )
             LOGGER.warning(args)
-            fname, audio_ext = os.path.splitext(session["audio"])
+            _, audio_ext = os.path.splitext(session["audio"])
             data = {"audio_ext": audio_ext, "base": output_base}
             if session["config"].get("show-log", False):
                 log = run(args, capture_output=True)
@@ -267,7 +267,7 @@ def show_zip(base):
 
 @app.route("/file/<string:fname>", methods=["GET"])
 def return_temp_file(fname):
-    fn, ext = os.path.splitext(fname)
+    fn, _ = os.path.splitext(fname)
     LOGGER.warning(session["temp_dir"])
     path = os.path.join(session["temp_dir"], fn, fname)
     if os.path.exists(path):

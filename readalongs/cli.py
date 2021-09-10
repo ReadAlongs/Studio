@@ -33,17 +33,8 @@ from flask.cli import FlaskGroup
 from lxml import etree
 
 from readalongs._version import __version__
-from readalongs.align import (
-    align_audio,
-    convert_to_xhtml,
-    create_input_tei,
-    return_words_and_sentences,
-    save_readalong,
-    write_to_subtitles,
-    write_to_text_grid,
-)
+from readalongs.align import align_audio, create_input_tei, save_readalong
 from readalongs.app import app
-from readalongs.audio_utils import read_audio_from_file
 from readalongs.epub.create_epub import create_epub
 from readalongs.log import LOGGER
 from readalongs.python_version import ensure_using_supported_python_version
@@ -67,7 +58,7 @@ def get_click_file_name(click_file):
 
     On Windows, if click_file is stdin, click_file.name == "-".
     On Linux, if click_file is stdin, click_file.name == "<stdin>".
-    During unit testing, the simulated stdin stream has no .name attribute
+    During unit testing, the simulated stdin stream has no .name attribute.
 
     Args:
         click_file(click.File): the click file whose name we need
@@ -77,7 +68,7 @@ def get_click_file_name(click_file):
     """
     try:
         name = click_file.name
-    except Exception:
+    except AttributeError:
         name = "-"
     return "-" if name == "<stdin>" else name
 
@@ -201,12 +192,12 @@ def align(**kwargs):  # noqa: C901
     if config_file:
         if config_file.endswith("json"):
             try:
-                with open(config_file) as f:
+                with open(config_file, encoding="utf8") as f:
                     config = json.load(f)
-            except json.decoder.JSONDecodeError:
+            except json.decoder.JSONDecodeError as e:
                 raise click.BadParameter(
                     f"Config file at {config_file} is not in valid JSON format."
-                )
+                ) from e
         else:
             raise click.BadParameter(
                 f"Config file '{config_file}' must be in JSON format"
@@ -230,10 +221,10 @@ def align(**kwargs):  # noqa: C901
     try:
         with TemporaryFile(dir=output_dir):
             pass
-    except Exception:
+    except Exception as e:
         raise click.UsageError(
             f"Cannot write into output folder '{output_dir}'. Please verify permissions."
-        )
+        ) from e
 
     output_basename = os.path.basename(output_dir)
     temp_base = None
@@ -276,7 +267,7 @@ def align(**kwargs):  # noqa: C901
         )
     except RuntimeError as e:
         LOGGER.error(e)
-        exit(1)
+        sys.exit(1)
 
     save_readalong(
         align_results=results,
@@ -543,4 +534,4 @@ def g2p(**kwargs):
                 else ""
             )
         )
-        exit(1)
+        sys.exit(1)

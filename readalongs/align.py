@@ -13,8 +13,9 @@ import copy
 import io
 import os
 import shutil
+from dataclasses import dataclass
 from datetime import timedelta
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Union
 
 import pystache
 import regex as re
@@ -50,19 +51,37 @@ from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import parse_time, save_minimal_index_html, save_txt, save_xml
 
 
+@dataclass
 class WordSequence:
-    """ Sequence of "unit" XML elements (by default, <w> elements) with the
-        start and end time for that sequence.
+    """ Sequence of "unit" XML elements
+
+    By default, the unit elements are the <w> elements.
+
+    Attributes:
+        start (int): Optional; start time in ms for the sequence - 0 if None
+        end (int): Optional; end time in ms for the sequence - end of audio if None
+        words (List): list of elements in the sequence
     """
 
-    def __init__(self, start, end, words):
-        self.start = start
-        self.end = end
-        self.words = words
+    start: Union[int, None]
+    end: Union[int, None]
+    words: List
 
 
-def get_sequences(xml, xml_filename, unit="w", anchor="anchor"):
-    sequences = []
+def get_sequences(xml, xml_filename, unit="w", anchor="anchor") -> List[WordSequence]:
+    """ Return the list of anchor-separated word sequences in xml
+
+    Args:
+        xml (etree): xml structure in which to search for words and anchors
+        xml_filename (str): filename, used for error messages only
+        unit (str): element tag of the word units
+        anchor (str): element tag of the anchors
+
+    Returns:
+        List[WordSequence]: all sequences found in xml
+    """
+
+    sequences: List[WordSequence] = []
     start = None
     words = []
     all_good = True
@@ -81,8 +100,8 @@ def get_sequences(xml, xml_filename, unit="w", anchor="anchor"):
                 continue
             except ValueError as err:
                 LOGGER.error(
-                    f'Invalid {anchor} element in {xml_filename}: invalid "time" attribute '
-                    f'"{e.attrib["time"]}": {err}'
+                    f'Invalid {anchor} element in {xml_filename}: invalid "time" '
+                    f'attribute "{e.attrib["time"]}": {err}'
                 )
                 all_good = False
                 continue
@@ -115,7 +134,7 @@ def split_silences(words: List[dict], final_end, excluded_segments: List[dict]) 
             times in milliseconds
     """
     last_end = 0.0
-    last_word: dict = dict()
+    last_word: dict = {}
     words.append({"id": "dummy", "start": final_end, "end": final_end})
     for word in words:
         start = word["start"]
@@ -148,7 +167,7 @@ def align_audio(  # noqa: C901
     bare=False,
     config=None,
     save_temps=None,
-    g2p_fallbacks=[],
+    g2p_fallbacks=None,
     verbose_g2p_warnings=False,
 ):
     """ Align an XML input file to an audio file.
@@ -156,15 +175,15 @@ def align_audio(  # noqa: C901
     Args:
         xml_path (str): Path to XML input file in TEI-like format
         audio_path (str): Path to audio input. Must be in a format supported by ffmpeg
-        unit (str, optional): Element to create alignments for, by default 'w'
-        bare (boolean, optional):
+        unit (str): Optional; Element to create alignments for, by default 'w'
+        bare (boolean): Optional;
             If False, split silence into adjoining tokens (default)
             If True, keep the bare tokens without adjoining silences.
-        config (object, optional): ReadAlong-Studio configuration to use
-        save_temps (Union[str, None], optional): save temporary files, by default None
-        g2p_fallbacks (list, optional): Cascade of fallback languages for g2p conversion,
+        config (object): Optional; ReadAlong-Studio configuration to use
+        save_temps (str): Optional; Save temporary files, by default None
+        g2p_fallbacks (list): Optional; Cascade of fallback languages for g2p conversion,
             in case of g2p errors
-        verbose_g2p_warnings (boolean, optional): display all g2p errors and warnings
+        verbose_g2p_warnings (boolean): Optional; display all g2p errors and warnings
             iff True
 
     Returns:
@@ -179,7 +198,9 @@ def align_audio(  # noqa: C901
     try:
         xml = etree.parse(xml_path).getroot()
     except etree.XMLSyntaxError as e:
-        raise RuntimeError("Error parsing XML input file %s: %s." % (xml_path, e))
+        raise RuntimeError(
+            "Error parsing XML input file %s: %s." % (xml_path, e)
+        ) from e
     if config and "images" in config:
         xml = add_images(xml, config)
     if config and "xml" in config:
@@ -233,7 +254,7 @@ def align_audio(  # noqa: C901
         else:
             LOGGER.error("Unknown do-not-align method declared")
         # Process audio and save temporary files
-        if method == "mute" or method == "remove":
+        if method in ("mute", "remove"):
             processed_audio = audio
             # Process the DNA segments in reverse order so we don't have to correct
             # for previously processed ones when using the "remove" method.
@@ -488,7 +509,7 @@ def save_readalong(
         except FileExistsError:
             if not os.path.isdir(assets_dir):
                 raise
-        for page, image in config["images"].items():
+        for _, image in config["images"].items():
             if image[0:4] == "http":
                 LOGGER.warning(
                     f"Please make sure {image} is accessible to clients using your read-along."
