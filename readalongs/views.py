@@ -73,15 +73,11 @@ ALLOWED_EXTENSIONS = set(ALLOWED_AUDIO + ALLOWED_G2P + ALLOWED_TEXT)
 def allowed_file(filename: str) -> bool:
     """Determines whether filename is allowable
 
-    Parameters
-    ----------
-    filename : str
-        a filename
+    Args:
+        filename (str): a filename
 
-    Returns
-    -------
-    bool
-        True if allowed
+    Returns:
+        bool: True if allowed
     """
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -89,18 +85,14 @@ def allowed_file(filename: str) -> bool:
 def uploaded_files(dir_path: str) -> dict:
     """Returns all files that have been uploaded
 
-    Parameters
-    ----------
-    dir_path : str
-        path to directory where uploaded files are
+    Args:
+        dir_path (str): path to directory where uploaded files are
 
-    Returns
-    -------
-    dict
-        A dictionary containing three keys:
-            - audio : A list containing all paths to audio files
-            - text  : A list containing all paths to text files
-            - maps  : A list containing all paths to mapping files
+    Returns:
+        dict: A dictionary containing three keys:
+               - audio : A list containing all paths to audio files
+               - text  : A list containing all paths to text files
+               - maps  : A list containing all paths to mapping files
     """
     upload_dir = Path(dir_path)
     audio = list(upload_dir.glob("*.wav")) + list(upload_dir.glob("*.mp3"))
@@ -120,15 +112,11 @@ def uploaded_files(dir_path: str) -> dict:
 def update_session_config(**kwargs) -> dict:
     """Update the session configuration for running readalongs aligner.
 
-    Parameters
-    ----------
-    **kwargs
-        Arbitrary keyword arguments.
+    Args:
+        **kwargs: Arbitrary keyword arguments, which will update the session config
 
-    Returns
-    -------
-    dict
-        Returns the updated session configuration
+    Returns:
+        dict: Returns the updated session configuration
     """
     previous_config = session.get("config", {})
     session["config"] = {**previous_config, **kwargs}
