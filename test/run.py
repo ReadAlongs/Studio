@@ -9,6 +9,7 @@ from test_anchors import TestAnchors
 from test_audio import TestAudio
 from test_config import TestConfig
 from test_dna_text import TestDNAText
+from test_dna_utils import TestDNAUtils
 from test_force_align import TestForceAlignment, TestXHTML
 from test_g2p_cli import TestG2pCli
 from test_indices import TestIndices
@@ -34,6 +35,7 @@ other_tests = [
         TestAnchors,
         TestConfig,
         TestDNAText,
+        TestDNAUtils,
         TestTokenizer,
         TestTokenizeCli,
         TestTempFile,

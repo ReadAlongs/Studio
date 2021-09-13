@@ -25,16 +25,18 @@ from pympi.Praat import TextGrid
 from webvtt import Caption, WebVTT
 
 from readalongs.audio_utils import (
-    calculate_adjustment,
-    correct_adjustments,
-    dna_union,
     extract_section,
     mute_section,
     read_audio_from_file,
     remove_section,
+    write_audio_to_file,
+)
+from readalongs.dna_utils import (
+    calculate_adjustment,
+    correct_adjustments,
+    dna_union,
     segment_intersection,
     sort_and_join_dna_segments,
-    write_audio_to_file,
 )
 from readalongs.log import LOGGER
 from readalongs.portable_tempfile import PortableNamedTemporaryFile
