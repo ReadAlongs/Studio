@@ -9,6 +9,7 @@
 #
 #######################################################################
 
+import copy
 import io
 import os
 import shutil
@@ -24,11 +25,17 @@ from pympi.Praat import TextGrid
 from webvtt import Caption, WebVTT
 
 from readalongs.audio_utils import (
-    calculate_adjustment,
-    correct_adjustments,
+    extract_section,
     mute_section,
     read_audio_from_file,
     remove_section,
+    write_audio_to_file,
+)
+from readalongs.dna_utils import (
+    calculate_adjustment,
+    correct_adjustments,
+    dna_union,
+    segment_intersection,
     sort_and_join_dna_segments,
 )
 from readalongs.log import LOGGER
@@ -40,7 +47,98 @@ from readalongs.text.make_dict import make_dict
 from readalongs.text.make_fsg import make_fsg
 from readalongs.text.make_smil import make_smil
 from readalongs.text.tokenize_xml import tokenize_xml
-from readalongs.text.util import save_minimal_index_html, save_txt, save_xml
+from readalongs.text.util import parse_time, save_minimal_index_html, save_txt, save_xml
+
+
+class WordSequence:
+    """ Sequence of "unit" XML elements (by default, <w> elements) with the
+        start and end time for that sequence.
+    """
+
+    def __init__(self, start, end, words):
+        self.start = start
+        self.end = end
+        self.words = words
+
+
+def get_sequences(xml, xml_filename, unit="w", anchor="anchor"):
+    sequences = []
+    start = None
+    words = []
+    all_good = True
+    for e in xml.xpath(f".//{unit} | .//{anchor}"):
+        if e.tag == unit:
+            words.append(e)
+        else:
+            assert e.tag == anchor
+            try:
+                end = parse_time(e.attrib["time"])
+            except KeyError:
+                LOGGER.error(
+                    f'Invalid {anchor} element in {xml_filename}: missing "time" attribute'
+                )
+                all_good = False
+                continue
+            except ValueError as err:
+                LOGGER.error(
+                    f'Invalid {anchor} element in {xml_filename}: invalid "time" attribute '
+                    f'"{e.attrib["time"]}": {err}'
+                )
+                all_good = False
+                continue
+            if words:
+                sequences.append(WordSequence(start, end, words))
+            words = []
+            start = end
+    if words:
+        sequences.append(WordSequence(start, None, words))
+
+    if not all_good:
+        raise RuntimeError(
+            f"Could not parse all anchors in {xml_filename}, please make sure each anchor "
+            'element is properly formatted, e.g., <anchor time="34.5s"/>.  Aborting.'
+        )
+
+    return sequences
+
+
+def split_silences(words: List[dict], final_end, excluded_segments: List[dict]) -> None:
+    """ split the silences between words, making sure we don't step over any
+        excluded segment boundaries
+
+    Args:
+        words(List[dict]): word list, with each word having ["start"] and ["end"] times
+            in seconds. Modified in place.
+        final_end(float): end of last segment from SoundSwallower, possibly a silence,
+            in seconds
+        excluded_segments: list of segments to exclude, having ["begin"] and ["end"]
+            times in milliseconds
+    """
+    last_end = 0.0
+    last_word: dict = dict()
+    words.append({"id": "dummy", "start": final_end, "end": final_end})
+    for word in words:
+        start = word["start"]
+        if start > last_end:
+            gap = start - last_end
+            midpoint = round(last_end + gap / 2, 3)
+            excluded_within_gap = segment_intersection(
+                [{"begin": last_end * 1000, "end": start * 1000}], excluded_segments
+            )
+            if not excluded_within_gap:
+                # Base case, there were no excluded segments between last_word and word
+                if last_word:
+                    last_word["end"] = midpoint
+                word["start"] = midpoint
+            else:
+                if last_word:
+                    last_word["end"] = min(
+                        midpoint, excluded_within_gap[0]["begin"] / 1000
+                    )
+                word["start"] = max(midpoint, excluded_within_gap[-1]["end"] / 1000)
+        last_word = word
+        last_end = word["end"]
+    _ = words.pop()
 
 
 def align_audio(  # noqa: C901
@@ -103,46 +201,29 @@ def align_audio(  # noqa: C901
             "Run with --g2p-verbose for detailed g2p error logs."
         )
 
-    # Now generate dictionary and FSG
-    dict_data = make_dict(xml, xml_path, unit=unit)
-    if save_temps:
-        dict_file = io.open(save_temps + ".dict", "wb")
-    else:
-        dict_file = PortableNamedTemporaryFile(prefix="readalongs_dict_", delete=False)
-    dict_file.write(dict_data.encode("utf-8"))
-    dict_file.flush()
-    fsg_data = make_fsg(xml, xml_path, unit=unit)
-    if save_temps:
-        fsg_file = io.open(save_temps + ".fsg", "wb")
-    else:
-        fsg_file = PortableNamedTemporaryFile(prefix="readalongs_fsg_", delete=False)
-    fsg_file.write(fsg_data.encode("utf-8"))
-    fsg_file.flush()
-
-    # Now do alignment
+    # Prepare the SoundsSwallower (formerly PocketSphinx) configuration
     cfg = soundswallower.Decoder.default_config()
     model_path = soundswallower.get_model_path()
     cfg.set_boolean("-remove_noise", False)
     cfg.set_boolean("-remove_silence", False)
     cfg.set_string("-hmm", os.path.join(model_path, "en-us"))
-    cfg.set_string("-dict", dict_file.name)
-    cfg.set_string("-fsg", fsg_file.name)
     # cfg.set_string('-samprate', "no no")
     cfg.set_float("-beam", 1e-100)
     cfg.set_float("-wbeam", 1e-80)
 
+    # Read the audio file
     audio = read_audio_from_file(audio_path)
     audio = audio.set_channels(1).set_sample_width(2)
+    audio_length_in_ms = len(audio.raw_data)
     #  Downsampling is (probably) not necessary
     cfg.set_float("-samprate", audio.frame_rate)
 
-    # Process audio
-    do_not_align_segments = None
+    # Process audio, silencing or removing any DNA segments
+    dna_segments = []
+    removed_segments = []
     if config and "do-not-align" in config:
         # Sort un-alignable segments and join overlapping ones
-        do_not_align_segments = sort_and_join_dna_segments(
-            config["do-not-align"]["segments"]
-        )
+        dna_segments = sort_and_join_dna_segments(config["do-not-align"]["segments"])
         method = config["do-not-align"].get("method", "remove")
         # Determine do-not-align method
         if method == "mute":
@@ -156,7 +237,7 @@ def align_audio(  # noqa: C901
             processed_audio = audio
             # Process the DNA segments in reverse order so we don't have to correct
             # for previously processed ones when using the "remove" method.
-            for seg in reversed(do_not_align_segments):
+            for seg in reversed(dna_segments):
                 processed_audio = dna_method(
                     processed_audio, int(seg["begin"]), int(seg["end"])
                 )
@@ -169,94 +250,147 @@ def align_audio(  # noqa: C901
                 except CouldntEncodeError:
                     try:
                         os.remove(save_temps + "_processed" + ext)
-                    except:
+                    except BaseException:
                         pass
                     LOGGER.warning(
                         f"Couldn't find encoder for '{ext[1:]}', defaulting to 'wav'"
                     )
                     processed_audio.export(save_temps + "_processed" + ".wav")
-        raw_data = processed_audio.raw_data
+            removed_segments = dna_segments
+        audio_data = processed_audio
     else:
-        raw_data = audio.raw_data
+        audio_data = audio
 
+    # Initialize the SoundSwallower decoder with the sample rate from the audio
     frame_points = int(cfg.get_float("-samprate") * cfg.get_float("-wlen"))
     fft_size = 1
     while fft_size < frame_points:
         fft_size = fft_size << 1
     cfg.set_int("-nfft", fft_size)
-    ps = soundswallower.Decoder(cfg)
     frame_size = 1.0 / cfg.get_int("-frate")
 
+    # Note: the frames are typically 0.01s long (i.e., the frame rate is typically 100),
+    # while the audio segments manipulated using pydub are sliced and accessed in
+    # millisecond intervals. For audio segments, the ms slice assumption is hard-coded
+    # all over, while frames_to_time() is used to convert segment boundaries returned by
+    # soundswallower, which are indexes in frames, into durations in seconds.
     def frames_to_time(frames):
         return frames * frame_size
 
-    ps.start_utt()
-    ps.process_raw(raw_data, no_search=False, full_utt=True)
-    ps.end_utt()
+    # Extract the list of sequences of words in the XML
+    word_sequences = get_sequences(xml, xml_path, unit=unit)
+    for i, word_sequence in enumerate(word_sequences):
 
-    if not ps.seg():
-        raise RuntimeError(
-            "Alignment produced no segments, "
-            "please examine dictionary and input audio and text."
+        i_suffix = "" if i == 0 else "." + str(i + 1)
+
+        # Generate dictionary and FSG for the current sequence of words
+        dict_data = make_dict(word_sequence.words, xml_path, unit=unit)
+        if save_temps:
+            dict_file = io.open(save_temps + ".dict" + i_suffix, "wb")
+        else:
+            dict_file = PortableNamedTemporaryFile(
+                prefix="readalongs_dict_", delete=False
+            )
+        dict_file.write(dict_data.encode("utf-8"))
+        dict_file.close()
+
+        fsg_data = make_fsg(word_sequence.words, xml_path)
+        if save_temps:
+            fsg_file = io.open(save_temps + ".fsg" + i_suffix, "wb")
+        else:
+            fsg_file = PortableNamedTemporaryFile(
+                prefix="readalongs_fsg_", delete=False
+            )
+        fsg_file.write(fsg_data.encode("utf-8"))
+        fsg_file.close()
+
+        # Extract the part of the audio corresponding to this word sequence
+        audio_segment = extract_section(
+            audio_data, word_sequence.start, word_sequence.end
+        )
+        if save_temps and audio_segment is not audio_data:
+            write_audio_to_file(audio_segment, save_temps + ".wav" + i_suffix)
+
+        # Configure soundswallower for this sequence's dict and fsg
+        cfg.set_string("-dict", dict_file.name)
+        cfg.set_string("-fsg", fsg_file.name)
+        ps = soundswallower.Decoder(cfg)
+        # Align this word sequence
+        ps.start_utt()
+        ps.process_raw(audio_segment.raw_data, no_search=False, full_utt=True)
+        ps.end_utt()
+
+        if not ps.seg():
+            raise RuntimeError(
+                "Alignment produced no segments, "
+                "please examine dictionary and input audio and text."
+            )
+
+        # List of removed segments for the sequence we are currently processing
+        curr_removed_segments = dna_union(
+            word_sequence.start, word_sequence.end, audio_length_in_ms, removed_segments
         )
 
-    for seg in ps.seg():
-        start = frames_to_time(seg.start_frame)
-        end = frames_to_time(seg.end_frame + 1)
-        # change to ms
-        start_ms = start * 1000
-        end_ms = end * 1000
-        if do_not_align_segments and method == "remove":
-            start_ms += calculate_adjustment(start_ms, do_not_align_segments)
-            end_ms += calculate_adjustment(end_ms, do_not_align_segments)
-            start_ms, end_ms = correct_adjustments(
-                start_ms, end_ms, do_not_align_segments
-            )
-            # change back to seconds to write to smil
-            start = start_ms / 1000
-            end = end_ms / 1000
-        if seg.word in ("<sil>", "[NOISE]"):
-            continue
-        else:
+        prev_segment_count = len(results["words"])
+        for seg in ps.seg():
+            if seg.word in ("<sil>", "[NOISE]"):
+                continue
+            start = frames_to_time(seg.start_frame)
+            end = frames_to_time(seg.end_frame + 1)
+            # change to ms
+            start_ms = start * 1000
+            end_ms = end * 1000
+            if curr_removed_segments:
+                start_ms += calculate_adjustment(start_ms, curr_removed_segments)
+                end_ms += calculate_adjustment(end_ms, curr_removed_segments)
+                start_ms, end_ms = correct_adjustments(
+                    start_ms, end_ms, curr_removed_segments
+                )
+                # change back to seconds to write to smil
+                start = start_ms / 1000
+                end = end_ms / 1000
             results["words"].append({"id": seg.word, "start": start, "end": end})
-        LOGGER.info("Segment: %s (%.3f : %.3f)", seg.word, start, end)
+            LOGGER.info("Segment: %s (%.3f : %.3f)", seg.word, start, end)
+        aligned_segment_count = len(results["words"]) - prev_segment_count
+        if aligned_segment_count != len(word_sequence.words):
+            LOGGER.warning(
+                f"Word sequence {i+1} had {len(word_sequence.words)} tokens "
+                f"but produced {aligned_segment_count} segments. "
+                "Check that the anchors are well positioned or "
+                "that the audio corresponds to the text."
+            )
+    final_end = end
 
     if len(results["words"]) == 0:
         raise RuntimeError(
             "Alignment produced only noise or silence segments, "
-            "please examine dictionary and input audio and text."
+            "please verify that the text is an actual transcript of the audio."
         )
     if len(results["words"]) != len(results["tokenized"].xpath("//" + unit)):
-        raise RuntimeError(
-            "Alignment produced a different number of segments and tokens, "
-            "please examine dictionary and input audio and text."
+        LOGGER.warning(
+            "Alignment produced a different number of segments and tokens than "
+            "were in the input. Sequences between some anchors probably did not "
+            "align successfully. Look for more anchors-related warnings above in the log."
         )
 
-    final_end = end
-
     if not bare:
-        # Split adjoining silence/noise between words
-        last_end = 0.0
-        last_word = dict()
-        for word in results["words"]:
-            silence = word["start"] - last_end
-            midpoint = last_end + silence / 2
-            if silence > 0:
-                if last_word:
-                    last_word["end"] = midpoint
-                word["start"] = midpoint
-            last_word = word
-            last_end = word["end"]
-        silence = final_end - last_end
-        if silence > 0:
-            if last_word is not None:
-                last_word["end"] += silence / 2
-    dict_file.close()
-    if not save_temps:
-        os.unlink(dict_file.name)
-    fsg_file.close()
-    if not save_temps:
-        os.unlink(fsg_file.name)
+        # Take all the boundaries (anchors) around segments and add them as DNA
+        # segments for the purpose of splitting silences
+        dna_for_silence_splitting = copy.deepcopy(dna_segments)
+        last_end = None
+        for seq in word_sequences:
+            if last_end or seq.start:
+                dna_for_silence_splitting.append(
+                    {"begin": (last_end or seq.start), "end": (seq.start or last_end)}
+                )
+            last_end = seq.end
+        if last_end:
+            dna_for_silence_splitting.append({"begin": last_end, "end": last_end})
+        dna_for_silence_splitting = sort_and_join_dna_segments(
+            dna_for_silence_splitting
+        )
+
+        split_silences(results["words"], final_end, dna_for_silence_splitting)
 
     return results
 
@@ -294,6 +428,12 @@ def save_readalong(
     Raises:
         [TODO]
     """
+
+    # Round all times to three digits, anything more is excess precision
+    # poluting the output files, and usually due to float rounding errors anyway.
+    for w in align_results["words"]:
+        w["start"] = round(w["start"], 3)
+        w["end"] = round(w["end"], 3)
 
     output_base = os.path.join(output_dir, output_basename)
 
@@ -529,13 +669,6 @@ def convert_to_xhtml(tokenized_xml, title="Book"):
     head.append(link_element)
 
 
-XML_TEMPLATE = """<document>
-{{#sentences}}
-<s{{#lang}} xml:lang="{{lang}}"{{/lang}}>{{text}}</s>
-{{/sentences}}
-</document>
-"""
-
 TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 <TEI>
     <!-- To exclude any element from alignment, add the do-not-align="true" attribute to
@@ -560,53 +693,6 @@ TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 """
 
 
-def create_input_xml(
-    inputfile, text_language=None, save_temps=None,
-):
-    """Create input XML
-
-    Args:
-        inputfile (str): path to file
-        text_language (Union[str, None], optional): language of inputfile text, by default None
-        save_temps (Union[str, None], optional): save temporary files, by default None
-
-    Returns:
-        file: outfile object
-        str: filename of outfile
-    """
-    if save_temps:
-        filename = save_temps + ".input.xml"
-        outfile = io.open(filename, "wb")
-    else:
-        outfile = PortableNamedTemporaryFile(
-            prefix="readalongs_xml_", suffix=".xml", delete=True
-        )
-        filename = outfile.name
-    with io.open(inputfile, encoding="utf-8") as fin:
-        text = []
-        para = []
-        for line in fin:
-            line = line.strip()
-            if line == "":
-                text.append(" ".join(para))
-                del para[:]
-            else:
-                para.append(line)
-        if para:
-            text.append(" ".join(para))
-        sentences = []
-        for p in text:
-            data = {"text": p}
-            if text_language is not None:
-                data["lang"] = text_language
-            sentences.append(data)
-        xml = pystache.render(XML_TEMPLATE, {"sentences": sentences})
-        outfile.write(xml.encode("utf-8"))
-        outfile.flush()
-        outfile.close()
-    return outfile, filename
-
-
 def create_input_tei(**kwargs):
     """ Create input xml in TEI standard.
         Uses readlines to infer paragraph and sentence structure from plain text.
@@ -616,14 +702,15 @@ def create_input_tei(**kwargs):
         Outputs to uft-8 XML using pymustache.
 
     Args:
-        **input_file_name (Union[str, None]): input text file name
-        **input_file_handle (Union[file_handle, None]): opened file handle for input text
-            Only provide one of input_file_name or input_file_handle!
-        **text_language in kwargs (str): language for the text.
-        **save_temps in kwargs (Union[str, None], optional): prefix for output
-            file name, which will be kept; or None to create a temporary file
-        **output_file in kwargs (Union[str, None], optional): if specified, the
-            output file will have exactly this name
+        **kwargs: dict containing these arguments:
+            input_file_name (str, optional): input text file name
+            input_file_handle (file_handle, optional): opened file handle for input text
+                Only provide one of input_file_name or input_file_handle!
+            text_language (str): language for the text.
+            save_temps (str, optional): prefix for output file name,
+                which will be kept; or None to create a temporary file
+            output_file (str, optional): if specified, the output file
+                will have exactly this name
 
     Returns:
         file: outfile (file handle)

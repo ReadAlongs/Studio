@@ -24,7 +24,7 @@ class TestAlignCli(TestCase):
         )
         tempdir = tempdirobj.name
     else:
-        tempdir = tempfile.mkdtemp(prefix="tmpdir_test_g2p_cli_", dir=".")
+        tempdir = tempfile.mkdtemp(prefix="tmpdir_test_align_cli_", dir=".")
         print("tmpdir={}".format(tempdir))
 
     def setUp(self):
@@ -255,6 +255,31 @@ class TestAlignCli(TestCase):
             ],
         )
         self.assertIn("is not in valid JSON format", result.stdout)
+
+    def test_bad_anchors(self):
+        xml_text = """<?xml version='1.0' encoding='utf-8'?>
+            <TEI><text xml:lang="fra"><body><p>
+            <anchor /><s>Bonjour.</s><anchor time="invalid"/>
+            </p></body></text></TEI>
+        """
+        xml_file = join(self.tempdir, "bad-anchor.xml")
+        with open(xml_file, "w", encoding="utf8") as f:
+            print(xml_text, file=f)
+        bad_anchors_result = self.runner.invoke(
+            align,
+            [
+                xml_file,
+                join(self.data_dir, "noise.mp3"),
+                join(self.tempdir, "out-bad-anchors"),
+            ],
+        )
+        for msg in [
+            'missing "time" attribute',
+            'invalid "time" attribute "invalid"',
+            "Could not parse all anchors",
+            "Aborting.",
+        ]:
+            self.assertIn(msg, bad_anchors_result.stdout)
 
 
 if __name__ == "__main__":

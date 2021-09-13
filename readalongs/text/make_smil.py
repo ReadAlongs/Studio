@@ -9,8 +9,6 @@
 ####################################################################
 
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import argparse
 
 import pystache
@@ -40,15 +38,11 @@ END_SUBIDX = 3
 def parse_hypseg(text):
     """ Parse hypseg alignments file and return alignements
 
-    Parameters
-    ----------
-    text : str
-        hypseg text
+    Args:
+        text(str): hypseg text
 
-    Returns
-    -------
-    dict
-        returns a dictionary of all start and end points for each word in text
+    Returns:
+        dict: a dictionary of all start and end points for each word in text
     """
     results = {"words": []}
     tokens = text.strip().split()
@@ -69,19 +63,13 @@ def parse_hypseg(text):
 def make_smil(text_path: str, audio_path: str, results: dict) -> str:
     """ Actually render the SMIL
 
-    Parameters
-    ----------
-    text_path : str
-        path to text
-    audio_path : str
-        path to audio
-    results : dict
-        all alignements
+    Args:
+        text_path(str): path to text
+        audio_path(str): path to audio
+        results(dict): all alignements
 
-    Returns
-    -------
-    str
-        formatted SMIL
+    Returns:
+        str: formatted SMIL
     """
     results["text_path"] = text_path
     results["audio_path"] = audio_path

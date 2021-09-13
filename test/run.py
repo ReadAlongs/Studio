@@ -5,12 +5,15 @@ import sys
 from unittest import TestLoader, TestSuite, TextTestRunner
 
 from test_align_cli import TestAlignCli
+from test_anchors import TestAnchors
 from test_audio import TestAudio
 from test_config import TestConfig
 from test_dna_text import TestDNAText
+from test_dna_utils import TestDNAUtils
 from test_force_align import TestForceAlignment, TestXHTML
 from test_g2p_cli import TestG2pCli
 from test_indices import TestIndices
+from test_misc import TestMisc
 from test_prepare_cli import TestPrepareCli
 from test_temp_file import TestTempFile
 from test_tokenize_cli import TestTokenizeCli
@@ -29,8 +32,10 @@ indices_tests = [loader.loadTestsFromTestCase(test) for test in [TestIndices]]
 other_tests = [
     loader.loadTestsFromTestCase(test)
     for test in [
+        TestAnchors,
         TestConfig,
         TestDNAText,
+        TestDNAUtils,
         TestTokenizer,
         TestTokenizeCli,
         TestTempFile,
@@ -38,6 +43,7 @@ other_tests = [
         TestAudio,
         TestAlignCli,
         TestG2pCli,
+        TestMisc,
     ]
 ]
 
