@@ -12,7 +12,7 @@
 #######################################################################
 
 import copy
-from typing import List, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 from pydub import AudioSegment
 
@@ -218,11 +218,25 @@ def segment_intersection(segments1: List[dict], segments2: List[dict]) -> List[d
 
 
 def dna_union(
-    start, end, audio_length: int, do_not_align_segments: List[dict]
+    start, end, audio_length: int, do_not_align_segments: List[dict],
 ) -> List[dict]:
-    """ Given time range [start, end) to keep, and a list of do-not-align-segments, calculate
-        the equivalent do-not-align-segment list to keeping only what's in
-        [start, end) and removing what's outside it.
+    """ Return the DNA list to include [start,end] and exclude do_not_align_segments
+
+    Given time range [start, end] to keep, and a list of do-not-align-segments to
+    exclude, calculate the equivalent do-not-align-segment list to keeping only
+    what's in [start, end], and removing both what's outside [start, end] and
+    do_not_align_segments.
+
+    Args:
+        start (Optional[int]): the start time of the range to keep, None meaning 0,
+            i.e., the beginning of the audio file
+        end (Optional[int]): the end of the range to keep, None meaning the end of the audio file
+        audio_length (int): the full length of the audio file
+        do_not_align_segments (List[dict]): the original list of DNA segments
+
+    Returns:
+        List[dict]:
+            the union of DNA lists [[0, start], [end, audio_length]] and do_not_align_segments
     """
     current_list = do_not_align_segments
     if start:
