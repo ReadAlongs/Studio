@@ -65,7 +65,7 @@ The audio can be spoken or sung, but if there is background music or noise of an
 ## Command Line Interface (CLI)
 
 The CLI has two main commands: `prepare` and `align`. If your data is a plain text file, you can run `prepare` to turn it into XML, where you can then modify the XML file before aligning it (do-not-align, ???).
-Alternatively, if your plain text file does not need to be modified, you can run `align` and use one of the options to indicate that the input is plain text and not xml: `-i`. 
+Alternatively, if your plain text file does not need to be modified, you can run `align` and use one of the options to indicate that the input is plain text and not xml: `-i`.
 
 1. #### Getting from TXT to XML with `readalongs prepare`
 Prepare a XML file for `align` from a TXT file.
@@ -107,7 +107,7 @@ The generated XML will be parsed in to sentences. At this stage you can edit the
 
 There are two types of `do-not-align` (DNA): DNA audio and DNA text.
 
-To use DNA text, simply add `do-not-align` as an attribute of any element in the xml (word, sentence, paragraph, or page). 
+To use DNA text, simply add `do-not-align` as an attribute of any element in the xml (word, sentence, paragraph, or page).
 
     <w do-not-align="true" id="t0b0d0p0s0w0">dog</w>
 
@@ -119,10 +119,10 @@ If you have already run `readalongs prepare`, there will be documentation for DN
 
 To use DNA audio, you can specify a frame of time in milliseconds in the `config.json file` which you want the aligner to ignore.
 
-    "do-not-align": 
+    "do-not-align":
         {
         "method": "remove",
-        "segments": 
+        "segments":
         [
             {
                 "begin": 1,
@@ -151,7 +151,7 @@ Align a text file (XML or TXT) and an audio file to create a time-aligned audiob
 
 `[output_base]`: path to the directory where the output files will be created as `output_base`*
 
- 
+
 
 | Options (required marked by * ) |  |
 | -------- | -------- |
@@ -190,25 +190,25 @@ The image has to be a JPEG (`.jpg`) file (check which formats are supported!!!).
 Both images and DNA audio can be specified in the same config file, such as in the example below:
 
 ```
-{ 
-    "images": 
+{
+    "images":
         {
-            "0": "image-for-page1.jpg", 
-            "1": "image-for-page1.jpg", 
+            "0": "image-for-page1.jpg",
+            "1": "image-for-page1.jpg",
             "2": "image-for-page2.jpg",
             "3": "image-for-page3.jpg"
         },
-        
-    "do-not-align": 
+
+    "do-not-align":
         {
         "method": "remove",
-        "segments": 
+        "segments":
             [
                 {   "begin": 1,     "end": 17000   },
                 {   "begin": 57456, "end": 68000   }
             ]
         }
-}               
+}
 ```
 
 Warning: mind your commas! The JSON format is very picky: commas separate elements in a list or dictionnary, but if you accidentally have a comma after the last element (e.g., by cutting and pasting whole lines), you will get a syntax error.
@@ -223,7 +223,7 @@ Manipulating the text and/or audio data that you are trying to align can sometim
 
 Adding 1 second segments of silence in between phrases or paragraphs sometimes improves the performance of the aligner. We do this using the [Pydub](https://github.com/jiaaro/pydub) library which can be pip-installed. Keep in mind that Pydub uses milliseconds.
 
-If your data is currently 1 audio file, you will need to split it into segments where you want to put the silences. 
+If your data is currently 1 audio file, you will need to split it into segments where you want to put the silences.
 
 ```
 ten_seconds = 10 * 1000
@@ -231,7 +231,7 @@ first_10_seconds = soundtrack[:ten_seconds]
 last_5_seconds = soundtrack[-5000:]
 
 ```
-Once you have your segments, create an MP3 file containing only 1 second of silence. 
+Once you have your segments, create an MP3 file containing only 1 second of silence.
 
 ```
 from pydub import AudioSegment
@@ -278,9 +278,9 @@ This error is most likely caused not by a bug in your ReadAlong input files, but
 
     a. characters that are not in caps  (for example `g` in the string `gUW` in the error message shown above.)
     b. a character not traditionally used in English (for example é or Ŧ, or `ʰ` in the error message shown above.)
-    
+
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;You can confirm you have isolated the right characters by ensuring &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;every other character in your error message appears as an **output** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in the [eng-ipa-to-arpabet mapping](https://github.com/roedoejet/g2p/blob/master/g2p/mappings/langs/eng/eng_ipa_to_arpabet.json). These are the problematic &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;characters we need to debug in the error message shown above: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`g` and `ʰ`.
-  
+
   2. Once you have isolated the characters that are not being converted to eng-arpabet, you are ready to begin debugging the issue. Go through steps 3 - ? for each problematic character.
   3. Our next step is to identify which mapping is converting the problematic characters incorrectly. Most of the time, the issue will be in either the first or the second of the following mappings:
       i.  *xyz-ipa* (where xyz is the ISO language code for your mapping)
@@ -290,8 +290,8 @@ This error is most likely caused not by a bug in your ReadAlong input files, but
 4. Find a word in your text that uses the problematic character. For the sake of example, let us assume the character I am debugging is `g`, that appears in the word "dog", in language "xyz".
 5. Make sure you are in the g2p repository and run the word through `g2p convert` to confirm you have isolated the correct characters to debug: `g2p convert dog xyz eng-arpabet`. Best practice is to copy+paste the word directly from your text instead of retyping it. Make sure to use the ISO code for your language in place of "xyz".
      *If the word converts cleanly into eng-arpabet characters, your issue does not lie in your mapping. //Refer to other potential RA issues*
-    
-6. From the result of the command run in 5, note the characters that do **not** appear as **inputs** in the [eng-ipa-to-arpabet mapping](https://github.com/roedoejet/g2p/blob/master/g2p/mappings/langs/eng/eng_ipa_to_arpabet.json). These are the characters that have not been converted into characters that eng-ipa-to-arpabet can read. These should be the same characters you identified in step 2. 
+
+6. From the result of the command run in 5, note the characters that do **not** appear as **inputs** in the [eng-ipa-to-arpabet mapping](https://github.com/roedoejet/g2p/blob/master/g2p/mappings/langs/eng/eng_ipa_to_arpabet.json). These are the characters that have not been converted into characters that eng-ipa-to-arpabet can read. These should be the same characters you identified in step 2.
 
 7. Run `g2p convert dog xyz xyz-ipa`. Ensure the result is what you expect. If not, your error may arise from a problem in this mapping. refer_to_g2p_troubleshooting. If the result is what you expect, continue to the next step.
 8. Note the result from running the command in 7. Check that the characters (appear/being mapped by generated -- use debugger or just look at mapping)
@@ -306,7 +306,7 @@ Usage:
 readalongs g2p --g2p-fallback fra:eng:und myfile.tokenize.xml myfile.g2p.xml
 readalongs align --g2p-fallback fra:eng:end myfile.xml myfile.wav output
 ```
- 
+
 
 The new g2p command in readalongs will run just the g2p step, from a tokenized file:
 
@@ -319,4 +319,3 @@ readalongs g2p file.tokenized.xml file.g2p.xml
 And the --g2p-fallback switch to g2p and align turns on the g2p cascade: if a word fails to g2p to valid ARPABET, the fallback languages are attempted in order, until the results is valid ARPABET. If no valid g2p conversion is found, you get an error message, the g2p output is written as is, but align aborts without trying, since we know soundswallower will just spew incomprehensible error messages.
 
 The warning messages g2p and align give you indicate which words are the problem in a concise way. If you want (possibly too much) more details, add --g2p-verbose, and you’ll get a whole ton more information about g2p’ing the words that fail, for each language where g2p was attempted.
-
