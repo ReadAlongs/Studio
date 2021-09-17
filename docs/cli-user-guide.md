@@ -2,7 +2,7 @@
 
 ---
 ---
-Read-Along Studio Documentation
+Read-Along Studio User Guide
 ===
 
 This library is an end-to-end audio/text aligner. It is meant to be used together with the ReadAlong-Web-Component to interactively visualize the alignment.
@@ -25,32 +25,12 @@ Which can be loaded using the [read-along web component](https://github.com/roed
 
 A book is generated as a standalone HTML page by default, but can optionally be generated as an ePub file.
 
+
 ## Required knowledge
 * Command line interface (CLI)
 * Plain text file/xml/smil
 * Audacity or similar
 * Spinning up a server
-
-## Installing
-To install the latest version published to PyPI, you can run a standard pip installation: `pip install readalongs`. Be warned, however, that this project is currectly very active so the published version is out-of-date. It's probably best to install the current development version instead.
-
-To install the current development version, clone the repo and pip install it locally:
-
-```
-$ git clone https://github.com/ReadAlongs/Studio.git
-$ cd Studio
-$ pip install -e .
-```
-
-If you don't already have it, you will also need [FFmpeg](https://ffmpeg.org/).
-
-Windows: FFmpeg builds for Windows ([helpful instructions](https://windowsloop.com/install-ffmpeg-windows-10/))
-
-Mac: `brew install ffmpeg`
-
-Linux: `<your package manager> install ffmpeg`
-
-On Windows, you might also need Visual Studio Build Tools (search for "Build Tools", select C++ when prompted) and swigwin. (TODO: verify whether these are still needed now that soundswallower has replaced pocketsphinx.)
 
 
 ## What you need to make a ReadAlong
@@ -62,9 +42,11 @@ In order to create a ReadAlong you will need two files:
 The content of the text file should be a transcription of the audio file.
 The audio can be spoken or sung, but if there is background music or noise of any kind, the aligner is likely to fail. Clearly enunciated audio is also likely to increase accuracy.
 
+
 ## Command Line Interface (CLI)
 
-The CLI has two main commands: `prepare` and `align`. If your data is a plain text file, you can run `prepare` to turn it into XML, where you can then modify the XML file before aligning it (do-not-align, ???).
+The CLI has two main commands: `prepare` and `align`. If your data is a plain text file, you can run `prepare` to turn it into XML, where you can then modify the XML file before aligning it
+(e.g., to mark that some text is in a different language, to flag some do-not-align text, or to drop anchors in).
 Alternatively, if your plain text file does not need to be modified, you can run `align` and use one of the options to indicate that the input is plain text and not xml: `-i`.
 
 1. #### Getting from TXT to XML with `readalongs prepare`
@@ -103,7 +85,7 @@ So, a full command would be something like:
 
 The generated XML will be parsed in to sentences. At this stage you can edit the XML to have any modifications, such as adding `do-not-align` as an attribute of any element in your XML.
 
-##### Handling mismatches:`do-not-align`
+##### Handling mismatches: `do-not-align`
 
 There are two types of `do-not-align` (DNA): DNA audio and DNA text.
 
@@ -149,7 +131,7 @@ Align a text file (XML or TXT) and an audio file to create a time-aligned audiob
 
 `[story.mp3/wav] `: path to the audio file (MP3, WAV or any format supported by ffmpeg)
 
-`[output_base]`: path to the directory where the output files will be created as `output_base`*
+`[output_base]`: path to the directory where the output files will be created as `output_base*`
 
 
 

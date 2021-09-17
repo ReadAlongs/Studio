@@ -27,7 +27,7 @@ This library is an end-to-end audio/text aligner. It is meant to be used togethe
     - [Contributors](#contributors)
   - [License](#license)
 
-Note: additional draft documentation is available [here](https://github.com/finguist/ReadAlong-Studio-Documentation/blob/main/prepare.md)
+See also: [Detailed command line interface user guide](docs/cli-user-guide.md).
 
 ## Background
 
@@ -59,7 +59,7 @@ as an ePub file.
 You will need: **Python 3.7 or higher**.
 
 To install the latest version published to PyPI, you can run a standard pip
-installation: `pip install readalongs`.
+installation: `pip install readalongs`. Be warned, however, that this project is currectly very active so the published version could be out-of-date. Consider installing the current development version instead.
 
 To install the current development version, clone the repo and pip install it
 locally:
@@ -84,7 +84,12 @@ ReadAlong-Studio can be used either through the command line, a distributed web 
 
 ### CLI
 
-Below shows some basic commands. For more information about how the command line interface works, please check this [incomplete documentation](https://readalong-studio.readthedocs.io/en/latest/index.html) and [this draft documentation](https://github.com/finguist/ReadAlong-Studio-Documentation/blob/main/prepare.md) [TODO: complete and fix all this documentation!]. Additionally, you can add the `--help` flag to any command for more information.
+This page lists only the most basic commands.
+
+For more information about how the command line interface works:
+* Read the [Detailed command line interface user guide](docs/cli-user-guide.md)
+* Invoke any CLI command with the `--help` for usage information. e.g., `readalongs --help`, `readalongs align --help`.
+* Consult this [incomplete documentation](https://readalong-studio.readthedocs.io/en/latest/index.html)  [TODO: complete and fix this documentation!].
 
 #### Alignment
 
@@ -153,12 +158,15 @@ Have a look at [Contributing.md](Contributing.md) for help getting started.
 
 This project exists thanks to all the people who contribute.
 
+Here is a partial list:
 [@dhdaines](https://github.com/dhdaines).
 [@eddieantonio](https://github.com/eddieantonio).
 [@finguist](https://github.com/finguist).
 [@joanise](https://github.com/joanise).
 [@littell](https://github.com/littell).
 [@roedoejet](https://github.com/roedoejet).
+
+Project web page: [ReadAlong Studio: Application for Indigenous audiobooks and videos project](https://nrc.canada.ca/en/research-development/research-collaboration/programs/readalong-studio-application-indigenous-audiobooks-videos-project)
 
 ## License
 
