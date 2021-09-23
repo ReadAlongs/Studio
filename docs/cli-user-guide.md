@@ -280,24 +280,42 @@ This error is most likely caused not by a bug in your ReadAlong input files, but
 
 ### g2p cascade
 
-To get it, checkout branch dev.g2p-cascade in Studio.
+Sometimes the g2p conversion of the input text will not succeed, for various reasons. A word might use characters not recognized by the g2p for the language, or it might be in a different language. Whatever the reason, the output for the g2p conversion will not be valid ARPABET, and so the system will not be able to proceed to alignment by SoundSwallower.
 
-Usage:
+If you know the language for that text, you can mark it as such in the xml. E.g., `<s xml:lang="eng">This sentence is in English.</s>`. The `xml:lang` attribute can be added to any element in the XML structure and will apply to text at any depth within that element, unless the attribute is specified again at a deeper level, e.g., `<s xml:lang="eng">English mixed with <foo xml:lang="fra">français</foo>.</s>`.
+
+There is also a simpler option available: the g2p cascade. When the g2p cascade is enabled, the g2p mapping will be done by first trying the language specified in the XML file (or with the `-l` flag on the command line, if the input is plain text). For each word where the result is not valid ARPABET, the g2p mapping will be attempted again with each of the languages specified in the g2p cascade, in order, until a valid ARPABET conversion is obtained. If not valid conversion is possible, are error message is printed and alignment is not attempted.
+
+To enable the g2p cascade, add the `--g2p-fallback l1:l2:...` switch to `readalongs g2p` or `readalongs align`.
+
+Examples:
 
 ```
 readalongs g2p --g2p-fallback fra:eng:und myfile.tokenize.xml myfile.g2p.xml
-readalongs align --g2p-fallback fra:eng:end myfile.xml myfile.wav output
+readalongs align --g2p-fallback fra:eng:und myfile.xml myfile.wav output
 ```
 
+Special language code: `und`. Notice that the examples above have `und` as the last language in the cascade. `und`, for Undetermined, is a special language mapping that uses the Unicode definition of all know characters in any alphabets, and maps them as if the name of that letter was how it is pronounced. While crude, this mapping works surprisingly well for the purposes of forced alignment, and allow `readalongs align` to successfully align most text with a few foreign words without any manual intervention. We recommend systematically using `und` at the end of the cascade. Note that adding another language after `und` will have no effect, since the Undetermined mapping will map any string to valid ARPABET.
 
-The new g2p command in readalongs will run just the g2p step, from a tokenized file:
+The warning messages issued by `readalongs g2p` and `readalongs align` indicate which words are causing g2p problems. It can be worth inspecting to input text to fix any encoding or spelling errors highlighted by these warnings. More detailed messages can be produced by adding the `--g2p-verbose` switch, to obtain a lot more information about g2p'ing words in each language g2p was unsucessfully attempted.
+
+### Breaking up the pipeline
+
+A new command was recently added to the CLI: `readalongs g2p`, to break processing up.
+
+The following series of commands:
 
 ```
 readalongs prepare -l lang  file.txt file.xml
 readalongs tokenize file.xml file.tokenized.xml
 readalongs g2p file.tokenized.xml file.g2p.xml
+readalongs align file.g2p.xml file.wav output
 ```
 
-And the --g2p-fallback switch to g2p and align turns on the g2p cascade: if a word fails to g2p to valid ARPABET, the fallback languages are attempted in order, until the results is valid ARPABET. If no valid g2p conversion is found, you get an error message, the g2p output is written as is, but align aborts without trying, since we know soundswallower will just spew incomprehensible error messages.
+is equivalent to the single command:
 
-The warning messages g2p and align give you indicate which words are the problem in a concise way. If you want (possibly too much) more details, add --g2p-verbose, and you’ll get a whole ton more information about g2p’ing the words that fail, for each language where g2p was attempted.
+```
+readalongs align -l lang file.txt file.wav output
+```
+
+except that when running this as four separate commands, you can edit the XML files between each step to make any required adjustments and corrections.
