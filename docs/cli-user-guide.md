@@ -286,16 +286,17 @@ If you know the language for that text, you can mark it as such in the xml. E.g.
 
 There is also a simpler option available: the g2p cascade. When the g2p cascade is enabled, the g2p mapping will be done by first trying the language specified in the XML file (or with the `-l` flag on the command line, if the input is plain text). For each word where the result is not valid ARPABET, the g2p mapping will be attempted again with each of the languages specified in the g2p cascade, in order, until a valid ARPABET conversion is obtained. If not valid conversion is possible, are error message is printed and alignment is not attempted.
 
-To enable the g2p cascade, add the `--g2p-fallback l1:l2:...` switch to `readalongs g2p` or `readalongs align`.
-
-Examples:
-
+To enable the g2p cascade, add the `--g2p-fallback l1:l2:...` option to `readalongs g2p` or `readalongs align`:
 ```
 readalongs g2p --g2p-fallback fra:eng:und myfile.tokenize.xml myfile.g2p.xml
 readalongs align --g2p-fallback fra:eng:und myfile.xml myfile.wav output
 ```
 
-Special language code: `und`. Notice that the examples above have `und` as the last language in the cascade. `und`, for Undetermined, is a special language mapping that uses the Unicode definition of all know characters in any alphabets, and maps them as if the name of that letter was how it is pronounced. While crude, this mapping works surprisingly well for the purposes of forced alignment, and allow `readalongs align` to successfully align most text with a few foreign words without any manual intervention. We recommend systematically using `und` at the end of the cascade. Note that adding another language after `und` will have no effect, since the Undetermined mapping will map any string to valid ARPABET.
+#### "Undetermined" language code: `und`
+
+Notice that the two examples use `und` as the last language in the cascade. `und`, for Undetermined, is a special language mapping that uses the Unicode definition of all know characters in all alphabets, and maps them as if the name of that character was how it is pronounced. While crude, this mapping works surprisingly well for the purposes of forced alignment, and allows `readalongs align` to successfully align most text with a few foreign words without any manual intervention. We recommend systematically using `und` at the end of the cascade. Note that adding another language after `und` will have no effect, since the Undetermined mapping will map any string to valid ARPABET.
+
+#### Debugging g2p mapping issues
 
 The warning messages issued by `readalongs g2p` and `readalongs align` indicate which words are causing g2p problems. It can be worth inspecting to input text to fix any encoding or spelling errors highlighted by these warnings. More detailed messages can be produced by adding the `--g2p-verbose` switch, to obtain a lot more information about g2p'ing words in each language g2p was unsucessfully attempted.
 
@@ -304,18 +305,62 @@ The warning messages issued by `readalongs g2p` and `readalongs align` indicate 
 A new command was recently added to the CLI: `readalongs g2p`, to break processing up.
 
 The following series of commands:
-
 ```
 readalongs prepare -l lang  file.txt file.xml
 readalongs tokenize file.xml file.tokenized.xml
 readalongs g2p file.tokenized.xml file.g2p.xml
 readalongs align file.g2p.xml file.wav output
 ```
-
 is equivalent to the single command:
-
 ```
 readalongs align -l lang file.txt file.wav output
 ```
+except that when running the pipeline as four separate commands, you can edit the XML files between each step to make any required adjustments and corrections.
 
-except that when running this as four separate commands, you can edit the XML files between each step to make any required adjustments and corrections.
+### Anchors: marking known alignment points
+
+Long audio/text file pairs can sometimes be difficult to align correctly, because the aligner might get lost part way through the alignment process. Anchors can be used to tell the aligner about known correspondance points between the text and the audio stream.
+
+#### Anchor syntax
+
+Anchors are inserted in the XML file (the output of `readalongs prepare`, `readalongs tokenize` or `readalongs g2p`) using the following syntax: `<anchor time="3.42s"/>` or `<anchor time="3420ms"/>`. The time can be specified in seconds (this is the default) or milliseconds.
+
+Anchors can be placed anywhere in the XML file: between/before/after any element or text.
+
+Example:
+```
+<?xml version='1.0' encoding='utf-8'?> <TEI> <text xml:lang="eng"> <body>
+    <anchor time="143ms"/>
+    <div type="page">
+    <p>
+        <s>Hello.</s>
+        <anchor time="1.62s"/>
+        <s>This is <anchor time="3.81s"/> <anchor time="3.94s"/> a test</s>
+        <s><anchor time="4123ms"/>weirdword<anchor time="4789ms"/></s>
+    </p>
+    </div>
+    <anchor time="6.74s"/>
+</body> </text> </TEI>
+```
+
+#### Anchor semantics
+
+When anchors are used, the alignment task is divided at each anchor, creating a series of segments that are aligned independently from one another. When alignment is performed, the aligner sees only the audio and the text from the segment being processed, and the results are joined together afterwards.
+
+The beginning and end of files are implicit anchors: *n* anchors define *n+1* segments: from the beginning of the audio and text to the first anchor, between pairs of anchors, and from the last anchor to the end of the audio and text.
+
+Special cases equivalent to do-not-align audio:
+ - If an anchor occurs before the first word in the text, the audio up to that anchor's timestamps is excluded from alignment.
+ - If an anchor occurs after the last word, the end of the audio is excluded from alignment.
+ - If two anchors occur one after the other, the time span between them in the audio is excluded from alignment.
+Using anchors to define do-not-align audio segments is effectively the same as marking them as "do-not-align" in the `config.json` file, except that DNA segments declared using anchors have a known alignment with respect to the text, while the position of DNA segments declared in the config file are inferred by the aligner.
+
+#### Anchor use cases
+
+1. Alignment fails because the stream is too long or too difficult to align:
+
+   When alignment fails, listen to the audio stream and try to identify where some words you can pick up start or end. Even if you don't understand the language, there might be some words you're able to pick up and use as anchors to help the aligner.
+
+2. You already know where some words/sentences/paragraphs start or end, because the data came with some partial alignment information. For example, the data might come from an ELAN file with sentence alignments.
+
+   These known timestamps can be converted to anchors.
