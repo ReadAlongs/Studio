@@ -25,7 +25,6 @@
 import io
 import json
 import os
-import shutil
 import sys
 from tempfile import TemporaryFile
 
@@ -34,24 +33,18 @@ from flask.cli import FlaskGroup
 from lxml import etree
 
 from readalongs._version import __version__
-from readalongs.align import (
-    align_audio,
-    convert_to_xhtml,
-    create_input_tei,
-    return_words_and_sentences,
-    write_to_subtitles,
-    write_to_text_grid,
-)
+from readalongs.align import align_audio, create_input_tei, save_readalong
 from readalongs.app import app
-from readalongs.audio_utils import read_audio_from_file
 from readalongs.epub.create_epub import create_epub
 from readalongs.log import LOGGER
+from readalongs.python_version import ensure_using_supported_python_version
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
-from readalongs.text.make_smil import make_smil
 from readalongs.text.tokenize_xml import tokenize_xml
-from readalongs.text.util import save_minimal_index_html, save_txt, save_xml, write_xml
+from readalongs.text.util import save_xml, write_xml
 from readalongs.views import LANGS
+
+ensure_using_supported_python_version()
 
 
 def create_app():
@@ -60,11 +53,23 @@ def create_app():
 
 
 def get_click_file_name(click_file):
-    """Return click_file.name, falling back to <stdin> if the .name attribute is missing."""
+    """ Wrapper around click_file.name with consistent handling for stdin
+
+    On Windows, if click_file is stdin, click_file.name == "-".
+    On Linux, if click_file is stdin, click_file.name == "<stdin>".
+    During unit testing, the simulated stdin stream has no .name attribute.
+
+    Args:
+        click_file(click.File): the click file whose name we need
+
+    Returns:
+        "-" if click_file represents stdin, click_file.name otherwise
+    """
     try:
-        return click_file.name
-    except Exception:  # For unit testing: simulated stdin stream has no .name attrib
-        return "<stdin>"
+        name = click_file.name
+    except AttributeError:
+        name = "-"
+    return "-" if name == "<stdin>" else name
 
 
 from readalongs.utility import parse_g2p_fallback
@@ -183,18 +188,21 @@ def align(**kwargs):  # noqa: C901
 
     OUTPUT_BASE: Base name for output files
     """
-    config = kwargs.get("config", None)
-    if config:
-        if config.endswith("json"):
+    config_file = kwargs.get("config", None)
+    config = None
+    if config_file:
+        if config_file.endswith("json"):
             try:
-                with open(config) as f:
+                with open(config_file, encoding="utf8") as f:
                     config = json.load(f)
-            except json.decoder.JSONDecodeError:
+            except json.decoder.JSONDecodeError as e:
                 raise click.BadParameter(
-                    f"Config file at {config} is not in valid JSON format."
-                )
+                    f"Config file at {config_file} is not in valid JSON format."
+                ) from e
         else:
-            raise click.BadParameter(f"Config file '{config}' must be in JSON format")
+            raise click.BadParameter(
+                f"Config file '{config_file}' must be in JSON format"
+            )
 
     output_dir = kwargs["output_base"]
     if os.path.exists(output_dir):
@@ -214,13 +222,12 @@ def align(**kwargs):  # noqa: C901
     try:
         with TemporaryFile(dir=output_dir):
             pass
-    except Exception:
+    except Exception as e:
         raise click.UsageError(
             f"Cannot write into output folder '{output_dir}'. Please verify permissions."
-        )
+        ) from e
 
     output_basename = os.path.basename(output_dir)
-    output_base = os.path.join(output_dir, output_basename)
     temp_base = None
     if kwargs["save_temps"]:
         temp_dir = os.path.join(output_dir, "tempfiles")
@@ -232,27 +239,25 @@ def align(**kwargs):  # noqa: C901
 
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
+
     if kwargs["text_input"]:
         if not kwargs["language"]:
             LOGGER.warning("No input language provided, using undetermined mapping")
-        tempfile, kwargs["textfile"] = create_input_tei(
-            input_file_name=kwargs["textfile"],
+        plain_textfile = kwargs["textfile"]
+        _, xml_textfile = create_input_tei(
+            input_file_name=plain_textfile,
             text_language=kwargs["language"],
             save_temps=temp_base,
         )
-    if kwargs["output_xhtml"]:
-        tokenized_xml_path = "%s.xhtml" % output_base
     else:
-        _, input_ext = os.path.splitext(kwargs["textfile"])
-        tokenized_xml_path = "%s%s" % (output_base, input_ext)
-    smil_path = output_base + ".smil"
-    _, audio_ext = os.path.splitext(kwargs["audiofile"])
-    audio_path = output_base + audio_ext
+        xml_textfile = kwargs["textfile"]
+
     unit = kwargs.get("unit", "w") or "w"  # Sometimes .get() still returns None here
     bare = kwargs.get("bare", False)
+
     try:
         results = align_audio(
-            kwargs["textfile"],
+            xml_textfile,
             kwargs["audiofile"],
             unit=unit,
             bare=bare,
@@ -263,67 +268,18 @@ def align(**kwargs):  # noqa: C901
         )
     except RuntimeError as e:
         LOGGER.error(e)
-        exit(1)
+        sys.exit(1)
 
-    if kwargs["text_grid"]:
-        audio = read_audio_from_file(kwargs["audiofile"])
-        duration = audio.frame_count() / audio.frame_rate
-        words, sentences = return_words_and_sentences(results)
-        textgrid = write_to_text_grid(words, sentences, duration)
-        textgrid.to_file(output_base + ".TextGrid")
-        textgrid.to_eaf().to_file(output_base + ".eaf")
-
-    if kwargs["closed_captioning"]:
-        words, sentences = return_words_and_sentences(results)
-        webvtt_sentences = write_to_subtitles(sentences)
-        webvtt_sentences.save(output_base + "_sentences.vtt")
-        webvtt_sentences.save_as_srt(output_base + "_sentences.srt")
-        webvtt_words = write_to_subtitles(words)
-        webvtt_words.save(output_base + "_words.vtt")
-        webvtt_words.save_as_srt(output_base + "_words.srt")
-
-    if kwargs["output_xhtml"]:
-        convert_to_xhtml(results["tokenized"])
-
-    save_minimal_index_html(
-        os.path.join(output_dir, "index.html"),
-        os.path.basename(tokenized_xml_path),
-        os.path.basename(smil_path),
-        os.path.basename(audio_path),
+    save_readalong(
+        align_results=results,
+        output_dir=output_dir,
+        output_basename=output_basename,
+        config=config,
+        text_grid=kwargs["text_grid"],
+        closed_captioning=kwargs["closed_captioning"],
+        output_xhtml=kwargs["output_xhtml"],
+        audiofile=kwargs["audiofile"],
     )
-
-    save_xml(tokenized_xml_path, results["tokenized"])
-    smil = make_smil(
-        os.path.basename(tokenized_xml_path), os.path.basename(audio_path), results
-    )
-    shutil.copy(kwargs["audiofile"], audio_path)
-    save_txt(smil_path, smil)
-
-    # Copy the image files to the output's asset directory, if any are found
-    if config and "images" in config:
-        assets_dir = os.path.join(output_dir, "assets")
-        try:
-            os.mkdir(assets_dir)
-        except FileExistsError:
-            if not os.path.isdir(assets_dir):
-                raise
-        for page, image in config["images"].items():
-            if image[0:4] == "http":
-                LOGGER.warning(
-                    f"Please make sure {image} is accessible to clients using your read-along."
-                )
-            else:
-                try:
-                    shutil.copy(image, assets_dir)
-                except Exception as e:
-                    LOGGER.warning(
-                        f"Please copy {image} to {assets_dir} before deploying your read-along. ({e})"
-                    )
-                if os.path.basename(image) != image:
-                    LOGGER.warning(
-                        f"Read-along images were tested with absolute urls (starting with http(s):// "
-                        f"and filenames without a path. {image} might not work as specified."
-                    )
 
 
 @app.cli.command(
@@ -352,7 +308,7 @@ def epub(**kwargs):
     context_settings=CONTEXT_SETTINGS,
     short_help="Convert a plain text file into the XML format for alignment.",
 )
-@click.argument("plaintextfile", type=click.File("r"))
+@click.argument("plaintextfile", type=click.File("r", encoding="utf8", lazy=True))
 @click.argument("xmlfile", type=click.Path(), required=False, default="")
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
 @click.option(
@@ -393,19 +349,16 @@ def prepare(**kwargs):
     out_file = kwargs["xmlfile"]
     if not out_file:
         out_file = get_click_file_name(input_file)
-        if out_file == "<stdin>":  # actual intput_file.name when cli input is "-"
-            out_file = "-"
-        else:
+        if out_file != "-":
             if out_file.endswith(".txt"):
                 out_file = out_file[:-4]
             out_file += ".xml"
 
     if out_file == "-":
-        filehandle, filename = create_input_tei(
-            input_file_handle=input_file,
-            text_language=kwargs["language"],
+        _, filename = create_input_tei(
+            input_file_handle=input_file, text_language=kwargs["language"],
         )
-        with io.open(filename) as f:
+        with io.open(filename, encoding="utf8") as f:
             sys.stdout.write(f.read())
     else:
         if not out_file.endswith(".xml"):
@@ -415,7 +368,7 @@ def prepare(**kwargs):
                 "Output file %s exists already, use -f to overwrite." % out_file
             )
 
-        filehandle, filename = create_input_tei(
+        _, filename = create_input_tei(
             input_file_handle=input_file,
             text_language=kwargs["language"],
             output_file=out_file,
@@ -449,9 +402,7 @@ def tokenize(**kwargs):
         LOGGER.setLevel("DEBUG")
         LOGGER.info(
             "Running readalongs tokenize(xmlfile={}, tokfile={}, force-overwrite={}).".format(
-                kwargs["xmlfile"],
-                kwargs["tokfile"],
-                kwargs["force_overwrite"],
+                kwargs["xmlfile"], kwargs["tokfile"], kwargs["force_overwrite"],
             )
         )
 
@@ -459,9 +410,7 @@ def tokenize(**kwargs):
 
     if not kwargs["tokfile"]:
         output_path = get_click_file_name(input_file)
-        if output_path == "<stdin>":
-            output_path = "-"
-        else:
+        if output_path != "-":
             if output_path.endswith(".xml"):
                 output_path = output_path[:-4]
             output_path += ".tokenized.xml"
@@ -498,7 +447,7 @@ def tokenize(**kwargs):
     short_help="Apply g2p to a tokenized file, like 'align' does.",
     # NOT TRUE YET: "Apply g2p to a tokenized file, in preparation for alignment."
 )
-@click.argument("tokfile", type=click.File("rb"))
+@click.argument("tokfile", type=click.File("rb", encoding="utf8", lazy=True))
 @click.argument("g2pfile", type=click.Path(), required=False, default="")
 @click.option(
     "--g2p-fallback",
@@ -531,9 +480,7 @@ def g2p(**kwargs):
         LOGGER.setLevel("DEBUG")
         LOGGER.info(
             "Running readalongs g2p(tokfile={}, g2pfile={}, force-overwrite={}).".format(
-                kwargs["tokfile"],
-                kwargs["g2pfile"],
-                kwargs["force_overwrite"],
+                kwargs["tokfile"], kwargs["g2pfile"], kwargs["force_overwrite"],
             )
         )
 
@@ -541,9 +488,7 @@ def g2p(**kwargs):
 
     if not kwargs["g2pfile"]:
         output_path = get_click_file_name(input_file)
-        if output_path == "<stdin>":
-            output_path = "-"
-        else:
+        if output_path != "-":
             if output_path.endswith(".xml"):
                 output_path = output_path[:-4]
             if output_path.endswith(".tokenized"):
@@ -591,4 +536,4 @@ def g2p(**kwargs):
                 else ""
             )
         )
-        exit(1)
+        sys.exit(1)

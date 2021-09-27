@@ -41,24 +41,16 @@ TAG_TO_ID = {
 TAGS_TO_IGNORE = ["head", "teiHeader", "script"]
 
 
-def add_ids_aux(
-    element: etree, ids: defaultdict = defaultdict(lambda: 0), parent_id: str = ""
-) -> defaultdict:
+def add_ids_aux(element: etree, ids: defaultdict, parent_id: str = "") -> defaultdict:
     """ Add ids to xml element
 
-    Parameters
-    ----------
-    element : etree
-        element to add ids to
-    ids : defaultdict, optional
-        , by default defaultdict(lambda: 0)
-    parent_id : str, optional
-        id of parent element, by default ''
+    Args:
+        element (etree): Element to add ids to
+        ids (defaultdict): counters for ids assigned so far by tag type
+        parent_id (str): Optional; id of parent element, by default ''
 
-    Returns
-    -------
-    defaultdict
-        ids added to element
+    Returns:
+        defaultdict: ids, with new counts added by tag type
     """
     if element.tag is etree.Comment:
         return ids
@@ -99,6 +91,12 @@ def add_ids_aux(
         element.attrib["id"] = parent_id + id + str(ids[id])
         ids[id] += 1
     full_id = element.attrib["id"]
+    # This deep copy of ids means that the ids counters are shared recursively
+    # between siblings, but not between grand-children. Thus, if processing a p
+    # element, the next p element will see its counter incremented, but the s
+    # elements of the next p elements will start again at 0. ids always has the
+    # counters of all ancestors and their siblings, by tag, but not the
+    # descendents of siblings of ancestors.
     new_ids = deepcopy(ids)
     for child in element:
         new_ids = add_ids_aux(child, new_ids, full_id)
@@ -108,15 +106,11 @@ def add_ids_aux(
 def add_ids(xml: etree) -> etree:
     """Add ids to xml
 
-    Parameters
-    ----------
-    xml : etree
-        xml to add ids to
+    Args:
+        xml (etree): xml to add ids to
 
-    Returns
-    -------
-    etree
-        xml with ids added
+    Returns:
+        etree: xml with ids added
     """
     xml = deepcopy(xml)
     ids: defaultdict = defaultdict(lambda: 0)

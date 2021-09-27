@@ -7,22 +7,20 @@
 #
 # Just some shared functions
 #
-# TODO: Add numpy standard format docstrings
+# TODO: Add Google standard format docstrings
 ############################################
 
 from __future__ import division, print_function, unicode_literals
 
 import json
 import os
+import re
 import zipfile
 from collections import OrderedDict
-from copy import deepcopy
-from io import TextIOWrapper, open
-from unicodedata import category, normalize
+from io import TextIOWrapper
+from unicodedata import normalize
 
 from lxml import etree
-
-from readalongs.log import LOGGER
 
 # removed "try: unicode() except" block (was for Python 2), but this file uses unicode()
 # too many times, so define it anyway.
@@ -57,7 +55,7 @@ def get_lang_attrib(element):
 
 def is_do_not_align(element):
     dna = element.attrib.get("do-not-align", "")
-    return dna == "true" or dna == "True" or dna == "TRUE" or dna == "1"
+    return dna in ("true", "True", "TRUE", "1")
 
 
 def load_xml(input_path):
@@ -194,3 +192,39 @@ def unicode_normalize_xml(element):
         unicode_normalize_xml(child)
         if child.tail:
             child.tail = normalize("NFD", unicode(child.tail))
+
+
+def parse_time(time_string) -> int:
+    """ Parse a time stamp in seconds (default) or milliseconds (with "ms" unit)
+        The "s" unit is optional and implied if left out.
+
+    Args:
+        time_string(str): timestamp, e.g., "0.23s", "5.234" (implied s), "1234 ms"
+            must be a number followed by "s", "ms" or nothing.
+
+    Returns:
+        int: time represented by time_string in milliseconds
+    """
+    time_pattern = re.compile(
+        r"""
+            \s*           # ignore leading spaces
+            ([0-9.]+)     # Numerical part
+            \s*           # optional spaces
+            (
+                (s|ms)    # optional units: s (seconds) or ms (milliseconds)
+                \s*       # ignore trailing spaces
+            )?
+        """,
+        re.VERBOSE,
+    )
+    match = time_pattern.fullmatch(time_string)
+    if match:
+        units = match[3]
+        if units == "ms":
+            return int(match[1])
+        else:
+            return int(1000 * float(match[1]))
+    else:
+        raise ValueError(
+            f'cannot convert "{time_string}" to a time in seconds or milliseconds'
+        )

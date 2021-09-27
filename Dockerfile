@@ -34,5 +34,9 @@ RUN cd g2p && python3 -m pip install -e .
 # Install ReadAlong-Studio itself
 RUN python3 -m pip install -e .
 
-# Run the gui by default
-CMD gunicorn -k gevent -w 1 readalongs.app:app --bind 0.0.0.0:5000
+# Run the default gui (on localhost:5000)
+CMD python3 ./run.py
+
+# For a production server, comment out the default gui CMD above, and run the
+# gui using gunicorn instead:
+# CMD gunicorn -k gevent -w 1 readalongs.app:app --bind 0.0.0.0:5000

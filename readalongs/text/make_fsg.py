@@ -36,7 +36,7 @@ FSG_END
 """
 
 
-def make_fsg(xml, filename, unit="m"):
+def make_fsg(word_elements, filename):
     name = slugify(os.path.splitext(os.path.basename(filename))[0])
     data = {
         "name": name,  # If name includes special characters, pocketsphinx throws a RuntimeError: new_Decoder returned -1
@@ -44,7 +44,7 @@ def make_fsg(xml, filename, unit="m"):
         "num_states": 0,
     }
 
-    for e in xml.xpath(".//" + unit):
+    for e in word_elements:
         if "id" not in e.attrib:  # don't put in elements with no id
             continue
         if not e.text or not e.text.strip():
@@ -70,7 +70,7 @@ def make_fsg(xml, filename, unit="m"):
 
 def go(input_filename, output_filename, unit):
     xml = load_xml(input_filename)
-    fsg = make_fsg(xml, input_filename, unit)
+    fsg = make_fsg(xml.xpath(".//" + unit), input_filename, unit)
     save_txt(output_filename, fsg)
 
 

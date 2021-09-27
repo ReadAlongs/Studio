@@ -10,7 +10,7 @@ import unittest
 from tempfile import NamedTemporaryFile
 
 from readalongs.log import LOGGER
-from readalongs.tempfile import PortableNamedTemporaryFile
+from readalongs.portable_tempfile import PortableNamedTemporaryFile
 
 
 class TestTempFile(unittest.TestCase):

@@ -33,11 +33,8 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import argparse
-import re
 from copy import deepcopy
 
-from g2p.mappings import Mapping
-from g2p.mappings.langs import MAPPINGS_AVAILABLE
 from g2p.mappings.tokenizer import get_tokenizer
 from lxml import etree
 

@@ -28,10 +28,10 @@ DICT_TEMPLATE = """{{#items}}
 """
 
 
-def make_dict(xml, input_filename, unit="m"):
+def make_dict(word_elements, input_filename, unit="m"):
     data = {"items": []}
     nwords = 0
-    for e in xml.xpath(".//" + unit):
+    for e in word_elements:
         if "id" not in e.attrib:
             LOGGER.error(
                 "%s-type element without id in file %s" % (unit, input_filename)
@@ -48,7 +48,7 @@ def make_dict(xml, input_filename, unit="m"):
 
 def go(input_filename, output_filename, unit):
     xml = load_xml(input_filename)
-    dct = make_dict(xml, input_filename, unit)
+    dct = make_dict(xml.xpath(".//" + unit), input_filename, unit)
     save_txt(output_filename, dct)
 
 

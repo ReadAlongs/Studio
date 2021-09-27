@@ -41,7 +41,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import argparse
 import copy
 import os
-import unicodedata as ud
 
 import text_unidecode
 from g2p import make_g2p
@@ -51,12 +50,7 @@ from g2p.transducer import CompositeTransductionGraph, TransductionGraph
 from readalongs.log import LOGGER
 from readalongs.text.lexicon_g2p import getLexiconG2P
 from readalongs.text.lexicon_g2p_mappings import __file__ as LEXICON_PATH
-from readalongs.text.util import (
-    get_lang_attrib,
-    load_xml,
-    save_xml,
-    unicode_normalize_xml,
-)
+from readalongs.text.util import get_lang_attrib, load_xml, save_xml
 
 
 def convert_word(word: str, lang: str, output_orthography: str, verbose_warnings: bool):
@@ -111,7 +105,7 @@ def convert_words(
     xml,
     word_unit="w",
     output_orthography="eng-arpabet",
-    g2p_fallbacks=[],
+    g2p_fallbacks=None,
     verbose_warnings=False,
 ):
     all_g2p_valid = True
@@ -137,7 +131,7 @@ def convert_words(
         )
         if not valid:
             # This is where we apply the g2p cascade
-            for lang in g2p_fallbacks:
+            for lang in g2p_fallbacks or []:
                 LOGGER.warning(
                     f'Could not g2p "{text_to_g2p}" as {g2p_lang}. Trying fallback: {lang}.'
                 )
@@ -165,7 +159,7 @@ def convert_xml(
     xml,
     word_unit="w",
     output_orthography="eng-arpabet",
-    g2p_fallbacks=[],
+    g2p_fallbacks=None,
     verbose_warnings=False,
 ):
     xml_copy = copy.deepcopy(xml)
