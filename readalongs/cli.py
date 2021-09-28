@@ -43,6 +43,7 @@ from readalongs.text.convert_xml import convert_xml
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import save_xml, write_xml
 from readalongs.views import LANGS
+from readalongs.util import parse_g2p_fallback
 
 ensure_using_supported_python_version()
 
@@ -70,24 +71,6 @@ def get_click_file_name(click_file):
     except AttributeError:
         name = "-"
     return "-" if name == "<stdin>" else name
-
-
-from readalongs.utility import parse_g2p_fallback
-
-# def parse_g2p_fallback(g2p_fallback_arg):
-#     """Parse the strings containing a colon-separated list of fallback args into a
-#     Python list of language codes, or empty if None
-#     """
-#     if g2p_fallback_arg:
-#         g2p_fallbacks = g2p_fallback_arg.split(":")
-#         for lang in g2p_fallbacks:
-#             if lang not in LANGS:
-#                 raise click.BadParameter(
-#                     f'g2p fallback lang "{lang}" is not valid; choose among {", ".join(LANGS)}'
-#                 )
-#         return g2p_fallbacks
-#     else:
-#         return []
 
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])

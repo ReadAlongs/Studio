@@ -26,7 +26,7 @@ from networkx import has_path
 
 from readalongs.app import app, socketio
 from readalongs.log import LOGGER
-from readalongs.utility import getLangs
+from readalongs.util import getLangs
 
 LANGS = getLangs()
 ALLOWED_TEXT = ["txt", "xml", "docx"]
