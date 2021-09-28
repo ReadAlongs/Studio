@@ -18,7 +18,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import argparse
 import os
 
-import pystache
+import chevron
 from slugify import slugify
 
 from readalongs.log import LOGGER
@@ -65,7 +65,7 @@ def make_fsg(word_elements, filename):
     data["final_state"] = data["num_states"]
     data["num_states"] += 1
 
-    return pystache.render(FSG_TEMPLATE, data)
+    return chevron.render(FSG_TEMPLATE, data)
 
 
 def go(input_filename, output_filename, unit):

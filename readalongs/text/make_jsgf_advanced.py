@@ -19,8 +19,6 @@ import argparse
 import datetime
 import os
 
-import pystache
-
 from readalongs.text.util import load_xml, save_txt
 
 # ###################3

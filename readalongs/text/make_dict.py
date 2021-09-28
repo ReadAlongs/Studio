@@ -17,7 +17,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import argparse
 
-import pystache
+import chevron
 
 from readalongs.log import LOGGER
 from readalongs.text.util import load_xml, save_txt
@@ -43,7 +43,7 @@ def make_dict(word_elements, input_filename, unit="m"):
         data["items"].append({"id": e.attrib["id"], "pronunciation": text})
     if nwords == 0:
         raise RuntimeError("No words in dictionary!")
-    return pystache.render(DICT_TEMPLATE, data)
+    return chevron.render(DICT_TEMPLATE, data)
 
 
 def go(input_filename, output_filename, unit):

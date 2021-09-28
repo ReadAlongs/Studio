@@ -12,7 +12,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import os
 import shutil
 
-import pystache
+import chevron
 
 from readalongs.log import LOGGER
 from readalongs.text.util import (
@@ -154,7 +154,7 @@ def create_epub(input_path, output_path, unpacked=False):
 
     # container.xml file
     container_template = load_txt(CONTAINER_ORIGIN_PATH)
-    container_txt = pystache.render(
+    container_txt = chevron.render(
         container_template, {"package_path": PACKAGE_DEST_PATH}
     )
     save(output_path, CONTAINER_DEST_PATH, container_txt)
@@ -162,7 +162,7 @@ def create_epub(input_path, output_path, unpacked=False):
     # the SMIL and all the files referenced in the SMIL
     package_data = extract_files_from_SMIL(input_path)
     package_template = load_txt(PACKAGE_ORIGIN_PATH)
-    package_txt = pystache.render(package_template, package_data)
+    package_txt = chevron.render(package_template, package_data)
     save(output_path, PACKAGE_DEST_PATH, package_txt)
 
     for entry in package_data["media"]:

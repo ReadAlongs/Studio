@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import Dict, List, Union
 
-import pystache
+import chevron
 import regex as re
 import soundswallower
 from lxml import etree
@@ -53,7 +53,7 @@ from readalongs.text.util import parse_time, save_minimal_index_html, save_txt, 
 
 @dataclass
 class WordSequence:
-    """ Sequence of "unit" XML elements
+    """Sequence of "unit" XML elements
 
     By default, the unit elements are the <w> elements.
 
@@ -69,7 +69,7 @@ class WordSequence:
 
 
 def get_sequences(xml, xml_filename, unit="w", anchor="anchor") -> List[WordSequence]:
-    """ Return the list of anchor-separated word sequences in xml
+    """Return the list of anchor-separated word sequences in xml
 
     Args:
         xml (etree): xml structure in which to search for words and anchors
@@ -122,7 +122,7 @@ def get_sequences(xml, xml_filename, unit="w", anchor="anchor") -> List[WordSequ
 
 
 def split_silences(words: List[dict], final_end, excluded_segments: List[dict]) -> None:
-    """ split the silences between words, making sure we don't step over any
+    """split the silences between words, making sure we don't step over any
         excluded segment boundaries
 
     Args:
@@ -170,7 +170,7 @@ def align_audio(  # noqa: C901
     g2p_fallbacks=None,
     verbose_g2p_warnings=False,
 ):
-    """ Align an XML input file to an audio file.
+    """Align an XML input file to an audio file.
 
     Args:
         xml_path (str): Path to XML input file in TEI-like format
@@ -429,7 +429,7 @@ def save_readalong(
     output_xhtml: bool = False,
     audiofile: str,
 ):
-    """ Save the results from align_audio() into the otuput files required for a
+    """Save the results from align_audio() into the otuput files required for a
         readalong
 
     Args:
@@ -529,7 +529,7 @@ def save_readalong(
 
 
 def return_word_from_id(xml: etree, el_id: str) -> str:
-    """ Given an XML document, return the innertext at id
+    """Given an XML document, return the innertext at id
 
     Args:
         xml (etree): XML document
@@ -542,7 +542,7 @@ def return_word_from_id(xml: etree, el_id: str) -> str:
 
 
 def return_words_and_sentences(results):
-    """ Parse xml into word and sentence 'tier' data
+    """Parse xml into word and sentence 'tier' data
 
     Args:
         results([TODO type]): [TODO description]
@@ -587,7 +587,7 @@ def return_words_and_sentences(results):
 
 
 def write_to_text_grid(words: List[dict], sentences: List[dict], duration: float):
-    """ Write results to Praat TextGrid. Because we are using pympi, we can also export to Elan EAF.
+    """Write results to Praat TextGrid. Because we are using pympi, we can also export to Elan EAF.
 
     Args:
         words (List[dict]): List of word times containing start, end, and value keys
@@ -629,7 +629,7 @@ def float_to_timedelta(n: float) -> str:
 
 
 def write_to_subtitles(data: Union[List[dict], List[List[dict]]]):
-    """ Returns WebVTT object from data.
+    """Returns WebVTT object from data.
 
     Args:
         data (Union[List[dict], List[List[dict]]]):
@@ -659,7 +659,7 @@ def write_to_subtitles(data: Union[List[dict], List[List[dict]]]):
 
 
 def convert_to_xhtml(tokenized_xml, title="Book"):
-    """ Do a simple and not at all foolproof conversion to XHTML.
+    """Do a simple and not at all foolproof conversion to XHTML.
 
     Args:
         tokenized_xml (etree): xml etree with tokens, converted in place
@@ -715,7 +715,7 @@ TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 
 
 def create_input_tei(**kwargs):
-    """ Create input xml in TEI standard.
+    """Create input xml in TEI standard.
         Uses readlines to infer paragraph and sentence structure from plain text.
         TODO: Check if path, if it's just plain text, then render that instead of reading from the file
         Assumes a double blank line marks a page break, and a single blank line
@@ -780,7 +780,7 @@ def create_input_tei(**kwargs):
         paragraphs.append({"sentences": sentences})
     if paragraphs:
         pages.append({"paragraphs": paragraphs})
-    xml = pystache.render(TEI_TEMPLATE, {**kwargs, **{"pages": pages}})
+    xml = chevron.render(TEI_TEMPLATE, {**kwargs, **{"pages": pages}})
     outfile.write(xml.encode("utf-8"))
     outfile.flush()
     outfile.close()

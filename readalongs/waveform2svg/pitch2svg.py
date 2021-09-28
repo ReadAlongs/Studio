@@ -21,9 +21,9 @@ import os
 from io import open
 from math import floor
 
+import chevron
 import librosa
 import numpy as np
-import pystache
 
 from readalongs.log import LOGGER
 from readalongs.waveform2svg.audio_util import (
@@ -54,7 +54,7 @@ def render_svg(pitches, width=512, height=100, zero_height=5):
         data["points"].append({"x": x, "y": y})
     data["points"].append({"x": float(width), "y": float(height - zero_height)})
     data["points"].append({"x": float(width), "y": float(height)})
-    return pystache.render(SVG_TEMPLATE, data)
+    return chevron.render(SVG_TEMPLATE, data)
 
 
 def extract_pitches(waveform, nbuckets=512):
