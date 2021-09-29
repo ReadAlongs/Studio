@@ -17,7 +17,7 @@ class TestAlignCli(TestCase):
 
     # Set this to True to keep the temp dirs after running, for manual inspection
     # but please don't push a commit setting this to True!
-    keep_temp_dir_after_running = False
+    keep_temp_dir_after_running = True
     if not keep_temp_dir_after_running:
         tempdirobj = tempfile.TemporaryDirectory(
             prefix="tmpdir_test_align_cli_", dir="."
@@ -124,6 +124,21 @@ class TestAlignCli(TestCase):
         self.assertFalse(
             exists(join(output, "assets", "image-for-page1.jpg")),
             "image-for-page1.jpg was not on disk, cannot have been copied",
+        )
+
+        results_html = self.runner.invoke(
+            align,
+            [
+                join(self.data_dir, "ej-fra-package.xml"),
+                join(self.data_dir, "ej-fra.m4a"),
+                join(output, "html"),
+                "--html",
+            ],
+        )
+        self.assertEqual(results_html.exit_code, 0)
+        self.assertTrue(
+            exists(join(output, "html", "html.html")),
+            "succesful html alignment should have created output.html",
         )
 
         # Functionally the same as self.assertTrue(filecmp.cmp(f1, f2)), but show where
