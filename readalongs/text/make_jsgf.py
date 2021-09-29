@@ -21,7 +21,7 @@ import argparse
 import datetime
 import os
 
-import pystache
+import chevron
 
 from readalongs.text.util import load_xml, save_txt
 
@@ -56,7 +56,7 @@ def make_jsgf(xml, filename, unit="m"):
         id = e.attrib["id"]
         data["words"].append({"id": id})
 
-    return pystache.render(JSGF_TEMPLATE, data)
+    return chevron.render(JSGF_TEMPLATE, data)
 
 
 def go(input_filename, output_filename, unit):

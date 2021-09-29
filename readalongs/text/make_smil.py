@@ -11,7 +11,7 @@
 
 import argparse
 
-import pystache
+import chevron
 
 from readalongs.text.util import save_txt
 
@@ -36,7 +36,7 @@ END_SUBIDX = 3
 
 
 def parse_hypseg(text):
-    """ Parse hypseg alignments file and return alignements
+    """Parse hypseg alignments file and return alignements
 
     Args:
         text(str): hypseg text
@@ -61,7 +61,7 @@ def parse_hypseg(text):
 
 
 def make_smil(text_path: str, audio_path: str, results: dict) -> str:
-    """ Actually render the SMIL
+    """Actually render the SMIL
 
     Args:
         text_path(str): path to text
@@ -73,7 +73,7 @@ def make_smil(text_path: str, audio_path: str, results: dict) -> str:
     """
     results["text_path"] = text_path
     results["audio_path"] = audio_path
-    return pystache.render(SMIL_TEMPLATE, results)
+    return chevron.render(SMIL_TEMPLATE, results)
 
 
 def go(seg_path, text_path, audio_path, output_path):

@@ -18,8 +18,8 @@ import os
 from io import open
 from math import ceil, floor
 
+import chevron
 import numpy as np
-import pystache
 
 from readalongs.log import LOGGER
 from readalongs.waveform2svg.audio_util import load_wav_or_smil, save_txt, smooth
@@ -80,7 +80,7 @@ def render_svg(
             x = width - (i / num_buckets * width + 0.5)
             data["points"].append({"x": x, "y": y})
         data["points"].append({"x": 0.0, "y": (height + zero_height) / 2})
-    return pystache.render(SVG_TEMPLATE, data)
+    return chevron.render(SVG_TEMPLATE, data)
 
 
 def make_waveform_svg(

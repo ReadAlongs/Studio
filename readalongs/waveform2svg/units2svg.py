@@ -21,9 +21,9 @@ import os
 from collections import OrderedDict
 from io import open
 
+import chevron
 import librosa
 import numpy as np
-import pystache
 from audio_util import save_txt
 from lxml import etree
 
@@ -57,7 +57,7 @@ def render_svg(data, width=512, height=100, radius=4):
             w = max((unit["duration"] / total_duration) * width - 1.0, 1.0)
             w = "%.2f" % w
             result["rects"].append({"x": x, "width": w})
-    return pystache.render(SVG_TEMPLATE, result)
+    return chevron.render(SVG_TEMPLATE, result)
 
 
 def load_xml(input_path):
@@ -66,8 +66,8 @@ def load_xml(input_path):
 
 
 def parse_smil(input_path):
-    """ Figure out the overall start and end of every unit, even if the whole
-        sequence plays out over multiple audio files """
+    """Figure out the overall start and end of every unit, even if the whole
+    sequence plays out over multiple audio files"""
     xml = load_xml(input_path)
     data = {"audio_files": OrderedDict()}
     dirname = os.path.dirname(input_path)
