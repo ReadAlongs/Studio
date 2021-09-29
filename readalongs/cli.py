@@ -268,7 +268,6 @@ def align(**kwargs):  # noqa: C901
     except RuntimeError as e:
         LOGGER.error(e)
         sys.exit(1)
-
     save_readalong(
         align_results=results,
         output_dir=output_dir,
