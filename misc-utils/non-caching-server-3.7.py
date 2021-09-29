@@ -112,7 +112,7 @@ import urllib
 from functools import partial
 from http import HTTPStatus
 from http.server import test  # type: ignore
-from http.server import SimpleHTTPRequestHandler, CGIHTTPRequestHandler
+from http.server import CGIHTTPRequestHandler, SimpleHTTPRequestHandler
 
 
 class NonCachingHTTPRequestHandler(SimpleHTTPRequestHandler):
@@ -144,11 +144,10 @@ class NonCachingHTTPRequestHandler(SimpleHTTPRequestHandler):
         f = None
         if os.path.isdir(path):
             parts = urllib.parse.urlsplit(self.path)
-            if not parts.path.endswith('/'):
+            if not parts.path.endswith("/"):
                 # redirect browser - doing basically what apache does
                 self.send_response(HTTPStatus.MOVED_PERMANENTLY)
-                new_parts = (parts[0], parts[1], parts[2] + '/',
-                             parts[3], parts[4])
+                new_parts = (parts[0], parts[1], parts[2] + "/", parts[3], parts[4])
                 new_url = urllib.parse.urlunsplit(new_parts)
                 self.send_header("Location", new_url)
                 self.end_headers()
@@ -162,7 +161,7 @@ class NonCachingHTTPRequestHandler(SimpleHTTPRequestHandler):
                 return self.list_directory(path)
         ctype = self.guess_type(path)
         try:
-            f = open(path, 'rb')
+            f = open(path, "rb")
         except OSError:
             self.send_error(HTTPStatus.NOT_FOUND, "File not found")
             return None
@@ -181,26 +180,35 @@ class NonCachingHTTPRequestHandler(SimpleHTTPRequestHandler):
             raise
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--cgi', action='store_true',
-                       help='Run as CGI Server')
-    parser.add_argument('--bind', '-b', default='', metavar='ADDRESS',
-                        help='Specify alternate bind address '
-                             '[default: all interfaces]')
-    parser.add_argument('--directory', '-d', default=os.getcwd(),
-                        help='Specify alternative directory '
-                        '[default:current directory]')
-    parser.add_argument('port', action='store',
-                        default=8000, type=int,
-                        nargs='?',
-                        help='Specify alternate port [default: 8000]')
+    parser.add_argument("--cgi", action="store_true", help="Run as CGI Server")
+    parser.add_argument(
+        "--bind",
+        "-b",
+        default="",
+        metavar="ADDRESS",
+        help="Specify alternate bind address " "[default: all interfaces]",
+    )
+    parser.add_argument(
+        "--directory",
+        "-d",
+        default=os.getcwd(),
+        help="Specify alternative directory " "[default:current directory]",
+    )
+    parser.add_argument(
+        "port",
+        action="store",
+        default=8000,
+        type=int,
+        nargs="?",
+        help="Specify alternate port [default: 8000]",
+    )
     args = parser.parse_args()
     if args.cgi:
         handler_class = CGIHTTPRequestHandler
     else:
-        handler_class = partial(NonCachingHTTPRequestHandler,
-                                directory=args.directory)
+        handler_class = partial(NonCachingHTTPRequestHandler, directory=args.directory)
     test(HandlerClass=handler_class, port=args.port, bind=args.bind)
