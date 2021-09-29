@@ -89,7 +89,11 @@ class TestAudio(TestCase):
         # Check Result
         smilpath = Path(output_path)
         smil_files = smilpath.glob("*.smil")
-        self.assertTrue(next(smil_files, False), "No *.smil files found")
+        self.assertTrue(
+            next(smil_files, False),
+            "No *.smil files found; "
+            "a fresh pip install might be required if dependencies changed.",
+        )
         self.assertFalse("error" in str(log).lower())
 
     def test_align_removed(self):
@@ -110,7 +114,11 @@ class TestAudio(TestCase):
         # Check Result
         smilpath = Path(output_path)
         smil_files = smilpath.glob("*.smil")
-        self.assertTrue(next(smil_files, False), "No *.smil files found")
+        self.assertTrue(
+            next(smil_files, False),
+            "No *.smil files found; "
+            "a fresh pip install might be required if dependencies changed.",
+        )
         self.assertFalse("error" in str(log).lower())
 
     def test_align_muted(self):
@@ -131,7 +139,11 @@ class TestAudio(TestCase):
         # Check Result
         smilpath = Path(output_path)
         smil_files = smilpath.glob("*.smil")
-        self.assertTrue(next(smil_files, False), "No *.smil files found")
+        self.assertTrue(
+            next(smil_files, False),
+            "No *.smil files found; "
+            "a fresh pip install might be required if dependencies changed.",
+        )
         self.assertFalse("error" in str(log).lower())
 
     def test_extract_section(self):
