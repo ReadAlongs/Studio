@@ -170,4 +170,4 @@ Project web page: [ReadAlong Studio: Application for Indigenous audiobooks and v
 
 ## License
 
-[MIT](LICENSE) © David Huggins-Daines, National Research Council Canada
+[MIT](LICENSE) © 2019-2021 David Huggins-Daines and National Research Council Canada
