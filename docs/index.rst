@@ -10,6 +10,7 @@ Welcome to ReadAlong-Studio's documentation!
    start
    installation
    cli
+   cli-user-guide
    outputs
 
 
