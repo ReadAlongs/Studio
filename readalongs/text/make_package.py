@@ -37,7 +37,7 @@ BASIC_HTML = """
   <link href="https://fonts.googleapis.com/css?family=Lato|Material+Icons|Material+Icons+Outlined" rel="stylesheet">
 </head>
 <body>
-    <read-along text="{text}" alignment="{alignment}" audio="{audio}" theme="{theme}" useAssetsFolder="false">
+    <read-along text="{text}" alignment="{alignment}" audio="{audio}" theme="{theme}" use-assets-folder="false">
         <span slot='read-along-header'>{header}</span>
         <span slot='read-along-subheader'>{subheader}</span>
     </read-along>
