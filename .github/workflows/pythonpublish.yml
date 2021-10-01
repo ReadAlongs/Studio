@@ -43,3 +43,13 @@ jobs:
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
           release_name: Release ${{ steps.tag_version.outputs.new_tag }}
           body: ${{ steps.tag_version.outputs.changelog }}
+      - name: Commit bumped version and merge with master
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add readalongs/_version.py
+          git commit -m "chore: commit version"
+          git fetch --unshallow
+          git checkout master
+          git merge release
+          git push origin master
