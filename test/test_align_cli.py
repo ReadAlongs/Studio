@@ -17,7 +17,7 @@ class TestAlignCli(TestCase):
 
     # Set this to True to keep the temp dirs after running, for manual inspection
     # but please don't push a commit setting this to True!
-    keep_temp_dir_after_running = True
+    keep_temp_dir_after_running = False
     if not keep_temp_dir_after_running:
         tempdirobj = tempfile.TemporaryDirectory(
             prefix="tmpdir_test_align_cli_", dir="."
