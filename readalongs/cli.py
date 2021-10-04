@@ -44,7 +44,7 @@ from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import save_xml, write_xml
 from readalongs.util import getLangs, parse_g2p_fallback
 
-LANGS, LANG_NAMES = getLangs()
+LANGS, _ = getLangs()
 ensure_using_supported_python_version()
 
 
@@ -247,7 +247,7 @@ def align(**kwargs):  # noqa: C901
             bare=bare,
             config=config,
             save_temps=temp_base,
-            g2p_fallbacks=parse_g2p_fallback(kwargs["g2p_fallback"], LANGS),
+            g2p_fallbacks=parse_g2p_fallback(kwargs["g2p_fallback"]),
             verbose_g2p_warnings=kwargs["g2p_verbose"],
         )
     except RuntimeError as e:
@@ -498,11 +498,14 @@ def g2p(**kwargs):
     # Add the IDs to paragraph, sentences, word, etc.
     xml = add_ids(xml)
     # Apply the g2p mappings.
-    xml, valid = convert_xml(
-        xml,
-        g2p_fallbacks=parse_g2p_fallback(kwargs["g2p_fallback"], LANGS),
-        verbose_warnings=kwargs["g2p_verbose"],
-    )
+    try:
+        xml, valid = convert_xml(
+            xml,
+            g2p_fallbacks=parse_g2p_fallback(kwargs["g2p_fallback"]),
+            verbose_warnings=kwargs["g2p_verbose"],
+        )
+    except ValueError as e:
+        raise click.BadParameter(e) from e
 
     if output_path == "-":
         write_xml(sys.stdout.buffer, xml)
