@@ -1,4 +1,4 @@
-FROM debian:buster-slim
+FROM debian:bullseye-slim
 
 ENV APPHOME /opt/readalong-studio
 ENV PORT 5000
