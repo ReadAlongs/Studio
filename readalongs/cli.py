@@ -49,13 +49,12 @@ ensure_using_supported_python_version()
 
 
 def create_app():
-    """ Returns the app
-    """
+    """Returns the app"""
     return app
 
 
 def get_click_file_name(click_file):
-    """ Wrapper around click_file.name with consistent handling for stdin
+    """Wrapper around click_file.name with consistent handling for stdin
 
     On Windows, if click_file is stdin, click_file.name == "-".
     On Linux, if click_file is stdin, click_file.name == "<stdin>".
@@ -138,6 +137,7 @@ def cli():
 @click.option(
     "-t", "--text-grid", is_flag=True, help="Export to Praat TextGrid & ELAN eaf file"
 )
+@click.option("-H", "--html", is_flag=True, help="Export to a single-file HTML format")
 @click.option(
     "-x", "--output-xhtml", is_flag=True, help="Output simple XHTML instead of XML"
 )
@@ -253,7 +253,6 @@ def align(**kwargs):  # noqa: C901
     except RuntimeError as e:
         LOGGER.error(e)
         sys.exit(1)
-
     save_readalong(
         align_results=results,
         output_dir=output_dir,
@@ -263,6 +262,7 @@ def align(**kwargs):  # noqa: C901
         closed_captioning=kwargs["closed_captioning"],
         output_xhtml=kwargs["output_xhtml"],
         audiofile=kwargs["audiofile"],
+        html=kwargs["html"],
     )
 
 

@@ -46,6 +46,7 @@ from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.make_dict import make_dict
 from readalongs.text.make_fsg import make_fsg
+from readalongs.text.make_package import create_web_component_html
 from readalongs.text.make_smil import make_smil
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import parse_time, save_minimal_index_html, save_txt, save_xml
@@ -428,6 +429,7 @@ def save_readalong(
     closed_captioning: bool = False,
     output_xhtml: bool = False,
     audiofile: str,
+    html: bool = False,
 ):
     """Save the results from align_audio() into the otuput files required for a
         readalong
@@ -493,6 +495,12 @@ def save_readalong(
         align_results,
     )
     save_txt(smil_path, smil)
+
+    if html:
+        html_out_path = output_base + ".html"
+        html_out = create_web_component_html(tokenized_xml_path, smil_path, audio_path)
+        with open(html_out_path, "w") as f:
+            f.write(html_out)
 
     save_minimal_index_html(
         os.path.join(output_dir, "index.html"),
