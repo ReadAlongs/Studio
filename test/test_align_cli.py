@@ -6,6 +6,8 @@ import tempfile
 from os.path import exists, join
 from unittest import TestCase, main
 
+from lxml.html import fromstring
+
 from readalongs.app import app
 from readalongs.cli import align
 from readalongs.log import LOGGER
@@ -138,7 +140,26 @@ class TestAlignCli(TestCase):
         self.assertEqual(results_html.exit_code, 0)
         self.assertTrue(
             exists(join(output, "html", "html.html")),
-            "succesful html alignment should have created output.html",
+            "succesful html alignment should have created html/html.html",
+        )
+
+        with open(join(output, "html", "html.html"), "rb") as fhtml:
+            path_bytes = fhtml.read()
+        htmldoc = fromstring(path_bytes)
+        self.assertTrue(
+            htmldoc.body.xpath("//read-along")[0]
+            .attrib["text"]
+            .startswith("data:application/xml;base64,")
+        )
+        self.assertTrue(
+            htmldoc.body.xpath("//read-along")[0]
+            .attrib["alignment"]
+            .startswith("data:application/smil+xml;base64,")
+        )
+        self.assertTrue(
+            htmldoc.body.xpath("//read-along")[0]
+            .attrib["audio"]
+            .startswith("data:audio/mp4;base64,")
         )
 
         # Functionally the same as self.assertTrue(filecmp.cmp(f1, f2)), but show where
