@@ -211,6 +211,11 @@ def align(**kwargs):  # noqa: C901
             f"Cannot write into output folder '{output_dir}'. Please verify permissions."
         ) from e
 
+    try:
+        g2p_fallbacks = parse_g2p_fallback(kwargs["g2p_fallback"])
+    except ValueError as e:
+        raise click.BadParameter(e) from e
+
     output_basename = os.path.basename(output_dir)
     temp_base = None
     if kwargs["save_temps"]:
@@ -247,7 +252,7 @@ def align(**kwargs):  # noqa: C901
             bare=bare,
             config=config,
             save_temps=temp_base,
-            g2p_fallbacks=parse_g2p_fallback(kwargs["g2p_fallback"]),
+            g2p_fallbacks=g2p_fallbacks,
             verbose_g2p_warnings=kwargs["g2p_verbose"],
         )
     except RuntimeError as e:
@@ -495,17 +500,18 @@ def g2p(**kwargs):
             % (get_click_file_name(input_file), e)
         )
 
-    # Add the IDs to paragraph, sentences, word, etc.
-    xml = add_ids(xml)
-    # Apply the g2p mappings.
     try:
-        xml, valid = convert_xml(
-            xml,
-            g2p_fallbacks=parse_g2p_fallback(kwargs["g2p_fallback"]),
-            verbose_warnings=kwargs["g2p_verbose"],
-        )
+        g2p_fallbacks = parse_g2p_fallback(kwargs["g2p_fallback"])
     except ValueError as e:
         raise click.BadParameter(e) from e
+
+    # Add the IDs to paragraph, sentences, word, etc.
+    xml = add_ids(xml)
+
+    # Apply the g2p mappings.
+    xml, valid = convert_xml(
+        xml, g2p_fallbacks=g2p_fallbacks, verbose_warnings=kwargs["g2p_verbose"],
+    )
 
     if output_path == "-":
         write_xml(sys.stdout.buffer, xml)
