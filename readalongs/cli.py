@@ -152,7 +152,7 @@ def cli():
 @click.option(
     "-t", "--text-grid", is_flag=True, help="Export to Praat TextGrid & ELAN eaf file"
 )
-@click.option("-H", "--html", is_flag=True, help="Export to WebComponent HTML")
+@click.option("-H", "--html", is_flag=True, help="Export to a single-file HTML format")
 @click.option(
     "-x", "--output-xhtml", is_flag=True, help="Output simple XHTML instead of XML"
 )
