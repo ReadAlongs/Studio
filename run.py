@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
-""" Run ReadAlong Studio as web application """
+""" Run ReadAlong Studio as web application
+
+Define the PORT environment variable to specify which port to use (default: 5000).
+"""
 
 import os
 
