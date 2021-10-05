@@ -9,6 +9,7 @@ import tempfile
 import unittest
 
 from lxml import etree
+from utils import BasicTestCase
 
 from readalongs.align import align_audio, convert_to_xhtml, create_input_tei
 from readalongs.log import LOGGER
@@ -16,10 +17,7 @@ from readalongs.portable_tempfile import PortableNamedTemporaryFile
 from readalongs.text.util import load_txt, save_xml
 
 
-class TestForceAlignment(unittest.TestCase):
-    LOGGER.setLevel("DEBUG")
-    data_dir = os.path.join(os.path.dirname(__file__), "data")
-
+class TestForceAlignment(BasicTestCase):
     def testAlign(self):
         xml_path = os.path.join(self.data_dir, "ej-fra.xml")
         wav_path = os.path.join(self.data_dir, "ej-fra.m4a")
@@ -52,9 +50,7 @@ class TestForceAlignment(unittest.TestCase):
             self.assertEqual(xw.attrib["id"], w["id"])
 
 
-class TestXHTML(unittest.TestCase):
-    data_dir = os.path.join(os.path.dirname(__file__), "data")
-
+class TestXHTML(BasicTestCase):
     def testConvert(self):
         xml_path = os.path.join(self.data_dir, "ej-fra-converted.xml")
         xml = etree.parse(xml_path).getroot()
