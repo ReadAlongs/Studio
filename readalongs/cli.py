@@ -262,6 +262,7 @@ def align(**kwargs):  # noqa: C901
         closed_captioning=kwargs["closed_captioning"],
         output_xhtml=kwargs["output_xhtml"],
         audiofile=kwargs["audiofile"],
+        audiosegment=results["audio"],
         html=kwargs["html"],
     )
 
