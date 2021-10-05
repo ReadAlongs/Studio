@@ -7,19 +7,14 @@ import tempfile
 from shutil import copyfile
 from unittest import TestCase, main
 
+from utils import BasicTestCase
+
 from readalongs.app import app
 from readalongs.cli import prepare, tokenize
 from readalongs.log import LOGGER
 
 
-class TestTokenizeCli(TestCase):
-    LOGGER.setLevel("DEBUG")
-    data_dir = os.path.join(os.path.dirname(__file__), "data")
-
-    # Set this to True to keep the temp dirs after running, for manual inspection
-    # but please don't push a commit setting this to True!
-    keep_temp_dir_after_running = False
-
+class TestTokenizeCli(BasicTestCase):
     def setUp(self):
         app.logger.setLevel("DEBUG")
         self.runner = app.test_cli_runner()
@@ -37,10 +32,6 @@ class TestTokenizeCli(TestCase):
         _ = self.runner.invoke(
             prepare, ["-l", "fra", os.path.join(self.data_dir, "fra.txt"), self.xmlfile]
         )
-
-    def tearDown(self):
-        if not self.keep_temp_dir_after_running:
-            self.tempdirobj.cleanup()
 
     def test_invoke_tok(self):
         results = self.runner.invoke(

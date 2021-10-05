@@ -5,6 +5,7 @@ import tempfile
 from unittest import TestCase, main
 
 from lxml import etree
+from utils import BasicTestCase
 
 from readalongs.app import app
 from readalongs.log import LOGGER
@@ -12,17 +13,7 @@ from readalongs.text import tokenize_xml
 from readalongs.text.add_ids_to_xml import add_ids
 
 
-class TestDNAText(TestCase):
-    LOGGER.setLevel("DEBUG")
-    data_dir = os.path.join(os.path.dirname(__file__), "data")
-    maxDiff = None
-
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
-
+class TestDNAText(BasicTestCase):
     def test_tok_all_words(self):
         txt = """<document xml:lang="fra">
 <s>Bonjour! Comment ça va?</s>

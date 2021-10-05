@@ -8,35 +8,14 @@ from os.path import exists, join
 from unittest import TestCase, main
 
 from lxml.html import fromstring
+from utils import BasicTestCase
 
 from readalongs.app import app
 from readalongs.cli import align
 from readalongs.log import LOGGER
 
 
-class TestAlignCli(TestCase):
-    LOGGER.setLevel("DEBUG")
-    data_dir = join(os.path.dirname(__file__), "data")
-
-    # Set this to True to keep the temp dirs after running, for manual inspection
-    # but please don't push a commit setting this to True!
-    keep_temp_dir_after_running = False
-    if not keep_temp_dir_after_running:
-        tempdirobj = tempfile.TemporaryDirectory(
-            prefix="tmpdir_test_align_cli_", dir="."
-        )
-        tempdir = tempdirobj.name
-    else:
-        tempdir = tempfile.mkdtemp(prefix="tmpdir_test_align_cli_", dir=".")
-        print("tmpdir={}".format(tempdir))
-
-    def setUp(self):
-        app.logger.setLevel("DEBUG")
-        self.runner = app.test_cli_runner()
-
-    def tearDown(self):
-        pass
-
+class TestAlignCli(BasicTestCase):
     def test_invoke_align(self):
         output = join(self.tempdir, "output")
         with open("image-for-page1.jpg", "w"):
