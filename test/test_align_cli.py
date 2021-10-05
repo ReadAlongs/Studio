@@ -2,6 +2,7 @@
 
 import io
 import os
+import re
 import tempfile
 from os.path import exists, join
 from unittest import TestCase, main
@@ -146,20 +147,15 @@ class TestAlignCli(TestCase):
         with open(join(output, "html", "html.html"), "rb") as fhtml:
             path_bytes = fhtml.read()
         htmldoc = fromstring(path_bytes)
-        self.assertTrue(
-            htmldoc.body.xpath("//read-along")[0]
-            .attrib["text"]
-            .startswith("data:application/xml;base64,")
+        b64_pattern = r"data:[\w\/\+]*;base64,\w*"
+        self.assertRegex(
+            htmldoc.body.xpath("//read-along")[0].attrib["text"], b64_pattern
         )
-        self.assertTrue(
-            htmldoc.body.xpath("//read-along")[0]
-            .attrib["alignment"]
-            .startswith("data:application/smil+xml;base64,")
+        self.assertRegex(
+            htmldoc.body.xpath("//read-along")[0].attrib["alignment"], b64_pattern
         )
-        self.assertTrue(
-            htmldoc.body.xpath("//read-along")[0]
-            .attrib["audio"]
-            .startswith("data:audio/mp4;base64,")
+        self.assertRegex(
+            htmldoc.body.xpath("//read-along")[0].attrib["audio"], b64_pattern
         )
 
         # Functionally the same as self.assertTrue(filecmp.cmp(f1, f2)), but show where
