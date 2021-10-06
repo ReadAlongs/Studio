@@ -9,7 +9,7 @@ Welcome to ReadAlong-Studio's documentation!
 
    start
    installation
-   cli
+   cli-ref
    outputs
    cli-user-guide
    cli-user-guide-rest
