@@ -10,8 +10,9 @@ Welcome to ReadAlong-Studio's documentation!
    start
    installation
    cli
-   cli-user-guide
    outputs
+   cli-user-guide
+   cli-user-guide-rest
 
 
 Indices and tables

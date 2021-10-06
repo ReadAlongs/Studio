@@ -130,13 +130,13 @@ def cli():
     "-i",
     "--text-input",
     is_flag=True,
-    help="Input is plain text (assume paragraphs are separated by blank lines, pages are separated by two blank lines)",
+    help="Input is plain text (otherwise it’s assumed to be XML)",
 )
 @click.option(
     "-l",
     "--language",
     type=click.Choice(LANGS, case_sensitive=False),
-    help="Set language for plain text input",
+    help="The language code for text in TEXTFILE (use only with -i, i.e., with plain text input)",
 )
 @click.option(
     "-u",
@@ -148,7 +148,7 @@ def cli():
     "-s",
     "--save-temps",
     is_flag=True,
-    help="Save intermediate stages of processing and temporary files (dictionary, FSG, tokenization etc)",
+    help="Save intermediate stages of processing and temporary files (dictionary, FSG, tokenization, etc)",
 )
 @click.option(
     "-t", "--text-grid", is_flag=True, help="Export to Praat TextGrid & ELAN eaf file"
@@ -173,19 +173,28 @@ def align(**kwargs):  # noqa: C901
 
     TEXTFILE:    Input text file path (in XML, or plain text with -i)
 
-    With -i, TEXTFILE should be plain text;
-    without -i, TEXTFILE can be in one of three XML formats:
-    the output of 'readalongs prepare',
-    the output of 'readalongs tokenize', or
-    the output of 'readalongs g2p'.
+    \b
+    With -i, TEXTFILE should be plain text:
+     - The text in TEXTFILE should be plain UTF-8 text without any markup.
+     - Paragraph breaks are indicated by inserting one blank line.
+     - Page breaks are indicated by inserting two blank lines.
 
-    One can also add the known ARPABET encoding for words (<w> elements) that
-    are not correctly handled by g2p in the output of 'readalongs tokenize' or
-    'readalongs g2p', via the ARPABET attribute.
+    \b
+    Without -i, TEXTFILE can be in one of three XML formats:
+     - the output of 'readalongs prepare',
+     - the output of 'readalongs tokenize', or
+     - the output of 'readalongs g2p'.
+
+    One can add the known ARPABET phonetics in the XML for words (<w> elements)
+    that are not correctly handled by g2p in the output of 'readalongs tokenize'
+    or 'readalongs g2p', via the ARPABET attribute.
+
+    One can add anchor elements in the XML, e.g., '<anchor time="2.345s"/>', to
+    mark known anchor points between the audio and text stream.
 
     AUDIOFILE:   Input audio file path, in any format supported by ffmpeg
 
-    OUTPUT_BASE: Base name for output files
+    OUTPUT_BASE: Output files will be saved as OUTPUT_BASE/OUTPUT_BASE.*
     """
     config_file = kwargs.get("config", None)
     config = None
@@ -318,11 +327,11 @@ def epub(**kwargs):
     "--language",
     type=click.Choice(LANGS, case_sensitive=False),
     required=True,
-    help="Set language for input file",
+    help="The language code for text in PLAINTEXTFILE",
 )
 def prepare(**kwargs):
     """Prepare XMLFILE for 'readalongs align' from PLAINTEXTFILE.
-    PLAINTEXTFILE must be plain text encoded in utf-8, with one sentence per line,
+    PLAINTEXTFILE must be plain text encoded in UTF-8, with one sentence per line,
     paragraph breaks marked by a blank line, and page breaks marked by two
     blank lines.
 
