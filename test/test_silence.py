@@ -1,9 +1,9 @@
 import os
 from unittest import main
 
+from basic_test_case import BasicTestCase
 from lxml import etree
 from pydub import AudioSegment
-from utils import BasicTestCase
 
 from readalongs.cli import align
 

@@ -7,8 +7,8 @@ import tempfile
 from os.path import exists, join
 from unittest import TestCase, main
 
+from basic_test_case import BasicTestCase
 from lxml.html import fromstring
-from utils import BasicTestCase
 
 from readalongs.app import app
 from readalongs.cli import align

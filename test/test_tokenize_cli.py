@@ -7,7 +7,7 @@ import tempfile
 from shutil import copyfile
 from unittest import TestCase, main
 
-from utils import BasicTestCase
+from basic_test_case import BasicTestCase
 
 from readalongs.app import app
 from readalongs.cli import prepare, tokenize

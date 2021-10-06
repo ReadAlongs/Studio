@@ -4,7 +4,7 @@ import os
 import tempfile
 from unittest import TestCase, main
 
-from utils import BasicTestCase
+from basic_test_case import BasicTestCase
 
 from readalongs.align import align_audio
 

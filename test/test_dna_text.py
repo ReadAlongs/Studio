@@ -4,8 +4,8 @@ import os
 import tempfile
 from unittest import TestCase, main
 
+from basic_test_case import BasicTestCase
 from lxml import etree
-from utils import BasicTestCase
 
 from readalongs.app import app
 from readalongs.log import LOGGER

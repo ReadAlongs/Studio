@@ -7,7 +7,7 @@ from shutil import rmtree
 from subprocess import run
 from unittest import TestCase, main
 
-from utils import BasicTestCase
+from basic_test_case import BasicTestCase
 
 from readalongs.audio_utils import (
     extract_section,
@@ -48,30 +48,26 @@ class TestAudio(BasicTestCase):
         return run(args, capture_output=True)
 
     def test_mute_section(self):
-        """ Should mute section of audio
-        """
+        """Should mute section of audio"""
         muted_segment = mute_section(self.audio_segment, 1000, 2000)
         muted_section = muted_segment[1000:2000]
         self.assertLessEqual(muted_section.max, 1)
 
     def test_remove_section(self):
-        """ Should remove section of audio
-        """
+        """Should remove section of audio"""
         removed_segment = remove_section(self.audio_segment, 1000, 2000)
         self.assertNotEqual(len(removed_segment), len(self.audio_segment))
         self.assertEqual(len(removed_segment), len(self.audio_segment) - 1000)
 
     def test_rejoin_section(self):
-        """ Should rejoin removed/muted sections
-        """
+        """Should rejoin removed/muted sections"""
         removed_section = self.audio_segment[1000:2000]
         removed_segment = remove_section(self.audio_segment, 1000, 2000)
         rejoined_segment = join_section(removed_segment, removed_section, 1000)
         self.assertEqual(len(rejoined_segment), len(self.audio_segment))
 
     def test_align_sample(self):
-        """ Sanity check that test audio should align
-        """
+        """Sanity check that test audio should align"""
         # Align
         input_text_path = os.path.join(self.data_dir, "audio_sample.txt")
         input_audio_path = os.path.join(self.data_dir, "audio_sample.ogg")
@@ -90,8 +86,7 @@ class TestAudio(BasicTestCase):
         self.assertFalse("error" in str(log).lower())
 
     def test_align_removed(self):
-        """ Try aligning section with removed audio
-        """
+        """Try aligning section with removed audio"""
         # Process Audio
         removed_segment = remove_section(self.noisy_segment, 1500, 2500)
         audio_output_path = os.path.join(self.tempdir, "removed_sample.mp3")
@@ -115,8 +110,7 @@ class TestAudio(BasicTestCase):
         self.assertFalse("error" in str(log).lower())
 
     def test_align_muted(self):
-        """ Try aligning section with muted audio
-        """
+        """Try aligning section with muted audio"""
         # Process Audio
         muted_segment = mute_section(self.noisy_segment, 1500, 2500)
         audio_output_path = os.path.join(self.tempdir, "muted_sample.mp3")

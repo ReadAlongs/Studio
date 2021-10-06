@@ -8,8 +8,8 @@ import os
 import tempfile
 import unittest
 
+from basic_test_case import BasicTestCase
 from lxml import etree
-from utils import BasicTestCase
 
 from readalongs.align import align_audio, convert_to_xhtml, create_input_tei
 from readalongs.log import LOGGER
