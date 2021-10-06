@@ -2,10 +2,12 @@
 
 import io
 import os
+import re
 import tempfile
 from os.path import exists, join
 from unittest import TestCase, main
 
+from basic_test_case import BasicTestCase
 from lxml.html import fromstring
 
 from readalongs.app import app
@@ -13,29 +15,7 @@ from readalongs.cli import align
 from readalongs.log import LOGGER
 
 
-class TestAlignCli(TestCase):
-    LOGGER.setLevel("DEBUG")
-    data_dir = join(os.path.dirname(__file__), "data")
-
-    # Set this to True to keep the temp dirs after running, for manual inspection
-    # but please don't push a commit setting this to True!
-    keep_temp_dir_after_running = False
-    if not keep_temp_dir_after_running:
-        tempdirobj = tempfile.TemporaryDirectory(
-            prefix="tmpdir_test_align_cli_", dir="."
-        )
-        tempdir = tempdirobj.name
-    else:
-        tempdir = tempfile.mkdtemp(prefix="tmpdir_test_align_cli_", dir=".")
-        print("tmpdir={}".format(tempdir))
-
-    def setUp(self):
-        app.logger.setLevel("DEBUG")
-        self.runner = app.test_cli_runner()
-
-    def tearDown(self):
-        pass
-
+class TestAlignCli(BasicTestCase):
     def test_invoke_align(self):
         output = join(self.tempdir, "output")
         with open("image-for-page1.jpg", "w"):
@@ -146,20 +126,15 @@ class TestAlignCli(TestCase):
         with open(join(output, "html", "html.html"), "rb") as fhtml:
             path_bytes = fhtml.read()
         htmldoc = fromstring(path_bytes)
-        self.assertTrue(
-            htmldoc.body.xpath("//read-along")[0]
-            .attrib["text"]
-            .startswith("data:application/xml;base64,")
+        b64_pattern = r"data:[\w\/\+]*;base64,\w*"
+        self.assertRegex(
+            htmldoc.body.xpath("//read-along")[0].attrib["text"], b64_pattern
         )
-        self.assertTrue(
-            htmldoc.body.xpath("//read-along")[0]
-            .attrib["alignment"]
-            .startswith("data:application/smil+xml;base64,")
+        self.assertRegex(
+            htmldoc.body.xpath("//read-along")[0].attrib["alignment"], b64_pattern
         )
-        self.assertTrue(
-            htmldoc.body.xpath("//read-along")[0]
-            .attrib["audio"]
-            .startswith("data:audio/mp4;base64,")
+        self.assertRegex(
+            htmldoc.body.xpath("//read-along")[0].attrib["audio"], b64_pattern
         )
 
         # Functionally the same as self.assertTrue(filecmp.cmp(f1, f2)), but show where

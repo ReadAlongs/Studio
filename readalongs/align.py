@@ -13,6 +13,7 @@ import copy
 import io
 import os
 import shutil
+from collections import defaultdict
 from dataclasses import dataclass
 from datetime import timedelta
 from typing import Dict, List, Union
@@ -21,6 +22,7 @@ import chevron
 import regex as re
 import soundswallower
 from lxml import etree
+from pydub import AudioSegment
 from pydub.exceptions import CouldntEncodeError
 from pympi.Praat import TextGrid
 from webvtt import Caption, WebVTT
@@ -193,7 +195,7 @@ def align_audio(  # noqa: C901
     Raises:
         TODO
     """
-    results: Dict[str, List] = {"words": []}
+    results: Dict[str, List] = {"words": [], "audio": None}
 
     # First do G2P
     try:
@@ -413,7 +415,36 @@ def align_audio(  # noqa: C901
         )
 
         split_silences(results["words"], final_end, dna_for_silence_splitting)
-
+    words_dict = {
+        x["id"]: {"start": x["start"], "end": x["end"]} for x in results["words"]
+    }
+    silence_offsets = defaultdict(int)
+    silence = 0
+    if results["tokenized"].xpath("//*[@silence]"):
+        endpoint = 0
+        for el in results["tokenized"].xpath("//*"):
+            if "silence" in el.attrib:
+                silence_ms = parse_time(el.attrib["silence"])
+                silence_segment = AudioSegment.silent(
+                    duration=silence_ms
+                )  # create silence segment
+                silence += silence_ms  # add silence length to total silence
+                audio = (
+                    audio[:endpoint] + silence_segment + audio[endpoint:]
+                )  # insert silence at previous endpoint
+                endpoint += silence_ms  # add silence to previous endpoint
+            if el.tag == "w":
+                silence_offsets[el.attrib["id"]] += (
+                    silence / 1000
+                )  # add silence in seconds to silence offset for word id
+                endpoint = (
+                    words_dict[el.attrib["id"]]["end"] * 1000
+                ) + silence  # bump endpoint and include silence
+    if silence:
+        for word in results["words"]:
+            word["start"] += silence_offsets[word["id"]]
+            word["end"] += silence_offsets[word["id"]]
+        results["audio"] = audio
     return results
 
 
@@ -429,6 +460,7 @@ def save_readalong(
     closed_captioning: bool = False,
     output_xhtml: bool = False,
     audiofile: str,
+    audiosegment: AudioSegment = None,
     html: bool = False,
 ):
     """Save the results from align_audio() into the otuput files required for a
@@ -444,6 +476,8 @@ def save_readalong(
         closed_captioning (bool, optional): if True, also save in .vtt and .srt subtitle formats
         output_xhtml (bool, optional): if True, convert XML into XHTML format before writing
         audiofile (str): path to the audio file passed to align_audio()
+        audiosegment (AudioSegment): a pydub.AudioSegment object of processed audio.
+                              if None, then original audio will be saved at `audiofile`
 
     Returns:
         None
@@ -451,7 +485,6 @@ def save_readalong(
     Raises:
         [TODO]
     """
-
     # Round all times to three digits, anything more is excess precision
     # poluting the output files, and usually due to float rounding errors anyway.
     for w in align_results["words"]:
@@ -485,8 +518,12 @@ def save_readalong(
     save_xml(tokenized_xml_path, align_results["tokenized"])
 
     _, audio_ext = os.path.splitext(audiofile)
-    audio_path = output_base + audio_ext
-    shutil.copy(audiofile, audio_path)
+    if audiosegment:
+        audio_path = output_base + ".wav"
+        audiosegment.export(audio_path, format="wav")
+    else:
+        audio_path = output_base + audio_ext
+        shutil.copy(audiofile, audio_path)
 
     smil_path = output_base + ".smil"
     smil = make_smil(

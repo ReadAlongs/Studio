@@ -4,22 +4,12 @@ import os
 import tempfile
 from unittest import TestCase, main
 
+from basic_test_case import BasicTestCase
+
 from readalongs.align import align_audio
 
 
-class TestAnchors(TestCase):
-    data_dir = os.path.join(os.path.dirname(__file__), "data")
-
-    # Set this to True to keep the temp dirs after running, for manual inspection
-    # but please don't push a commit setting this to True!
-    keep_temp_dir_after_running = False
-    if not keep_temp_dir_after_running:
-        tempdirobj = tempfile.TemporaryDirectory(prefix="tmpdir_test_anchors_", dir=".")
-        tempdir = tempdirobj.name
-    else:
-        tempdir = tempfile.mkdtemp(prefix="tmpdir_test_anchors_", dir=".")
-        print("tmpdir={}".format(tempdir))
-
+class TestAnchors(BasicTestCase):
     def test_anchors_inner_only(self):
         # ej-fra-anchors has anchors between words/sentences only
         results = align_audio(

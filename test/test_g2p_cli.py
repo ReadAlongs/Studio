@@ -5,6 +5,7 @@ import os
 import tempfile
 from unittest import TestCase, main
 
+from basic_test_case import BasicTestCase
 from lxml import etree
 
 from readalongs.align import align_audio
@@ -13,33 +14,10 @@ from readalongs.cli import align, g2p, prepare, tokenize
 from readalongs.text.convert_xml import convert_xml
 
 
-class TestG2pCli(TestCase):
-    data_dir = os.path.join(os.path.dirname(__file__), "data")
-
-    # Set this to True to keep the temp dirs after running, for manual inspection
-    # but please don't push a commit setting this to True!
-    keep_temp_dir_after_running = False
+class TestG2pCli(BasicTestCase):
     # Set this to True to display the output of many commands invoked here, for building
     # and debugging this test suite
     show_invoke_output = False
-
-    def setUp(self):
-        app.logger.setLevel("DEBUG")
-        self.runner = app.test_cli_runner()
-        if not self.keep_temp_dir_after_running:
-            # Temporary directories that get automatically cleaned up:
-            self.tempdirobj = tempfile.TemporaryDirectory(
-                prefix="tmpdir_test_g2p_cli_", dir="."
-            )
-            self.tempdir = self.tempdirobj.name
-        else:
-            # Alternative tempdir code keeps it after running, for manual inspection:
-            self.tempdir = tempfile.mkdtemp(prefix="tmpdir_test_g2p_cli_", dir=".")
-            print("tmpdir={}".format(self.tempdir))
-
-    def tearDown(self):
-        if not self.keep_temp_dir_after_running:
-            self.tempdirobj.cleanup()
 
     def test_invoke_g2p(self):
         input_file = os.path.join(self.data_dir, "fra-tokenized.xml")

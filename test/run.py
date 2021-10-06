@@ -15,6 +15,7 @@ from test_g2p_cli import TestG2pCli
 from test_indices import TestIndices
 from test_misc import TestMisc
 from test_prepare_cli import TestPrepareCli
+from test_silence import TestSilence
 from test_temp_file import TestTempFile
 from test_tokenize_cli import TestTokenizeCli
 from test_tokenize_xml import TestTokenizer
@@ -44,6 +45,7 @@ other_tests = [
         TestAlignCli,
         TestG2pCli,
         TestMisc,
+        TestSilence,
     ]
 ]
 
