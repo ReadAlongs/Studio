@@ -221,10 +221,8 @@ def parse_time(time_string: str) -> int:
                 time_in_ms += int(numerical_part * 60000)
             elif unit_part == "s":
                 time_in_ms += int(numerical_part * 1000)
-            elif unit_part == "ms":
+            else:  # unit_part == "ms":
                 time_in_ms += int(numerical_part)
-            else:
-                raise ValueError(f'invalid unit "{unit_part}"')
             prev_end = unit_match.end()
         last_part = time_string[prev_end:].strip()
         if last_part:
