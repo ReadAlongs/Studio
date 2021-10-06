@@ -424,19 +424,19 @@ def align_audio(  # noqa: C901
         endpoint = 0
         for el in results["tokenized"].xpath("//*"):
             if "silence" in el.attrib:
-                silence_ms = int(el.attrib["silence"])  # get silence (ms)
+                silence_t = parse_time(el.attrib["silence"])
                 silence_segment = AudioSegment.silent(
-                    duration=silence_ms
+                    duration=silence_t
                 )  # create silence segment
-                silence += silence_ms  # add silence length to total silence
+                silence += silence_t  # add silence length to total silence
                 audio = (
                     audio[:endpoint] + silence_segment + audio[endpoint:]
                 )  # insert silence at previous endpoint
-                endpoint += silence_ms  # add silence to previous endpoint
+                endpoint += silence_t  # add silence to previous endpoint
             if el.tag == "w":
                 silence_offsets[el.attrib["id"]] += (
                     silence / 1000
-                )  # add silence to silence offset for word id
+                )  # add silence in seconds to silence offset for word id
                 endpoint = (
                     words_dict[el.attrib["id"]]["end"] * 1000
                 ) + silence  # bump endpoint and include silence
