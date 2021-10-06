@@ -23,13 +23,17 @@ class TestMisc(TestCase):
             ("1234ms", 1234),
             ("  1234  ms  ", 1234),
             ("3.213s", 3213),
+            ("1h10m43.123s", 4243123),
+            ("2h", 7200000),
+            ("2h3", 7203000),
+            ("2h3ms", 7200003),
         ):
             self.assertEqual(
                 parse_time(time_str), time_in_ms, f'error parsing "{time_str}"'
             )
 
     def test_parse_time_errors(self):
-        for err_time_str in ("3.4.5 ms", ".", "", "asdf"):
+        for err_time_str in ("3.4.5 ms", ".", "", "asdf", " 0 h z ", "nm"):
             with self.assertRaises(
                 ValueError,
                 msg=f'parsing "{err_time_str}" should have raised ValueError',

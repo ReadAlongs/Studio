@@ -10,8 +10,6 @@
 # TODO: Add Google standard format docstrings
 ############################################
 
-from __future__ import division, print_function, unicode_literals
-
 import json
 import os
 import re
@@ -194,37 +192,46 @@ def unicode_normalize_xml(element):
             child.tail = normalize("NFD", unicode(child.tail))
 
 
-def parse_time(time_string) -> int:
-    """ Parse a time stamp in seconds (default) or milliseconds (with "ms" unit)
-        The "s" unit is optional and implied if left out.
+def parse_time(time_string: str) -> int:
+    """ Parse a time stamp in h/m/s(default)/ms or any combination of these units.
 
     Args:
-        time_string(str): timestamp, e.g., "0.23s", "5.234" (implied s), "1234 ms"
-            must be a number followed by "s", "ms" or nothing.
+        time_string (str): timestamp, e.g., "0.23s", "5.234" (implied s), "1234 ms",
+            "1h 10m 12.345s", "00h00m00.000". Supported units: h, m, s (default), ms
+            and any combination thereof.
 
     Returns:
         int: time represented by time_string in milliseconds
+
+    Raises:
+        ValueError: if time_string cannot be parsed
     """
-    time_pattern = re.compile(
-        r"""
-            \s*           # ignore leading spaces
-            ([0-9.]+)     # Numerical part
-            \s*           # optional spaces
-            (
-                (s|ms)    # optional units: s (seconds) or ms (milliseconds)
-                \s*       # ignore trailing spaces
-            )?
-        """,
-        re.VERBOSE,
-    )
-    match = time_pattern.fullmatch(time_string)
-    if match:
-        units = match[3]
-        if units == "ms":
-            return int(match[1])
-        else:
-            return int(1000 * float(match[1]))
-    else:
+    try:
+        if not time_string.strip():
+            raise ValueError("empty time string")
+        prev_end = 0
+        time_in_ms = 0
+        for unit_match in re.finditer(r"ms|h|m|s", time_string):
+            # float() raises ValueError if text before the unit is not a valid number
+            numerical_part = float(time_string[prev_end : unit_match.start()])
+            unit_part = unit_match.group()
+            if unit_part == "h":
+                time_in_ms += int(numerical_part * 3600000)
+            elif unit_part == "m":
+                time_in_ms += int(numerical_part * 60000)
+            elif unit_part == "s":
+                time_in_ms += int(numerical_part * 1000)
+            elif unit_part == "ms":
+                time_in_ms += int(numerical_part)
+            else:
+                raise ValueError(f'invalid unit "{unit_part}"')
+            prev_end = unit_match.end()
+        last_part = time_string[prev_end:].strip()
+        if last_part:
+            time_in_ms += int(float(last_part) * 1000)
+        return time_in_ms
+    except ValueError as e:
+        # e might have been raised by any of the float() constructor
         raise ValueError(
-            f'cannot convert "{time_string}" to a time in seconds or milliseconds'
-        )
+            f'cannot parse "{time_string}" as a valid time in h/m/s/ms'
+        ) from e
