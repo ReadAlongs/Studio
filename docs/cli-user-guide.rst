@@ -409,7 +409,7 @@ timestamps is excluded from alignment. - If an anchor occurs after the
 last word, the end of the audio is excluded from alignment. - If two
 anchors occur one after the other, the time span between them in the
 audio is excluded from alignment. Using anchors to define do-not-align
-audio segments is effectively the same as marking them as “do-not-align”
+audio segments is effectively the same as marking them as "do-not-align"
 in the ``config.json`` file, except that DNA segments declared using
 anchors have a known alignment with respect to the text, while the
 position of DNA segments declared in the config file are inferred by the

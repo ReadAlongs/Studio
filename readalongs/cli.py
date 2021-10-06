@@ -165,7 +165,7 @@ def cli():
     "--g2p-verbose",
     is_flag=True,
     default=False,
-    help="Display verbose messages about g2p errors.",
+    help="Display verbose g2p error messages",
 )
 def align(**kwargs):  # noqa: C901
     """Align TEXTFILE and AUDIOFILE and create output files as OUTPUT_BASE.* in directory
