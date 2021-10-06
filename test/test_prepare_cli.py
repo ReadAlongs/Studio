@@ -8,32 +8,20 @@ import tempfile
 from shutil import copyfile
 from unittest import TestCase, main
 
+from utils import BasicTestCase
+
 from readalongs.align import create_input_tei
 from readalongs.app import app
 from readalongs.cli import prepare
 from readalongs.log import LOGGER
 
 
-class TestPrepareCli(TestCase):
-    LOGGER.setLevel("DEBUG")
-    data_dir = os.path.join(os.path.dirname(__file__), "data")
-
+class TestPrepareCli(BasicTestCase):
     def setUp(self):
-        app.logger.setLevel("DEBUG")
-        self.runner = app.test_cli_runner()
-        self.tempdirobj = tempfile.TemporaryDirectory(
-            prefix="tmpdir_test_prepare_cli_", dir="."
-        )
-        self.tempdir = self.tempdirobj.name
-        # Alternative tempdir code keeps it after running, for manual inspection:
-        # self.tempdir = tempfile.mkdtemp(prefix="tmpdir_test_prepare_cli_", dir=".")
-        # print("tmpdir={}".format(self.tempdir))
+        super().setUp()
         self.empty_file = os.path.join(self.tempdir, "empty.txt")
         with io.open(self.empty_file, "wb"):
             pass
-
-    def tearDown(self):
-        self.tempdirobj.cleanup()
 
     def test_invoke_prepare(self):
         results = self.runner.invoke(

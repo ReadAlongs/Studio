@@ -7,6 +7,8 @@ from shutil import rmtree
 from subprocess import run
 from unittest import TestCase, main
 
+from utils import BasicTestCase
+
 from readalongs.audio_utils import (
     extract_section,
     join_section,
@@ -22,24 +24,15 @@ def segments_from_pairs(*pairs):
     return list({"begin": b, "end": e} for b, e in pairs)
 
 
-class TestAudio(TestCase):
+class TestAudio(BasicTestCase):
     def setUp(self):
-        self.data_path = os.path.join(os.path.dirname(__file__), "data")
+        super().setUp()
         self.audio_segment = read_audio_from_file(
-            os.path.join(self.data_path, "audio_sample.ogg")
+            os.path.join(self.data_dir, "audio_sample.ogg")
         )
         self.noisy_segment = read_audio_from_file(
-            os.path.join(self.data_path, "noise_at_1500.mp3")
+            os.path.join(self.data_dir, "noise_at_1500.mp3")
         )
-        # Use a TemporaryDirectory object for temp outputs, so they get cleaned
-        # automatically cleaned even in case of errors or aborted runs.
-        self.tempdirobj = tempfile.TemporaryDirectory(
-            prefix="test_audio_tmpdir", dir="."
-        )
-        self.tempdir = self.tempdirobj.name
-
-    def tearDown(self):
-        self.tempdirobj.cleanup()
 
     def align(self, input_text_path, input_audio_path, output_path, flags):
         args = [
@@ -80,8 +73,8 @@ class TestAudio(TestCase):
         """ Sanity check that test audio should align
         """
         # Align
-        input_text_path = os.path.join(self.data_path, "audio_sample.txt")
-        input_audio_path = os.path.join(self.data_path, "audio_sample.ogg")
+        input_text_path = os.path.join(self.data_dir, "audio_sample.txt")
+        input_audio_path = os.path.join(self.data_dir, "audio_sample.ogg")
         flags = ["-i", "-l", "eng"]
         output_path = os.path.join(self.tempdir, "output")
         log = self.align(input_text_path, input_audio_path, output_path, flags)
@@ -105,7 +98,7 @@ class TestAudio(TestCase):
         with open(audio_output_path, "wb") as f:
             removed_segment.export(f)
         # Align
-        input_text_path = os.path.join(self.data_path, "audio_sample.txt")
+        input_text_path = os.path.join(self.data_dir, "audio_sample.txt")
         input_audio_path = audio_output_path
         flags = ["-i", "-l", "eng"]
         output_path = os.path.join(self.tempdir, "output_removed")
@@ -130,7 +123,7 @@ class TestAudio(TestCase):
         with open(audio_output_path, "wb") as f:
             muted_segment.export(f)
         # Align
-        input_text_path = os.path.join(self.data_path, "audio_sample.txt")
+        input_text_path = os.path.join(self.data_dir, "audio_sample.txt")
         input_audio_path = audio_output_path
         flags = ["-i", "-l", "eng", "-b"]
         output_path = os.path.join(self.tempdir, "output_muted")

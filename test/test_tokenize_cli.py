@@ -16,17 +16,7 @@ from readalongs.log import LOGGER
 
 class TestTokenizeCli(BasicTestCase):
     def setUp(self):
-        app.logger.setLevel("DEBUG")
-        self.runner = app.test_cli_runner()
-        if not self.keep_temp_dir_after_running:
-            self.tempdirobj = tempfile.TemporaryDirectory(
-                prefix="tmpdir_test_tokenize_cli_", dir="."
-            )
-            self.tempdir = self.tempdirobj.name
-        else:
-            # Alternative tempdir code keeps it after running, for manual inspection:
-            self.tempdir = tempfile.mkdtemp(prefix="tmpdir_test_tokenize_cli_", dir=".")
-            print("tmpdir={}".format(self.tempdir))
+        super().setUp()
 
         self.xmlfile = os.path.join(self.tempdir, "fra.xml")
         _ = self.runner.invoke(

@@ -10,9 +10,6 @@ from readalongs.log import LOGGER
 
 
 class TestIndices(TestCase):
-    def setUp(self):
-        pass
-
     def test_basic_composition(self):
         mapping = Mapping([{"in": "a", "out": "b"}])
         transducer = Transducer(mapping)
