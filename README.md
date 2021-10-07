@@ -5,6 +5,7 @@
 [![PyPI package](https://img.shields.io/pypi/v/readalongs.svg)](https://pypi.org/project/readalongs/)
 [![GitHub license](https://img.shields.io/github/license/ReadAlongs/Studio)](https://github.com/ReadAlongs/Studio/blob/master/LICENSE)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/ReadAlongs/Studio)
+[![Documentation Status](https://readthedocs.org/projects/readalong-studio/badge/)
 
 :warning: :construction: This repo is currently **under construction** and is not stable. :construction: :warning:
 
@@ -27,7 +28,7 @@ This library is an end-to-end audio/text aligner. It is meant to be used togethe
     - [Contributors](#contributors)
   - [License](#license)
 
-See also: [Detailed command line interface user guide](docs/cli-user-guide.md).
+See also: [ReadAlong-Studio documentation](https://readalong-studio.readthedocs.io/en/latest/index.html).
 
 ## Background
 
@@ -39,7 +40,7 @@ i.e. a package of:
 - TEI file describing text
 - Audio file (WAV or MP3)
 
-Which can be loaded using the read-along [web component](https://github.com/roedoejet/ReadAlong-Web-Component). See also [Studio Output Realizations](docs/outputs.rst).
+Which can be loaded using the read-along [web component](https://github.com/roedoejet/ReadAlong-Web-Component). See also [Studio Output Realizations](https://readalong-studio.readthedocs.io/en/latest/outputs.html).
 
 Optionally a book can be generated as a standalone HTML page or
 as an ePub file.
@@ -87,9 +88,9 @@ ReadAlong-Studio can be used either through the command line, a distributed web 
 This page lists only the most basic commands.
 
 For more information about how the command line interface works:
-* Read the [Detailed command line interface user guide](docs/cli-user-guide.md)
-* Invoke any CLI command with the `--help` for usage information. e.g., `readalongs --help`, `readalongs align --help`.
-* Consult this [incomplete documentation](https://readalong-studio.readthedocs.io/en/latest/index.html)  [TODO: complete and fix this documentation!].
+* Consult the [CLI User Guide](https://readalong-studio.readthedocs.io/en/latest/cli-guide.html).
+* Consult the [CLI Reference](https://readalong-studio.readthedocs.io/en/latest/cli-ref.html).
+* Invoke any CLI command with `-h` or `--help` for usage information. e.g., `readalongs --help`, `readalongs align --help`.
 
 #### Alignment
 
