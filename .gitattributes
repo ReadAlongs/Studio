@@ -4,3 +4,5 @@ readalongs/static/js/toastr.min.js linguist-vendored
 readalongs/static/css/all.min.css linguist-vendored
 readalongs/static/css/pageloader.css linguist-vendored
 readalongs/static/css/toastr.min.css linguist-vendored
+readalongs/text/bundle.css linguist-vendored
+redalongs/text/bundle.js linguist-vendored
