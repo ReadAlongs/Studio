@@ -25,6 +25,9 @@ from lxml import etree
 
 from readalongs.log import LOGGER
 
+JS_BUNDLE_URL = "https://unpkg.com/@roedoejet/readalong/dist/bundle.js"
+FONTS_BUNDLE_URL = "https://unpkg.com/@roedoejet/readalong/dist/fonts.b64.js"
+
 BASIC_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -32,9 +35,8 @@ BASIC_HTML = """
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
   <title>{title}</title>
-  <script type="module" src="https://unpkg.com/@roedoejet/readalong/dist/read-along/read-along.esm.js"></script>
-  <script nomodule src="https://unpkg.com/@roedoejet/readalong/dist/read-along/read-along.js"></script>
-  <link href="https://fonts.googleapis.com/css?family=Lato|Material+Icons|Material+Icons+Outlined" rel="stylesheet">
+  <script>{js}</script>
+  <style>{fonts}</style>
 </head>
 <body>
     <read-along text="{text}" alignment="{alignment}" audio="{audio}" theme="{theme}" use-assets-folder="false">
@@ -95,10 +97,35 @@ def create_web_component_html(
     subheader="Subheader goes here",
     theme="light",
 ) -> str:
+    js = requests.get(JS_BUNDLE_URL)
+    fonts = requests.get(FONTS_BUNDLE_URL)
+    if js.status_code != 200:
+        LOGGER.warn(
+            f"Sorry, the JavaScript bundle that is supposed to be at {JS_BUNDLE_URL} returned a {js.status_code}. Your ReadAlong will be bundled using a version that may not be up-to-date. Please check your internet connection."
+        )
+        with open(
+            os.path.join(os.path.dirname(__file__), "bundle.js"), encoding="utf8"
+        ) as f:
+            js_raw = f.read()
+    else:
+        js_raw = js.text
+    if fonts.status_code != 200:
+        LOGGER.warn(
+            f"Sorry, the fonts bundle that is supposed to be at {FONTS_BUNDLE_URL} returned a {fonts.status_code}. Your ReadAlong will be bundled using a version that may not be up-to-date. Please check your internet connection."
+        )
+        with open(
+            os.path.join(os.path.dirname(__file__), "bundle.css"), encoding="utf8"
+        ) as f:
+            fonts_raw = f.read()
+    else:
+        fonts_raw = fonts.text
+
     return BASIC_HTML.format(
         text=encode_from_path(text_path),
         alignment=encode_from_path(alignment_path),
         audio=encode_from_path(audio_path),
+        js=js_raw,
+        fonts=fonts_raw,
         title=title,
         header=header,
         subheader=subheader,
