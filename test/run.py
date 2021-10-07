@@ -14,6 +14,7 @@ from test_force_align import TestForceAlignment, TestXHTML
 from test_g2p_cli import TestG2pCli
 from test_indices import TestIndices
 from test_misc import TestMisc
+from test_package_urls import TestPackageURLs
 from test_prepare_cli import TestPrepareCli
 from test_silence import TestSilence
 from test_temp_file import TestTempFile
@@ -46,6 +47,7 @@ other_tests = [
         TestG2pCli,
         TestMisc,
         TestSilence,
+        TestPackageURLs,
     ]
 ]
 
