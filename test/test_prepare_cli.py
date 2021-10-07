@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
 
+"""Test suite for the readalongs prepare CLI command"""
+
 import io
 import os
 import re
-import sys
-import tempfile
 from shutil import copyfile
-from unittest import TestCase, main
+from unittest import main
 
 from basic_test_case import BasicTestCase
 
 from readalongs.align import create_input_tei
-from readalongs.app import app
 from readalongs.cli import prepare
 from readalongs.log import LOGGER
 
 
 class TestPrepareCli(BasicTestCase):
+    """Test suite for the readalongs prepare CLI command"""
+
     def setUp(self):
         super().setUp()
         self.empty_file = os.path.join(self.tempdir, "empty.txt")
@@ -24,6 +25,7 @@ class TestPrepareCli(BasicTestCase):
             pass
 
     def test_invoke_prepare(self):
+        """Basic usage of readalongs prepare"""
         results = self.runner.invoke(
             prepare,
             ["-l", "atj", "-d", self.empty_file, os.path.join(self.tempdir, "delme")],
@@ -33,6 +35,7 @@ class TestPrepareCli(BasicTestCase):
         # print('Prepare.stdout: {}'.format(results.stdout))
 
     def test_no_lang(self):
+        """Error case: readalongs prepare without the mandatory -l switch"""
         results = self.runner.invoke(
             prepare, [self.empty_file, self.empty_file + ".xml"]
         )
@@ -40,11 +43,13 @@ class TestPrepareCli(BasicTestCase):
         self.assertRegex(results.stdout, "Missing.*language")
 
     def test_inputfile_not_exist(self):
+        """Error case: input file does not exist"""
         results = self.runner.invoke(prepare, "-l atj /file/does/not/exist delme")
         self.assertNotEqual(results.exit_code, 0)
         self.assertRegex(results.stdout, "No such file or directory")
 
     def test_outputfile_exists(self):
+        """Existing output file should not be overwritten by readalongs prepare by default"""
         results = self.runner.invoke(
             prepare,
             ["-l", "atj", self.empty_file, os.path.join(self.tempdir, "exists")],
@@ -57,6 +62,7 @@ class TestPrepareCli(BasicTestCase):
         self.assertRegex(results.stdout, "exists.*overwrite")
 
     def test_output_exists(self):
+        """Make sure readalongs prepare create the expected output file"""
         xmlfile = os.path.join(self.tempdir, "fra.xml")
         results = self.runner.invoke(
             prepare, ["-l", "fra", os.path.join(self.data_dir, "fra.txt"), xmlfile]
@@ -65,13 +71,16 @@ class TestPrepareCli(BasicTestCase):
         self.assertTrue(os.path.exists(xmlfile), "output xmlfile did not get created")
 
     def test_output_correct(self):
+        """Make sure the contents of readalongs prepare's output file is correct."""
         input_file = os.path.join(self.data_dir, "fra.txt")
         xml_file = os.path.join(self.tempdir, "fra.xml")
         results = self.runner.invoke(prepare, ["-l", "fra", input_file, xml_file])
         self.assertEqual(results.exit_code, 0)
 
         ref_file = os.path.join(self.data_dir, "fra-prepared.xml")
-        with open(xml_file) as output_f, open(ref_file) as ref_f:
+        with open(xml_file, encoding="utf8") as output_f, open(
+            ref_file, encoding="utf8"
+        ) as ref_f:
             self.maxDiff = None
             self.assertListEqual(
                 list(output_f),
@@ -80,6 +89,7 @@ class TestPrepareCli(BasicTestCase):
             )
 
     def test_input_is_stdin(self):
+        """Validate that readalongs prepare can use stdin as input"""
         results = self.runner.invoke(prepare, "-l fra -", input="Ceci est un test.")
         # LOGGER.warning("Output: {}".format(results.output))
         # LOGGER.warning("Exception: {}".format(results.exception))
@@ -88,6 +98,7 @@ class TestPrepareCli(BasicTestCase):
         self.assertIn('<text xml:lang="fra">', results.stdout)
 
     def test_generate_output_name(self):
+        """Validate readalongs prepare generating the output file name"""
         input_file = os.path.join(self.tempdir, "someinput.txt")
         copyfile(os.path.join(self.data_dir, "fra.txt"), input_file)
         results = self.runner.invoke(prepare, ["-l", "fra", input_file])
@@ -98,6 +109,7 @@ class TestPrepareCli(BasicTestCase):
         self.assertTrue(os.path.exists(os.path.join(self.tempdir, "someinput.xml")))
 
     def test_prepare_with_different_newlines(self):
+        """readalongs prepare handling single and double blank lines for paragraphs and pages"""
         sent = "Ceci est une phrase."
         linux_file = os.path.join(self.tempdir, "linux_file")
         with open(linux_file, mode="wb") as f:
@@ -151,8 +163,9 @@ class TestPrepareCli(BasicTestCase):
         )
 
     def test_create_input_tei_no_input(self):
+        """create_input_tei should raise a RuntimeError when given no input"""
         with self.assertRaises(RuntimeError):
-            (fh, fname) = create_input_tei()
+            _, _ = create_input_tei()
 
 
 if __name__ == "__main__":

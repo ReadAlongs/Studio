@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
 
+"""
+Top-level runner for out test suites
+
+Invoke as
+   ./run.py [suite]
+where [suite] can be one of:
+   all: run everything, by searching the directory for all test suite files
+   prod: synonym for all
+   dev: run the standard development test suite - this is what we do in CI
+   e2e: run the end-to-end tests
+   other: run the other tests
+"""
+
 import os
 import sys
 from unittest import TestLoader, TestSuite, TextTestRunner
@@ -53,18 +66,22 @@ other_tests = [
 
 
 def run_tests(suite):
+    """Run the specified test suite"""
+
     if suite == "e2e":
         suite = TestSuite(e2e_tests)
     elif suite == "dev":
         suite = TestSuite(indices_tests + other_tests + e2e_tests)
-    elif suite == "prod" or suite == "all":
+    elif suite in ("prod", "all"):
         suite = loader.discover(os.path.dirname(__file__))
     elif suite == "other":
         suite = TestSuite(other_tests)
     else:
         LOGGER.error(
-            "Sorry, you need to select a Test Suite to run, like 'dev' or 'prod'"
+            "Sorry, you need to select a Test Suite to run, one of: "
+            "dev, all (or prod), e2e, other"
         )
+        sys.exit(1)
 
     runner = TextTestRunner(verbosity=3)
     return runner.run(suite)

@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 
+"""Test suite for misc stuff that don't need their own stand-alone suite"""
+
 from unittest import TestCase, main
 
-from test_audio import segments_from_pairs
+from test_dna_utils import segments_from_pairs
 
 from readalongs.align import split_silences
 from readalongs.text.util import parse_time
 
 
 class TestMisc(TestCase):
-    """ Testing miscellaneous stuff """
+    """Testing miscellaneous stuff"""
 
     def test_parse_time(self):
+        """Test readalongs.text.util.parse_time() with valid inputs"""
         for time_str, time_in_ms in (
             ("1234", 1234000),
             ("12s", 12000),
@@ -33,6 +36,7 @@ class TestMisc(TestCase):
             )
 
     def test_parse_time_errors(self):
+        """Test readalongs.text.util.parse_time() with invalid inputs"""
         for err_time_str in ("3.4.5 ms", ".", "", "asdf", " 0 h z ", "nm"):
             with self.assertRaises(
                 ValueError,
@@ -41,6 +45,7 @@ class TestMisc(TestCase):
                 _ = parse_time(err_time_str)
 
     def test_split_silences(self):
+        """Test readalongs.align.split_silences()"""
         dna = segments_from_pairs((1000, 2000), (5000, 5000))
         words = [
             {"id": i, "start": s, "end": e}

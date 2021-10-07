@@ -1,24 +1,26 @@
 #!/usr/bin/env python3
 
-import io
+"""
+Unit test suite for the readalongs align CLI command
+"""
+
 import os
-import re
-import tempfile
 from os.path import exists, join
-from unittest import TestCase, main
+from unittest import main
 
 from basic_test_case import BasicTestCase
 from lxml.html import fromstring
 
-from readalongs.app import app
 from readalongs.cli import align
-from readalongs.log import LOGGER
 
 
 class TestAlignCli(BasicTestCase):
+    """Unit test suite for the readalongs align CLI command"""
+
     def test_invoke_align(self):
+        """Basic readalongs align invocation and some variants"""
         output = join(self.tempdir, "output")
-        with open("image-for-page1.jpg", "w"):
+        with open("image-for-page1.jpg", "wb"):
             pass
         # Run align from plain text
         results = self.runner.invoke(
@@ -54,7 +56,7 @@ class TestAlignCli(BasicTestCase):
             self.assertTrue(
                 exists(join(output, f)), f"successful alignment should have created {f}"
             )
-        with open(join(output, "index.html")) as f:
+        with open(join(output, "index.html"), encoding="utf8") as f:
             self.assertIn(
                 '<read-along text="output.xml" alignment="output.smil" audio="output.m4a"',
                 f.read(),
@@ -112,8 +114,8 @@ class TestAlignCli(BasicTestCase):
         # the differences are if the files are not identical
         # Since f2 was created using -x, we need to substitute .xhtml back to .xml during
         # the comparison of the contents of the .smil files.
-        with open(join(output1, "output.smil")) as f1, open(
-            join(output, "output.smil")
+        with open(join(output1, "output.smil"), encoding="utf8") as f1, open(
+            join(output, "output.smil"), encoding="utf8"
         ) as f2:
             self.assertListEqual(
                 list(f1), [line.replace(".xhtml", ".xml") for line in f2]
@@ -181,10 +183,10 @@ class TestAlignCli(BasicTestCase):
             htmldoc.body.xpath("//read-along")[0].attrib["audio"], b64_pattern
         )
 
-    def test_permission_denied(self):
+    def not_test_permission_denied(self):
+        """Non-portable test to make sure denied permission triggers an error -- disabled"""
         # This test is not stable, just disable it.
         # It apparently also does not work correctly on M1 Macs either, even in Docker.
-        return
 
         import platform
 
@@ -192,22 +194,22 @@ class TestAlignCli(BasicTestCase):
             # Cannot change the permission on a directory in Windows though
             # os.mkdir() or os.chmod(), so skip this test
             return
-        dir = join(self.tempdir, "permission_denied")
-        os.mkdir(dir, mode=0o444)
+        dirname = join(self.tempdir, "permission_denied")
+        os.mkdir(dirname, mode=0o444)
         results = self.runner.invoke(
             align,
             [
                 "-f",
                 join(self.data_dir, "ej-fra-dna.xml"),
                 join(self.data_dir, "ej-fra.m4a"),
-                dir,
+                dirname,
             ],
         )
         self.assertNotEqual(results, 0)
         self.assertIn("Cannot write into output folder", results.output)
 
     def test_align_help(self):
-        # Validates that readalongs align -h lists all in-langs that can map to eng-arpabet
+        """Validates that readalongs align -h lists all in-langs that can map to eng-arpabet"""
         results = self.runner.invoke(align, "-h")
         self.assertEqual(results.exit_code, 0)
         self.assertIn("|crg-tmd|", results.stdout)
@@ -215,11 +217,12 @@ class TestAlignCli(BasicTestCase):
         self.assertNotIn("|crg|", results.stdout)
 
     def test_align_english(self):
-        # Validates that LexiconG2P words for English language alignment
-        input = "This is some text that we will run through the English lexicon grapheme to morpheme approach."
+        """Validates that LexiconG2P works for English language alignment"""
+
+        input_text = "This is some text that we will run through the English lexicon grapheme to morpheme approach."
         input_filename = join(self.tempdir, "input")
-        with open(input_filename, "w") as f:
-            f.write(input)
+        with open(input_filename, "w", encoding="utf8") as f:
+            f.write(input_text)
         output_dir = join(self.tempdir, "eng-output")
         # Run align from plain text
         self.runner.invoke(
@@ -240,12 +243,14 @@ class TestAlignCli(BasicTestCase):
         tokenized_file = join(
             self.tempdir, "eng-output", "tempfiles", "eng-output.g2p.xml"
         )
-        with open(tokenized_file, "r") as f:
+        with open(tokenized_file, "r", encoding="utf8") as f:
             tok_output = f.read()
 
         self.assertIn(g2p_ref, tok_output)
 
     def test_invalid_config(self):
+        """unit testing for invalid config specifications"""
+
         # --config parameter needs to be <somefile>.json, text with .txt instead
         result = self.runner.invoke(
             align,
@@ -261,7 +266,7 @@ class TestAlignCli(BasicTestCase):
 
         # --config parameters needs to contain valid json, test with garbage
         config_file = join(self.tempdir, "bad-config.json")
-        with open(config_file, "w") as f:
+        with open(config_file, "w", encoding="utf8") as f:
             print("not valid json", file=f)
         result = self.runner.invoke(
             align,
@@ -276,6 +281,8 @@ class TestAlignCli(BasicTestCase):
         self.assertIn("is not in valid JSON format", result.stdout)
 
     def test_bad_anchors(self):
+        """Make sure invalid anchors yield appropriate errors"""
+
         xml_text = """<?xml version='1.0' encoding='utf-8'?>
             <TEI><text xml:lang="fra"><body><p>
             <anchor /><s>Bonjour.</s><anchor time="invalid"/>

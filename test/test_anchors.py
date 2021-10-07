@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
+"""Unit testing for the anchors functionality in readalongs align"""
+
 import os
-import tempfile
-from unittest import TestCase, main
+from unittest import main
 
 from basic_test_case import BasicTestCase
 
@@ -10,7 +11,11 @@ from readalongs.align import align_audio
 
 
 class TestAnchors(BasicTestCase):
+    """Unit testing for the anchors functionality in readalongs align"""
+
     def test_anchors_inner_only(self):
+        """Test aligning with anchors only between existing text"""
+
         # ej-fra-anchors has anchors between words/sentences only
         results = align_audio(
             os.path.join(self.data_dir, "ej-fra-anchors.xml"),
@@ -29,6 +34,8 @@ class TestAnchors(BasicTestCase):
         self.assertGreaterEqual(words[22]["start"], 6.74)
 
     def test_anchors_outer_too(self):
+        """Test aligning with anchors defining DNA segments at start and end too"""
+
         # ej-fra-anchors2 also has anchors before the first word and after the last word
         save_temps_prefix = os.path.join(self.tempdir, "anchors2-temps")
         results = align_audio(

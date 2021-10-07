@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 
-import os
-import tempfile
-from unittest import TestCase, main
+"""Test handling of DNA text in tokenization"""
+
+from unittest import main
 
 from basic_test_case import BasicTestCase
 from lxml import etree
 
-from readalongs.app import app
-from readalongs.log import LOGGER
 from readalongs.text import tokenize_xml
 from readalongs.text.add_ids_to_xml import add_ids
 
 
 class TestDNAText(BasicTestCase):
+    """Test handling of DNA text in tokenization"""
+
     def test_tok_all_words(self):
+        """By default, all words should get tokenized"""
+
         txt = """<document xml:lang="fra">
 <s>Bonjour! Comment ça va?</s>
 <s>Voici une deuxième phrase.</s>
@@ -42,6 +44,8 @@ class TestDNAText(BasicTestCase):
         self.assertEqual(ids_as_txt, ref_with_ids)
 
     def test_tok_some_words(self):
+        """do-not-align text is excluded from tokenization"""
+
         txt = """<document xml:lang="fra">
 <p><s>Bonjour! Comment ça va?</s></p>
 <p do-not-align="true"><s>Bonjour! Comment ça va?</s></p>
@@ -73,6 +77,8 @@ class TestDNAText(BasicTestCase):
         self.assertEqual(ids_as_txt, ref_with_ids)
 
     def test_tok_div_p_s(self):
+        """Text inside a DNA div, p or s does not get tokenized"""
+
         txt = """<document xml:lang="fra">
 <div>
 <p> <s>Une phrase.</s> </p>
@@ -132,12 +138,16 @@ class TestDNAText(BasicTestCase):
         self.assertEqual(ids_as_txt, ref_with_ids)
 
     def test_dna_word(self):
+        """You can't have a DNA <w> element, that's reserved for tokens to align"""
+
         txt = """<s xml:lang="fra">Une <w do-not-align="true">exclude</w> phrase.</s>"""
         xml = etree.fromstring(txt)
         tokenized = tokenize_xml.tokenize_xml(xml)
         self.assertRaises(RuntimeError, add_ids, tokenized)
 
     def test_dna_word_nested(self):
+        """You also can't have a <w> element inside a DNA element"""
+
         txt = """<s xml:lang="fra">Une <foo do-not-align="true"><bar><w>exclude</w></bar></foo> phrase.</s>"""
         xml = etree.fromstring(txt)
         tokenized = tokenize_xml.tokenize_xml(xml)
