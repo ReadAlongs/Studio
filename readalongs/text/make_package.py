@@ -36,7 +36,7 @@ BASIC_HTML = """
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
   <title>{title}</title>
   <script>{js}</script>
-  <style>{fonts}</style>
+  <style attribution="See https://fonts.google.com/attribution for copyrights and font attribution">{fonts}</style>
 </head>
 <body>
     <read-along text="{text}" alignment="{alignment}" audio="{audio}" theme="{theme}" use-assets-folder="false">
