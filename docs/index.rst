@@ -12,8 +12,7 @@ Welcome to ReadAlong-Studio's documentation!
    cli-guide
    cli-ref
    outputs
-   cli-user-guide
-   cli-user-guide-rest
+   advanced-use
 
 
 Indices and tables
