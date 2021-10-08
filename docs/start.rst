@@ -27,17 +27,17 @@ optionally be generated as an ePub file.
 Required knowledge
 ------------------
 
--  Command line interface (CLI)
--  Plain text file/xml/smil
--  Audacity or similar
--  Spinning up a server
+-  How to use a `Command-line interface (CLI) <https://en.wikipedia.org/wiki/Command-line_interface>`__.
+-  How to edit and manipulate plain text, `XML <https://www.w3.org/standards/xml/core>`__ and `SMIL <https://www.w3.org/TR/smil/>`__ files using a text editor or a code editor.
+-  How to edit and examine an audio file with `Audacity <https://www.audacityteam.org/>`__ or similar software.
+-  How to spin up a local web server (e.g., see `How do you set up a local testing server? <https://developer.mozilla.org/en-US/docs/Learn/Common_questions/set_up_a_local_testing_server>`__)
 
 What you need to make a ReadAlong
 ---------------------------------
 
 In order to create a ReadAlong you will need two files:
 
-- Plain text (``.txt``) or XML (``.xml``)
+- A text file, either in plain text (``.txt``) or in XML (``.xml``)
 - Clear audio in any format supported by `ffmpeg <https://ffmpeg.org/ffmpeg-formats.html>`__
 
 The content of the text file should be a transcription of the audio

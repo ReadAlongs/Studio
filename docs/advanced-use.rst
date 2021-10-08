@@ -82,9 +82,14 @@ Troubleshooting
 ---------------
 
 Here are three types of common errors you may encounter when trying to
-run ReadAlongs, and ways to debug them. ### Phones missing in the
-acoustic model You may get an error that looks like this:|image1| The
-general structure of your error would look like
+run ReadAlongs, and ways to debug them.
+
+Phones missing in the acoustic model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You may get an error that looks like this:|image1|
+
+The general structure of your error would look like
 ``Phone [character] is missing in the acoustic model; word [index] ignored``
 This error is most likely caused not by a bug in your ReadAlong input
 files, but by an error in one of your g2p mappings. The error message is
@@ -110,8 +115,8 @@ Follow these steps to debug the issue **in g2p**.
       message shown above: ``g`` and ``ʰ``.
 
 2. Once you have isolated the characters that are not being converted to
-   eng-arpabet, you are ready to begin debugging the issue. Go through
-   steps 3 - ? for each problematic character.
+   eng-arpabet, you are ready to begin debugging the issue. Start at
+   step 3 below for each problematic character.
 
 3. Our next step is to identify which mapping is converting the
    problematic characters incorrectly. Most of the time, the issue will
