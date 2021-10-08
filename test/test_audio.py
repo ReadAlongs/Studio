@@ -148,7 +148,12 @@ class TestAudio(BasicTestCase):
         write_audio_to_file(section, output_path)
         self.assertTrue(os.path.exists(output_path))
         reloaded_section = read_audio_from_file(output_path)
-        self.assertEqual(len(section), len(reloaded_section))
+        self.assertAlmostEqual(
+            len(section),
+            len(reloaded_section),
+            msg="reloaded audio file is more than 50ms shorter or longer",
+            delta=50,
+        )
 
 
 if __name__ == "__main__":
