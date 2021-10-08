@@ -108,35 +108,6 @@ class TestAlignCli(BasicTestCase):
             "image-for-page1.jpg was not on disk, cannot have been copied",
         )
 
-        results_html = self.runner.invoke(
-            align,
-            [
-                join(self.data_dir, "ej-fra-package.xml"),
-                join(self.data_dir, "ej-fra.m4a"),
-                join(output, "html"),
-                "--html",
-            ],
-        )
-        self.assertEqual(results_html.exit_code, 0)
-        self.assertTrue(
-            exists(join(output, "html", "html.html")),
-            "succesful html alignment should have created html/html.html",
-        )
-
-        with open(join(output, "html", "html.html"), "rb") as fhtml:
-            path_bytes = fhtml.read()
-        htmldoc = fromstring(path_bytes)
-        b64_pattern = r"data:[\w\/\+]*;base64,\w*"
-        self.assertRegex(
-            htmldoc.body.xpath("//read-along")[0].attrib["text"], b64_pattern
-        )
-        self.assertRegex(
-            htmldoc.body.xpath("//read-along")[0].attrib["alignment"], b64_pattern
-        )
-        self.assertRegex(
-            htmldoc.body.xpath("//read-along")[0].attrib["audio"], b64_pattern
-        )
-
         # Functionally the same as self.assertTrue(filecmp.cmp(f1, f2)), but show where
         # the differences are if the files are not identical
         # Since f2 was created using -x, we need to substitute .xhtml back to .xml during
@@ -175,6 +146,39 @@ class TestAlignCli(BasicTestCase):
         self.assertIn(
             "already exists but is a not a directory",
             results_output_is_regular_file.output,
+        )
+
+    def test_align_with_package(self):
+        """Test creating a single-file package, with --html"""
+
+        output = join(self.tempdir, "html")
+        results_html = self.runner.invoke(
+            align,
+            [
+                join(self.data_dir, "ej-fra-package.xml"),
+                join(self.data_dir, "ej-fra.m4a"),
+                output,
+                "--html",
+            ],
+        )
+        self.assertEqual(results_html.exit_code, 0)
+        self.assertTrue(
+            exists(join(output, "html.html")),
+            "succesful html alignment should have created html/html.html",
+        )
+
+        with open(join(output, "html.html"), "rb") as fhtml:
+            path_bytes = fhtml.read()
+        htmldoc = fromstring(path_bytes)
+        b64_pattern = r"data:[\w\/\+]*;base64,\w*"
+        self.assertRegex(
+            htmldoc.body.xpath("//read-along")[0].attrib["text"], b64_pattern
+        )
+        self.assertRegex(
+            htmldoc.body.xpath("//read-along")[0].attrib["alignment"], b64_pattern
+        )
+        self.assertRegex(
+            htmldoc.body.xpath("//read-along")[0].attrib["audio"], b64_pattern
         )
 
     def test_permission_denied(self):
