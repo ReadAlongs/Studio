@@ -1,9 +1,13 @@
-build:
-    image: latest
+version: 2
 
-requirements_file:
-    docs/requirements.txt
+build:
+    os: ubuntu-20.04
+    tools:
+        python: "3.7"
+
+sphinx:
+    configuration: docs/conf.py
 
 python:
-    setup_py_install: true
-    version: 3.6 # This will cause readthedocs to crash. It looks like 3.7 is unsupported by readthedocs, and 3.7 is needed by readalongs
+    install:
+        - requirements: docs/requirements.txt
