@@ -9,8 +9,10 @@ Welcome to ReadAlong-Studio's documentation!
 
    start
    installation
-   cli
+   cli-guide
+   cli-ref
    outputs
+   advanced-use
 
 
 Indices and tables
