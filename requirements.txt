@@ -1,7 +1,6 @@
 chevron==0.14.0
 coloredlogs==10.0
 Flask>=2.0.0
-Flask-Cors==3.0.9
 Flask-Session==0.3.2
 flask-socketio==4.3.2
 g2p>=0.5.20210825
