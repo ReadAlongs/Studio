@@ -420,11 +420,11 @@ def align_audio(  # noqa: C901
     }
     silence_offsets = defaultdict(int)
     silence = 0
-    if results["tokenized"].xpath("//*[@silence]"):
+    if results["tokenized"].xpath("//silence"):
         endpoint = 0
         for el in results["tokenized"].xpath("//*"):
-            if "silence" in el.attrib:
-                silence_ms = parse_time(el.attrib["silence"])
+            if el.tag == "silence" and "dur" in el.attrib:
+                silence_ms = parse_time(el.attrib["dur"])
                 silence_segment = AudioSegment.silent(
                     duration=silence_ms
                 )  # create silence segment
@@ -518,11 +518,13 @@ def save_readalong(
     save_xml(tokenized_xml_path, align_results["tokenized"])
 
     _, audio_ext = os.path.splitext(audiofile)
+    audio_path = output_base + audio_ext
+    audio_format = audio_ext[1:]
     if audiosegment:
-        audio_path = output_base + ".wav"
-        audiosegment.export(audio_path, format="wav")
+        if audio_format in ["m4a", "aac"]:
+            audio_format = "ipod"
+        audiosegment.export(audio_path, format=audio_format)
     else:
-        audio_path = output_base + audio_ext
         shutil.copy(audiofile, audio_path)
 
     smil_path = output_base + ".smil"
