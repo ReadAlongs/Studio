@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
+"""Test suite for various audio contents handling methods"""
+
 import os
-import tempfile
 from pathlib import Path
-from shutil import rmtree
 from subprocess import run
-from unittest import TestCase, main
+from unittest import main
 
 from basic_test_case import BasicTestCase
 
@@ -20,11 +20,9 @@ from readalongs.audio_utils import (
 from readalongs.log import LOGGER
 
 
-def segments_from_pairs(*pairs):
-    return list({"begin": b, "end": e} for b, e in pairs)
-
-
 class TestAudio(BasicTestCase):
+    """Test suite for various audio contents handling methods"""
+
     def setUp(self):
         super().setUp()
         self.audio_segment = read_audio_from_file(
@@ -35,6 +33,7 @@ class TestAudio(BasicTestCase):
         )
 
     def align(self, input_text_path, input_audio_path, output_path, flags):
+        """Wrapper for invoking readalongs align via subprocess.run"""
         args = [
             "readalongs",
             "align",
@@ -45,7 +44,7 @@ class TestAudio(BasicTestCase):
         LOGGER.info(
             f"Aligning {input_text_path} and {input_audio_path}, outputting to {output_path}"
         )
-        return run(args, capture_output=True)
+        return run(args, capture_output=True, check=False)
 
     def test_mute_section(self):
         """Should mute section of audio"""
@@ -134,11 +133,26 @@ class TestAudio(BasicTestCase):
         self.assertFalse("error" in str(log).lower())
 
     def test_extract_section(self):
+        """Unit test extract_section()"""
         self.assertEqual(len(extract_section(self.audio_segment, 1000, 2000)), 1000)
         self.assertEqual(len(extract_section(self.audio_segment, None, 500)), 500)
         self.assertEqual(
             len(extract_section(self.audio_segment, 1000, None)),
             len(self.audio_segment) - 1000,
+        )
+
+    def test_write_audio_to_file(self):
+        """Mininal unit testing for write_audio_to_file"""
+        section = extract_section(self.audio_segment, 1000, 2000)
+        output_path = os.path.join(self.tempdir, "section_output.mp3")
+        write_audio_to_file(section, output_path)
+        self.assertTrue(os.path.exists(output_path))
+        reloaded_section = read_audio_from_file(output_path)
+        self.assertAlmostEqual(
+            len(section),
+            len(reloaded_section),
+            msg="reloaded audio file is more than 50ms shorter or longer",
+            delta=50,
         )
 
 

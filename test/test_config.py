@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+"""Test suite for loading the config.json configuration file for readalongs align"""
+
 import io
 import os
 from contextlib import redirect_stderr
@@ -11,6 +13,8 @@ from readalongs.text.add_elements_to_xml import add_images, add_supplementary_xm
 
 
 class TestConfig(TestCase):
+    """Test suite for loading the config.json configuration file for readalongs align"""
+
     @classmethod
     def setUpClass(cls):
         data_dir = os.path.join(os.path.dirname(__file__), "data")

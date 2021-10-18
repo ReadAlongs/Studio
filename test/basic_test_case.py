@@ -1,6 +1,8 @@
+"""Common base class for the ReadAlongs test suites"""
+
 import os
 import tempfile
-from unittest import TestCase, main
+from unittest import TestCase
 
 from readalongs.app import app
 from readalongs.log import LOGGER
@@ -20,6 +22,7 @@ class BasicTestCase(TestCase):
     keep_temp_dir_after_running = False
 
     def setUp(self):
+        """Create a temporary directory, self.tempdir, and a test runner, self.runner"""
         app.logger.setLevel("DEBUG")
         self.runner = app.test_cli_runner()
         tempdir_prefix = f"tmpdir_{type(self).__name__}_"
@@ -34,5 +37,6 @@ class BasicTestCase(TestCase):
             print("tmpdir={}".format(self.tempdir))
 
     def tearDown(self):
+        """Clean up the temporary directory"""
         if not self.keep_temp_dir_after_running:
             self.tempdirobj.cleanup()

@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+
+"""Test suite for inserting silences into a readalong"""
+
 import os
 from unittest import main
 
@@ -9,7 +13,10 @@ from readalongs.cli import align
 
 
 class TestSilence(BasicTestCase):
+    """Test suite for inserting silences into a readalong"""
+
     def test_basic_silence_insertion(self):
+        """Basic usage of the silence feature in a readalong"""
         output = os.path.join(self.tempdir, "silence")
         # Run align from xml
         results = self.runner.invoke(

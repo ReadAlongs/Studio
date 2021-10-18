@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+"""Test suite for DNA segment manupulation methods"""
+
 from unittest import TestCase, main
 
 from readalongs.dna_utils import (
@@ -9,18 +11,23 @@ from readalongs.dna_utils import (
     segment_intersection,
     sort_and_join_dna_segments,
 )
-from readalongs.log import LOGGER
 
 
 def segments_from_pairs(*pairs):
+    """Pseudo constructor for a list of segment dicts with begin and end
+
+    segments should really be represented using an @dataclass, but that's for
+    a future refactoring task. For now, this gives me something easy to use for
+    unit testing.
+    """
     return list({"begin": b, "end": e} for b, e in pairs)
 
 
 class TestDNAUtils(TestCase):
-    """ Test suite for dna segment manipulation methods in dna_utils.py """
+    """Test suite for dna segment manipulation methods in dna_utils.py"""
 
     def test_sort_and_join_dna_segments(self):
-        """ Make sure sorting and joining DNA segments works. """
+        """Make sure sorting and joining DNA segments works."""
         self.assertEqual(
             sort_and_join_dna_segments(segments_from_pairs((1000, 1100), (1500, 2100))),
             segments_from_pairs((1000, 1100), (1500, 2100)),
@@ -39,8 +46,7 @@ class TestDNAUtils(TestCase):
         )
 
     def test_adjustment_calculation(self):
-        """ Try adjusting alignments of re-built audio
-        """
+        """Try adjusting alignments of re-built audio"""
         self.assertEqual(
             calculate_adjustment(1000, [{"begin": 1000, "end": 1100}]), 100
         )
@@ -65,8 +71,8 @@ class TestDNAUtils(TestCase):
             ),
             0,
         )
-        # When there are multiple dna segments, the timestamp to adjust has to shift with the adjustment
-        # e.g.:
+        # When there are multiple dna segments, the timestamp to adjust has to
+        # shift with the adjustment, e.g.:
         #    if DNA= [1000,2000)+[4000,5000)
         #    then 0-999 -> 0-999, 1000-2999 -> 2000-3999, and 3000+ -> 5000+
         for value, adjustment in [
@@ -86,8 +92,7 @@ class TestDNAUtils(TestCase):
             )
 
     def test_adjustment_correction(self):
-        """ Try correcting adjusted alignments of re-built audio
-        """
+        """Try correcting adjusted alignments of re-built audio"""
         self.assertEqual(
             correct_adjustments(950, 1125, [{"begin": 1000, "end": 1100}]), (950, 1000)
         )
@@ -105,6 +110,7 @@ class TestDNAUtils(TestCase):
         )
 
     def test_segment_intersection(self):
+        """Unit testing of segment_intersection()"""
         self.assertEqual(segment_intersection([], []), [])
         self.assertEqual(segment_intersection(segments_from_pairs((1, 3)), []), [])
         self.assertEqual(segment_intersection([], segments_from_pairs((1, 3))), [])
@@ -142,6 +148,7 @@ class TestDNAUtils(TestCase):
         )
 
     def test_dna_union(self):
+        """Unit testing of dna_union()"""
         self.assertEqual(
             dna_union(1000, 2000, 3000, [{"begin": 1100, "end": 1200}]),
             segments_from_pairs((0, 1000), (1100, 1200), (2000, 3000)),
