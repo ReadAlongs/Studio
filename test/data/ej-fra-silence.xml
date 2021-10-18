@@ -7,9 +7,9 @@
         <body>
             <div type="page">
                 <p>
-                    <s><span silence="1"/>Bonjour.</s>
+                    <s><silence dur="1"/>Bonjour.</s>
                     <s>Je m'appelle Éric Joanis.</s>
-                    <s>Je suis <span silence="1.382s"></span> programmeur au sein <span silence="500ms"></span> de l'équipe des technologies pour les langues autochtones au CNRC.</s>
+                    <s>Je suis <silence dur="1.382s"></silence> programmeur au sein <silence dur="500ms"></silence> de l'équipe des technologies pour les langues autochtones au CNRC.</s>
                 </p>
             </div>
             <div type="page">
