@@ -19,10 +19,8 @@ from subprocess import run
 from tempfile import mkdtemp
 from zipfile import ZipFile
 
-import g2p.mappings.langs as g2p_langs
 from flask import abort, redirect, render_template, request, send_file, session, url_for
 from flask_socketio import emit
-from networkx import has_path
 
 from readalongs.app import app, socketio
 from readalongs.log import LOGGER
@@ -178,10 +176,10 @@ def steps(step):
             _, audio_ext = os.path.splitext(session["audio"])
             data = {"audio_ext": audio_ext, "base": output_base}
             if session["config"].get("show-log", False):
-                log = run(args, capture_output=True)
+                log = run(args, capture_output=True, check=False)
                 data["log"] = log
             else:
-                run(args)
+                run(args, check=False)
             data["audio_path"] = os.path.join(
                 session["temp_dir"], output_base, output_base + audio_ext
             )
