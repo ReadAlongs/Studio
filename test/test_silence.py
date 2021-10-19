@@ -54,6 +54,24 @@ class TestSilence(BasicTestCase):
             delta=50,
         )
 
+    def test_bad_silence(self):
+        output = os.path.join(self.tempdir, "bad_silence")
+        # Run align from bad xml
+        results = self.runner.invoke(
+            align,
+            [
+                "-s",
+                "-C",
+                "-t",
+                "-l",
+                "fra",
+                os.path.join(self.data_dir, "ej-fra-silence-bad.xml"),
+                os.path.join(self.data_dir, "ej-fra.m4a"),
+                output,
+            ],
+        )
+        self.assertEqual(results.exit_code, 1)
+
 
 if __name__ == "__main__":
     main()

@@ -21,9 +21,10 @@ from typing import Dict, List, Union
 import chevron
 import regex as re
 import soundswallower
+from humanfriendly.terminal import output
 from lxml import etree
 from pydub import AudioSegment
-from pydub.exceptions import CouldntEncodeError
+from pydub.exceptions import CouldntDecodeError, CouldntEncodeError, PydubException
 from pympi.Praat import TextGrid
 from webvtt import Caption, WebVTT
 
@@ -422,9 +423,18 @@ def align_audio(  # noqa: C901
     silence = 0
     if results["tokenized"].xpath("//silence"):
         endpoint = 0
+        all_good = True
         for el in results["tokenized"].xpath("//*"):
             if el.tag == "silence" and "dur" in el.attrib:
-                silence_ms = parse_time(el.attrib["dur"])
+                try:
+                    silence_ms = parse_time(el.attrib["dur"])
+                except ValueError as err:
+                    LOGGER.error(
+                        f'Invalid silence element in {xml_path}: invalid "time" '
+                        f'attribute "{el.attrib["dur"]}": {err}'
+                    )
+                    all_good = False
+                    continue
                 silence_segment = AudioSegment.silent(
                     duration=silence_ms
                 )  # create silence segment
@@ -440,6 +450,11 @@ def align_audio(  # noqa: C901
                 endpoint = (
                     words_dict[el.attrib["id"]]["end"] * 1000
                 ) + silence  # bump endpoint and include silence
+        if not all_good:
+            raise RuntimeError(
+                f"Could not parse all duration attributes in silence elements in {xml_path}, please make sure each silence "
+                'element is properly formatted, e.g., <silence dur="1.5s"/>.  Aborting.'
+            )
     if silence:
         for word in results["words"]:
             word["start"] += silence_offsets[word["id"]]
@@ -448,7 +463,8 @@ def align_audio(  # noqa: C901
     return results
 
 
-def save_readalong(
+def save_readalong(  # noqa C901
+    # noqa C901 - ignore the complexity of this function
     # this * forces all arguments to be passed by name, because I don't want any
     # code to depend on their order in the future
     *,
@@ -523,7 +539,17 @@ def save_readalong(
     if audiosegment:
         if audio_format in ["m4a", "aac"]:
             audio_format = "ipod"
-        audiosegment.export(audio_path, format=audio_format)
+        try:
+            audiosegment.export(audio_path, format=audio_format)
+        except CouldntEncodeError:
+            LOGGER.warn(
+                f"The audio file at {audio_path} could \
+                not be exported in the {audio_format} format. \
+                Please ensure your installation of ffmpeg has \
+                the necessary codecs."
+            )
+            audio_path = output_base + ".wav"
+            audiosegment.export(audio_path, format="wav")
     else:
         shutil.copy(audiofile, audio_path)
 
