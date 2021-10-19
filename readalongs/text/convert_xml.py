@@ -42,7 +42,6 @@ import argparse
 import copy
 import os
 
-import text_unidecode
 from g2p import make_g2p
 from g2p.mappings.langs.utils import is_arpabet
 from g2p.transducer import CompositeTransductionGraph, TransductionGraph
@@ -75,29 +74,13 @@ def convert_word(word: str, lang: str, output_orthography: str, verbose_warnings
             eng_valid = False
         return eng_converter, eng_tg, eng_text, eng_indices, eng_valid
     else:
-        if lang == "und":
-            # First, we apply unidecode to map characters all all known alphabets in the
-            # Unicode standard to their English representation, then we use g2p.
-            text_to_g2p = text_unidecode.unidecode(word)
-        else:
-            text_to_g2p = word
-
         converter = make_g2p(lang, output_orthography)
-        tg = converter(text_to_g2p)
+        tg = converter(word)
         text = tg.output_string.strip()
         indices = tg.edges
         valid = converter.check(tg, shallow=True)
         if not valid and verbose_warnings:
             converter.check(tg, shallow=False, display_warnings=verbose_warnings)
-
-        if lang == "und":
-            # for now, we don't handle indices through unidecode, so overwrite the indices
-            # converter returneed by just beginning-end index pairs
-            # TODO: instead of this hack, prepend the indices from word to text_to_g2p to
-            # indices.
-            indices = [(0, 0), (len(word), len(text))]
-            tg = None
-
         return converter, tg, text, indices, valid
 
 
