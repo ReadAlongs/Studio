@@ -84,8 +84,16 @@ def encode_from_path(path: str) -> str:
         ".m4a"
     ):  # hack to get around guess_type choosing the wrong mime type for .m4a files
         # TODO: Check other popular audio formats, .wav, .mp3, .ogg, etc...
-        mime = ("audio/mp4", None)
-    return f"data:{mime[0]};base64,{b64}"
+        mime_type = "audio/mp4"
+    elif mime[0]:
+        mime_type = mime[0].replace(
+            "video", "audio"
+        )  # Hack: until we properly extract audio from video files, force any video-based mime type to be read as audio
+    else:
+        raise ValueError(
+            f"We could not guess the mime type of file at {path}, please rename the file and try again."
+        )
+    return f"data:{mime_type};base64,{b64}"
 
 
 def create_web_component_html(
