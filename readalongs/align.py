@@ -304,6 +304,7 @@ def align_audio(  # noqa: C901
 
     # Extract the list of sequences of words in the XML
     word_sequences = get_sequences(xml, xml_path, unit=unit)
+    end = 0
     for i, word_sequence in enumerate(word_sequences):
 
         i_suffix = "" if i == 0 else "." + str(i + 1)

@@ -307,6 +307,31 @@ class TestAlignCli(BasicTestCase):
         ]:
             self.assertIn(msg, bad_anchors_result.stdout)
 
+    def test_misc_align_errors(self):
+        """Test calling readalongs align with misc CLI errors"""
+        results = self.runner.invoke(
+            align,
+            [
+                "-i",
+                join(self.data_dir, "ej-fra.txt"),
+                join(self.data_dir, "ej-fra.m4a"),
+                join(self.tempdir, "out-missing-l"),
+            ],
+        )
+        self.assertNotEqual(results, 0)
+        self.assertIn("No input language specified", results.output)
+
+        results = self.runner.invoke(
+            align,
+            [
+                join(self.data_dir, "fra-prepared.xml"),
+                join(self.data_dir, "noise.mp3"),
+                join(self.tempdir, "noise-only"),
+            ],
+        )
+        self.assertNotEqual(results, 0)
+        self.assertIn("produced 0 segments", results.output)
+
 
 if __name__ == "__main__":
     main()

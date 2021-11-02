@@ -82,7 +82,7 @@ def cli():
     """Management script for Read Along Studio."""
 
 
-@app.cli.command(
+@app.cli.command(  # noqa C901
     context_settings=CONTEXT_SETTINGS, short_help="Force align a text and a sound file."
 )
 @click.argument("textfile", type=click.Path(exists=True, readable=True))
@@ -240,7 +240,9 @@ def align(**kwargs):  # noqa: C901
 
     if kwargs["text_input"]:
         if not kwargs["language"]:
-            LOGGER.warning("No input language provided, using undetermined mapping")
+            raise click.BadParameter(
+                "No input language specified for plain text input. Please provide the -l/--language switch."
+            )
         plain_textfile = kwargs["textfile"]
         _, xml_textfile = create_input_tei(
             input_file_name=plain_textfile,
