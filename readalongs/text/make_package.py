@@ -90,8 +90,9 @@ def encode_from_path(path: str) -> str:
             "video", "audio"
         )  # Hack: until we properly extract audio from video files, force any video-based mime type to be read as audio
     else:
-        raise ValueError(
-            f"We could not guess the mime type of file at {path}, please rename the file and try again."
+        mime_type = "application"
+        LOGGER.warn(
+            f"We could not guess the mime type of file at {path}, we will try the generic mime type 'application', but this might not work with some files"
         )
     return f"data:{mime_type};base64,{b64}"
 
