@@ -121,12 +121,6 @@ def cli():
     help="The language code for text in TEXTFILE (use only with -i, i.e., with plain text input)",
 )
 @click.option(
-    "-u",
-    "--unit",
-    type=click.Choice(["w", "m"], case_sensitive=False),
-    help="Unit (w = word, m = morpheme) to align to",
-)
-@click.option(
     "-s",
     "--save-temps",
     is_flag=True,
@@ -250,14 +244,12 @@ def align(**kwargs):  # noqa: C901
     else:
         xml_textfile = kwargs["textfile"]
 
-    unit = kwargs.get("unit", "w") or "w"  # Sometimes .get() still returns None here
     bare = kwargs.get("bare", False)
 
     try:
         results = align_audio(
             xml_textfile,
             kwargs["audiofile"],
-            unit=unit,
             bare=bare,
             config=config,
             save_temps=temp_base,
