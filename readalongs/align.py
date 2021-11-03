@@ -473,14 +473,11 @@ def save_readalong(  # noqa C901
     output_dir: str,
     output_basename: str,
     config=None,
-    text_grid: bool = False,
-    closed_captioning: bool = False,
-    output_xhtml: bool = False,
     audiofile: str,
     audiosegment: AudioSegment = None,
-    html: bool = False,
+    output_formats=[],
 ):
-    """Save the results from align_audio() into the otuput files required for a
+    """Save the results from align_audio() into the output files required for a
         readalong
 
     Args:
@@ -489,10 +486,8 @@ def save_readalong(  # noqa C901
             output_dir should already exist, files it contains may be overwritten
         output_basename (str): basename of the files to save in output_dir
         config ([type TODO], optional): alignment configuration loaded from the json
-        text_grid (bool, optional): if True, also save in Praat TextGrid and ELAN EAF formats
-        closed_captioning (bool, optional): if True, also save in .vtt and .srt subtitle formats
-        output_xhtml (bool, optional): if True, convert XML into XHTML format before writing
         audiofile (str): path to the audio file passed to align_audio()
+        output_formats (List[str], optional): list of desired output formats
         audiosegment (AudioSegment): a pydub.AudioSegment object of processed audio.
                               if None, then original audio will be saved at `audiofile`
 
@@ -510,29 +505,40 @@ def save_readalong(  # noqa C901
 
     output_base = os.path.join(output_dir, output_basename)
 
-    if text_grid:
+    # Create textgrid object if outputting to TextGrid or eaf
+    if "TextGrid" in output_formats or "eaf" in output_formats:
         audio = read_audio_from_file(audiofile)
         duration = audio.frame_count() / audio.frame_rate
         words, sentences = return_words_and_sentences(align_results)
         textgrid = write_to_text_grid(words, sentences, duration)
+
+    if "TextGrid" in output_formats:
         textgrid.to_file(output_base + ".TextGrid")
+
+    if "eaf" in output_formats:
         textgrid.to_eaf().to_file(output_base + ".eaf")
 
-    if closed_captioning:
+    # Create webvtt object if outputting to vtt or srt
+    if "srt" in output_formats or "vtt" in output_formats:
         words, sentences = return_words_and_sentences(align_results)
-        webvtt_sentences = write_to_subtitles(sentences)
-        webvtt_sentences.save(output_base + "_sentences.vtt")
-        webvtt_sentences.save_as_srt(output_base + "_sentences.srt")
-        webvtt_words = write_to_subtitles(words)
-        webvtt_words.save(output_base + "_words.vtt")
-        webvtt_words.save_as_srt(output_base + "_words.srt")
+        cc_sentences = write_to_subtitles(sentences)
+        cc_words = write_to_subtitles(words)
 
-    if output_xhtml:
-        convert_to_xhtml(align_results["tokenized"])
-        tokenized_xml_path = output_base + ".xhtml"
-    else:
-        tokenized_xml_path = output_base + ".xml"
+    if "srt" in output_formats:
+        cc_sentences.save_as_srt(output_base + "_sentences.srt")
+        cc_words.save_as_srt(output_base + "_words.srt")
+
+    if "vtt" in output_formats:
+        cc_words.save(output_base + "_words.vtt")
+        cc_sentences.save(output_base + "_sentences.vtt")
+
+    tokenized_xml_path = output_base + ".xml"
     save_xml(tokenized_xml_path, align_results["tokenized"])
+
+    if "xhtml" in output_formats:
+        convert_to_xhtml(align_results["tokenized"])
+        tokenized_xhtml_path = output_base + ".xhtml"
+        save_xml(tokenized_xhtml_path, align_results["tokenized"])
 
     _, audio_ext = os.path.splitext(audiofile)
     audio_path = output_base + audio_ext
@@ -562,7 +568,7 @@ def save_readalong(  # noqa C901
     )
     save_txt(smil_path, smil)
 
-    if html:
+    if "html" in output_formats:
         html_out_path = output_base + ".html"
         html_out = create_web_component_html(tokenized_xml_path, smil_path, audio_path)
         with open(html_out_path, "w") as f:

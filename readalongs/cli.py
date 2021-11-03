@@ -45,6 +45,19 @@ from readalongs.util import getLangs, parse_g2p_fallback
 LANGS, _ = getLangs()
 ensure_using_supported_python_version()
 
+SUPPORTED_OUTPUT_FORMATS = {
+    "eaf": "ELAN file",
+    "html": "Single-file, offline HTML",
+    "srt": "SRT subtitle",
+    "TextGrid": "Praat TextGrid",
+    "vtt": "WebVTT subtitle",
+    "xhtml": "Simple XHTML",
+}
+
+SUPPORTED_OUTPUT_FORMATS_DESC = "\n\n".join(
+    k + " - " + v for k, v in SUPPORTED_OUTPUT_FORMATS.items()
+)
+
 
 def create_app():
     """Returns the app"""
@@ -99,10 +112,12 @@ def cli():
     help="Use ReadAlong-Studio configuration file (in JSON format)",
 )
 @click.option(
-    "-C",
-    "--closed-captioning",
-    is_flag=True,
-    help="Export sentences to WebVTT and SRT files",
+    "-o",
+    "--output-formats",
+    type=click.Choice(SUPPORTED_OUTPUT_FORMATS.keys()),
+    multiple=True,
+    help="The output file formats to export to. By default the text is exported as XML and alignments are exported as SMIL. "
+    + f"Other formats include:\b \n\n{SUPPORTED_OUTPUT_FORMATS_DESC}",
 )
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
 @click.option(
@@ -125,13 +140,6 @@ def cli():
     "--save-temps",
     is_flag=True,
     help="Save intermediate stages of processing and temporary files (dictionary, FSG, tokenization, etc)",
-)
-@click.option(
-    "-t", "--text-grid", is_flag=True, help="Export to Praat TextGrid & ELAN eaf file"
-)
-@click.option("-H", "--html", is_flag=True, help="Export to a single-file HTML format")
-@click.option(
-    "-x", "--output-xhtml", is_flag=True, help="Output simple XHTML instead of XML"
 )
 @click.option(
     "--g2p-fallback",
@@ -259,17 +267,17 @@ def align(**kwargs):  # noqa: C901
     except RuntimeError as e:
         LOGGER.error(e)
         sys.exit(1)
+
+    output_formats = kwargs["output_formats"]
+
     save_readalong(
         align_results=results,
         output_dir=output_dir,
         output_basename=output_basename,
         config=config,
-        text_grid=kwargs["text_grid"],
-        closed_captioning=kwargs["closed_captioning"],
-        output_xhtml=kwargs["output_xhtml"],
         audiofile=kwargs["audiofile"],
         audiosegment=results["audio"],
-        html=kwargs["html"],
+        output_formats=output_formats,
     )
 
 

@@ -29,8 +29,14 @@ class TestAlignCli(BasicTestCase):
             [
                 "-i",
                 "-s",
-                "-C",
-                "-t",
+                "-o",
+                "vtt",
+                "-o",
+                "srt",
+                "-o",
+                "TextGrid",
+                "-o",
+                "eaf",
                 "-l",
                 "fra",
                 "--config",
@@ -87,7 +93,8 @@ class TestAlignCli(BasicTestCase):
         results_dna = self.runner.invoke(
             align,
             [
-                "-x",
+                "-o",
+                "xhtml",
                 "-s",
                 "--config",
                 join(self.data_dir, "sample-config.json"),
@@ -104,7 +111,7 @@ class TestAlignCli(BasicTestCase):
         )
         self.assertTrue(
             exists(join(output, "output.xhtml")),
-            "successful alignment with -x should have created output.xhtml",
+            "successful alignment with -o xhtml should have created output.xhtml",
         )
         self.assertIn("Please copy image-for-page1.jpg to ", results_dna.stdout)
         self.assertFalse(
@@ -114,7 +121,7 @@ class TestAlignCli(BasicTestCase):
 
         # Functionally the same as self.assertTrue(filecmp.cmp(f1, f2)), but show where
         # the differences are if the files are not identical
-        # Since f2 was created using -x, we need to substitute .xhtml back to .xml during
+        # Since f2 was created using -o xhtml, we need to substitute .xhtml back to .xml during
         # the comparison of the contents of the .smil files.
         with open(join(output1, "output.smil"), encoding="utf8") as f1, open(
             join(output, "output.smil"), encoding="utf8"
@@ -153,7 +160,7 @@ class TestAlignCli(BasicTestCase):
         )
 
     def test_align_with_package(self):
-        """Test creating a single-file package, with --html"""
+        """Test creating a single-file package, with -o html"""
 
         output = join(self.tempdir, "html")
         with SoundSwallowerStub("t0b0d0p0s0w0:920:1620", "t0b0d0p0s1w0:1620:1690"):
@@ -163,7 +170,8 @@ class TestAlignCli(BasicTestCase):
                     join(self.data_dir, "ej-fra-package.xml"),
                     join(self.data_dir, "ej-fra.m4a"),
                     output,
-                    "--html",
+                    "-o",
+                    "html",
                 ],
             )
         # print(results_html.output)
