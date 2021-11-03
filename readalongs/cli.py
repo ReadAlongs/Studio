@@ -10,7 +10,6 @@
 #
 #   CLI commands implemented in this file:
 #    - align  : main command to align text and audio
-#    - epub   : convert aligned file to epub format
 #    - prepare: prepare XML input for align from plain text
 #    - tokenize: tokenize the prepared file
 #    - g2p    : apply g2p to the tokenized file
@@ -35,7 +34,6 @@ from lxml import etree
 from readalongs._version import __version__
 from readalongs.align import align_audio, create_input_tei, save_readalong
 from readalongs.app import app
-from readalongs.epub.create_epub import create_epub
 from readalongs.log import LOGGER
 from readalongs.python_version import ensure_using_supported_python_version
 from readalongs.text.add_ids_to_xml import add_ids
@@ -281,28 +279,6 @@ def align(**kwargs):  # noqa: C901
         audiosegment=results["audio"],
         html=kwargs["html"],
     )
-
-
-@app.cli.command(
-    context_settings=CONTEXT_SETTINGS, short_help="Convert a smil document to epub."
-)
-@click.argument("input", type=click.Path(exists=True, readable=True))
-@click.argument("output", type=click.Path(exists=False, readable=True))
-@click.option(
-    "-u",
-    "--unpacked",
-    is_flag=True,
-    help="Output unpacked directory of files (for testing)",
-)
-def epub(**kwargs):
-    """
-    Convert INPUT smil document to epub with media overlay at OUTPUT
-
-    INPUT:  The .smil document
-
-    OUTPUT: Path to the .epub output
-    """
-    create_epub(kwargs["input"], kwargs["output"], kwargs["unpacked"])
 
 
 @app.cli.command(
