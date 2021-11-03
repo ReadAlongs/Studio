@@ -10,6 +10,7 @@ from unittest import main
 
 from basic_test_case import BasicTestCase
 from lxml.html import fromstring
+from sound_swallower_stub import SoundSwallowerStub
 
 from readalongs.cli import align
 
@@ -39,6 +40,7 @@ class TestAlignCli(BasicTestCase):
                 output,
             ],
         )
+        # print(results.output)
         self.assertEqual(results.exit_code, 0)
         expected_output_files = [
             "output.smil",
@@ -154,15 +156,17 @@ class TestAlignCli(BasicTestCase):
         """Test creating a single-file package, with --html"""
 
         output = join(self.tempdir, "html")
-        results_html = self.runner.invoke(
-            align,
-            [
-                join(self.data_dir, "ej-fra-package.xml"),
-                join(self.data_dir, "ej-fra.m4a"),
-                output,
-                "--html",
-            ],
-        )
+        with SoundSwallowerStub("t0b0d0p0s0w0:920:1620", "t0b0d0p0s1w0:1620:1690"):
+            results_html = self.runner.invoke(
+                align,
+                [
+                    join(self.data_dir, "ej-fra-package.xml"),
+                    join(self.data_dir, "ej-fra.m4a"),
+                    output,
+                    "--html",
+                ],
+            )
+        # print(results_html.output)
         self.assertEqual(results_html.exit_code, 0)
         self.assertTrue(
             exists(join(output, "html.html")),
@@ -225,18 +229,19 @@ class TestAlignCli(BasicTestCase):
             f.write(input_text)
         output_dir = join(self.tempdir, "eng-output")
         # Run align from plain text
-        self.runner.invoke(
-            align,
-            [
-                "-i",
-                "-s",
-                "-l",
-                "eng",
-                input_filename,
-                join(self.data_dir, "ej-fra.m4a"),
-                output_dir,
-            ],
-        )
+        with SoundSwallowerStub("word:0:1000"):
+            self.runner.invoke(
+                align,
+                [
+                    "-i",
+                    "-s",
+                    "-l",
+                    "eng",
+                    input_filename,
+                    join(self.data_dir, "ej-fra.m4a"),
+                    output_dir,
+                ],
+            )
 
         g2p_ref = '<s id="t0b0d0p0s0"><w id="t0b0d0p0s0w0" ARPABET="DH IH S">This</w> <w id="t0b0d0p0s0w1" ARPABET="IH Z">is</w> <w id="t0b0d0p0s0w2" ARPABET="S AH M">some</w> <w id="t0b0d0p0s0w3" ARPABET="T EH K S T">text</w> <w id="t0b0d0p0s0w4" ARPABET="DH AE T">that</w> <w id="t0b0d0p0s0w5" ARPABET="W IY">we</w> <w id="t0b0d0p0s0w6" ARPABET="W IH L">will</w> <w id="t0b0d0p0s0w7" ARPABET="R AH N">run</w> <w id="t0b0d0p0s0w8" ARPABET="TH R UW">through</w> <w id="t0b0d0p0s0w9" ARPABET="DH AH">the</w> <w id="t0b0d0p0s0w10" ARPABET="IH NG G L IH SH">English</w> <w id="t0b0d0p0s0w11" ARPABET="L EH K S IH K AA N">lexicon</w> <w id="t0b0d0p0s0w12" ARPABET="G R AE F IY M">grapheme</w> <w id="t0b0d0p0s0w13" ARPABET="T UW">to</w> <w id="t0b0d0p0s0w14" ARPABET="M AO R F IY M">morpheme</w> <w id="t0b0d0p0s0w15" ARPABET="AH P R OW CH">approach</w>.</s>'
 
@@ -318,19 +323,39 @@ class TestAlignCli(BasicTestCase):
                 join(self.tempdir, "out-missing-l"),
             ],
         )
-        self.assertNotEqual(results, 0)
+        self.assertNotEqual(results.exit_code, 0)
         self.assertIn("No input language specified", results.output)
 
-        results = self.runner.invoke(
-            align,
-            [
-                join(self.data_dir, "fra-prepared.xml"),
-                join(self.data_dir, "noise.mp3"),
-                join(self.tempdir, "noise-only"),
-            ],
-        )
-        self.assertNotEqual(results, 0)
+        with SoundSwallowerStub("[NOISE]:0:1"):
+            results = self.runner.invoke(
+                align,
+                [
+                    join(self.data_dir, "fra-prepared.xml"),
+                    join(self.data_dir, "noise.mp3"),
+                    join(self.tempdir, "noise-only"),
+                ],
+            )
+        self.assertNotEqual(results.exit_code, 0)
         self.assertIn("produced 0 segments", results.output)
+
+        with SoundSwallowerStub(
+            "[NOISE]:0:1", "w0:1:1000", "<sil>:1000:1100", "w1:1100:2000"
+        ):
+            results = self.runner.invoke(
+                align,
+                [
+                    join(self.data_dir, "ej-fra.xml"),
+                    join(self.data_dir, "ej-fra.m4a"),
+                    join(self.tempdir, "two-words"),
+                ],
+            )
+        # print(results.output)
+        # We don't check results.exit_code since that's a soft warning, not a hard error
+        self.assertIn("produced 2 segments", results.output)
+        self.assertIn(
+            "Alignment produced a different number of segments and tokens than were in the input.",
+            results.output,
+        )
 
 
 if __name__ == "__main__":
