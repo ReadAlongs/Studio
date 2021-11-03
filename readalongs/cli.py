@@ -14,10 +14,6 @@
 #    - tokenize: tokenize the prepared file
 #    - g2p    : apply g2p to the tokenized file
 #
-#   Default CLI commands provided by Flask:
-#    - routes : show available routes in the this readalongs Flask app
-#    - run    : run the readalongs Flask app
-#    - shell  : open a shell within the readalongs Flask application context
 #
 #######################################################################
 
@@ -28,7 +24,6 @@ import sys
 from tempfile import TemporaryFile
 
 import click
-from flask.cli import FlaskGroup
 from lxml import etree
 
 from readalongs._version import __version__
@@ -88,12 +83,58 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 @click.version_option(version=__version__, prog_name="readalongs")
-@click.group(cls=FlaskGroup, create_app=create_app, context_settings=CONTEXT_SETTINGS)
+@click.group(context_settings=CONTEXT_SETTINGS)
 def cli():
-    """Management script for Read Along Studio."""
+    """Management script for ReadAlong Studio.
+
+    \b
+    This library helps you do text-audio alignment for many languages.
+    The primary purpose is for creating 'readalong' interactive audiobooks,
+    although other output formats like subtitles or Praat TextGrids are available.
+
+    You can use this command line tool in two ways. The "end-to-end" method with the
+    "align" command, or using a sequence of steps with "prepare", "tokenize", and "g2p"
+    to get more control over the process.
+
+    ## End-to-End
+
+    \b
+    align
+    =======
+    To get started, you must have some audio and some corresponding text.
+    This command will let you go 'end-to-end' from audio & text to readalongs.
+    For more info, please see the help message for this command by running
+    "readalongs align -h"
+
+    ## Step-by-Step
+
+    Using ReadAlongs this way, you must use the following commands in sequence.
+
+    \b
+    prepare
+    =======
+    If you have plain text and you want to mark up some of the XML, you can
+    use this command to "prepare" your plain text into the XML structure
+    used by readalongs.
+
+    \b
+    tokenize
+    ========
+    Use this command to tokenize the output of the previous "readalongs prepare" command.
+
+    \b
+    g2p
+    ========
+    Use this command to apply the g2p rules necessary to convert the output of the
+    "readalongs tokenize" command into a pronunciation form for the readalongs aligner.
+
+    Finally, you can run "readalongs align" on the output of any of these commands to create
+    the alignment files.
+
+    """
 
 
-@app.cli.command(  # noqa C901
+@cli.command(  # noqa C901
     context_settings=CONTEXT_SETTINGS, short_help="Force align a text and a sound file."
 )
 @click.argument("textfile", type=click.Path(exists=True, readable=True))
@@ -281,7 +322,7 @@ def align(**kwargs):  # noqa: C901
     )
 
 
-@app.cli.command(
+@cli.command(
     context_settings=CONTEXT_SETTINGS,
     short_help="Convert a plain text file into the XML format for alignment.",
 )
@@ -353,7 +394,7 @@ def prepare(**kwargs):
     LOGGER.info("Wrote {}".format(out_file))
 
 
-@app.cli.command(
+@cli.command(
     context_settings=CONTEXT_SETTINGS,
     short_help="Tokenize a prepared XML file, in preparation for alignment.",
 )
@@ -418,7 +459,7 @@ def tokenize(**kwargs):
     LOGGER.info("Wrote {}".format(output_path))
 
 
-@app.cli.command(
+@cli.command(
     context_settings=CONTEXT_SETTINGS,
     short_help="Apply g2p to a tokenized file, like 'align' does.",
     # NOT TRUE YET: "Apply g2p to a tokenized file, in preparation for alignment."
