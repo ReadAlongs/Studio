@@ -79,6 +79,35 @@ def get_click_file_name(click_file):
     return "-" if name == "<stdin>" else name
 
 
+def quoted_list(values):
+    """Display a list of values quoted, for easy reading in error messages."""
+    return ", ".join("'" + v + "'" for v in values)
+
+
+def joiner_callback(valid_values, joiner=":"):
+    """Command-line parameter validation for multiple-multiple values
+
+    The values can be repeated by giving the option multiple times on the
+    command line, or by joining them with joiner (colon by default).
+
+    Matching is case insensitive.
+    """
+    lc_valid_values = [valid_value.lower() for valid_value in valid_values]
+
+    def _callback(ctx, param, value_groups):
+        results = [
+            value for value_group in value_groups for value in value_group.split(joiner)
+        ]
+        for value in results:
+            if value.lower() not in lc_valid_values:
+                raise click.BadParameter(
+                    f"'{value}' is not one of {quoted_list(valid_values)}."
+                )
+        return results
+
+    return _callback
+
+
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
@@ -155,8 +184,8 @@ def cli():
 @click.option(
     "-o",
     "--output-formats",
-    type=click.Choice(SUPPORTED_OUTPUT_FORMATS.keys()),
     multiple=True,
+    callback=joiner_callback(SUPPORTED_OUTPUT_FORMATS),
     help="The output file formats to export to. By default the text is exported as XML and alignments are exported as SMIL. "
     + f"Other formats include:\b \n\n{SUPPORTED_OUTPUT_FORMATS_DESC}",
 )

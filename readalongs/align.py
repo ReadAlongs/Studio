@@ -512,11 +512,11 @@ def save_readalong(  # noqa C901
         words, sentences = return_words_and_sentences(align_results)
         textgrid = write_to_text_grid(words, sentences, duration)
 
-    if "TextGrid" in output_formats:
-        textgrid.to_file(output_base + ".TextGrid")
+        if "TextGrid" in output_formats:
+            textgrid.to_file(output_base + ".TextGrid")
 
-    if "eaf" in output_formats:
-        textgrid.to_eaf().to_file(output_base + ".eaf")
+        if "eaf" in output_formats:
+            textgrid.to_eaf().to_file(output_base + ".eaf")
 
     # Create webvtt object if outputting to vtt or srt
     if "srt" in output_formats or "vtt" in output_formats:
@@ -524,13 +524,13 @@ def save_readalong(  # noqa C901
         cc_sentences = write_to_subtitles(sentences)
         cc_words = write_to_subtitles(words)
 
-    if "srt" in output_formats:
-        cc_sentences.save_as_srt(output_base + "_sentences.srt")
-        cc_words.save_as_srt(output_base + "_words.srt")
+        if "srt" in output_formats:
+            cc_sentences.save_as_srt(output_base + "_sentences.srt")
+            cc_words.save_as_srt(output_base + "_words.srt")
 
-    if "vtt" in output_formats:
-        cc_words.save(output_base + "_words.vtt")
-        cc_sentences.save(output_base + "_sentences.vtt")
+        if "vtt" in output_formats:
+            cc_words.save(output_base + "_words.vtt")
+            cc_sentences.save(output_base + "_sentences.vtt")
 
     tokenized_xml_path = output_base + ".xml"
     save_xml(tokenized_xml_path, align_results["tokenized"])
