@@ -37,7 +37,7 @@ from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import save_xml, write_xml
 from readalongs.util import getLangs, parse_g2p_fallback
 
-LANGS, _ = getLangs()
+LANGS, LANG_NAMES = getLangs()
 ensure_using_supported_python_version()
 
 SUPPORTED_OUTPUT_FORMATS = {
@@ -163,7 +163,7 @@ def cli():
     """
 
 
-@cli.command(  # noqa C901
+@cli.command(  # noqa: C901
     context_settings=CONTEXT_SETTINGS, short_help="Force align a text and a sound file."
 )
 @click.argument("textfile", type=click.Path(exists=True, readable=True))
@@ -222,7 +222,7 @@ def cli():
     default=False,
     help="Display verbose g2p error messages",
 )
-def align(**kwargs):  # noqa: C901
+def align(**kwargs):
     """Align TEXTFILE and AUDIOFILE and create output files as OUTPUT_BASE.* in directory
     OUTPUT_BASE/.
 
@@ -490,8 +490,7 @@ def tokenize(**kwargs):
 
 @cli.command(
     context_settings=CONTEXT_SETTINGS,
-    short_help="Apply g2p to a tokenized file, like 'align' does.",
-    # NOT TRUE YET: "Apply g2p to a tokenized file, in preparation for alignment."
+    short_help="Apply g2p to a tokenized file, in preparation for alignment.",
 )
 @click.argument("tokfile", type=click.File("rb", encoding="utf8", lazy=True))
 @click.argument("g2pfile", type=click.Path(), required=False, default="")
@@ -587,3 +586,15 @@ def g2p(**kwargs):
             )
         )
         sys.exit(1)
+
+
+@cli.command(
+    context_settings=CONTEXT_SETTINGS,
+    short_help="List the languages supported by g2p for readalongs.",
+)
+def langs():
+    """List all the language codes and names currently supported by g2p
+    that can be used for ReadAlongs creation.
+    """
+    for lang in LANGS:
+        print("%-8s\t%s" % (lang, LANG_NAMES[lang]))
