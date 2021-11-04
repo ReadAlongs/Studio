@@ -12,7 +12,7 @@ from basic_test_case import BasicTestCase
 from lxml.html import fromstring
 from sound_swallower_stub import SoundSwallowerStub
 
-from readalongs.cli import align
+from readalongs.cli import align, langs
 
 
 def write_file(filename: str, file_contents: str) -> str:
@@ -37,12 +37,8 @@ class TestAlignCli(BasicTestCase):
                 "-s",
                 "-o",
                 "vtt",
-                "-o",
-                "srt",
-                "-o",
-                "TextGrid",
-                "-o",
-                "eaf",
+                "-o",  # tests that we can use -o more than once
+                "srt:TextGrid:eaf",  # tests that we can give -o multiple values
                 "-l",
                 "fra",
                 "--config",
@@ -226,13 +222,14 @@ class TestAlignCli(BasicTestCase):
         self.assertNotEqual(results, 0)
         self.assertIn("Cannot write into output folder", results.output)
 
-    def test_align_help(self):
-        """Validates that readalongs align -h lists all in-langs that can map to eng-arpabet"""
-        results = self.runner.invoke(align, "-h")
+    def test_langs_cmd(self):
+        """Validates that readalongs langs lists all in-langs that can map to eng-arpabet"""
+        results = self.runner.invoke(langs)
         self.assertEqual(results.exit_code, 0)
-        self.assertIn("|crg-tmd|", results.stdout)
-        self.assertIn("|crg-dv|", results.stdout)
-        self.assertNotIn("|crg|", results.stdout)
+        self.assertIn("crg-tmd", results.stdout)
+        self.assertIn("crg-dv ", results.stdout)
+        self.assertNotIn("crg ", results.stdout)
+        self.assertNotIn("fn-unicode", results.stdout)
 
     def test_align_english(self):
         """Validates that LexiconG2P works for English language alignment"""

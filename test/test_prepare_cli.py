@@ -95,7 +95,7 @@ class TestPrepareCli(BasicTestCase):
         # LOGGER.warning("Exception: {}".format(results.exception))
         self.assertEqual(results.exit_code, 0)
         self.assertIn("<s>Ceci est un test", results.stdout)
-        self.assertIn('<text xml:lang="fra">', results.stdout)
+        self.assertIn('<text xml:lang="fra"', results.stdout)
 
     def test_generate_output_name(self):
         """Validate readalongs prepare generating the output file name"""
@@ -166,6 +166,31 @@ class TestPrepareCli(BasicTestCase):
         """create_input_tei should raise a RuntimeError when given no input"""
         with self.assertRaises(RuntimeError):
             _, _ = create_input_tei()
+
+    def test_prepare_multiple_langs(self):
+        """Giving multiple langs to -l replaces the old --g2p-fallback option."""
+        input_file = os.path.join(self.data_dir, "fra.txt")
+        results = self.runner.invoke(
+            prepare, ["-l", "fra", "-l", "iku:und", input_file, "-"]
+        )
+        self.assertEqual(results.exit_code, 0)
+        self.assertIn('<text xml:lang="fra" fallback-langs="iku:und">', results.output)
+        results = self.runner.invoke(prepare, ["-l", "fra:iku:und", input_file, "-"])
+        self.assertEqual(results.exit_code, 0)
+        self.assertIn('<text xml:lang="fra" fallback-langs="iku:und">', results.output)
+        results = self.runner.invoke(
+            prepare, ["-l", "fra:iku", "-l", "und", input_file, "-"]
+        )
+        self.assertEqual(results.exit_code, 0)
+        self.assertIn('<text xml:lang="fra" fallback-langs="iku:und">', results.output)
+
+    def test_prepare_invalid_lang(self):
+        input_file = os.path.join(self.data_dir, "fra.txt")
+        results = self.runner.invoke(
+            prepare, ["-l", "fra:notalang:und", input_file, "-"]
+        )
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertRegex(results.output, r"Invalid value.*'notalang'")
 
 
 if __name__ == "__main__":

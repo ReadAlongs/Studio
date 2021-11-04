@@ -171,7 +171,6 @@ def align_audio(  # noqa: C901
     bare=False,
     config=None,
     save_temps=None,
-    g2p_fallbacks=None,
     verbose_g2p_warnings=False,
 ):
     """Align an XML input file to an audio file.
@@ -185,8 +184,6 @@ def align_audio(  # noqa: C901
             If True, keep the bare tokens without adjoining silences.
         config (object): Optional; ReadAlong-Studio configuration to use
         save_temps (str): Optional; Save temporary files, by default None
-        g2p_fallbacks (list): Optional; Cascade of fallback languages for g2p conversion,
-            in case of g2p errors
         verbose_g2p_warnings (boolean): Optional; display all g2p errors and warnings
             iff True
 
@@ -215,9 +212,7 @@ def align_audio(  # noqa: C901
     results["tokenized"] = xml = add_ids(xml)
     if save_temps:
         save_xml(save_temps + ".ids.xml", xml)
-    xml, valid = convert_xml(
-        xml, g2p_fallbacks=g2p_fallbacks, verbose_warnings=verbose_g2p_warnings
-    )
+    xml, valid = convert_xml(xml, verbose_warnings=verbose_g2p_warnings)
     if save_temps:
         save_xml(save_temps + ".g2p.xml", xml)
     if not valid:
@@ -775,7 +770,7 @@ TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
     <!-- To exclude any element from alignment, add the do-not-align="true" attribute to
          it, e.g., <p do-not-align="true">...</p>, or
          <s>Some text <foo do-not-align="true">do not align this</foo> more text</s> -->
-    <text{{#text_language}} xml:lang="{{text_language}}"{{/text_language}}>
+    <text xml:lang="{{main_lang}}" fallback-langs="{{fallback_langs}}">
         <body>
         {{#pages}}
             <div type="page">
@@ -807,7 +802,8 @@ def create_input_tei(**kwargs):
             input_file_name (str, optional): input text file name
             input_file_handle (file_handle, optional): opened file handle for input text
                 Only provide one of input_file_name or input_file_handle!
-            text_language (str): language for the text.
+            text_languages (List[str]): language(s) for the text, in the order
+                they should be attempted for g2p.
             save_temps (str, optional): prefix for output file name,
                 which will be kept; or None to create a temporary file
             output_file (str, optional): if specified, the output file
@@ -826,6 +822,15 @@ def create_input_tei(**kwargs):
         raise RuntimeError(
             "Call create_input_tei with exactly one of input_file_name= or input_file_handle="
         )
+
+    text_langs = kwargs.get("text_languages", None)
+    if not text_langs or not isinstance(text_langs, (list, tuple)):
+        raise RuntimeError(
+            "text_languages is a required parameter for create_input_tei()"
+        )
+
+    kwargs["main_lang"] = text_langs[0]
+    kwargs["fallback_langs"] = ":".join(text_langs[1:])
 
     save_temps = kwargs.get("save_temps", False)
     if kwargs.get("output_file", False):

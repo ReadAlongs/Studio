@@ -39,7 +39,7 @@ class TestForceAlignment(BasicTestCase):
         txt_path = os.path.join(self.data_dir, "ej-fra.txt")
         wav_path = os.path.join(self.data_dir, "ej-fra.m4a")
         _, temp_fn = create_input_tei(
-            input_file_name=txt_path, text_language="fra", save_temps=None
+            input_file_name=txt_path, text_languages=("fra",), save_temps=None
         )
         results = align_audio(temp_fn, wav_path, unit="w", save_temps=None)
 

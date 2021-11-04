@@ -35,7 +35,7 @@ from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import save_xml, write_xml
-from readalongs.util import getLangs, parse_g2p_fallback
+from readalongs.util import getLangs
 
 LANGS, LANG_NAMES = getLangs()
 ensure_using_supported_python_version()
@@ -208,8 +208,14 @@ def cli():
 @click.option(
     "-l",
     "--language",
-    type=click.Choice(LANGS, case_sensitive=False),
-    help="The language code for text in TEXTFILE (use only with -i, i.e., with plain text input)",
+    "--languages",
+    multiple=True,
+    callback=joiner_callback(LANGS),
+    help=(
+        "The language code(s) for text in TEXTFILE (use only with -i, i.e., with plain text input); "
+        "multiple codes can be joined by ':' or by repeating the option; "
+        "run 'readalongs langs' to list all supported languages."
+    ),
 )
 @click.option(
     "-s",
@@ -219,8 +225,9 @@ def cli():
 )
 @click.option(
     "--g2p-fallback",
+    hidden=True,
     default=None,
-    help="Colon-separated list of fallback langs for g2p; enables the g2p cascade",
+    help="OBSOLETE; enable the g2p cascade by giving -l with multiple langs instead",
 )
 @click.option(
     "--g2p-verbose",
@@ -298,10 +305,12 @@ def align(**kwargs):
             f"Cannot write into output folder '{output_dir}'. Please verify permissions."
         ) from e
 
-    try:
-        g2p_fallbacks = parse_g2p_fallback(kwargs["g2p_fallback"])
-    except ValueError as e:
-        raise click.BadParameter(e) from e
+    if kwargs["g2p_fallback"] is not None:
+        raise click.BadParameter(
+            "The --g2p-fallback option is obsolete.\n"
+            "Specify multiple languages with the -l/--language option instead,\n"
+            "or by adding the 'fallback-langs' attribute where relevant in your XML input."
+        )
 
     output_basename = os.path.basename(output_dir)
     temp_base = None
@@ -354,7 +363,7 @@ def align(**kwargs):
         plain_textfile = kwargs["textfile"]
         _, xml_textfile = create_input_tei(
             input_file_name=plain_textfile,
-            text_language=kwargs["language"],
+            text_languages=kwargs["language"],
             save_temps=temp_base,
         )
     else:
@@ -369,7 +378,6 @@ def align(**kwargs):
             bare=bare,
             config=config,
             save_temps=temp_base,
-            g2p_fallbacks=g2p_fallbacks,
             verbose_g2p_warnings=kwargs["g2p_verbose"],
         )
     except RuntimeError as e:
@@ -402,9 +410,15 @@ def align(**kwargs):
 @click.option(
     "-l",
     "--language",
-    type=click.Choice(LANGS, case_sensitive=False),
+    "--languages",
     required=True,
-    help="The language code for text in PLAINTEXTFILE",
+    multiple=True,
+    callback=joiner_callback(LANGS),
+    help=(
+        "The language code(s) for text in PLAINTEXTFILE; "
+        "multiple codes can be joined by ':' or by repeating the option; "
+        "run 'readalongs langs' to list all supported languages."
+    ),
 )
 def prepare(**kwargs):
     """Prepare XMLFILE for 'readalongs align' from PLAINTEXTFILE.
@@ -440,7 +454,7 @@ def prepare(**kwargs):
 
     if out_file == "-":
         _, filename = create_input_tei(
-            input_file_handle=input_file, text_language=kwargs["language"],
+            input_file_handle=input_file, text_languages=kwargs["language"],
         )
         with io.open(filename, encoding="utf8") as f:
             sys.stdout.write(f.read())
@@ -454,7 +468,7 @@ def prepare(**kwargs):
 
         _, filename = create_input_tei(
             input_file_handle=input_file,
-            text_language=kwargs["language"],
+            text_languages=kwargs["language"],
             output_file=out_file,
         )
 
@@ -534,8 +548,9 @@ def tokenize(**kwargs):
 @click.argument("g2pfile", type=click.Path(), required=False, default="")
 @click.option(
     "--g2p-fallback",
+    hidden=True,
     default=None,
-    help="Colon-separated list of fallback langs for g2p; enables the g2p cascade",
+    help="OBSOLETE; enable the g2p cascade by giving -l with multiple langs to prepare instead",
 )
 @click.option(
     "-f", "--force-overwrite", is_flag=True, help="Force overwrite output files"
@@ -553,11 +568,23 @@ def g2p(**kwargs):
     G2PFILE can then be modified to adjust the phonetic representation as needed.
     'readalongs align' can be called with G2PFILE instead of TOKFILE as XML input.
 
-    WARNING: the output is not yet compatible with align and cannot be used as input to align.
+    The g2p cascade will be enabled whenever an XML element or any of its
+    ancestors in TOKFILE has the attribute "fallback-langs" containing a
+    colon-separated list of language codes. Provide multiple language codes to
+    "readalongs prepare" via its -l option to generate this attribute globally,
+    or add it manually where needed.
+
+    With the g2p cascade, if a word cannot be mapped to valid ARPABET with the
+    language found in the "xml:lang" attribute, the languages in
+    "fallback-langs" are tried in order until a valid ARPABET mapping is
+    generated.
+
+    The output can be used XML as input to align.
 
     TOKFILE: Path to the input tokenized XML file, or - for stdin
 
-    G2PFILE: Output path for the g2p'd XML, or - for stdout [default: TOKFILE with .g2p. inserted]
+    G2PFILE: Output path for the g2p'd XML, or - for stdout [default: TOKFILE
+    with .g2p. inserted]
     """
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
@@ -595,18 +622,11 @@ def g2p(**kwargs):
             % (get_click_file_name(input_file), e)
         )
 
-    try:
-        g2p_fallbacks = parse_g2p_fallback(kwargs["g2p_fallback"])
-    except ValueError as e:
-        raise click.BadParameter(e) from e
-
     # Add the IDs to paragraph, sentences, word, etc.
     xml = add_ids(xml)
 
     # Apply the g2p mappings.
-    xml, valid = convert_xml(
-        xml, g2p_fallbacks=g2p_fallbacks, verbose_warnings=kwargs["g2p_verbose"],
-    )
+    xml, valid = convert_xml(xml, verbose_warnings=kwargs["g2p_verbose"],)
 
     if output_path == "-":
         write_xml(sys.stdout.buffer, xml)

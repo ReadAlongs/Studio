@@ -49,7 +49,12 @@ from g2p.transducer import CompositeTransductionGraph, TransductionGraph
 from readalongs.log import LOGGER
 from readalongs.text.lexicon_g2p import getLexiconG2P
 from readalongs.text.lexicon_g2p_mappings import __file__ as LEXICON_PATH
-from readalongs.text.util import get_lang_attrib, load_xml, save_xml
+from readalongs.text.util import (
+    get_attrib_recursive,
+    get_lang_attrib,
+    load_xml,
+    save_xml,
+)
 
 
 def convert_word(word: str, lang: str, output_orthography: str, verbose_warnings: bool):
@@ -85,11 +90,7 @@ def convert_word(word: str, lang: str, output_orthography: str, verbose_warnings
 
 
 def convert_words(
-    xml,
-    word_unit="w",
-    output_orthography="eng-arpabet",
-    g2p_fallbacks=None,
-    verbose_warnings=False,
+    xml, word_unit="w", output_orthography="eng-arpabet", verbose_warnings=False,
 ):
     all_g2p_valid = True
     for word in xml.xpath(".//" + word_unit):
@@ -105,16 +106,15 @@ def convert_words(
         # only convert text within words
         if not word.text:
             continue
-        g2p_lang = (
-            get_lang_attrib(word) or "und"
-        )  # default to Undetermined if lang missing
+        g2p_lang = get_lang_attrib(word) or "und"  # default: Undetermined
+        g2p_fallbacks = get_attrib_recursive(word, "fallback-langs")
         text_to_g2p = word.text
         converter, tg, g2p_text, indices, valid = convert_word(
             text_to_g2p, g2p_lang, output_orthography, verbose_warnings
         )
         if not valid:
             # This is where we apply the g2p cascade
-            for lang in g2p_fallbacks or []:
+            for lang in g2p_fallbacks.split(":") if g2p_fallbacks else []:
                 LOGGER.warning(
                     f'Could not g2p "{text_to_g2p}" as {g2p_lang}. Trying fallback: {lang}.'
                 )
@@ -139,15 +139,11 @@ def convert_words(
 
 
 def convert_xml(
-    xml,
-    word_unit="w",
-    output_orthography="eng-arpabet",
-    g2p_fallbacks=None,
-    verbose_warnings=False,
+    xml, word_unit="w", output_orthography="eng-arpabet", verbose_warnings=False,
 ):
     xml_copy = copy.deepcopy(xml)
     xml_copy, valid = convert_words(
-        xml_copy, word_unit, output_orthography, g2p_fallbacks, verbose_warnings
+        xml_copy, word_unit, output_orthography, verbose_warnings
     )
     return xml_copy, valid
 
