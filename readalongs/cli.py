@@ -49,8 +49,8 @@ SUPPORTED_OUTPUT_FORMATS = {
     "xhtml": "Simple XHTML",
 }
 
-SUPPORTED_OUTPUT_FORMATS_DESC = "\n\n".join(
-    k + " - " + v for k, v in SUPPORTED_OUTPUT_FORMATS.items()
+SUPPORTED_OUTPUT_FORMATS_DESC = ", ".join(
+    k + f" ({v})" for k, v in SUPPORTED_OUTPUT_FORMATS.items()
 )
 
 
