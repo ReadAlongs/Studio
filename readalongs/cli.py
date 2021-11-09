@@ -186,8 +186,12 @@ def cli():
     "--output-formats",
     multiple=True,
     callback=joiner_callback(SUPPORTED_OUTPUT_FORMATS),
-    help="The output file formats to export to. By default the text is exported as XML and alignments are exported as SMIL. "
-    + f"Other formats include:\b \n\n{SUPPORTED_OUTPUT_FORMATS_DESC}",
+    help=(
+        "Additional output file formats to export to. "
+        "The text is exported as XML and alignments are exported as SMIL. "
+        "One or more of these additional formats can be requested:\b \n\n" +
+        SUPPORTED_OUTPUT_FORMATS_DESC
+    ),
 )
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
 @click.option(
