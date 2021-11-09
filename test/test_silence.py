@@ -130,6 +130,30 @@ class TestSilence(BasicTestCase):
             delta=50,
         )
 
+    @expectedFailure
+    def test_dna_silence(self):
+        """Run the problematic input file from issue #89"""
+
+        # Related to https://github.com/ReadAlongs/Studio/issues/89
+        # delete the @expectedFailure line above once #89 is fixed.
+
+        output = os.path.join(self.tempdir, "dna-silence")
+        results = self.runner.invoke(
+            align,
+            [
+                "-s",
+                "-C",
+                "-t",
+                "-l",
+                "fra",
+                os.path.join(self.data_dir, "ej-fra-dna-silence.xml"),
+                os.path.join(self.data_dir, "ej-fra.m4a"),
+                output,
+            ],
+        )
+        self.assertEqual(results.exception, None)
+        self.assertEqual(results.exit_code, 0)
+
     def test_bad_silence(self):
         output = os.path.join(self.tempdir, "bad_silence")
         # Run align from bad xml
