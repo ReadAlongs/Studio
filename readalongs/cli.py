@@ -189,8 +189,8 @@ def cli():
     help=(
         "Additional output file formats to export to. "
         "The text is exported as XML and alignments are exported as SMIL. "
-        "One or more of these additional formats can be requested:\b \n\n" +
-        SUPPORTED_OUTPUT_FORMATS_DESC
+        "One or more of these additional formats can be requested:\b \n\n"
+        + SUPPORTED_OUTPUT_FORMATS_DESC
     ),
 )
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
@@ -200,8 +200,10 @@ def cli():
 @click.option(
     "-i",
     "--text-input",
+    hidden=True,
     is_flag=True,
-    help="Input is plain text (otherwise it’s assumed to be XML)",
+    default=None,
+    help="OBSOLETE; the input format is now guessedb by extension or contents",
 )
 @click.option(
     "-l",
@@ -230,19 +232,21 @@ def align(**kwargs):
     """Align TEXTFILE and AUDIOFILE and create output files as OUTPUT_BASE.* in directory
     OUTPUT_BASE/.
 
-    TEXTFILE:    Input text file path (in XML, or plain text with -i)
+    TEXTFILE:    Input text file path (in XML or plain text)
 
     \b
-    With -i, TEXTFILE should be plain text:
-     - The text in TEXTFILE should be plain UTF-8 text without any markup.
-     - Paragraph breaks are indicated by inserting one blank line.
-     - Page breaks are indicated by inserting two blank lines.
-
-    \b
-    Without -i, TEXTFILE can be in one of three XML formats:
+    If TEXTFILE has a .xml extension or starts with an XML declaration line,
+    it is parsed as XML and can be in one of three formats:
      - the output of 'readalongs prepare',
      - the output of 'readalongs tokenize', or
      - the output of 'readalongs g2p'.
+
+    \b
+    If TEXTFILE has a .txt extension or does not start with an XML declaraction
+    line, is it read as plain text with the following conventions:
+     - The text in TEXTFILE should be plain UTF-8 text without any markup.
+     - Paragraph breaks are indicated by inserting one blank line.
+     - Page breaks are indicated by inserting two blank lines.
 
     One can add the known ARPABET phonetics in the XML for words (<w> elements)
     that are not correctly handled by g2p in the output of 'readalongs tokenize'
@@ -312,7 +316,37 @@ def align(**kwargs):
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
 
-    if kwargs["text_input"]:
+    if kwargs["text_input"] is not None:
+        raise click.BadParameter(
+            "The -i option is obsolete. .txt files are now read as plain text, "
+            ".xml as XML, and other files based on whether they start with <?xml or not."
+        )
+
+    # Determine if the file is plain text or XML
+    textfile_name = kwargs["textfile"]
+    if textfile_name.endswith(".xml"):
+        textfile_is_plaintext = False  # .xml is XML
+    elif textfile_name.endswith(".txt"):
+        textfile_is_plaintext = True  # .txt is plain text
+    else:
+        # Files other than .xml or .txt are parsed using etree. If the parse is
+        # successful or the first syntax error is past the first line, the file
+        # is assumed to be XML. Plain text files will yield an error in the
+        # first few characters of line 1, typically complaining about not
+        # finding "<" at the start.
+        # There are many valid "magic numbers" for XML files, depending on
+        # their encoding (utf8, utf16, endianness, etc). If we looked for
+        # "<?xml " at the beginning, that would only catch some of the valid
+        # XML encodings that etree can parse.
+        # We could also use python-magic or filetype, but why introduce another
+        # dependency when we can ask the library we're already using!?
+        try:
+            _ = etree.parse(textfile_name)
+            textfile_is_plaintext = False
+        except etree.XMLSyntaxError as e:
+            textfile_is_plaintext = e.position <= (1, 10)
+
+    if textfile_is_plaintext:
         if not kwargs["language"]:
             raise click.BadParameter(
                 "No input language specified for plain text input. Please provide the -l/--language switch."

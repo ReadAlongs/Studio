@@ -194,7 +194,7 @@ class TestG2pCli(BasicTestCase):
             pass
         output_dir = os.path.join(self.tempdir, "aligned")
         results = self.runner.invoke(
-            align, ["-l", "eng", "-i", text_file, empty_wav, output_dir]
+            align, ["-l", "eng", text_file, empty_wav, output_dir]
         )
         if self.show_invoke_output:
             print(
@@ -210,7 +210,6 @@ class TestG2pCli(BasicTestCase):
             [
                 "-l",
                 "eng",
-                "-i",
                 "-f",
                 "--g2p-fallback=fra:iku",
                 text_file,
