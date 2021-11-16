@@ -42,7 +42,7 @@ import argparse
 import copy
 import os
 
-from g2p import make_g2p
+from g2p import NetworkXNoPath, make_g2p
 from g2p.mappings.langs.utils import is_arpabet
 from g2p.transducer import CompositeTransductionGraph, TransductionGraph
 
@@ -55,6 +55,9 @@ from readalongs.text.util import (
     load_xml,
     save_xml,
 )
+from readalongs.util import getLangs
+
+LANGS, LANG_NAMES = getLangs()
 
 
 def convert_word(word: str, lang: str, output_orthography: str, verbose_warnings: bool):
@@ -79,7 +82,18 @@ def convert_word(word: str, lang: str, output_orthography: str, verbose_warnings
             eng_valid = False
         return eng_converter, eng_tg, eng_text, eng_indices, eng_valid
     else:
-        converter = make_g2p(lang, output_orthography)
+        try:
+            converter = make_g2p(lang, output_orthography)
+        except FileNotFoundError as e:
+            raise ValueError(
+                f'Could not g2p "{word}" as "{lang}": invalid language code. '
+                f"Use one of {LANGS}"
+            ) from e
+        except NetworkXNoPath as e:
+            raise ValueError(
+                f'Count not g2p "{word}" as "{lang}": no path to "{output_orthography}". '
+                f"Use one of {LANGS}"
+            ) from e
         tg = converter(word)
         text = tg.output_string.strip()
         indices = tg.edges
@@ -109,31 +123,43 @@ def convert_words(
         g2p_lang = get_lang_attrib(word) or "und"  # default: Undetermined
         g2p_fallbacks = get_attrib_recursive(word, "fallback-langs")
         text_to_g2p = word.text
-        converter, tg, g2p_text, indices, valid = convert_word(
-            text_to_g2p, g2p_lang, output_orthography, verbose_warnings
-        )
-        if not valid:
-            # This is where we apply the g2p cascade
-            for lang in g2p_fallbacks.split(":") if g2p_fallbacks else []:
-                LOGGER.warning(
-                    f'Could not g2p "{text_to_g2p}" as {g2p_lang}. Trying fallback: {lang}.'
-                )
-                g2p_lang = lang
-                converter, tg, g2p_text, indices, valid = convert_word(
-                    text_to_g2p, g2p_lang, output_orthography, verbose_warnings
-                )
-                if valid:
-                    word.attrib["effective_g2p_lang"] = g2p_lang
-                    break
-            else:
-                all_g2p_valid = False
-                LOGGER.warning(
-                    f'No valid g2p conversion found for "{text_to_g2p}". '
-                    f"Check its orthography and language code, "
-                    f"or pick suitable g2p fallback languages."
-                )
+        try:
+            converter, tg, g2p_text, indices, valid = convert_word(
+                text_to_g2p, g2p_lang, output_orthography, verbose_warnings
+            )
+            if not valid:
+                # This is where we apply the g2p cascade
+                for lang in g2p_fallbacks.split(":") if g2p_fallbacks else []:
+                    LOGGER.warning(
+                        f'Could not g2p "{text_to_g2p}" as {g2p_lang}. '
+                        f"Trying fallback: {lang}."
+                    )
+                    g2p_lang = lang
+                    converter, tg, g2p_text, indices, valid = convert_word(
+                        text_to_g2p, g2p_lang, output_orthography, verbose_warnings
+                    )
+                    if valid:
+                        word.attrib["effective-g2p-lang"] = g2p_lang
+                        break
+                else:
+                    all_g2p_valid = False
+                    LOGGER.warning(
+                        f'No valid g2p conversion found for "{text_to_g2p}". '
+                        f"Check its orthography and language code, "
+                        f"or pick suitable g2p fallback languages."
+                    )
 
-        word.attrib["ARPABET"] = g2p_text
+            # Save the g2p_text from the last conversion attemps, even when
+            # it's not valid, so it's in the g2p output if the user wants to
+            # inspect it manually.
+            word.attrib["ARPABET"] = g2p_text
+
+        except ValueError as e:
+            LOGGER.warning(
+                f'Could not g2p "{text_to_g2p}" due to an incorrect '
+                f'"xml:lang", "lang" or "fallback-langs" attribute in the XML: {e}'
+            )
+            all_g2p_valid = False
 
     return xml, all_g2p_valid
 

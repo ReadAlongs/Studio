@@ -218,7 +218,7 @@ def align_audio(  # noqa: C901
     if not valid:
         raise RuntimeError(
             "Some words could not be g2p'd correctly. Aborting. "
-            "Run with --g2p-verbose for detailed g2p error logs."
+            "Run with --g2p-verbose for more detailed g2p error logs."
         )
 
     # Prepare the SoundsSwallower (formerly PocketSphinx) configuration

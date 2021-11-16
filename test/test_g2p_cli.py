@@ -11,6 +11,7 @@ from sound_swallower_stub import SoundSwallowerStub
 
 from readalongs.align import align_audio
 from readalongs.cli import align, g2p, prepare, tokenize
+from readalongs.log import LOGGER
 from readalongs.text.convert_xml import convert_xml
 
 
@@ -321,6 +322,22 @@ class TestG2pCli(BasicTestCase):
             etree.tounicode(c_xml), '<s><w ARPABET="invalid">invalid</w></s>'
         )
         self.assertFalse(valid, "convert_xml with invalid pre-g2p'd text")
+
+    def test_invalid_langs_in_xml(self):
+        xml = etree.fromstring(
+            """
+            <s>
+            <w lang="eng" fallback-langs="foo">français falls back to invalid foo</w>
+            <w lang="crx-syl">no path to arpabet</w>
+            </s>
+        """
+        )
+        with self.assertLogs(LOGGER, level="WARNING") as cm:
+            c_xml, valid = convert_xml(xml)
+        self.assertFalse(valid)
+        logger_output = "\n".join(cm.output)
+        self.assertIn('"foo": invalid language code', logger_output)
+        self.assertIn('"crx-syl": no path to "eng-arpabet"', logger_output)
 
 
 if __name__ == "__main__":
