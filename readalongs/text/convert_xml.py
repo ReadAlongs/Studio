@@ -42,9 +42,18 @@ import argparse
 import copy
 import os
 
-from g2p import NetworkXNoPath, make_g2p
 from g2p.mappings.langs.utils import is_arpabet
 from g2p.transducer import CompositeTransductionGraph, TransductionGraph
+
+try:
+    # g2p > 0.5.20211029 uses its own exceptions for make_g2p errors
+    from g2p import InvalidLanguageCode, NoPath, make_g2p
+except ImportError:
+    # g2p <= 0.5.20211029 used NetworkXNoPath and FileNotFoundError
+    from g2p import NetworkXNoPath as NoPath
+    from g2p import make_g2p
+
+    InvalidLanguageCode = FileNotFoundError
 
 from readalongs.log import LOGGER
 from readalongs.text.lexicon_g2p import getLexiconG2P
@@ -84,12 +93,12 @@ def convert_word(word: str, lang: str, output_orthography: str, verbose_warnings
     else:
         try:
             converter = make_g2p(lang, output_orthography)
-        except FileNotFoundError as e:
+        except InvalidLanguageCode as e:
             raise ValueError(
                 f'Could not g2p "{word}" as "{lang}": invalid language code. '
                 f"Use one of {LANGS}"
             ) from e
-        except NetworkXNoPath as e:
+        except NoPath as e:
             raise ValueError(
                 f'Count not g2p "{word}" as "{lang}": no path to "{output_orthography}". '
                 f"Use one of {LANGS}"
