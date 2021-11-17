@@ -20,7 +20,7 @@ To view the documentation, run an HTTP server in the directory where the build
 is found, e.g.,
 
     cd _build/html
-    python -m http.server
+    python3 -m http.server
 
 and navigate to http://127.0.0.1:8000 to view the results (or whatever port
 your local web server displays).

@@ -212,8 +212,8 @@ def cli():
     multiple=True,
     callback=joiner_callback(LANGS),
     help=(
-        "The language code(s) for text in TEXTFILE (use only with -i, i.e., with plain text input); "
-        "multiple codes can be joined by ':' or by repeating the option; "
+        "The language code(s) for text in TEXTFILE (use only with plain text input); "
+        "multiple codes can be joined by ':', or by repeating the option, to enable the g2p cascade; "
         "run 'readalongs langs' to list all supported languages."
     ),
 )
@@ -416,7 +416,7 @@ def align(**kwargs):
     callback=joiner_callback(LANGS),
     help=(
         "The language code(s) for text in PLAINTEXTFILE; "
-        "multiple codes can be joined by ':' or by repeating the option; "
+        "multiple codes can be joined by ':', or by repeating the option, to enable the g2p cascade; "
         "run 'readalongs langs' to list all supported languages."
     ),
 )
