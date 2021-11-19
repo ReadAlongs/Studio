@@ -1,13 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-#######################################################################
-#
-# align.py
-#
-#   This is the main module for aligning text and audio
-#
-#######################################################################
+"""Main readalongs module for aligning text and audio."""
 
 import copy
 import io
@@ -21,10 +12,9 @@ from typing import Dict, List, Union
 import chevron
 import regex as re
 import soundswallower
-from humanfriendly.terminal import output
 from lxml import etree
 from pydub import AudioSegment
-from pydub.exceptions import CouldntDecodeError, CouldntEncodeError, PydubException
+from pydub.exceptions import CouldntEncodeError
 from pympi.Praat import TextGrid
 from webvtt import Caption, WebVTT
 
@@ -470,7 +460,7 @@ def save_readalong(  # noqa C901
     config=None,
     audiofile: str,
     audiosegment: AudioSegment = None,
-    output_formats=[],
+    output_formats=(),
 ):
     """Save the results from align_audio() into the output files required for a
         readalong
@@ -544,7 +534,7 @@ def save_readalong(  # noqa C901
         try:
             audiosegment.export(audio_path, format=audio_format)
         except CouldntEncodeError:
-            LOGGER.warn(
+            LOGGER.warning(
                 f"The audio file at {audio_path} could \
                 not be exported in the {audio_format} format. \
                 Please ensure your installation of ffmpeg has \

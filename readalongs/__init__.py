@@ -1,14 +1,19 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+"""
+Root module for the readalongs text/audio aligner.
 
-#######################################################################
-#
-# __init__.py
-#
-#   readalongs root module.
-#   Version for setuptools is changed here
-#
-#######################################################################
-import os
+Version for setuptools is changed here
+Minimum Python version requirements is also validated here
+
+The command line interface is defined in readalongs.cli.
+The main alignment module is readalongs.align.
+"""
+
+import sys
 
 VERSION = "0.1"
+
+if sys.version_info < (3, 7, 0):
+    sys.exit(
+        f"Python 3.7 or more recent is required. You are using {sys.version}. "
+        "Please use a newer version of Python."
+    )

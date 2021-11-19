@@ -1,21 +1,14 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+"""Readalongs command line interfaced, initialized with Click.
 
-#######################################################################
-#
-# cli.py
-#
-#   Initializes a Command Line Interface with Click.
-#   The main purpose of the cli is to align input files.
-#
-#   CLI commands implemented in this file:
-#    - align  : main command to align text and audio
-#    - prepare: prepare XML input for align from plain text
-#    - tokenize: tokenize the prepared file
-#    - g2p    : apply g2p to the tokenized file
-#
-#
-#######################################################################
+The main purpose of the cli is to align text and audio files
+
+CLI commands implemented in this file:
+ - align   : main command to align text and audio
+ - prepare : prepare XML input for align from plain text
+ - tokenize: tokenize the prepared file
+ - g2p     : apply g2p to the tokenized file
+ - langs   : list languages supported by align
+"""
 
 import io
 import json
@@ -30,7 +23,6 @@ from readalongs._version import __version__
 from readalongs.align import align_audio, create_input_tei, save_readalong
 from readalongs.app import app
 from readalongs.log import LOGGER
-from readalongs.python_version import ensure_using_supported_python_version
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.tokenize_xml import tokenize_xml
@@ -38,7 +30,6 @@ from readalongs.text.util import save_xml, write_xml
 from readalongs.util import getLangs
 
 LANGS, LANG_NAMES = getLangs()
-ensure_using_supported_python_version()
 
 SUPPORTED_OUTPUT_FORMATS = {
     "eaf": "ELAN file",
