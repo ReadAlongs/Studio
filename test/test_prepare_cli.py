@@ -162,10 +162,17 @@ class TestPrepareCli(BasicTestCase):
             "Using old Mac-style newlines should not affect prepare",
         )
 
-    def test_create_input_tei_no_input(self):
-        """create_input_tei should raise a RuntimeError when given no input"""
+    def test_create_input_tei_errors(self):
+        """create_input_tei should raise a RuntimeError when parameters are missing."""
         with self.assertRaises(RuntimeError):
+            # missing input_file_name or input_file_handle
             _, _ = create_input_tei()
+
+        with self.assertRaises(RuntimeError):
+            # missing text_languages
+            _, _ = create_input_tei(
+                input_file_name=os.path.join(self.data_dir, "fra.txt")
+            )
 
     def test_prepare_multiple_langs(self):
         """Giving multiple langs to -l replaces the old --g2p-fallback option."""
