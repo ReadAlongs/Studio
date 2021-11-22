@@ -85,7 +85,7 @@ def quoted_list(values):
 
 
 def joiner_callback(valid_values, joiner=":"):
-    """Command-line parameter validation for multiple-multiple values
+    """Command-line parameter validation for multiple-value options.
 
     The values can be repeated by giving the option multiple times on the
     command line, or by joining them with joiner (colon by default).
@@ -96,7 +96,9 @@ def joiner_callback(valid_values, joiner=":"):
 
     def _callback(ctx, param, value_groups):
         results = [
-            value for value_group in value_groups for value in value_group.split(joiner)
+            value.strip()
+            for value_group in value_groups
+            for value in value_group.split(joiner)
         ]
         for value in results:
             if value.lower() not in lc_valid_values:
@@ -129,7 +131,7 @@ def cli():
 
     \b
     align
-    =======
+    =====
     To get started, you must have some audio and some corresponding text.
     This command will let you go 'end-to-end' from audio & text to readalongs.
     For more info, please see the help message for this command by running
@@ -153,13 +155,15 @@ def cli():
 
     \b
     g2p
-    ========
+    ===
     Use this command to apply the g2p rules necessary to convert the output of the
     "readalongs tokenize" command into a pronunciation form for the readalongs aligner.
 
     Finally, you can run "readalongs align" on the output of any of these commands to create
     the alignment files.
 
+    For more info on any command in this interface, run it with "-h" to display
+    its help message.
     """
 
 
@@ -213,7 +217,8 @@ def cli():
     callback=joiner_callback(LANGS),
     help=(
         "The language code(s) for text in TEXTFILE (use only with plain text input); "
-        "multiple codes can be joined by ':', or by repeating the option, to enable the g2p cascade; "
+        "multiple codes can be joined by ':', or by repeating the option, "
+        "to enable the g2p cascade (run 'readalongs g2p -h' for details); "
         "run 'readalongs langs' to list all supported languages."
     ),
 )
@@ -249,9 +254,9 @@ def align(**kwargs):
      - the output of 'readalongs g2p'.
 
     \b
-    If TEXTFILE has a .txt extension or does not start with an XML declaraction
+    If TEXTFILE has a .txt extension or does not start with an XML declaration
     line, is it read as plain text with the following conventions:
-     - The text in TEXTFILE should be plain UTF-8 text without any markup.
+     - The text should be plain UTF-8 text without any markup.
      - Paragraph breaks are indicated by inserting one blank line.
      - Page breaks are indicated by inserting two blank lines.
 
@@ -416,12 +421,14 @@ def align(**kwargs):
     callback=joiner_callback(LANGS),
     help=(
         "The language code(s) for text in PLAINTEXTFILE; "
-        "multiple codes can be joined by ':', or by repeating the option, to enable the g2p cascade; "
+        "multiple codes can be joined by ':', or by repeating the option, "
+        "to enable the g2p cascade (run 'readalongs g2p -h' for details); "
         "run 'readalongs langs' to list all supported languages."
     ),
 )
 def prepare(**kwargs):
     """Prepare XMLFILE for 'readalongs align' from PLAINTEXTFILE.
+
     PLAINTEXTFILE must be plain text encoded in UTF-8, with one sentence per line,
     paragraph breaks marked by a blank line, and page breaks marked by two
     blank lines.
@@ -487,6 +494,7 @@ def prepare(**kwargs):
 )
 def tokenize(**kwargs):
     """Tokenize XMLFILE for 'readalongs align' into TOKFILE.
+
     XMLFILE should have been produced by 'readalongs prepare'.
     TOKFILE can then be augmented with word-specific language codes.
     'readalongs align' can be called with either XMLFILE or TOKFILE as XML input.
@@ -564,6 +572,7 @@ def tokenize(**kwargs):
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
 def g2p(**kwargs):
     """Apply g2p mappings to TOKFILE into G2PFILE.
+
     TOKFILE should have been produced by 'readalongs tokenize'.
     G2PFILE can then be modified to adjust the phonetic representation as needed.
     'readalongs align' can be called with G2PFILE instead of TOKFILE as XML input.
@@ -579,7 +588,7 @@ def g2p(**kwargs):
     "fallback-langs" are tried in order until a valid ARPABET mapping is
     generated.
 
-    The output can be used XML as input to align.
+    The output XML file can be used as input to align.
 
     TOKFILE: Path to the input tokenized XML file, or - for stdin
 

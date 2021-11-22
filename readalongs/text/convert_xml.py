@@ -134,7 +134,7 @@ def convert_words(
         text_to_g2p = word.text
         try:
             converter, tg, g2p_text, indices, valid = convert_word(
-                text_to_g2p, g2p_lang, output_orthography, verbose_warnings
+                text_to_g2p, g2p_lang.strip(), output_orthography, verbose_warnings
             )
             if not valid:
                 # This is where we apply the g2p cascade
@@ -143,7 +143,7 @@ def convert_words(
                         f'Could not g2p "{text_to_g2p}" as {g2p_lang}. '
                         f"Trying fallback: {lang}."
                     )
-                    g2p_lang = lang
+                    g2p_lang = lang.strip()
                     converter, tg, g2p_text, indices, valid = convert_word(
                         text_to_g2p, g2p_lang, output_orthography, verbose_warnings
                     )
