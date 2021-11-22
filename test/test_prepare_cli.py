@@ -181,15 +181,15 @@ class TestPrepareCli(BasicTestCase):
             prepare, ["-l", "fra", "-l", "iku:und", input_file, "-"]
         )
         self.assertEqual(results.exit_code, 0)
-        self.assertIn('<text xml:lang="fra" fallback-langs="iku:und">', results.output)
-        results = self.runner.invoke(prepare, ["-l", "fra:iku:und", input_file, "-"])
+        self.assertIn('<text xml:lang="fra" fallback-langs="iku,und">', results.output)
+        results = self.runner.invoke(prepare, ["-l", "fra,iku:und", input_file, "-"])
         self.assertEqual(results.exit_code, 0)
-        self.assertIn('<text xml:lang="fra" fallback-langs="iku:und">', results.output)
+        self.assertIn('<text xml:lang="fra" fallback-langs="iku,und">', results.output)
         results = self.runner.invoke(
             prepare, ["-l", "fra:iku", "-l", "und", input_file, "-"]
         )
         self.assertEqual(results.exit_code, 0)
-        self.assertIn('<text xml:lang="fra" fallback-langs="iku:und">', results.output)
+        self.assertIn('<text xml:lang="fra" fallback-langs="iku,und">', results.output)
 
     def test_prepare_invalid_lang(self):
         input_file = os.path.join(self.data_dir, "fra.txt")

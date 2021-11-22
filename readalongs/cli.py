@@ -13,6 +13,7 @@ CLI commands implemented in this file:
 import io
 import json
 import os
+import re
 import sys
 from tempfile import TemporaryFile
 
@@ -75,11 +76,11 @@ def quoted_list(values):
     return ", ".join("'" + v + "'" for v in values)
 
 
-def joiner_callback(valid_values, joiner=":"):
+def joiner_callback(valid_values, joiner_re=r"[,:]"):
     """Command-line parameter validation for multiple-value options.
 
     The values can be repeated by giving the option multiple times on the
-    command line, or by joining them with joiner (colon by default).
+    command line, or by joining them with joiner (colon and comma by default).
 
     Matching is case insensitive.
     """
@@ -89,7 +90,7 @@ def joiner_callback(valid_values, joiner=":"):
         results = [
             value.strip()
             for value_group in value_groups
-            for value in value_group.split(joiner)
+            for value in re.split(joiner_re, value_group)
         ]
         for value in results:
             if value.lower() not in lc_valid_values:
@@ -182,9 +183,9 @@ def cli():
     multiple=True,
     callback=joiner_callback(SUPPORTED_OUTPUT_FORMATS),
     help=(
-        "Additional output file formats to export to. "
-        "The text is exported as XML and alignments are exported as SMIL. "
-        "One or more of these additional formats can be requested:\b \n\n"
+        "Comma- or colon-separated list of additional output file formats to export to. "
+        "The text is always exported as XML and alignments as SMIL, but "
+        "one or more of these formats can be requested in addition:\b \n\n"
         + SUPPORTED_OUTPUT_FORMATS_DESC
     ),
 )
@@ -208,7 +209,7 @@ def cli():
     callback=joiner_callback(LANGS),
     help=(
         "The language code(s) for text in TEXTFILE (use only with plain text input); "
-        "multiple codes can be joined by ':', or by repeating the option, "
+        "multiple codes can be joined by ',' or ':', or by repeating the option, "
         "to enable the g2p cascade (run 'readalongs g2p -h' for details); "
         "run 'readalongs langs' to list all supported languages."
     ),
@@ -412,7 +413,7 @@ def align(**kwargs):
     callback=joiner_callback(LANGS),
     help=(
         "The language code(s) for text in PLAINTEXTFILE; "
-        "multiple codes can be joined by ':', or by repeating the option, "
+        "multiple codes can be joined by ',' or ':', or by repeating the option, "
         "to enable the g2p cascade (run 'readalongs g2p -h' for details); "
         "run 'readalongs langs' to list all supported languages."
     ),
@@ -569,8 +570,8 @@ def g2p(**kwargs):
     'readalongs align' can be called with G2PFILE instead of TOKFILE as XML input.
 
     The g2p cascade will be enabled whenever an XML element or any of its
-    ancestors in TOKFILE has the attribute "fallback-langs" containing a
-    colon-separated list of language codes. Provide multiple language codes to
+    ancestors in TOKFILE has the attribute "fallback-langs" containing a comma-
+    or colon-separated list of language codes. Provide multiple language codes to
     "readalongs prepare" via its -l option to generate this attribute globally,
     or add it manually where needed.
 

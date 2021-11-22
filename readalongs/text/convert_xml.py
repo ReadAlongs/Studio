@@ -41,6 +41,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import argparse
 import copy
 import os
+import re
 
 from g2p.mappings.langs.utils import is_arpabet
 from g2p.transducer import CompositeTransductionGraph, TransductionGraph
@@ -138,7 +139,7 @@ def convert_words(
             )
             if not valid:
                 # This is where we apply the g2p cascade
-                for lang in g2p_fallbacks.split(":") if g2p_fallbacks else []:
+                for lang in re.split(r"[,:]", g2p_fallbacks) if g2p_fallbacks else []:
                     LOGGER.warning(
                         f'Could not g2p "{text_to_g2p}" as {g2p_lang}. '
                         f"Trying fallback: {lang}."

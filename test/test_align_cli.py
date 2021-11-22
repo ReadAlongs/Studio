@@ -38,7 +38,7 @@ class TestAlignCli(BasicTestCase):
                 "-o",
                 "vtt",
                 "-o",  # tests that we can use -o more than once
-                "srt:TextGrid:eaf",  # tests that we can give -o multiple values
+                "srt:TextGrid,eaf",  # tests that we can give -o multiple values, separated by : or ,
                 "-l",
                 "fra",
                 "--config",

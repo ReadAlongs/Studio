@@ -820,7 +820,7 @@ def create_input_tei(**kwargs):
         )
 
     kwargs["main_lang"] = text_langs[0]
-    kwargs["fallback_langs"] = ":".join(text_langs[1:])
+    kwargs["fallback_langs"] = ",".join(text_langs[1:])
 
     save_temps = kwargs.get("save_temps", False)
     if kwargs.get("output_file", False):

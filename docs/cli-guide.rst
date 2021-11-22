@@ -48,20 +48,20 @@ The plain text file must be plain text encoded in ``UTF-8`` with one
 sentence per line. Paragraph breaks are marked by a blank line, and page
 breaks are marked by two blank lines.
 
-+-----------------------------------+----------------------------------------+
-| Key Options                       | Option descriptions                    |
-+===================================+========================================+
-| ``-l, --language(s)`` (required)  | The language code for story.txt.       |
-|                                   | Specifying multiple colon-separated    |
-|                                   | languages triggers :ref:`g2p-cascade`. |
-+-----------------------------------+----------------------------------------+
-| ``-f, --force-overwrite``         | Force overwrite output files           |
-|                                   | (handy if you're troubleshooting       |
-|                                   | and will be aligning repeatedly)       |
-+-----------------------------------+----------------------------------------+
-| ``-h, --help``                    | Displays CLI guide for                 |
-|                                   | ``prepare``                            |
-+-----------------------------------+----------------------------------------+
++-----------------------------------+-----------------------------------------------+
+| Key Options                       | Option descriptions                           |
++===================================+===============================================+
+| ``-l, --language(s)`` (required)  | The language code for story.txt.              |
+|                                   | Specifying multiple comma- or colon-separated |
+|                                   | languages triggers :ref:`g2p-cascade`.        |
++-----------------------------------+-----------------------------------------------+
+| ``-f, --force-overwrite``         | Force overwrite output files                  |
+|                                   | (handy if you're troubleshooting              |
+|                                   | and will be aligning repeatedly)              |
++-----------------------------------+-----------------------------------------------+
+| ``-h, --help``                    | Displays CLI guide for                        |
+|                                   | ``prepare``                                   |
++-----------------------------------+-----------------------------------------------+
 
 The ``-l, --language`` argument requires a language’s 3 character `ISO
 code <https://en.wikipedia.org/wiki/ISO_639-3>`__ as an argument.
@@ -72,7 +72,7 @@ and they can also be found in the :ref:`cli-prepare` reference.
 So, a full command for a story in Algonquin, with a g2p fallback to
 Undetermined, would be something like:
 
-``readalongs prepare -l alq:und Studio/story.txt Studio/story.xml``
+``readalongs prepare -l alq,und Studio/story.txt Studio/story.xml``
 
 The generated XML will be parsed in to sentences. At this stage you can
 edit the XML to have any modifications, such as adding ``do-not-align``
@@ -143,31 +143,31 @@ supported by ffmpeg)
 ``[output_base]``: path to the directory where the output files will be
 created, as ``output_base*``
 
-+-----------------------------------+----------------------------------------+
-| Key Options                       | Option descriptions                    |
-+===================================+========================================+
-| ``-l, --language(s)``             | The language code for story.txt.       |
-|                                   | Specifying multiple colon-separated    |
-|                                   | languages triggers :ref:`g2p-cascade`. |
-|                                   | (required if input is plain text)      |
-+-----------------------------------+----------------------------------------+
-| ``-c, --config PATH``             | Use ReadAlong-Studio                   |
-|                                   | configuration file (in JSON            |
-|                                   | format)                                |
-+-----------------------------------+----------------------------------------+
-| ``--g2p-verbose``                 | Display verbose g2p error messages     |
-+-----------------------------------+----------------------------------------+
-| ``-s, --save-temps``              | Save intermediate stages of            |
-|                                   | processing and temporary files         |
-|                                   | (dictionary, FSG, tokenization,        |
-|                                   | etc.)                                  |
-+-----------------------------------+----------------------------------------+
-| ``-f, --force-overwrite``         | Force overwrite output files           |
-|                                   | (handy if you’re troubleshooting       |
-|                                   | and will be aligning repeatedly)       |
-+-----------------------------------+----------------------------------------+
-| ``-h, --help``                    | Displays CLI guide for ``align``       |
-+-----------------------------------+----------------------------------------+
++-----------------------------------+-----------------------------------------------+
+| Key Options                       | Option descriptions                           |
++===================================+===============================================+
+| ``-l, --language(s)``             | The language code for story.txt.              |
+|                                   | Specifying multiple comma- or colon-separated |
+|                                   | languages triggers :ref:`g2p-cascade`.        |
+|                                   | (required if input is plain text)             |
++-----------------------------------+-----------------------------------------------+
+| ``-c, --config PATH``             | Use ReadAlong-Studio                          |
+|                                   | configuration file (in JSON                   |
+|                                   | format)                                       |
++-----------------------------------+-----------------------------------------------+
+| ``--g2p-verbose``                 | Display verbose g2p error messages            |
++-----------------------------------+-----------------------------------------------+
+| ``-s, --save-temps``              | Save intermediate stages of                   |
+|                                   | processing and temporary files                |
+|                                   | (dictionary, FSG, tokenization,               |
+|                                   | etc.)                                         |
++-----------------------------------+-----------------------------------------------+
+| ``-f, --force-overwrite``         | Force overwrite output files                  |
+|                                   | (handy if you’re troubleshooting              |
+|                                   | and will be aligning repeatedly)              |
++-----------------------------------+-----------------------------------------------+
+| ``-h, --help``                    | Displays CLI guide for ``align``              |
++-----------------------------------+-----------------------------------------------+
 
 See above for more information on the ``-l, --language`` argument.
 
@@ -267,20 +267,20 @@ a valid ARPABET conversion is obtained. If no valid conversion is
 possible, are error message is printed and alignment is not attempted.
 
 To enable the g2p cascade, provide multiple languages via the ``-l`` switch
-(for plain text input) or add the ``fallback-langs="l2:l3:...`` attribute to
+(for plain text input) or add the ``fallback-langs="l2,l3,...`` attribute to
 any element in the XML file:
 
 .. code-block:: xml
 
-   <s xml:lang="eng" fallback-langs="fra:und">English mixed with français.</s>
+   <s xml:lang="eng" fallback-langs="fra,und">English mixed with français.</s>
 
 These command line examples will set the language to ``fra``, with the g2p cascade
 falling back to ``eng`` and then ``und`` when needed:
 
 .. code-block:: bash
 
-   readalongs prepare -l fra:eng:und myfile.txt myfile.xml
-   readalongs align -l fra:eng:und myfile.txt myfile.wav output-dir
+   readalongs prepare -l fra,eng,und myfile.txt myfile.xml
+   readalongs align -l fra,eng,und myfile.txt myfile.wav output-dir
 
 The "Undetermined" language code: und
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -318,7 +318,7 @@ The following series of commands:
 
 ::
 
-   readalongs prepare -l l1:l2:und file.txt file.xml
+   readalongs prepare -l l1,l2,und file.txt file.xml
    readalongs tokenize file.xml file.tokenized.xml
    readalongs g2p file.tokenized.xml file.g2p.xml
    readalongs align file.g2p.xml file.wav output
@@ -327,7 +327,7 @@ is equivalent to the single command:
 
 ::
 
-   readalongs align -l l1:l2:und file.txt file.wav output
+   readalongs align -l l1,l2,und file.txt file.wav output
 
 except that when running the pipeline as four separate commands, you can
 edit the XML files between each step to make manual adjustments and
