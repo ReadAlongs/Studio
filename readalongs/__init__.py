@@ -10,7 +10,7 @@ The main alignment module is readalongs.align.
 
 import sys
 
-VERSION = "0.1"
+VERSION = "0.2"
 
 if sys.version_info < (3, 7, 0):
     sys.exit(
