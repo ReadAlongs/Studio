@@ -202,6 +202,13 @@ def cli():
     help="OBSOLETE; the input format is now guessedb by extension or contents",
 )
 @click.option(
+    "--lang-no-append-und",
+    is_flag=True,
+    default=False,
+    hidden=True,
+    help="Hidden option to disable to automatic appending of und (Undetermined) to -l",
+)
+@click.option(
     "-l",
     "--language",
     "--languages",
@@ -357,10 +364,13 @@ def align(**kwargs):
             raise click.BadParameter(
                 "No input language specified for plain text input. Please provide the -l/--language switch."
             )
+        languages = kwargs["language"]
+        if not kwargs["lang_no_append_und"] and "und" not in languages:
+            languages.append("und")
         plain_textfile = kwargs["textfile"]
         _, xml_textfile = create_input_tei(
             input_file_name=plain_textfile,
-            text_languages=kwargs["language"],
+            text_languages=languages,
             save_temps=temp_base,
         )
     else:
@@ -403,6 +413,13 @@ def align(**kwargs):
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
 @click.option(
     "-f", "--force-overwrite", is_flag=True, help="Force overwrite output files"
+)
+@click.option(
+    "--lang-no-append-und",
+    is_flag=True,
+    default=False,
+    hidden=True,
+    help="Hidden option to disable to automatic appending of und (Undetermined) to -l",
 )
 @click.option(
     "-l",
@@ -451,9 +468,13 @@ def prepare(**kwargs):
                 out_file = out_file[:-4]
             out_file += ".xml"
 
+    languages = kwargs["language"]
+    if not kwargs["lang_no_append_und"] and "und" not in languages:
+        languages.append("und")
+
     if out_file == "-":
         _, filename = create_input_tei(
-            input_file_handle=input_file, text_languages=kwargs["language"],
+            input_file_handle=input_file, text_languages=languages,
         )
         with io.open(filename, encoding="utf8") as f:
             sys.stdout.write(f.read())
@@ -467,7 +488,7 @@ def prepare(**kwargs):
 
         _, filename = create_input_tei(
             input_file_handle=input_file,
-            text_languages=kwargs["language"],
+            text_languages=languages,
             output_file=out_file,
         )
 
@@ -573,7 +594,8 @@ def g2p(**kwargs):
     ancestors in TOKFILE has the attribute "fallback-langs" containing a comma-
     or colon-separated list of language codes. Provide multiple language codes to
     "readalongs prepare" via its -l option to generate this attribute globally,
-    or add it manually where needed.
+    or add it manually where needed. Undetermined, "und", is automatically
+    added at the end of the language list provided via -l.
 
     With the g2p cascade, if a word cannot be mapped to valid ARPABET with the
     language found in the "xml:lang" attribute, the languages in

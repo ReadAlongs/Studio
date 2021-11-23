@@ -78,7 +78,14 @@ class TestG2pCli(BasicTestCase):
         with open(filename + ".input.txt", "w", encoding="utf8") as f:
             print(text, file=f)
         self.runner.invoke(
-            prepare, ["-l", lang, filename + ".input.txt", filename + ".prepared.xml"]
+            prepare,
+            [
+                "-l",
+                lang,
+                "--lang-no-append-und",
+                filename + ".input.txt",
+                filename + ".prepared.xml",
+            ],
         )
         self.runner.invoke(tokenize, [filename + ".prepared.xml", filename])
 
@@ -196,7 +203,8 @@ class TestG2pCli(BasicTestCase):
             pass
         output_dir = os.path.join(self.tempdir, "aligned")
         results = self.runner.invoke(
-            align, ["-l", "eng", text_file, empty_wav, output_dir]
+            align,
+            ["-l", "eng", text_file, empty_wav, output_dir, "--lang-no-append-und"],
         )
         if self.show_invoke_output:
             print(

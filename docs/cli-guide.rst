@@ -69,10 +69,10 @@ code <https://en.wikipedia.org/wiki/ISO_639-3>`__ as an argument.
 The languages supported by RAS can be listed by running ``readalongs prepare -h``
 and they can also be found in the :ref:`cli-prepare` reference.
 
-So, a full command for a story in Algonquin, with a g2p fallback to
+So, a full command for a story in Algonquin, with an implicit g2p fallback to
 Undetermined, would be something like:
 
-``readalongs prepare -l alq,und Studio/story.txt Studio/story.xml``
+``readalongs prepare -l alq Studio/story.txt Studio/story.xml``
 
 The generated XML will be parsed in to sentences. At this stage you can
 edit the XML to have any modifications, such as adding ``do-not-align``
@@ -275,27 +275,34 @@ any element in the XML file:
    <s xml:lang="eng" fallback-langs="fra,und">English mixed with français.</s>
 
 These command line examples will set the language to ``fra``, with the g2p cascade
-falling back to ``eng`` and then ``und`` when needed:
+falling back to ``eng`` and then ``und`` (see below) when needed.
 
 .. code-block:: bash
 
-   readalongs prepare -l fra,eng,und myfile.txt myfile.xml
-   readalongs align -l fra,eng,und myfile.txt myfile.wav output-dir
+   readalongs prepare -l fra,eng myfile.txt myfile.xml
+   readalongs align -l fra,eng myfile.txt myfile.wav output-dir
 
 The "Undetermined" language code: und
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Notice that the two examples above use ``und`` as the last language in the
+Notice how the sample XML snippet above has ``und`` as the last language in the
 cascade. ``und``, for Undetermined, is a special language mapping that
 uses the definition of all characters in all alphabets that are part of the
 Unicode standard, and
 maps them as if the name of that character was how it is pronounced.
 While crude, this mapping works surprisingly well for the purposes of
 forced alignment, and allows ``readalongs align`` to successfully align
-most text with a few foreign words without any manual intervention. We
-recommend systematically using ``und`` at the end of the cascade. Note
-that adding other languages after ``und`` will have no effect, since
-the Undetermined mapping will map any string to valid ARPABET.
+most text with a few foreign words without any manual intervention.
+
+Since we recommend systematically using ``und`` at the end of the cascade, it
+is now added by default after the languages specified with the ``-l``
+switch to both ``readalongs align`` and ``readalongs prepare``. Note that
+adding other languages after ``und`` will have no effect, since the
+Undetermined mapping will map any string to valid ARPABET.
+
+In the unlikely event that you want to disable adding ``und``, add the hidden
+``--lang-no-append-und`` switch, or delete ``und`` from the ``fallback-langs``
+attribute in your XML input.
 
 Debugging g2p mapping issues
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -318,7 +325,7 @@ The following series of commands:
 
 ::
 
-   readalongs prepare -l l1,l2,und file.txt file.xml
+   readalongs prepare -l l1,l2 file.txt file.xml
    readalongs tokenize file.xml file.tokenized.xml
    readalongs g2p file.tokenized.xml file.g2p.xml
    readalongs align file.g2p.xml file.wav output
@@ -327,7 +334,7 @@ is equivalent to the single command:
 
 ::
 
-   readalongs align -l l1,l2,und file.txt file.wav output
+   readalongs align -l l1,l2 file.txt file.wav output
 
 except that when running the pipeline as four separate commands, you can
 edit the XML files between each step to make manual adjustments and
