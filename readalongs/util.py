@@ -1,8 +1,20 @@
-import g2p.mappings.langs as g2p_langs
-from networkx import has_path
+import re
+from collections.abc import Iterable
+from itertools import tee
+
+import click
 
 LANGS = None
 LANG_NAMES = None
+
+
+def getLangsDeferred() -> Iterable:
+    """Lazilly get the list of language codes supported by g2p library
+
+    Yields an Iterable in such a way that the g2p database is only loaded when
+    the results are iterated over, rather than when this function is called.
+    """
+    yield from getLangs()[0]
 
 
 def getLangs():
@@ -21,6 +33,12 @@ def getLangs():
         # Cache the results so we only calculate this information once.
         return LANGS, LANG_NAMES
     else:
+        # Imports deferred to when the function is actually first called, because
+        # they load the g2p database and take a fair bit of time. And importing
+        # networkx is also quite expensive.
+        import g2p.mappings.langs as g2p_langs
+        from networkx import has_path
+
         # LANGS_AVAILABLE in g2p lists langs inferred by the directory structure of
         # g2p/mappings/langs, but in ReadAlongs, we need all input languages to any mappings.
         # E.g., for Michif, we need to allow crg-dv and crg-tmd, but not crg, which is what
@@ -58,3 +76,40 @@ def getLangs():
         # Sort LANGS so the -h messages list them alphabetically
         LANGS = sorted(LANGS)
         return LANGS, LANG_NAMES
+
+
+class JoinerCallback:
+    """Command-line parameter validation for multiple-value options.
+
+    The values can be repeated by giving the option multiple times on the
+    command line, or by joining them with strings matching joiner_re (colon or
+    comma, arbitrarily mixed, by default).
+
+    Matching is case insensitive.
+    """
+
+    def __init__(self, valid_values: Iterable, joiner_re=r"[,:]"):
+        self.valid_values = valid_values
+        self.joiner_re = joiner_re
+
+    # This signature meets the requirements of click.option's callback parameter:
+    def __call__(self, _ctx, _param, value_groups):
+        # Defer potentially expensive expansion of valid_values until we really need it.
+        self.valid_values, valid_values_iterator = tee(self.valid_values, 2)
+        lc_valid_values = [valid_value.lower() for valid_value in valid_values_iterator]
+        results = [
+            value.strip()
+            for value_group in value_groups
+            for value in re.split(self.joiner_re, value_group)
+        ]
+        for value in results:
+            if value.lower() not in lc_valid_values:
+                raise click.BadParameter(
+                    f"'{value}' is not one of {self.quoted_list(lc_valid_values)}."
+                )
+        return results
+
+    @staticmethod
+    def quoted_list(values):
+        """Display a list of values quoted, for easy reading in error messages."""
+        return ", ".join("'" + v + "'" for v in values)

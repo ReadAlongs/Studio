@@ -13,7 +13,6 @@ CLI commands implemented in this file:
 import io
 import json
 import os
-import re
 import sys
 from tempfile import TemporaryFile
 
@@ -22,15 +21,12 @@ from lxml import etree
 
 from readalongs._version import __version__
 from readalongs.align import align_audio, create_input_tei, save_readalong
-from readalongs.app import app
 from readalongs.log import LOGGER
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import save_xml, write_xml
-from readalongs.util import getLangs
-
-LANGS, LANG_NAMES = getLangs()
+from readalongs.util import JoinerCallback, getLangs, getLangsDeferred
 
 SUPPORTED_OUTPUT_FORMATS = {
     "eaf": "ELAN file",
@@ -48,6 +44,9 @@ SUPPORTED_OUTPUT_FORMATS_DESC = ", ".join(
 
 def create_app():
     """Returns the app"""
+    # defer expensive import to do it only if and when it's actually needed
+    from readalongs.app import app
+
     return app
 
 
@@ -69,37 +68,6 @@ def get_click_file_name(click_file):
     except AttributeError:
         name = "-"
     return "-" if name == "<stdin>" else name
-
-
-def quoted_list(values):
-    """Display a list of values quoted, for easy reading in error messages."""
-    return ", ".join("'" + v + "'" for v in values)
-
-
-def joiner_callback(valid_values, joiner_re=r"[,:]"):
-    """Command-line parameter validation for multiple-value options.
-
-    The values can be repeated by giving the option multiple times on the
-    command line, or by joining them with joiner (colon and comma by default).
-
-    Matching is case insensitive.
-    """
-    lc_valid_values = [valid_value.lower() for valid_value in valid_values]
-
-    def _callback(ctx, param, value_groups):
-        results = [
-            value.strip()
-            for value_group in value_groups
-            for value in re.split(joiner_re, value_group)
-        ]
-        for value in results:
-            if value.lower() not in lc_valid_values:
-                raise click.BadParameter(
-                    f"'{value}' is not one of {quoted_list(valid_values)}."
-                )
-        return results
-
-    return _callback
 
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -181,7 +149,7 @@ def cli():
     "-o",
     "--output-formats",
     multiple=True,
-    callback=joiner_callback(SUPPORTED_OUTPUT_FORMATS),
+    callback=JoinerCallback(SUPPORTED_OUTPUT_FORMATS),
     help=(
         "Comma- or colon-separated list of additional output file formats to export to. "
         "The text is always exported as XML and alignments as SMIL, but "
@@ -213,7 +181,7 @@ def cli():
     "--language",
     "--languages",
     multiple=True,
-    callback=joiner_callback(LANGS),
+    callback=JoinerCallback(getLangsDeferred()),
     help=(
         "The language code(s) for text in TEXTFILE (use only with plain text input); "
         "multiple codes can be joined by ',' or ':', or by repeating the option, "
@@ -362,7 +330,8 @@ def align(**kwargs):
     if textfile_is_plaintext:
         if not kwargs["language"]:
             raise click.BadParameter(
-                "No input language specified for plain text input. Please provide the -l/--language switch."
+                "No input language specified for plain text input. "
+                "Please provide the -l/--language switch."
             )
         languages = kwargs["language"]
         if not kwargs["lang_no_append_und"] and "und" not in languages:
@@ -427,7 +396,7 @@ def align(**kwargs):
     "--languages",
     required=True,
     multiple=True,
-    callback=joiner_callback(LANGS),
+    callback=JoinerCallback(getLangsDeferred()),
     help=(
         "The language code(s) for text in PLAINTEXTFILE; "
         "multiple codes can be joined by ',' or ':', or by repeating the option, "
@@ -677,5 +646,6 @@ def langs():
     """List all the language codes and names currently supported by g2p
     that can be used for ReadAlongs creation.
     """
-    for lang in LANGS:
-        print("%-8s\t%s" % (lang, LANG_NAMES[lang]))
+    lang_codes, lang_names = getLangs()
+    for lang in lang_codes:
+        print("%-8s\t%s" % (lang, lang_names[lang]))

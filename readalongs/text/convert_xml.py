@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 ###########################################################################
 #
@@ -36,25 +35,10 @@
 # TODO: Document functions
 ############################################################################
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import argparse
 import copy
 import os
 import re
-
-from g2p.mappings.langs.utils import is_arpabet
-from g2p.transducer import CompositeTransductionGraph, TransductionGraph
-
-try:
-    # g2p > 0.5.20211029 uses its own exceptions for make_g2p errors
-    from g2p import InvalidLanguageCode, NoPath, make_g2p
-except ImportError:
-    # g2p <= 0.5.20211029 used NetworkXNoPath and FileNotFoundError
-    from g2p import NetworkXNoPath as NoPath
-    from g2p import make_g2p
-
-    InvalidLanguageCode = FileNotFoundError
 
 from readalongs.log import LOGGER
 from readalongs.text.lexicon_g2p import getLexiconG2P
@@ -67,55 +51,82 @@ from readalongs.text.util import (
 )
 from readalongs.util import getLangs
 
-LANGS, LANG_NAMES = getLangs()
 
-
-def convert_word(word: str, lang: str, output_orthography: str, verbose_warnings: bool):
-    if lang == "eng":
-        # Hack to use old English LexiconG2P
-        # Note: adding eng_ prefix to vars that are used in both blocks to make mypy
-        # happy. Since the two sides of the if and in the same scope, it complains about
-        # type checking otherwise.
-        assert output_orthography == "eng-arpabet"
-        eng_tg = False
-        eng_converter = getLexiconG2P(
-            os.path.join(os.path.dirname(LEXICON_PATH), "cmu_sphinx.metadata.json")
-        )
-        try:
-            eng_text, eng_indices = eng_converter.convert(word)
-            eng_valid = is_arpabet(eng_text)
-        except KeyError as e:
-            if verbose_warnings:
-                LOGGER.warning(f'Could not g2p "{word}" as English: {e.args[0]}')
-            eng_text = word
-            eng_indices = []
-            eng_valid = False
-        return eng_converter, eng_tg, eng_text, eng_indices, eng_valid
-    else:
-        try:
-            converter = make_g2p(lang, output_orthography)
-        except InvalidLanguageCode as e:
-            raise ValueError(
-                f'Could not g2p "{word}" as "{lang}": invalid language code. '
-                f"Use one of {LANGS}"
-            ) from e
-        except NoPath as e:
-            raise ValueError(
-                f'Count not g2p "{word}" as "{lang}": no path to "{output_orthography}". '
-                f"Use one of {LANGS}"
-            ) from e
-        tg = converter(word)
-        text = tg.output_string.strip()
-        indices = tg.edges
-        valid = converter.check(tg, shallow=True)
-        if not valid and verbose_warnings:
-            converter.check(tg, shallow=False, display_warnings=verbose_warnings)
-        return converter, tg, text, indices, valid
-
-
-def convert_words(
+def convert_words(  # noqa: C901
     xml, word_unit="w", output_orthography="eng-arpabet", verbose_warnings=False,
 ):
+    """Helper for convert_xml(), with the same Args and Return values, except
+    xml is modified in place returned itself, instead of making a copy.
+    """
+
+    # Defer expensive import of g2p to do them only if and when they are needed
+    from g2p.mappings.langs.utils import is_arpabet
+
+    try:
+        # g2p > 0.5.20211029 uses its own exceptions for make_g2p errors
+        from g2p import InvalidLanguageCode, NoPath, make_g2p
+    except ImportError:
+        # g2p <= 0.5.20211029 used NetworkXNoPath and FileNotFoundError
+        from g2p import NetworkXNoPath as NoPath
+        from g2p import make_g2p
+
+        InvalidLanguageCode = FileNotFoundError
+
+    # Tuck this function inside convert_words(), to share common arguments and imports
+    def convert_word(word: str, lang: str):
+        """Convert one individual word through the specified cascade of g2p mappings.
+
+        Args:
+            word (str): input word to map through g2p
+            lang (str): the language code to use to attempt the g2p mapping
+
+        Returns:
+            g2p_text (str), valid(bool):
+              - g2p_text is the word mapping from lang to output_orthography
+              - valid is a flag indicating whether g2p conversion yielded valid
+                output, which includes making sure IPA output was valid IPA and
+                ARPABET output was valid ARPABET, at all intermediate steps as
+                well as in the final output.
+        """
+
+        if lang == "eng":
+            # Hack to use old English LexiconG2P
+            # Note: adding eng_ prefix to vars that are used in both blocks to make mypy
+            # happy. Since the two sides of the if and in the same scope, it complains about
+            # type checking otherwise.
+            assert output_orthography == "eng-arpabet"
+            eng_converter = getLexiconG2P(
+                os.path.join(os.path.dirname(LEXICON_PATH), "cmu_sphinx.metadata.json")
+            )
+            try:
+                eng_text, _ = eng_converter.convert(word)
+                eng_valid = is_arpabet(eng_text)
+            except KeyError as e:
+                if verbose_warnings:
+                    LOGGER.warning(f'Could not g2p "{word}" as English: {e.args[0]}')
+                eng_text = word
+                eng_valid = False
+            return eng_text, eng_valid
+        else:
+            try:
+                converter = make_g2p(lang, output_orthography)
+            except InvalidLanguageCode as e:
+                raise ValueError(
+                    f'Could not g2p "{word}" as "{lang}": invalid language code. '
+                    f"Use one of {getLangs()[0]}"
+                ) from e
+            except NoPath as e:
+                raise ValueError(
+                    f'Count not g2p "{word}" as "{lang}": no path to "{output_orthography}". '
+                    f"Use one of {getLangs()[0]}"
+                ) from e
+            tg = converter(word)
+            text = tg.output_string.strip()
+            valid = converter.check(tg, shallow=True)
+            if not valid and verbose_warnings:
+                converter.check(tg, shallow=False, display_warnings=verbose_warnings)
+            return text, valid
+
     all_g2p_valid = True
     for word in xml.xpath(".//" + word_unit):
         # if the word was already g2p'd, skip and keep existing ARPABET representation
@@ -134,9 +145,7 @@ def convert_words(
         g2p_fallbacks = get_attrib_recursive(word, "fallback-langs")
         text_to_g2p = word.text
         try:
-            converter, tg, g2p_text, indices, valid = convert_word(
-                text_to_g2p, g2p_lang.strip(), output_orthography, verbose_warnings
-            )
+            g2p_text, valid = convert_word(text_to_g2p, g2p_lang.strip())
             if not valid:
                 # This is where we apply the g2p cascade
                 for lang in re.split(r"[,:]", g2p_fallbacks) if g2p_fallbacks else []:
@@ -145,9 +154,7 @@ def convert_words(
                         f"Trying fallback: {lang}."
                     )
                     g2p_lang = lang.strip()
-                    converter, tg, g2p_text, indices, valid = convert_word(
-                        text_to_g2p, g2p_lang, output_orthography, verbose_warnings
-                    )
+                    g2p_text, valid = convert_word(text_to_g2p, g2p_lang)
                     if valid:
                         word.attrib["effective-g2p-lang"] = g2p_lang
                         break
@@ -177,6 +184,20 @@ def convert_words(
 def convert_xml(
     xml, word_unit="w", output_orthography="eng-arpabet", verbose_warnings=False,
 ):
+    """Convert all the words in XML though g2p, putting the results in attribute ARPABET
+
+    Args:
+        xml (etree): input XML
+        word_unit (str): which XML element should be considered the unit to g2p
+        output_orthography (str): target language for g2p mappings
+        verbose_warnings (bool): whether (very!) verbose g2p errors should be produced
+
+    Returns:
+        xml (etree), valid (bool):
+          - xml is a deepcopy of the input xml with the ARPABET attribute added
+            to each word_unit element;
+          - valid is a flag indicating whether all words were g2p'd successfully
+    """
     xml_copy = copy.deepcopy(xml)
     xml_copy, valid = convert_words(
         xml_copy, word_unit, output_orthography, verbose_warnings

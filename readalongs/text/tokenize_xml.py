@@ -35,7 +35,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import argparse
 from copy import deepcopy
 
-from g2p.mappings.tokenizer import get_tokenizer
 from lxml import etree
 
 from readalongs.log import LOGGER
@@ -48,8 +47,20 @@ from readalongs.text.util import (
 )
 
 
-class XMLTokenizer:
-    def add_word_children(self, element):
+def tokenize_xml_in_place(xml):
+    """Find all words under xml, and wrap them in place in a "w" XML element
+
+    Args:
+        xml (etree): xml to modify in place
+
+    Returns:
+        etree: tokenized xml
+    """
+
+    from g2p.mappings.tokenizer import get_tokenizer  # Defer expensive import
+
+    def add_word_children(element):
+        """Recursive helper for tokenize_xml_in_place()"""
         tag = etree.QName(element.tag).localname
         nsmap = element.nsmap if hasattr(element, "nsmap") else element.getroot().nsmap
         if tag in ["w", "teiHeader", "head"]:  # don't do anything to existing words!
@@ -88,7 +99,7 @@ class XMLTokenizer:
             if child.tag is etree.Comment:
                 new_element.append(child)
                 continue
-            new_child_element = self.add_word_children(child)
+            new_child_element = add_word_children(child)
             new_element.append(new_child_element)
             if child.tail:
                 # new_element.tail = ''  # in case it's a copy
@@ -104,9 +115,11 @@ class XMLTokenizer:
 
         return new_element
 
+    return add_word_children(xml)
+
 
 def tokenize_xml(xml):
-    tokenizer = XMLTokenizer()
+    """Returns a deep copy of xml with all words wrapped in a "w" XML element"""
     xml = deepcopy(xml)
     # FIXME: different langs have different normalizations, is this necessary?
     unicode_normalize_xml(xml)
@@ -115,7 +128,7 @@ def tokenize_xml(xml):
         LOGGER.info("Words (<w>) already present; skipping tokenization")
         return xml
     LOGGER.info("Words (<w>) not present; tokenizing")
-    return tokenizer.add_word_children(xml)
+    return tokenize_xml_in_place(xml)
 
 
 def go(input_filename, output_filename):

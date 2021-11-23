@@ -5,11 +5,13 @@
 import itertools
 from unittest import TestCase, main
 
+import click
 from lxml import etree
 from test_dna_utils import segments_from_pairs
 
 from readalongs.align import split_silences
 from readalongs.text.util import get_attrib_recursive, get_lang_attrib, parse_time
+from readalongs.util import JoinerCallback
 
 
 class TestMisc(TestCase):
@@ -150,6 +152,14 @@ class TestMisc(TestCase):
         # documentation, as it's what helped me figure out why I needed
         # element.xpath("./@"+attrib) instead of element.attrib[attrib]
         # get_attrib_recursive() --EJJ Nov 2021
+
+    def test_joiner_callback(self):
+        cb = JoinerCallback(iter("qwer"))  # iterable over four characters
+        self.assertEqual(cb(None, None, ["e:r"]), ["e", "r"])
+        self.assertEqual(cb(None, None, ["q,w"]), ["q", "w"])
+        with self.assertRaises(click.BadParameter):
+            cb(None, None, ["q:e", "a,w"])
+        self.assertEqual(cb(None, None, ["r:q", "w"]), ["r", "q", "w"])
 
 
 if __name__ == "__main__":

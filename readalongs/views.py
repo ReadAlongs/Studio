@@ -26,8 +26,6 @@ from readalongs.app import app, socketio
 from readalongs.log import LOGGER
 from readalongs.util import getLangs
 
-LANGS, LANG_NAMES = getLangs()
-
 ALLOWED_TEXT = ["txt", "xml", "docx"]
 ALLOWED_AUDIO = ["wav", "mp3"]
 ALLOWED_G2P = ["csv", "xlsx"]
@@ -142,10 +140,11 @@ def steps(step):
         session.clear()
         session["temp_dir"] = mkdtemp()
         temp_dir = session["temp_dir"]
+        langs, lang_names = getLangs()
         return render_template(
             "upload.html",
             uploaded=uploaded_files(temp_dir),
-            maps=[{"code": m, "name": LANG_NAMES[m]} for m in LANGS],
+            maps=[{"code": m, "name": lang_names[m]} for m in langs],
         )
     elif step == 2:
         return render_template("preview.html")

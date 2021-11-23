@@ -7,7 +7,7 @@
 #
 # In order to facilitate easy packaging and deployment of readalongs,
 # the make_package module takes a standard output directory from `readalongs align`
-# and outputs a single html file with assets enceded using base64 in-line in the html.
+# and outputs a single html file with assets encoded using base64 in-line in the html.
 #
 # Note, this is not the optimal deployment. The ReadAlongs-WebComponent is already very portable
 # and should be used directly as a webcomponent. However, in some situations a single-file
@@ -20,7 +20,6 @@ import os
 from base64 import b64encode
 from mimetypes import guess_type
 
-import requests
 from lxml import etree
 
 from readalongs.log import LOGGER
@@ -57,6 +56,8 @@ def encode_from_path(path: str) -> str:
     Returns:
         str: base64 string with data and mime signature
     """
+    import requests  # Defer expensive import
+
     with open(path, "rb") as f:
         path_bytes = f.read()
     if path.endswith("xml"):
@@ -106,6 +107,8 @@ def create_web_component_html(
     subheader="Subheader goes here",
     theme="light",
 ) -> str:
+    import requests  # Defer expensive import
+
     js = requests.get(JS_BUNDLE_URL)
     fonts = requests.get(FONTS_BUNDLE_URL)
     if js.status_code != 200:
