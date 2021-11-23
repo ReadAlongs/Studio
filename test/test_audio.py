@@ -70,7 +70,7 @@ class TestAudio(BasicTestCase):
         # Align
         input_text_path = os.path.join(self.data_dir, "audio_sample.txt")
         input_audio_path = os.path.join(self.data_dir, "audio_sample.ogg")
-        flags = ["-i", "-l", "eng"]
+        flags = ["-l", "eng"]
         output_path = os.path.join(self.tempdir, "output")
         log = self.align(input_text_path, input_audio_path, output_path, flags)
         # LOGGER.info(str(log))
@@ -94,7 +94,7 @@ class TestAudio(BasicTestCase):
         # Align
         input_text_path = os.path.join(self.data_dir, "audio_sample.txt")
         input_audio_path = audio_output_path
-        flags = ["-i", "-l", "eng"]
+        flags = ["-l", "eng"]
         output_path = os.path.join(self.tempdir, "output_removed")
         log = self.align(input_text_path, input_audio_path, output_path, flags)
         # LOGGER.info(str(log))
@@ -118,7 +118,7 @@ class TestAudio(BasicTestCase):
         # Align
         input_text_path = os.path.join(self.data_dir, "audio_sample.txt")
         input_audio_path = audio_output_path
-        flags = ["-i", "-l", "eng", "-b"]
+        flags = ["-l", "eng", "-b"]
         output_path = os.path.join(self.tempdir, "output_muted")
         log = self.align(input_text_path, input_audio_path, output_path, flags)
         # LOGGER.info(str(log))

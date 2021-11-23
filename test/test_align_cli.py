@@ -12,7 +12,14 @@ from basic_test_case import BasicTestCase
 from lxml.html import fromstring
 from sound_swallower_stub import SoundSwallowerStub
 
-from readalongs.cli import align
+from readalongs.cli import align, langs
+
+
+def write_file(filename: str, file_contents: str) -> str:
+    """Write file_contents to file filename, and return its name (filename)"""
+    with open(filename, mode="w", encoding="utf8") as f:
+        f.write(file_contents)
+    return filename
 
 
 class TestAlignCli(BasicTestCase):
@@ -27,10 +34,11 @@ class TestAlignCli(BasicTestCase):
         results = self.runner.invoke(
             align,
             [
-                "-i",
                 "-s",
-                "-C",
-                "-t",
+                "-o",
+                "vtt",
+                "-o",  # tests that we can use -o more than once
+                "srt:TextGrid,eaf",  # tests that we can give -o multiple values, separated by : or ,
                 "-l",
                 "fra",
                 "--config",
@@ -87,7 +95,8 @@ class TestAlignCli(BasicTestCase):
         results_dna = self.runner.invoke(
             align,
             [
-                "-x",
+                "-o",
+                "xhtml",
                 "-s",
                 "--config",
                 join(self.data_dir, "sample-config.json"),
@@ -104,7 +113,7 @@ class TestAlignCli(BasicTestCase):
         )
         self.assertTrue(
             exists(join(output, "output.xhtml")),
-            "successful alignment with -x should have created output.xhtml",
+            "successful alignment with -o xhtml should have created output.xhtml",
         )
         self.assertIn("Please copy image-for-page1.jpg to ", results_dna.stdout)
         self.assertFalse(
@@ -114,7 +123,7 @@ class TestAlignCli(BasicTestCase):
 
         # Functionally the same as self.assertTrue(filecmp.cmp(f1, f2)), but show where
         # the differences are if the files are not identical
-        # Since f2 was created using -x, we need to substitute .xhtml back to .xml during
+        # Since f2 was created using -o xhtml, we need to substitute .xhtml back to .xml during
         # the comparison of the contents of the .smil files.
         with open(join(output1, "output.smil"), encoding="utf8") as f1, open(
             join(output, "output.smil"), encoding="utf8"
@@ -153,7 +162,7 @@ class TestAlignCli(BasicTestCase):
         )
 
     def test_align_with_package(self):
-        """Test creating a single-file package, with --html"""
+        """Test creating a single-file package, with -o html"""
 
         output = join(self.tempdir, "html")
         with SoundSwallowerStub("t0b0d0p0s0w0:920:1620", "t0b0d0p0s1w0:1620:1690"):
@@ -163,7 +172,8 @@ class TestAlignCli(BasicTestCase):
                     join(self.data_dir, "ej-fra-package.xml"),
                     join(self.data_dir, "ej-fra.m4a"),
                     output,
-                    "--html",
+                    "-o",
+                    "html",
                 ],
             )
         # print(results_html.output)
@@ -212,28 +222,29 @@ class TestAlignCli(BasicTestCase):
         self.assertNotEqual(results, 0)
         self.assertIn("Cannot write into output folder", results.output)
 
-    def test_align_help(self):
-        """Validates that readalongs align -h lists all in-langs that can map to eng-arpabet"""
-        results = self.runner.invoke(align, "-h")
+    def test_langs_cmd(self):
+        """Validates that readalongs langs lists all in-langs that can map to eng-arpabet"""
+        results = self.runner.invoke(langs)
         self.assertEqual(results.exit_code, 0)
-        self.assertIn("|crg-tmd|", results.stdout)
-        self.assertIn("|crg-dv|", results.stdout)
-        self.assertNotIn("|crg|", results.stdout)
+        self.assertIn("crg-tmd", results.stdout)
+        self.assertIn("crg-dv ", results.stdout)
+        self.assertNotIn("crg ", results.stdout)
+        self.assertNotIn("fn-unicode", results.stdout)
 
     def test_align_english(self):
         """Validates that LexiconG2P works for English language alignment"""
 
-        input_text = "This is some text that we will run through the English lexicon grapheme to morpheme approach."
-        input_filename = join(self.tempdir, "input")
-        with open(input_filename, "w", encoding="utf8") as f:
-            f.write(input_text)
+        input_filename = write_file(
+            join(self.tempdir, "input"),
+            "This is some text that we will run through the English lexicon "
+            "grapheme to morpheme approach.",
+        )
         output_dir = join(self.tempdir, "eng-output")
         # Run align from plain text
         with SoundSwallowerStub("word:0:1000"):
             self.runner.invoke(
                 align,
                 [
-                    "-i",
                     "-s",
                     "-l",
                     "eng",
@@ -317,7 +328,6 @@ class TestAlignCli(BasicTestCase):
         results = self.runner.invoke(
             align,
             [
-                "-i",
                 join(self.data_dir, "ej-fra.txt"),
                 join(self.data_dir, "ej-fra.m4a"),
                 join(self.tempdir, "out-missing-l"),
@@ -356,6 +366,100 @@ class TestAlignCli(BasicTestCase):
             "Alignment produced a different number of segments and tokens than were in the input.",
             results.output,
         )
+
+    def test_infer_plain_text_or_xml(self):
+        """align -i is obsolete, now we infer plain text vs XML; test that!"""
+
+        # plain text with guess by contents
+        infile1 = write_file(join(self.tempdir, "infile1"), "some plain text")
+        with SoundSwallowerStub("word:0:1"):
+            results = self.runner.invoke(
+                align,
+                [
+                    infile1,
+                    join(self.data_dir, "noise.mp3"),
+                    join(self.tempdir, "outdir1"),
+                ],
+            )
+        self.assertNotEqual(results.exit_code, 0)
+        # This error message confirms it's being processed as plain text
+        self.assertIn("No input language specified for plain text", results.output)
+
+        # plain text by extension
+        infile2 = write_file(join(self.tempdir, "infile2.txt"), "<?xml but .txt")
+        with SoundSwallowerStub("word:0:1"):
+            results = self.runner.invoke(
+                align,
+                [
+                    infile2,
+                    join(self.data_dir, "noise.mp3"),
+                    join(self.tempdir, "outdir2"),
+                ],
+            )
+        self.assertNotEqual(results.exit_code, 0)
+        # This error message confirms it's being processed as plain text
+        self.assertIn("No input language specified for plain text", results.output)
+
+        # XML with guess by contents
+        infile3 = write_file(
+            join(self.tempdir, "infile3"),
+            "<?xml version='1.0' encoding='utf-8'?><text>blah blah</text>",
+        )
+        with SoundSwallowerStub("word:0:1"):
+            results = self.runner.invoke(
+                align,
+                [
+                    infile3,
+                    join(self.data_dir, "noise.mp3"),
+                    join(self.tempdir, "outdir3"),
+                ],
+            )
+        self.assertEqual(results.exit_code, 0)
+
+        # XML with guess by contents, but with content error
+        infile4 = write_file(
+            join(self.tempdir, "infile4"),
+            "<?xml version='1.0' encoding='utf-8'?><text>blah blah</bad_tag>",
+        )
+        with SoundSwallowerStub("word:0:1"):
+            results = self.runner.invoke(
+                align,
+                [
+                    infile4,
+                    join(self.data_dir, "noise.mp3"),
+                    join(self.tempdir, "outdir4"),
+                ],
+            )
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("Error parsing XML", results.output)
+
+        # XML by file extension
+        infile5 = write_file(join(self.tempdir, "infile5.xml"), "Not XML!")
+        with SoundSwallowerStub("word:0:1"):
+            results = self.runner.invoke(
+                align,
+                [
+                    infile5,
+                    join(self.data_dir, "noise.mp3"),
+                    join(self.tempdir, "outdir5"),
+                ],
+            )
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("Error parsing XML", results.output)
+
+        # Giving -i switch generates an obsolete-switch error message
+        with SoundSwallowerStub("word:0:1"):
+            results = self.runner.invoke(
+                align,
+                [
+                    "-i",
+                    infile5,
+                    join(self.data_dir, "noise.mp3"),
+                    join(self.tempdir, "outdir6"),
+                ],
+            )
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("The -i option is obsolete.", results.output)
 
 
 if __name__ == "__main__":

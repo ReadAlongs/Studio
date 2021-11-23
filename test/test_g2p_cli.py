@@ -7,9 +7,11 @@ from unittest import main
 
 from basic_test_case import BasicTestCase
 from lxml import etree
+from sound_swallower_stub import SoundSwallowerStub
 
 from readalongs.align import align_audio
 from readalongs.cli import align, g2p, prepare, tokenize
+from readalongs.log import LOGGER
 from readalongs.text.convert_xml import convert_xml
 
 
@@ -40,15 +42,6 @@ class TestG2pCli(BasicTestCase):
         results = self.runner.invoke(g2p, ["-f", input_file, g2p_file])
         # print(f"g2p results.output='{results.output}'")
         self.assertEqual(results.exit_code, 0)
-
-    def test_bad_fallback_lang(self):
-        """readalongs g2p with invalid --g2p-fallback option"""
-        input_file = os.path.join(self.data_dir, "fra-tokenized.xml")
-        results = self.runner.invoke(
-            g2p, ["--g2p-fallback=fra:notalang:und", input_file, "-"]
-        )
-        self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("Invalid value: g2p fallback lang", results.output)
 
     def test_bad_xml_input(self):
         """readalongs g2p with invalid XML input"""
@@ -85,7 +78,14 @@ class TestG2pCli(BasicTestCase):
         with open(filename + ".input.txt", "w", encoding="utf8") as f:
             print(text, file=f)
         self.runner.invoke(
-            prepare, ["-l", lang, filename + ".input.txt", filename + ".prepared.xml"]
+            prepare,
+            [
+                "-l",
+                lang,
+                "--lang-no-append-und",
+                filename + ".input.txt",
+                filename + ".prepared.xml",
+            ],
         )
         self.runner.invoke(tokenize, [filename + ".prepared.xml", filename])
 
@@ -105,7 +105,11 @@ class TestG2pCli(BasicTestCase):
         # self.assertTrue(isinstance(results.exception, KeyError))
 
         # with a fall back to und, it works
-        results = self.runner.invoke(g2p, ["--g2p-fallback", "und", tok_file, "-"])
+        tok_file_with_fallback = os.path.join(self.tempdir, "fallback.xml")
+        self.write_prepare_tokenize(
+            "This is a froobnelicious OOV.", "eng:und", tok_file_with_fallback
+        )
+        results = self.runner.invoke(g2p, [tok_file_with_fallback, "-"])
         if self.show_invoke_output:
             print(
                 f"test_english_oov with fallback: g2p "
@@ -132,10 +136,12 @@ class TestG2pCli(BasicTestCase):
         self.assertIn("could not be g2p", results.output)
 
         # with a fall back to und, it works
-        g2p_file2 = os.path.join(self.tempdir, "g2p-fallback.xml")
-        results = self.runner.invoke(
-            g2p, ["--g2p-fallback", "und", tok_file, g2p_file2]
+        tok_file2 = os.path.join(self.tempdir, "tok2.xml")
+        self.write_prepare_tokenize(
+            "Le ñ n'est pas dans l'alphabet français.", "fra:und", tok_file2
         )
+        g2p_file2 = os.path.join(self.tempdir, "g2p-fallback.xml")
+        results = self.runner.invoke(g2p, [tok_file2, g2p_file2])
         if self.show_invoke_output:
             print(
                 f"test_french_oov with fallback: g2p "
@@ -149,10 +155,10 @@ class TestG2pCli(BasicTestCase):
         tok_file = os.path.join(self.tempdir, "text.tokenized.xml")
         g2p_file = os.path.join(self.tempdir, "text.g2p.xml")
         self.write_prepare_tokenize(
-            "In French été works but Nunavut ᓄᓇᕗᑦ does not.", "eng", tok_file
+            "In French été works but Nunavut ᓄᓇᕗᑦ does not.", "eng:fra:iku", tok_file
         )
         # Here we also test generating the output filename from the input filename
-        results = self.runner.invoke(g2p, ["--g2p-fallback", "fra:iku", tok_file])
+        results = self.runner.invoke(g2p, [tok_file])
         if self.show_invoke_output:
             print(
                 f"test_three_way_fallback: g2p "
@@ -166,8 +172,7 @@ class TestG2pCli(BasicTestCase):
 
         # Run with verbose output and look for the warning messages
         results = self.runner.invoke(
-            g2p,
-            ["--g2p-fallback=fra:iku", "--g2p-verbose", tok_file, g2p_file + "verbose"],
+            g2p, ["--g2p-verbose", tok_file, g2p_file + "verbose"],
         )
         if self.show_invoke_output:
             print(
@@ -180,7 +185,11 @@ class TestG2pCli(BasicTestCase):
         self.assertIn("not fully valid eng-arpabet", results.output)
 
         # this text also works with "und", now that we use unidecode
-        results = self.runner.invoke(g2p, ["--g2p-fallback=und", tok_file, "-"])
+        tok_file2 = os.path.join(self.tempdir, "text.tokenized2.xml")
+        self.write_prepare_tokenize(
+            "In French été works but Nunavut ᓄᓇᕗᑦ does not.", "eng:und", tok_file2
+        )
+        results = self.runner.invoke(g2p, [tok_file2, "-"])
         self.assertEqual(results.exit_code, 0)
         self.assertIn("Trying fallback: und", results.output)
 
@@ -194,7 +203,8 @@ class TestG2pCli(BasicTestCase):
             pass
         output_dir = os.path.join(self.tempdir, "aligned")
         results = self.runner.invoke(
-            align, ["-l", "eng", "-i", text_file, empty_wav, output_dir]
+            align,
+            ["-l", "eng", text_file, empty_wav, output_dir, "--lang-no-append-und"],
         )
         if self.show_invoke_output:
             print(
@@ -205,19 +215,19 @@ class TestG2pCli(BasicTestCase):
         self.assertNotEqual(results.exit_code, 0)
         self.assertIn("could not be g2p", results.output)
 
-        results = self.runner.invoke(
-            align,
-            [
-                "-l",
-                "eng",
-                "-i",
-                "-f",
-                "--g2p-fallback=fra:iku",
-                text_file,
-                empty_wav,
-                output_dir,
-            ],
-        )
+        with SoundSwallowerStub("t0b0d0p0s0w0:920:1620", "t0b0d0p0s1w0:1620:1690"):
+            results = self.runner.invoke(
+                align,
+                [
+                    "-l",
+                    "eng",  # lang 1 is eng
+                    "-f",
+                    "--language=fra:iku",  # fallback langs are fra and iku
+                    text_file,
+                    os.path.join(self.data_dir, "noise.mp3"),
+                    output_dir,
+                ],
+            )
         if self.show_invoke_output:
             print(
                 f"align with wrong language, plus fallback: "
@@ -226,11 +236,11 @@ class TestG2pCli(BasicTestCase):
             )
         self.assertIn("Trying fallback: fra", results.output)
         self.assertIn("Trying fallback: iku", results.output)
-        # We get the error about reading the audio file only if g2p succeeded:
-        self.assertIn("Error reading audio file", results.output)
+        # We get the found segments printed only if g2p succeeded:
+        self.assertIn("Segment: t0b0d0p0s0w0", results.output)
 
     def test_with_stdin(self):
-        """readalogns g2p running with stdin as input"""
+        """readalongs g2p running with stdin as input"""
         input_file = os.path.join(self.data_dir, "fra-tokenized.xml")
         with open(input_file, encoding="utf8") as f:
             inputtext = f.read()
@@ -266,12 +276,16 @@ class TestG2pCli(BasicTestCase):
         """readalongs align working on previously g2p'd text"""
         text_file = os.path.join(self.data_dir, "mixed-langs.tokenized.xml")
         audio_file = os.path.join(self.data_dir, "ej-fra.m4a")
-        _ = align_audio(
-            text_file, audio_file, save_temps=os.path.join(self.tempdir, "foo")
-        )
+        with SoundSwallowerStub("t0b0d0p0s0w0:920:1620", "t0b0d0p0s1w0:1620:1690"):
+            _ = align_audio(
+                text_file, audio_file, save_temps=os.path.join(self.tempdir, "foo")
+            )
         with open(os.path.join(self.tempdir, "foo.dict"), "r", encoding="utf8") as f:
             dict_file = f.read()
-            self.assertIn("D G IY T UW P IY D", dict_file)
+            self.assertIn("S AH S IY", dict_file)  # "ceci" in fra
+            self.assertIn("DH IH S", dict_file)  # "this" in eng
+            self.assertIn("HH EH Y", dict_file)  # "Hej" in dan
+            self.assertIn("D G IY T UW P IY D", dict_file)  # pre-g2p'd OOV
 
     def run_convert_xml(self, input_string):
         """wrap convert_xml to make unit testing easier"""
@@ -316,6 +330,22 @@ class TestG2pCli(BasicTestCase):
             etree.tounicode(c_xml), '<s><w ARPABET="invalid">invalid</w></s>'
         )
         self.assertFalse(valid, "convert_xml with invalid pre-g2p'd text")
+
+    def test_invalid_langs_in_xml(self):
+        xml = etree.fromstring(
+            """
+            <s>
+            <w lang="eng" fallback-langs="foo">français falls back to invalid foo</w>
+            <w lang="crx-syl">no path to arpabet</w>
+            </s>
+        """
+        )
+        with self.assertLogs(LOGGER, level="WARNING") as cm:
+            c_xml, valid = convert_xml(xml)
+        self.assertFalse(valid)
+        logger_output = "\n".join(cm.output)
+        self.assertIn('"foo": invalid language code', logger_output)
+        self.assertIn('"crx-syl": no path to "eng-arpabet"', logger_output)
 
 
 if __name__ == "__main__":

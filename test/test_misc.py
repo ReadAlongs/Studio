@@ -2,12 +2,14 @@
 
 """Test suite for misc stuff that don't need their own stand-alone suite"""
 
+import itertools
 from unittest import TestCase, main
 
+from lxml import etree
 from test_dna_utils import segments_from_pairs
 
 from readalongs.align import split_silences
-from readalongs.text.util import parse_time
+from readalongs.text.util import get_attrib_recursive, get_lang_attrib, parse_time
 
 
 class TestMisc(TestCase):
@@ -69,6 +71,85 @@ class TestMisc(TestCase):
             )
         ]
         self.assertEqual(words, ref)
+
+    def test_get_attrib_recursive(self):
+        raw_xml = """<TEI>
+            <text lang="text">
+            <p lang="p1"><s>stuff</s><s lang="p1s2">nonsense</s></p>
+            <p><s lang="p2s1">stuff</s><s>nonsense</s></p>
+            </text>
+            <text>
+            <p xml:lang="p3"><s lang="p3s1">stuff</s><s>nonsense<s lang="p3p2c">!</s></s></p>
+            </text>
+            <text>
+            <p><s xml:lang="p4s1" lang="not:xml:lang">stuff</s><s>nonsense<s xml:lang="p4p2c">!</s></s></p>
+            </text>
+            </TEI>
+        """
+        xml = etree.fromstring(raw_xml)
+        for i, s, lang in zip(
+            itertools.count(),
+            xml.xpath(".//s"),
+            (
+                "p1",
+                "p1s2",
+                "p2s1",
+                "text",
+                "p3s1",
+                None,
+                "p3p2c",
+                "not:xml:lang",
+                None,
+                None,
+            ),
+        ):
+            self.assertEqual(
+                get_attrib_recursive(s, "lang"),
+                lang,
+                f"expected lang={lang} for {etree.tostring(s)} (i={i})",
+            )
+
+        for i, s, get_lang in zip(
+            itertools.count(),
+            xml.xpath(".//s"),
+            (
+                "p1",
+                "p1s2",
+                "p2s1",
+                "text",
+                "p3s1",
+                "p3",
+                "p3p2c",
+                "p4s1",
+                None,
+                "p4p2c",
+            ),
+        ):
+            self.assertEqual(
+                get_lang_attrib(s),
+                get_lang,
+                f"expected get_lang={get_lang} for {etree.tostring(s)} (i={i})",
+            )
+
+        for i, s, xml_lang in zip(
+            itertools.count(),
+            xml.xpath(".//s"),
+            (None, None, None, None, "p3", "p3", "p3", "p4s1", None, "p4p2c"),
+        ):
+            self.assertEqual(
+                get_attrib_recursive(s, "xml:lang"),
+                xml_lang,
+                f"expected xml:lang={xml_lang} for {etree.tostring(s)} (i={i})",
+            )
+
+        # Show what xml:lang actually looks like in element.attrib:
+        # for p in xml.xpath(".//p"):
+        #     print(f"{etree.tostring(p)} has attribs {p.attrib}")
+        # Answer: p.attrib={'{http://www.w3.org/XML/1998/namespace}lang': 'p3'}
+        # This code is no longer relevant here, but I'm keeping it as
+        # documentation, as it's what helped me figure out why I needed
+        # element.xpath("./@"+attrib) instead of element.attrib[attrib]
+        # get_attrib_recursive() --EJJ Nov 2021
 
 
 if __name__ == "__main__":

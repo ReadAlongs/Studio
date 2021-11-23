@@ -42,8 +42,7 @@ i.e. a package of:
 
 Which can be loaded using the read-along [web component](https://github.com/roedoejet/ReadAlong-Web-Component). See also [Studio Output Realizations](https://readalong-studio.readthedocs.io/en/latest/outputs.html).
 
-Optionally a book can be generated as a standalone HTML page or
-as an ePub file.
+Optionally a book can be generated as a standalone HTML page, XHTML, Praat TextGrid, ELAN Eaf file, as well as WebVTT or SRT subitle formats.
 
 1. (optional) Pre-segment inputs, consisting of:
    - Single audio file
@@ -97,13 +96,6 @@ For more information about how the command line interface works:
 Basic alignment is done with the following command.
 
 `readalongs align TEXTFILE WAVFILE OUTPUTNAME`
-
-#### ePub
-
-In order to generate an ePub, there are two steps:
-
-1. `readalongs align --output-xhtml TEXTFILE WAVFILE OUTPUTNAME`
-2. `readalongs epub OUTPUTNAME.smil OUTPUTNAME.epub`
 
 ### Studio web application
 

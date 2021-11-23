@@ -16,9 +16,8 @@ The ReadAlongs CLI has two main commands: ``readalongs prepare`` and
   in).
 
 - Alternatively, if your plain text file does not need to be modified, you can
-  run ``align`` directly and use the ``-i`` option to indicate that the input
-  is plain text and not xml. You'll also need the ``-l <language>`` option to
-  indicate what language your text is in.
+  run ``align`` directly on it, since it also accepts plain text input.  You'll
+  need the ``-l <language(s)>`` option to indicate what language your text is in.
 
 Two additional commands are sometimes useful: ``readalongs tokenize`` and
 ``readalongs g2p``.
@@ -49,18 +48,20 @@ The plain text file must be plain text encoded in ``UTF-8`` with one
 sentence per line. Paragraph breaks are marked by a blank line, and page
 breaks are marked by two blank lines.
 
-+-----------------------------------+-----------------------------------+
-| Key Options                       | Option descriptions               |
-+===================================+===================================+
-| ``-l, --language`` (required)     | The language code for story.txt.  |
-+-----------------------------------+-----------------------------------+
-| ``-f, --force-overwrite``         | Force overwrite output files      |
-|                                   | (handy if you’re troubleshooting  |
-|                                   | and will be aligning repeatedly)  |
-+-----------------------------------+-----------------------------------+
-| ``-h, --help``                    | Displays CLI guide for            |
-|                                   | ``prepare``                       |
-+-----------------------------------+-----------------------------------+
++-----------------------------------+-----------------------------------------------+
+| Key Options                       | Option descriptions                           |
++===================================+===============================================+
+| ``-l, --language(s)`` (required)  | The language code for story.txt.              |
+|                                   | Specifying multiple comma- or colon-separated |
+|                                   | languages triggers :ref:`g2p-cascade`.        |
++-----------------------------------+-----------------------------------------------+
+| ``-f, --force-overwrite``         | Force overwrite output files                  |
+|                                   | (handy if you're troubleshooting              |
+|                                   | and will be aligning repeatedly)              |
++-----------------------------------+-----------------------------------------------+
+| ``-h, --help``                    | Displays CLI guide for                        |
+|                                   | ``prepare``                                   |
++-----------------------------------+-----------------------------------------------+
 
 The ``-l, --language`` argument requires a language’s 3 character `ISO
 code <https://en.wikipedia.org/wiki/ISO_639-3>`__ as an argument.
@@ -68,7 +69,8 @@ code <https://en.wikipedia.org/wiki/ISO_639-3>`__ as an argument.
 The languages supported by RAS can be listed by running ``readalongs prepare -h``
 and they can also be found in the :ref:`cli-prepare` reference.
 
-So, a full command for a story in Algonquin would be something like:
+So, a full command for a story in Algonquin, with an implicit g2p fallback to
+Undetermined, would be something like:
 
 ``readalongs prepare -l alq Studio/story.txt Studio/story.xml``
 
@@ -100,7 +102,7 @@ xml file.
         it, e.g., <p do-not-align="true">...</p>, or
         <s>Some text <foo do-not-align="true">do not align this</foo> more text</s> -->
 
-To use DNA audio, you can specify a frame of time in milliseconds in the
+To use DNA audio, you can specify a timeframe in milliseconds in the
 ``config.json`` file which you want the aligner to ignore.
 
 ::
@@ -141,42 +143,46 @@ supported by ffmpeg)
 ``[output_base]``: path to the directory where the output files will be
 created, as ``output_base*``
 
-+-----------------------------------+---------------------------------------+
-| Key Options                       | Option descriptions                   |
-+===================================+=======================================+
-| ``-l, --language``                | The language code for story.txt.      |
-|                                   | (required if input is plain text)     |
-+-----------------------------------+---------------------------------------+
-| ``-c, --config PATH``             | Use ReadAlong-Studio                  |
-|                                   | configuration file (in JSON           |
-|                                   | format)                               |
-+-----------------------------------+---------------------------------------+
-| ``-i, --text-input``              | Input is plain text (TXT)             |
-|                                   | (otherwise it’s assumed to be         |
-|                                   | XML)                                  |
-+-----------------------------------+---------------------------------------+
-| ``--g2p-fallback G2P_FALLBACK``   | Colon-separated list of fallback langs|
-|                                   | for g2p; enables the g2p cascade      |
-+-----------------------------------+---------------------------------------+
-| ``--g2p-verbose``                 | Display verbose g2p error messages    |
-+-----------------------------------+---------------------------------------+
-| ``-s, --save-temps``              | Save intermediate stages of           |
-|                                   | processing and temporary files        |
-|                                   | (dictionary, FSG, tokenization,       |
-|                                   | etc.)                                 |
-+-----------------------------------+---------------------------------------+
-| ``-f, --force-overwrite``         | Force overwrite output files          |
-|                                   | (handy if you’re troubleshooting      |
-|                                   | and will be aligning repeatedly)      |
-+-----------------------------------+---------------------------------------+
-| ``-h, --help``                    | Displays CLI guide for ``align``      |
-+-----------------------------------+---------------------------------------+
++-----------------------------------+-----------------------------------------------+
+| Key Options                       | Option descriptions                           |
++===================================+===============================================+
+| ``-l, --language(s)``             | The language code for story.txt.              |
+|                                   | Specifying multiple comma- or colon-separated |
+|                                   | languages triggers :ref:`g2p-cascade`.        |
+|                                   | (required if input is plain text)             |
++-----------------------------------+-----------------------------------------------+
+| ``-c, --config PATH``             | Use ReadAlong-Studio                          |
+|                                   | configuration file (in JSON                   |
+|                                   | format)                                       |
++-----------------------------------+-----------------------------------------------+
+| ``--g2p-verbose``                 | Display verbose g2p error messages            |
++-----------------------------------+-----------------------------------------------+
+| ``-s, --save-temps``              | Save intermediate stages of                   |
+|                                   | processing and temporary files                |
+|                                   | (dictionary, FSG, tokenization,               |
+|                                   | etc.)                                         |
++-----------------------------------+-----------------------------------------------+
+| ``-f, --force-overwrite``         | Force overwrite output files                  |
+|                                   | (handy if you’re troubleshooting              |
+|                                   | and will be aligning repeatedly)              |
++-----------------------------------+-----------------------------------------------+
+| ``-h, --help``                    | Displays CLI guide for ``align``              |
++-----------------------------------+-----------------------------------------------+
 
 See above for more information on the ``-l, --language`` argument.
 
-A full command would be something like:
+A full command could be something like:
 
-``readalongs align -f -c Studio/config.json Studio/story.xml Studio/story.mp3 Studio/story/aligned``
+``readalongs align -f -c config.json story.xml story.mp3 story-aligned``
+
+**Is the text file plain text or XML?**
+
+``readalongs align`` accepts its text input as a plain text file or an XML file.
+
+- If the file name ends with ``.txt``, it will be read as plain text.
+- If the file name ends wiht ``.xml``, it will be read as XML.
+- With other extensions, the beginning of the file is examined to
+  automatically determine if it's XML or plain text.
 
 The config.json file
 ~~~~~~~~~~~~~~~~~~~~
@@ -223,76 +229,103 @@ separate elements in a list or dictionnary, but if you accidentally have
 a comma after the last element (e.g., by cutting and pasting whole
 lines), you will get a syntax error.
 
+.. _g2p-cascade:
+
 The g2p cascade
 ~~~~~~~~~~~~~~~
 
 Sometimes the g2p conversion of the input text will not succeed, for
-various reasons. A word might use characters not recognized by the g2p
+various reasons. A word might use characters not recognized by the g2p mapping
 for the language, or it might be in a different language. Whatever the
 reason, the output for the g2p conversion will not be valid ARPABET, and
-so the system will not be able to proceed to alignment by the readalongs
+so the system will not be able to proceed to alignment by the
 aligner, SoundSwallower.
 
 If you know the language for that text, you can mark it as such in the
-XML. E.g., ``<s xml:lang="eng">This sentence is in English.</s>``. The
-``xml:lang`` attribute can be added to any element in the XML structure
+XML. E.g.:
+
+.. code-block:: xml
+
+   <s xml:lang="eng">This sentence is in English.</s>
+
+The ``xml:lang`` attribute can be added to any element in the XML structure
 and will apply to text at any depth within that element, unless the
-attribute is specified again at a deeper level, e.g.,
-``<s xml:lang="eng">English mixed with <foo xml:lang="fra">français</foo>.</s>``.
+attribute is specified again at a deeper level, e.g.:
+
+.. code-block:: xml
+
+   <s xml:lang="eng">English mixed with <foo xml:lang="fra">français</foo>.</s>
 
 There is also a simpler option available: the g2p cascade. When the g2p
 cascade is enabled, the g2p mapping will be done by first trying the
-language specified in the XML file (or with the ``-l`` flag on the
+language specified by the `xml:lang` attribute in the XML file
+(or with the first language provided to the ``-l`` flag on the
 command line, if the input is plain text). For each word where the
 result is not valid ARPABET, the g2p mapping will be attempted again
 with each of the languages specified in the g2p cascade, in order, until
-a valid ARPABET conversion is obtained. If not valid conversion is
+a valid ARPABET conversion is obtained. If no valid conversion is
 possible, are error message is printed and alignment is not attempted.
 
-To enable the g2p cascade, add the ``--g2p-fallback l1:l2:...`` option
-to ``readalongs g2p`` or ``readalongs align``:
+To enable the g2p cascade, provide multiple languages via the ``-l`` switch
+(for plain text input) or add the ``fallback-langs="l2,l3,...`` attribute to
+any element in the XML file:
 
-::
+.. code-block:: xml
 
-   readalongs g2p --g2p-fallback fra:eng:und myfile.tokenize.xml myfile.g2p.xml
-   readalongs align --g2p-fallback fra:eng:und myfile.xml myfile.wav output
+   <s xml:lang="eng" fallback-langs="fra,und">English mixed with français.</s>
+
+These command line examples will set the language to ``fra``, with the g2p cascade
+falling back to ``eng`` and then ``und`` (see below) when needed.
+
+.. code-block:: bash
+
+   readalongs prepare -l fra,eng myfile.txt myfile.xml
+   readalongs align -l fra,eng myfile.txt myfile.wav output-dir
 
 The "Undetermined" language code: und
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Notice that the two examples above use ``und`` as the last language in the
+Notice how the sample XML snippet above has ``und`` as the last language in the
 cascade. ``und``, for Undetermined, is a special language mapping that
-uses the Unicode definition of all known characters in all alphabets, and
+uses the definition of all characters in all alphabets that are part of the
+Unicode standard, and
 maps them as if the name of that character was how it is pronounced.
 While crude, this mapping works surprisingly well for the purposes of
 forced alignment, and allows ``readalongs align`` to successfully align
-most text with a few foreign words without any manual intervention. We
-recommend systematically using ``und`` at the end of the cascade. Note
-that adding another language after ``und`` will have no effect, since
-the Undetermined mapping will map any string to valid ARPABET.
+most text with a few foreign words without any manual intervention.
+
+Since we recommend systematically using ``und`` at the end of the cascade, it
+is now added by default after the languages specified with the ``-l``
+switch to both ``readalongs align`` and ``readalongs prepare``. Note that
+adding other languages after ``und`` will have no effect, since the
+Undetermined mapping will map any string to valid ARPABET.
+
+In the unlikely event that you want to disable adding ``und``, add the hidden
+``--lang-no-append-und`` switch, or delete ``und`` from the ``fallback-langs``
+attribute in your XML input.
 
 Debugging g2p mapping issues
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The warning messages issued by ``readalongs g2p`` and
-``readalongs align`` indicate which words are causing g2p problems. It
-can be worth inspecting to input text to fix any encoding or spelling
+The warning messages issued by ``readalongs g2p`` and ``readalongs align``
+indicate which words are causing g2p problems and what fallbacks were tried.
+It can be worth inspecting to input text to fix any encoding or spelling
 errors highlighted by these warnings. More detailed messages can be
 produced by adding the ``--g2p-verbose`` switch, to obtain a lot more
-information about g2p’ing words in each language g2p was unsucessfully
+information about g2p'ing words in each language g2p was unsucessfully
 attempted.
 
 Breaking up the pipeline
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Two commands were added to the CLI in the last year to break processing up step
+Some commands were added to the CLI in the last year to break processing up step
 by step.
 
 The following series of commands:
 
 ::
 
-   readalongs prepare -l lang  file.txt file.xml
+   readalongs prepare -l l1,l2 file.txt file.xml
    readalongs tokenize file.xml file.tokenized.xml
    readalongs g2p file.tokenized.xml file.g2p.xml
    readalongs align file.g2p.xml file.wav output
@@ -301,11 +334,13 @@ is equivalent to the single command:
 
 ::
 
-   readalongs align -i -l lang file.txt file.wav output
+   readalongs align -l l1,l2 file.txt file.wav output
 
 except that when running the pipeline as four separate commands, you can
-edit the XML files between each step to make any required adjustments
-and corrections.
+edit the XML files between each step to make manual adjustments and
+corrections if you want, like inserting anchors, silences, changing the
+language for indivual elements, or even manually editting the ARPABET encoding
+for some words.
 
 Anchors: marking known alignment points
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -329,9 +364,10 @@ element or text.
 
 Example:
 
-::
+.. code-block:: xml
 
-   <?xml version='1.0' encoding='utf-8'?> <TEI> <text xml:lang="eng"> <body>
+   <?xml version='1.0' encoding='utf-8'?>
+   <TEI> <text xml:lang="eng"> <body>
        <anchor time="143ms"/>
        <div type="page">
        <p>
@@ -358,17 +394,20 @@ The beginning and end of files are implicit anchors: *n* anchors define
 anchor, between pairs of anchors, and from the last anchor to the end of
 the audio and text.
 
-Special cases equivalent to do-not-align audio: - If an anchor occurs
-before the first word in the text, the audio up to that anchor’s
-timestamps is excluded from alignment. - If an anchor occurs after the
-last word, the end of the audio is excluded from alignment. - If two
-anchors occur one after the other, the time span between them in the
-audio is excluded from alignment. Using anchors to define do-not-align
-audio segments is effectively the same as marking them as "do-not-align"
-in the ``config.json`` file, except that DNA segments declared using
-anchors have a known alignment with respect to the text, while the
-position of DNA segments declared in the config file are inferred by the
-aligner.
+Special cases equivalent to do-not-align audio:
+
+- If an anchor occurs before the first word in the text, the audio up to that
+  anchor’s timestamps is excluded from alignment.
+- If an anchor occurs after the last word, the end of the audio is excluded
+  from alignment.
+- If two anchors occur one after the other, the time span between them in the
+  audio is excluded from alignment.
+
+Using anchors to define do-not-align audio segments is effectively the same as
+marking them as "do-not-align" in the ``config.json`` file, except that DNA
+segments declared using anchors have a known alignment with respect to the
+text, while the position of DNA segments declared in the config file are
+inferred by the aligner.
 
 Anchor use cases
 ^^^^^^^^^^^^^^^^
@@ -387,3 +426,54 @@ Anchor use cases
    alignments.
 
    These known timestamps can be converted to anchors.
+
+Silences: inserting pause-like silences
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There are times where you might want a read-along to pause at a particular
+place for a specific time and resume again after. This can be accomplished by
+inserting silences in your audio stream. You can do it manually by editing your
+audio file ahead of time, but you can also have ``readalongs align`` insert the
+silences for you.
+
+Silence syntax
+^^^^^^^^^^^^^^
+
+Silences are inserted in the audio stream wherever a ``silence`` element is
+found in the XML input.
+**TODO say something about how the silence placement determined.**
+The syntax is like the anchor syntax: ``<silence dur="4.2s"/>`` or
+``<silence dur="100ms"/>``. Like anchors, silence elements can be inserted
+anywhere.
+
+Example:
+
+.. code-block:: xml
+
+   <?xml version='1.0' encoding='utf-8'?>
+   <TEI> <text xml:lang="eng"> <body>
+       <silence dur="1s"/>
+       <div type="page">
+       <p>
+           <s>Hello.</s>
+           <silence dur="10s"/>
+           <s>After this pregnant pause, <silence dur="100ms"/> we'll pause
+              again before it's all over!</s>
+       </p>
+       <silence dur="1s"/>
+       </div>
+   </body> </text> </TEI>
+
+Silence use cases
+^^^^^^^^^^^^^^^^^
+
+1. Your read along has a title page that is not read out in the audio stream:
+   insert a silence at the beginning so that it stays on the first page for
+   the specified time.
+   **TODO: test that a silence before the first word really keeps the RA on the
+   first page during that silence, even if all text on the first page is DNA.**
+
+2. Your read along has a credits page at the end that is not read out in the
+   audio stream: insert a silence at the end so that people see that credits
+   page for the specified time before the streaming end.
+   **TODO: also test that this use case works as described.**

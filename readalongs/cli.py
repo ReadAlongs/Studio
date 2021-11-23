@@ -1,51 +1,49 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+"""Readalongs command line interfaced, initialized with Click.
 
-#######################################################################
-#
-# cli.py
-#
-#   Initializes a Command Line Interface with Click.
-#   The main purpose of the cli is to align input files.
-#
-#   CLI commands implemented in this file:
-#    - align  : main command to align text and audio
-#    - epub   : convert aligned file to epub format
-#    - prepare: prepare XML input for align from plain text
-#    - tokenize: tokenize the prepared file
-#    - g2p    : apply g2p to the tokenized file
-#
-#   Default CLI commands provided by Flask:
-#    - routes : show available routes in the this readalongs Flask app
-#    - run    : run the readalongs Flask app
-#    - shell  : open a shell within the readalongs Flask application context
-#
-#######################################################################
+The main purpose of the cli is to align text and audio files
+
+CLI commands implemented in this file:
+ - align   : main command to align text and audio
+ - prepare : prepare XML input for align from plain text
+ - tokenize: tokenize the prepared file
+ - g2p     : apply g2p to the tokenized file
+ - langs   : list languages supported by align
+"""
 
 import io
 import json
 import os
+import re
 import sys
 from tempfile import TemporaryFile
 
 import click
-from flask.cli import FlaskGroup
 from lxml import etree
 
 from readalongs._version import __version__
 from readalongs.align import align_audio, create_input_tei, save_readalong
 from readalongs.app import app
-from readalongs.epub.create_epub import create_epub
 from readalongs.log import LOGGER
-from readalongs.python_version import ensure_using_supported_python_version
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import save_xml, write_xml
-from readalongs.util import getLangs, parse_g2p_fallback
+from readalongs.util import getLangs
 
-LANGS, _ = getLangs()
-ensure_using_supported_python_version()
+LANGS, LANG_NAMES = getLangs()
+
+SUPPORTED_OUTPUT_FORMATS = {
+    "eaf": "ELAN file",
+    "html": "Single-file, offline HTML",
+    "srt": "SRT subtitle",
+    "TextGrid": "Praat TextGrid",
+    "vtt": "WebVTT subtitle",
+    "xhtml": "Simple XHTML",
+}
+
+SUPPORTED_OUTPUT_FORMATS_DESC = ", ".join(
+    k + f" ({v})" for k, v in SUPPORTED_OUTPUT_FORMATS.items()
+)
 
 
 def create_app():
@@ -73,16 +71,95 @@ def get_click_file_name(click_file):
     return "-" if name == "<stdin>" else name
 
 
+def quoted_list(values):
+    """Display a list of values quoted, for easy reading in error messages."""
+    return ", ".join("'" + v + "'" for v in values)
+
+
+def joiner_callback(valid_values, joiner_re=r"[,:]"):
+    """Command-line parameter validation for multiple-value options.
+
+    The values can be repeated by giving the option multiple times on the
+    command line, or by joining them with joiner (colon and comma by default).
+
+    Matching is case insensitive.
+    """
+    lc_valid_values = [valid_value.lower() for valid_value in valid_values]
+
+    def _callback(ctx, param, value_groups):
+        results = [
+            value.strip()
+            for value_group in value_groups
+            for value in re.split(joiner_re, value_group)
+        ]
+        for value in results:
+            if value.lower() not in lc_valid_values:
+                raise click.BadParameter(
+                    f"'{value}' is not one of {quoted_list(valid_values)}."
+                )
+        return results
+
+    return _callback
+
+
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 @click.version_option(version=__version__, prog_name="readalongs")
-@click.group(cls=FlaskGroup, create_app=create_app, context_settings=CONTEXT_SETTINGS)
+@click.group(context_settings=CONTEXT_SETTINGS)
 def cli():
-    """Management script for Read Along Studio."""
+    """Management script for ReadAlong Studio.
+
+    \b
+    This library helps you do text-audio alignment for many languages.
+    The primary purpose is for creating 'readalong' interactive audiobooks,
+    although other output formats like subtitles or Praat TextGrids are available.
+
+    You can use this command line tool in two ways. The "end-to-end" method with the
+    "align" command, or using a sequence of steps with "prepare", "tokenize", and "g2p"
+    to get more control over the process.
+
+    ## End-to-End
+
+    \b
+    align
+    =====
+    To get started, you must have some audio and some corresponding text.
+    This command will let you go 'end-to-end' from audio & text to readalongs.
+    For more info, please see the help message for this command by running
+    "readalongs align -h"
+
+    ## Step-by-Step
+
+    Using ReadAlongs this way, you must use the following commands in sequence.
+
+    \b
+    prepare
+    =======
+    If you have plain text and you want to mark up some of the XML, you can
+    use this command to "prepare" your plain text into the XML structure
+    used by readalongs.
+
+    \b
+    tokenize
+    ========
+    Use this command to tokenize the output of the previous "readalongs prepare" command.
+
+    \b
+    g2p
+    ===
+    Use this command to apply the g2p rules necessary to convert the output of the
+    "readalongs tokenize" command into a pronunciation form for the readalongs aligner.
+
+    Finally, you can run "readalongs align" on the output of any of these commands to create
+    the alignment files.
+
+    For more info on any command in this interface, run it with "-h" to display
+    its help message.
+    """
 
 
-@app.cli.command(  # noqa C901
+@cli.command(  # noqa: C901
     context_settings=CONTEXT_SETTINGS, short_help="Force align a text and a sound file."
 )
 @click.argument("textfile", type=click.Path(exists=True, readable=True))
@@ -101,10 +178,16 @@ def cli():
     help="Use ReadAlong-Studio configuration file (in JSON format)",
 )
 @click.option(
-    "-C",
-    "--closed-captioning",
-    is_flag=True,
-    help="Export sentences to WebVTT and SRT files",
+    "-o",
+    "--output-formats",
+    multiple=True,
+    callback=joiner_callback(SUPPORTED_OUTPUT_FORMATS),
+    help=(
+        "Comma- or colon-separated list of additional output file formats to export to. "
+        "The text is always exported as XML and alignments as SMIL, but "
+        "one or more of these formats can be requested in addition:\b \n\n"
+        + SUPPORTED_OUTPUT_FORMATS_DESC
+    ),
 )
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
 @click.option(
@@ -113,20 +196,30 @@ def cli():
 @click.option(
     "-i",
     "--text-input",
+    hidden=True,
     is_flag=True,
-    help="Input is plain text (otherwise it’s assumed to be XML)",
+    default=None,
+    help="OBSOLETE; the input format is now guessedb by extension or contents",
+)
+@click.option(
+    "--lang-no-append-und",
+    is_flag=True,
+    default=False,
+    hidden=True,
+    help="Hidden option to disable to automatic appending of und (Undetermined) to -l",
 )
 @click.option(
     "-l",
     "--language",
-    type=click.Choice(LANGS, case_sensitive=False),
-    help="The language code for text in TEXTFILE (use only with -i, i.e., with plain text input)",
-)
-@click.option(
-    "-u",
-    "--unit",
-    type=click.Choice(["w", "m"], case_sensitive=False),
-    help="Unit (w = word, m = morpheme) to align to",
+    "--languages",
+    multiple=True,
+    callback=joiner_callback(LANGS),
+    help=(
+        "The language code(s) for text in TEXTFILE (use only with plain text input); "
+        "multiple codes can be joined by ',' or ':', or by repeating the option, "
+        "to enable the g2p cascade (run 'readalongs g2p -h' for details); "
+        "run 'readalongs langs' to list all supported languages."
+    ),
 )
 @click.option(
     "-s",
@@ -135,16 +228,10 @@ def cli():
     help="Save intermediate stages of processing and temporary files (dictionary, FSG, tokenization, etc)",
 )
 @click.option(
-    "-t", "--text-grid", is_flag=True, help="Export to Praat TextGrid & ELAN eaf file"
-)
-@click.option("-H", "--html", is_flag=True, help="Export to a single-file HTML format")
-@click.option(
-    "-x", "--output-xhtml", is_flag=True, help="Output simple XHTML instead of XML"
-)
-@click.option(
     "--g2p-fallback",
+    hidden=True,
     default=None,
-    help="Colon-separated list of fallback langs for g2p; enables the g2p cascade",
+    help="OBSOLETE; enable the g2p cascade by giving -l with multiple langs instead",
 )
 @click.option(
     "--g2p-verbose",
@@ -152,23 +239,25 @@ def cli():
     default=False,
     help="Display verbose g2p error messages",
 )
-def align(**kwargs):  # noqa: C901
+def align(**kwargs):
     """Align TEXTFILE and AUDIOFILE and create output files as OUTPUT_BASE.* in directory
     OUTPUT_BASE/.
 
-    TEXTFILE:    Input text file path (in XML, or plain text with -i)
+    TEXTFILE:    Input text file path (in XML or plain text)
 
     \b
-    With -i, TEXTFILE should be plain text:
-     - The text in TEXTFILE should be plain UTF-8 text without any markup.
-     - Paragraph breaks are indicated by inserting one blank line.
-     - Page breaks are indicated by inserting two blank lines.
-
-    \b
-    Without -i, TEXTFILE can be in one of three XML formats:
+    If TEXTFILE has a .xml extension or starts with an XML declaration line,
+    it is parsed as XML and can be in one of three formats:
      - the output of 'readalongs prepare',
      - the output of 'readalongs tokenize', or
      - the output of 'readalongs g2p'.
+
+    \b
+    If TEXTFILE has a .txt extension or does not start with an XML declaration
+    line, is it read as plain text with the following conventions:
+     - The text should be plain UTF-8 text without any markup.
+     - Paragraph breaks are indicated by inserting one blank line.
+     - Page breaks are indicated by inserting two blank lines.
 
     One can add the known ARPABET phonetics in the XML for words (<w> elements)
     that are not correctly handled by g2p in the output of 'readalongs tokenize'
@@ -220,10 +309,12 @@ def align(**kwargs):  # noqa: C901
             f"Cannot write into output folder '{output_dir}'. Please verify permissions."
         ) from e
 
-    try:
-        g2p_fallbacks = parse_g2p_fallback(kwargs["g2p_fallback"])
-    except ValueError as e:
-        raise click.BadParameter(e) from e
+    if kwargs["g2p_fallback"] is not None:
+        raise click.BadParameter(
+            "The --g2p-fallback option is obsolete.\n"
+            "Specify multiple languages with the -l/--language option instead,\n"
+            "or by adding the 'fallback-langs' attribute where relevant in your XML input."
+        )
 
     output_basename = os.path.basename(output_dir)
     temp_base = None
@@ -238,74 +329,82 @@ def align(**kwargs):  # noqa: C901
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
 
-    if kwargs["text_input"]:
+    if kwargs["text_input"] is not None:
+        raise click.BadParameter(
+            "The -i option is obsolete. .txt files are now read as plain text, "
+            ".xml as XML, and other files based on whether they start with <?xml or not."
+        )
+
+    # Determine if the file is plain text or XML
+    textfile_name = kwargs["textfile"]
+    if textfile_name.endswith(".xml"):
+        textfile_is_plaintext = False  # .xml is XML
+    elif textfile_name.endswith(".txt"):
+        textfile_is_plaintext = True  # .txt is plain text
+    else:
+        # Files other than .xml or .txt are parsed using etree. If the parse is
+        # successful or the first syntax error is past the first line, the file
+        # is assumed to be XML. Plain text files will yield an error in the
+        # first few characters of line 1, typically complaining about not
+        # finding "<" at the start.
+        # There are many valid "magic numbers" for XML files, depending on
+        # their encoding (utf8, utf16, endianness, etc). If we looked for
+        # "<?xml " at the beginning, that would only catch some of the valid
+        # XML encodings that etree can parse.
+        # We could also use python-magic or filetype, but why introduce another
+        # dependency when we can ask the library we're already using!?
+        try:
+            _ = etree.parse(textfile_name)
+            textfile_is_plaintext = False
+        except etree.XMLSyntaxError as e:
+            textfile_is_plaintext = e.position <= (1, 10)
+
+    if textfile_is_plaintext:
         if not kwargs["language"]:
             raise click.BadParameter(
                 "No input language specified for plain text input. Please provide the -l/--language switch."
             )
+        languages = kwargs["language"]
+        if not kwargs["lang_no_append_und"] and "und" not in languages:
+            languages.append("und")
         plain_textfile = kwargs["textfile"]
         _, xml_textfile = create_input_tei(
             input_file_name=plain_textfile,
-            text_language=kwargs["language"],
+            text_languages=languages,
             save_temps=temp_base,
         )
     else:
         xml_textfile = kwargs["textfile"]
 
-    unit = kwargs.get("unit", "w") or "w"  # Sometimes .get() still returns None here
     bare = kwargs.get("bare", False)
 
     try:
         results = align_audio(
             xml_textfile,
             kwargs["audiofile"],
-            unit=unit,
             bare=bare,
             config=config,
             save_temps=temp_base,
-            g2p_fallbacks=g2p_fallbacks,
             verbose_g2p_warnings=kwargs["g2p_verbose"],
         )
     except RuntimeError as e:
         LOGGER.error(e)
         sys.exit(1)
+
+    output_formats = kwargs["output_formats"]
+
     save_readalong(
         align_results=results,
         output_dir=output_dir,
         output_basename=output_basename,
         config=config,
-        text_grid=kwargs["text_grid"],
-        closed_captioning=kwargs["closed_captioning"],
-        output_xhtml=kwargs["output_xhtml"],
         audiofile=kwargs["audiofile"],
         audiosegment=results["audio"],
-        html=kwargs["html"],
+        output_formats=output_formats,
     )
 
 
-@app.cli.command(
-    context_settings=CONTEXT_SETTINGS, short_help="Convert a smil document to epub."
-)
-@click.argument("input", type=click.Path(exists=True, readable=True))
-@click.argument("output", type=click.Path(exists=False, readable=True))
-@click.option(
-    "-u",
-    "--unpacked",
-    is_flag=True,
-    help="Output unpacked directory of files (for testing)",
-)
-def epub(**kwargs):
-    """
-    Convert INPUT smil document to epub with media overlay at OUTPUT
-
-    INPUT:  The .smil document
-
-    OUTPUT: Path to the .epub output
-    """
-    create_epub(kwargs["input"], kwargs["output"], kwargs["unpacked"])
-
-
-@app.cli.command(
+@cli.command(
     context_settings=CONTEXT_SETTINGS,
     short_help="Convert a plain text file into the XML format for alignment.",
 )
@@ -316,14 +415,29 @@ def epub(**kwargs):
     "-f", "--force-overwrite", is_flag=True, help="Force overwrite output files"
 )
 @click.option(
+    "--lang-no-append-und",
+    is_flag=True,
+    default=False,
+    hidden=True,
+    help="Hidden option to disable to automatic appending of und (Undetermined) to -l",
+)
+@click.option(
     "-l",
     "--language",
-    type=click.Choice(LANGS, case_sensitive=False),
+    "--languages",
     required=True,
-    help="The language code for text in PLAINTEXTFILE",
+    multiple=True,
+    callback=joiner_callback(LANGS),
+    help=(
+        "The language code(s) for text in PLAINTEXTFILE; "
+        "multiple codes can be joined by ',' or ':', or by repeating the option, "
+        "to enable the g2p cascade (run 'readalongs g2p -h' for details); "
+        "run 'readalongs langs' to list all supported languages."
+    ),
 )
 def prepare(**kwargs):
     """Prepare XMLFILE for 'readalongs align' from PLAINTEXTFILE.
+
     PLAINTEXTFILE must be plain text encoded in UTF-8, with one sentence per line,
     paragraph breaks marked by a blank line, and page breaks marked by two
     blank lines.
@@ -354,9 +468,13 @@ def prepare(**kwargs):
                 out_file = out_file[:-4]
             out_file += ".xml"
 
+    languages = kwargs["language"]
+    if not kwargs["lang_no_append_und"] and "und" not in languages:
+        languages.append("und")
+
     if out_file == "-":
         _, filename = create_input_tei(
-            input_file_handle=input_file, text_language=kwargs["language"],
+            input_file_handle=input_file, text_languages=languages,
         )
         with io.open(filename, encoding="utf8") as f:
             sys.stdout.write(f.read())
@@ -370,14 +488,14 @@ def prepare(**kwargs):
 
         _, filename = create_input_tei(
             input_file_handle=input_file,
-            text_language=kwargs["language"],
+            text_languages=languages,
             output_file=out_file,
         )
 
     LOGGER.info("Wrote {}".format(out_file))
 
 
-@app.cli.command(
+@cli.command(
     context_settings=CONTEXT_SETTINGS,
     short_help="Tokenize a prepared XML file, in preparation for alignment.",
 )
@@ -389,6 +507,7 @@ def prepare(**kwargs):
 )
 def tokenize(**kwargs):
     """Tokenize XMLFILE for 'readalongs align' into TOKFILE.
+
     XMLFILE should have been produced by 'readalongs prepare'.
     TOKFILE can then be augmented with word-specific language codes.
     'readalongs align' can be called with either XMLFILE or TOKFILE as XML input.
@@ -442,17 +561,17 @@ def tokenize(**kwargs):
     LOGGER.info("Wrote {}".format(output_path))
 
 
-@app.cli.command(
+@cli.command(
     context_settings=CONTEXT_SETTINGS,
-    short_help="Apply g2p to a tokenized file, like 'align' does.",
-    # NOT TRUE YET: "Apply g2p to a tokenized file, in preparation for alignment."
+    short_help="Apply g2p to a tokenized file, in preparation for alignment.",
 )
 @click.argument("tokfile", type=click.File("rb", encoding="utf8", lazy=True))
 @click.argument("g2pfile", type=click.Path(), required=False, default="")
 @click.option(
     "--g2p-fallback",
+    hidden=True,
     default=None,
-    help="Colon-separated list of fallback langs for g2p; enables the g2p cascade",
+    help="OBSOLETE; enable the g2p cascade by giving -l with multiple langs to prepare instead",
 )
 @click.option(
     "-f", "--force-overwrite", is_flag=True, help="Force overwrite output files"
@@ -466,15 +585,29 @@ def tokenize(**kwargs):
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
 def g2p(**kwargs):
     """Apply g2p mappings to TOKFILE into G2PFILE.
+
     TOKFILE should have been produced by 'readalongs tokenize'.
     G2PFILE can then be modified to adjust the phonetic representation as needed.
     'readalongs align' can be called with G2PFILE instead of TOKFILE as XML input.
 
-    WARNING: the output is not yet compatible with align and cannot be used as input to align.
+    The g2p cascade will be enabled whenever an XML element or any of its
+    ancestors in TOKFILE has the attribute "fallback-langs" containing a comma-
+    or colon-separated list of language codes. Provide multiple language codes to
+    "readalongs prepare" via its -l option to generate this attribute globally,
+    or add it manually where needed. Undetermined, "und", is automatically
+    added at the end of the language list provided via -l.
+
+    With the g2p cascade, if a word cannot be mapped to valid ARPABET with the
+    language found in the "xml:lang" attribute, the languages in
+    "fallback-langs" are tried in order until a valid ARPABET mapping is
+    generated.
+
+    The output XML file can be used as input to align.
 
     TOKFILE: Path to the input tokenized XML file, or - for stdin
 
-    G2PFILE: Output path for the g2p'd XML, or - for stdout [default: TOKFILE with .g2p. inserted]
+    G2PFILE: Output path for the g2p'd XML, or - for stdout [default: TOKFILE
+    with .g2p. inserted]
     """
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
@@ -512,18 +645,11 @@ def g2p(**kwargs):
             % (get_click_file_name(input_file), e)
         )
 
-    try:
-        g2p_fallbacks = parse_g2p_fallback(kwargs["g2p_fallback"])
-    except ValueError as e:
-        raise click.BadParameter(e) from e
-
     # Add the IDs to paragraph, sentences, word, etc.
     xml = add_ids(xml)
 
     # Apply the g2p mappings.
-    xml, valid = convert_xml(
-        xml, g2p_fallbacks=g2p_fallbacks, verbose_warnings=kwargs["g2p_verbose"],
-    )
+    xml, valid = convert_xml(xml, verbose_warnings=kwargs["g2p_verbose"],)
 
     if output_path == "-":
         write_xml(sys.stdout.buffer, xml)
@@ -541,3 +667,15 @@ def g2p(**kwargs):
             )
         )
         sys.exit(1)
+
+
+@cli.command(
+    context_settings=CONTEXT_SETTINGS,
+    short_help="List the languages supported by g2p for readalongs.",
+)
+def langs():
+    """List all the language codes and names currently supported by g2p
+    that can be used for ReadAlongs creation.
+    """
+    for lang in LANGS:
+        print("%-8s\t%s" % (lang, LANG_NAMES[lang]))

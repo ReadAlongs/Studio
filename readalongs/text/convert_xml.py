@@ -41,15 +41,33 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import argparse
 import copy
 import os
+import re
 
-from g2p import make_g2p
 from g2p.mappings.langs.utils import is_arpabet
 from g2p.transducer import CompositeTransductionGraph, TransductionGraph
+
+try:
+    # g2p > 0.5.20211029 uses its own exceptions for make_g2p errors
+    from g2p import InvalidLanguageCode, NoPath, make_g2p
+except ImportError:
+    # g2p <= 0.5.20211029 used NetworkXNoPath and FileNotFoundError
+    from g2p import NetworkXNoPath as NoPath
+    from g2p import make_g2p
+
+    InvalidLanguageCode = FileNotFoundError
 
 from readalongs.log import LOGGER
 from readalongs.text.lexicon_g2p import getLexiconG2P
 from readalongs.text.lexicon_g2p_mappings import __file__ as LEXICON_PATH
-from readalongs.text.util import get_lang_attrib, load_xml, save_xml
+from readalongs.text.util import (
+    get_attrib_recursive,
+    get_lang_attrib,
+    load_xml,
+    save_xml,
+)
+from readalongs.util import getLangs
+
+LANGS, LANG_NAMES = getLangs()
 
 
 def convert_word(word: str, lang: str, output_orthography: str, verbose_warnings: bool):
@@ -74,7 +92,18 @@ def convert_word(word: str, lang: str, output_orthography: str, verbose_warnings
             eng_valid = False
         return eng_converter, eng_tg, eng_text, eng_indices, eng_valid
     else:
-        converter = make_g2p(lang, output_orthography)
+        try:
+            converter = make_g2p(lang, output_orthography)
+        except InvalidLanguageCode as e:
+            raise ValueError(
+                f'Could not g2p "{word}" as "{lang}": invalid language code. '
+                f"Use one of {LANGS}"
+            ) from e
+        except NoPath as e:
+            raise ValueError(
+                f'Count not g2p "{word}" as "{lang}": no path to "{output_orthography}". '
+                f"Use one of {LANGS}"
+            ) from e
         tg = converter(word)
         text = tg.output_string.strip()
         indices = tg.edges
@@ -85,11 +114,7 @@ def convert_word(word: str, lang: str, output_orthography: str, verbose_warnings
 
 
 def convert_words(
-    xml,
-    word_unit="w",
-    output_orthography="eng-arpabet",
-    g2p_fallbacks=None,
-    verbose_warnings=False,
+    xml, word_unit="w", output_orthography="eng-arpabet", verbose_warnings=False,
 ):
     all_g2p_valid = True
     for word in xml.xpath(".//" + word_unit):
@@ -105,49 +130,56 @@ def convert_words(
         # only convert text within words
         if not word.text:
             continue
-        g2p_lang = (
-            get_lang_attrib(word) or "und"
-        )  # default to Undetermined if lang missing
+        g2p_lang = get_lang_attrib(word) or "und"  # default: Undetermined
+        g2p_fallbacks = get_attrib_recursive(word, "fallback-langs")
         text_to_g2p = word.text
-        converter, tg, g2p_text, indices, valid = convert_word(
-            text_to_g2p, g2p_lang, output_orthography, verbose_warnings
-        )
-        if not valid:
-            # This is where we apply the g2p cascade
-            for lang in g2p_fallbacks or []:
-                LOGGER.warning(
-                    f'Could not g2p "{text_to_g2p}" as {g2p_lang}. Trying fallback: {lang}.'
-                )
-                g2p_lang = lang
-                converter, tg, g2p_text, indices, valid = convert_word(
-                    text_to_g2p, g2p_lang, output_orthography, verbose_warnings
-                )
-                if valid:
-                    word.attrib["effective_g2p_lang"] = g2p_lang
-                    break
-            else:
-                all_g2p_valid = False
-                LOGGER.warning(
-                    f'No valid g2p conversion found for "{text_to_g2p}". '
-                    f"Check its orthography and language code, "
-                    f"or pick suitable g2p fallback languages."
-                )
+        try:
+            converter, tg, g2p_text, indices, valid = convert_word(
+                text_to_g2p, g2p_lang.strip(), output_orthography, verbose_warnings
+            )
+            if not valid:
+                # This is where we apply the g2p cascade
+                for lang in re.split(r"[,:]", g2p_fallbacks) if g2p_fallbacks else []:
+                    LOGGER.warning(
+                        f'Could not g2p "{text_to_g2p}" as {g2p_lang}. '
+                        f"Trying fallback: {lang}."
+                    )
+                    g2p_lang = lang.strip()
+                    converter, tg, g2p_text, indices, valid = convert_word(
+                        text_to_g2p, g2p_lang, output_orthography, verbose_warnings
+                    )
+                    if valid:
+                        word.attrib["effective-g2p-lang"] = g2p_lang
+                        break
+                else:
+                    all_g2p_valid = False
+                    LOGGER.warning(
+                        f'No valid g2p conversion found for "{text_to_g2p}". '
+                        f"Check its orthography and language code, "
+                        f"or pick suitable g2p fallback languages."
+                    )
 
-        word.attrib["ARPABET"] = g2p_text
+            # Save the g2p_text from the last conversion attemps, even when
+            # it's not valid, so it's in the g2p output if the user wants to
+            # inspect it manually.
+            word.attrib["ARPABET"] = g2p_text
+
+        except ValueError as e:
+            LOGGER.warning(
+                f'Could not g2p "{text_to_g2p}" due to an incorrect '
+                f'"xml:lang", "lang" or "fallback-langs" attribute in the XML: {e}'
+            )
+            all_g2p_valid = False
 
     return xml, all_g2p_valid
 
 
 def convert_xml(
-    xml,
-    word_unit="w",
-    output_orthography="eng-arpabet",
-    g2p_fallbacks=None,
-    verbose_warnings=False,
+    xml, word_unit="w", output_orthography="eng-arpabet", verbose_warnings=False,
 ):
     xml_copy = copy.deepcopy(xml)
     xml_copy, valid = convert_words(
-        xml_copy, word_unit, output_orthography, g2p_fallbacks, verbose_warnings
+        xml_copy, word_unit, output_orthography, verbose_warnings
     )
     return xml_copy, valid
 
