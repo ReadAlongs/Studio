@@ -11,7 +11,7 @@ from unittest import main
 from basic_test_case import BasicTestCase
 
 from readalongs.align import create_input_tei
-from readalongs.cli import prepare
+from readalongs.cli import align, prepare
 from readalongs.log import LOGGER
 
 
@@ -163,12 +163,15 @@ class TestPrepareCli(BasicTestCase):
         )
 
     def test_create_input_tei_errors(self):
-        """create_input_tei should raise a RuntimeError when parameters are missing."""
-        with self.assertRaises(RuntimeError):
+        """create_input_tei should raise a AssertionError when parameters are missing."""
+        # These used to be RuntimeError, but that was not right: *programmer*
+        # errors can and should dump stack traces, unlike *user* errors, which
+        # warrant nice friendly messages.
+        with self.assertRaises(AssertionError):
             # missing input_file_name or input_file_handle
             _, _ = create_input_tei()
 
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(AssertionError):
             # missing text_languages
             _, _ = create_input_tei(
                 input_file_name=os.path.join(self.data_dir, "fra.txt")
@@ -198,6 +201,35 @@ class TestPrepareCli(BasicTestCase):
         )
         self.assertNotEqual(results.exit_code, 0)
         self.assertRegex(results.output, r"Invalid value.*'notalang'")
+
+    def test_prepare_invalid_utf8_input(self):
+        noise_file = os.path.join(self.data_dir, "noise.mp3")
+
+        # Read noise.mp3 as if it was utf8 text, via create_input_tei(input_file_handle)
+        results = self.runner.invoke(prepare, ["-l", "fra", noise_file, "-"])
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("provide a correctly encoded utf-8", results.output)
+
+        # Read noise.mp3 as if it was utf8 text, via create_input_tei(input_file_name)
+        results = self.runner.invoke(
+            prepare, ["-l", "fra", noise_file, os.path.join(self.tempdir, "noise.xml")]
+        )
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("provide a correctly encoded utf-8", results.output)
+
+        # align also calls create_input_tei(input_file_name)
+        results = self.runner.invoke(
+            align,
+            [
+                "-l",
+                "fra",
+                noise_file,
+                noise_file,
+                os.path.join(self.tempdir, "noise-out"),
+            ],
+        )
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("provide a correctly encoded utf-8", results.output)
 
 
 if __name__ == "__main__":

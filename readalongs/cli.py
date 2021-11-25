@@ -337,11 +337,14 @@ def align(**kwargs):
         if not kwargs["lang_no_append_und"] and "und" not in languages:
             languages.append("und")
         plain_textfile = kwargs["textfile"]
-        _, xml_textfile = create_input_tei(
-            input_file_name=plain_textfile,
-            text_languages=languages,
-            save_temps=temp_base,
-        )
+        try:
+            _, xml_textfile = create_input_tei(
+                input_file_name=plain_textfile,
+                text_languages=languages,
+                save_temps=temp_base,
+            )
+        except RuntimeError as e:
+            raise click.UsageError(e) from e
     else:
         xml_textfile = kwargs["textfile"]
 
@@ -357,8 +360,9 @@ def align(**kwargs):
             verbose_g2p_warnings=kwargs["g2p_verbose"],
         )
     except RuntimeError as e:
-        LOGGER.error(e)
-        sys.exit(1)
+        raise click.UsageError(e) from e
+        # LOGGER.error(e)
+        # sys.exit(1)
 
     output_formats = kwargs["output_formats"]
 
@@ -441,25 +445,28 @@ def prepare(**kwargs):
     if not kwargs["lang_no_append_und"] and "und" not in languages:
         languages.append("und")
 
-    if out_file == "-":
-        _, filename = create_input_tei(
-            input_file_handle=input_file, text_languages=languages,
-        )
-        with io.open(filename, encoding="utf8") as f:
-            sys.stdout.write(f.read())
-    else:
-        if not out_file.endswith(".xml"):
-            out_file += ".xml"
-        if os.path.exists(out_file) and not kwargs["force_overwrite"]:
-            raise click.BadParameter(
-                "Output file %s exists already, use -f to overwrite." % out_file
+    try:
+        if out_file == "-":
+            _, filename = create_input_tei(
+                input_file_handle=input_file, text_languages=languages,
             )
+            with io.open(filename, encoding="utf8") as f:
+                sys.stdout.write(f.read())
+        else:
+            if not out_file.endswith(".xml"):
+                out_file += ".xml"
+            if os.path.exists(out_file) and not kwargs["force_overwrite"]:
+                raise click.BadParameter(
+                    "Output file %s exists already, use -f to overwrite." % out_file
+                )
 
-        _, filename = create_input_tei(
-            input_file_handle=input_file,
-            text_languages=languages,
-            output_file=out_file,
-        )
+            _, filename = create_input_tei(
+                input_file_handle=input_file,
+                text_languages=languages,
+                output_file=out_file,
+            )
+    except RuntimeError as e:
+        raise click.UsageError(e) from e
 
     LOGGER.info("Wrote {}".format(out_file))
 

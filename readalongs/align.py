@@ -803,21 +803,24 @@ def create_input_tei(**kwargs):
         file: outfile (file handle)
         str: output file name
     """
-    if kwargs.get("input_file_name", False):
-        with io.open(kwargs["input_file_name"], encoding="utf8") as f:
-            text = f.readlines()
-    elif kwargs.get("input_file_handle", False):
-        text = kwargs["input_file_handle"].readlines()
-    else:
+    try:
+        if kwargs.get("input_file_name", False):
+            filename = kwargs["input_file_name"]
+            with io.open(kwargs["input_file_name"], encoding="utf8") as f:
+                text = f.readlines()
+        elif kwargs.get("input_file_handle", False):
+            filename = kwargs["input_file_handle"].name
+            text = kwargs["input_file_handle"].readlines()
+        else:
+            assert False, "need one of input_file_name or input_file_handle"
+    except UnicodeDecodeError as e:
         raise RuntimeError(
-            "Call create_input_tei with exactly one of input_file_name= or input_file_handle="
-        )
+            f"Cannot read {filename} as utf-8 plain text: {e}. "
+            "Please make sure to provide a correctly encoded utf-8 plain text input file."
+        ) from e
 
     text_langs = kwargs.get("text_languages", None)
-    if not text_langs or not isinstance(text_langs, (list, tuple)):
-        raise RuntimeError(
-            "text_languages is a required parameter for create_input_tei()"
-        )
+    assert text_langs and isinstance(text_langs, (list, tuple)), "need text_languages"
 
     kwargs["main_lang"] = text_langs[0]
     kwargs["fallback_langs"] = ",".join(text_langs[1:])
