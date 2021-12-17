@@ -4,7 +4,7 @@ Flask>=2.0.0
 Flask-Session==0.3.2
 flask-socketio==4.3.2
 g2p>=0.5.20210825
-lxml==4.6.3
+lxml==4.6.5
 networkx==2.5
 numpy>=1.16.4
 panphon>=0.14
