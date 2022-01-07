@@ -44,7 +44,7 @@ class TestAudio(BasicTestCase):
         LOGGER.info(
             f"Aligning {input_text_path} and {input_audio_path}, outputting to {output_path}"
         )
-        return run(args, capture_output=True, check=False)
+        return run(args, capture_output=True, check=False, encoding="utf-8")
 
     def test_mute_section(self):
         """Should mute section of audio"""
@@ -72,17 +72,18 @@ class TestAudio(BasicTestCase):
         input_audio_path = os.path.join(self.data_dir, "audio_sample.ogg")
         flags = ["-l", "eng"]
         output_path = os.path.join(self.tempdir, "output")
-        log = self.align(input_text_path, input_audio_path, output_path, flags)
-        # LOGGER.info(str(log))
+        process = self.align(input_text_path, input_audio_path, output_path, flags)
+        if process.returncode != 0:
+            LOGGER.error("Subprocess readalongs align failed: %s", process.stderr)
         # Check Result
         smilpath = Path(output_path)
         smil_files = smilpath.glob("*.smil")
         self.assertTrue(
             next(smil_files, False),
             "No *.smil files found; "
-            "a fresh pip install might be required if dependencies changed.",
+            "pip install --force-reinstall --upgrade might be required "
+            "if dependencies changed.",
         )
-        self.assertFalse("error" in str(log).lower())
 
     def test_align_removed(self):
         """Try aligning section with removed audio"""
@@ -96,17 +97,18 @@ class TestAudio(BasicTestCase):
         input_audio_path = audio_output_path
         flags = ["-l", "eng"]
         output_path = os.path.join(self.tempdir, "output_removed")
-        log = self.align(input_text_path, input_audio_path, output_path, flags)
-        # LOGGER.info(str(log))
+        process = self.align(input_text_path, input_audio_path, output_path, flags)
+        if process.returncode != 0:
+            LOGGER.error("Subprocess readalongs align failed: %s", process.stderr)
         # Check Result
         smilpath = Path(output_path)
         smil_files = smilpath.glob("*.smil")
         self.assertTrue(
             next(smil_files, False),
             "No *.smil files found; "
-            "a fresh pip install might be required if dependencies changed.",
+            "pip install --force-reinstall --upgrade might be required "
+            "if dependencies changed.",
         )
-        self.assertFalse("error" in str(log).lower())
 
     def test_align_muted(self):
         """Try aligning section with muted audio"""
@@ -120,17 +122,18 @@ class TestAudio(BasicTestCase):
         input_audio_path = audio_output_path
         flags = ["-l", "eng", "-b"]
         output_path = os.path.join(self.tempdir, "output_muted")
-        log = self.align(input_text_path, input_audio_path, output_path, flags)
-        # LOGGER.info(str(log))
+        process = self.align(input_text_path, input_audio_path, output_path, flags)
+        if process.returncode != 0:
+            LOGGER.error("Subprocess readalongs align failed: %s", process.stderr)
         # Check Result
         smilpath = Path(output_path)
         smil_files = smilpath.glob("*.smil")
         self.assertTrue(
             next(smil_files, False),
             "No *.smil files found; "
-            "a fresh pip install might be required if dependencies changed.",
+            "pip install --force-reinstall --upgrade might be required "
+            "if dependencies changed.",
         )
-        self.assertFalse("error" in str(log).lower())
 
     def test_extract_section(self):
         """Unit test extract_section()"""
