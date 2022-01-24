@@ -72,9 +72,11 @@ $ pip install -e .
 
 ### Installing dependencies
 
-All the Python dependencies are automatically handled by the `pip install` commands shown
-above. You only need the non-Python dependencies: [FFmpeg](https://ffmpeg.org/) and a
-compiler.
+You will need these non-Python dependencies:
+ - [FFmpeg](https://ffmpeg.org/),
+ - a compiler.
+
+All the Python dependencies proper are handled by the `pip install` commands shown above.
 
 #### Dependencies on MacOS
 
@@ -92,11 +94,12 @@ The compiler should already be there, but run `<your package manager> install gc
 
 ##### The easy way, using Anaconda
 
-Anaconda will install Python 3 and the required compiler automatically for you, and makes
-ffmpeg installation simple. We recommend this solution.
+Anaconda/Miniconda will install Python 3 and the required compiler automatically for you,
+and makes ffmpeg installation simple. We recommend this solution.
 
-Download and install the latest Anaconda installer for Python 3 from
-https://www.anaconda.com/products/individual .
+Download and install the latest "Miniconda3 Windows 64-bit" installer from
+https://docs.conda.io/en/latest/miniconda.html.
+You can accept all the default options suggested by the installer.
 
 Launch an Anaconda Prompt (this should be available from your Start menu after
 installation) and run:
