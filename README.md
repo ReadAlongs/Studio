@@ -56,33 +56,22 @@ Optionally a book can be generated as a standalone HTML page, XHTML, Praat TextG
 
 ## Install
 
-You will need: **Python 3.7 or higher**.
-
-To install the latest version published to PyPI, you can run a standard pip
-installation: `pip install readalongs`. Be warned, however, that this project is currectly very active so the published version could be out-of-date. Consider installing the current development version instead.
-
-To install the current development version, clone the repo and pip install it
-locally:
-
-```sh
-$ git clone https://github.com/ReadAlongs/Studio.git
-$ cd Studio
-$ pip install -e .
-```
-
 ### Installing dependencies
 
-You will need these non-Python dependencies:
- - [FFmpeg](https://ffmpeg.org/),
- - a compiler.
+Before you can install the ReadAlong Studio, you will need to install these dependencies:
 
-All the Python dependencies proper are handled by the `pip install` commands shown above.
+ - Python, version 3.7 or higher,
+ - [FFmpeg](https://ffmpeg.org/),
+ - a C compiler,
+ - Git (optional, needed to get the current development version).
 
 #### Dependencies on MacOS
 
-If FFmpeg is not already installed, `brew install ffmpeg` should add it.
+First install Homebrew, then use it to install FFmpeg with `brew install ffmpeg`.
 
-The compiler should already be there.
+TODO: xcode?
+
+The compiler should already be on your machine.
 
 #### Dependencies on Linux
 
@@ -104,9 +93,10 @@ You can accept all the default options suggested by the installer.
 Launch an Anaconda Prompt (this should be available from your Start menu after
 installation) and run:
 
-    conda intall ffmpeg
+    conda install ffmpeg
+    conda install git
 
-You can then run the pip install commands above and use readalongs, all from the Anaconda
+You can then run the pip install commands below and use readalongs, all from the Anaconda
 Prompt.
 
 ##### The hard way
@@ -116,6 +106,30 @@ This procedure is for experts only, as it can be quite difficult to configure co
  - Install Python3 for Windows.
  - Install [FFmpeg builds for Windows](https://ffmpeg.zeranoe.com/builds/) ([alternative instructions](https://windowsloop.com/install-ffmpeg-windows-10/)).
  - Install [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017) (search for "Build Tools", select C++ when prompted).
+ - Install Git for Windows (optional).
+
+### Installing ReadAlongs Studio itself
+
+To install the latest version of readalongs published to PyPI, you can run a standard pip
+installation: `pip install readalongs`. Be warned, however, that this project is still very active so the published version could be out-of-date. Consider installing the current development version instead.
+
+To install the current development version, clone the repo and pip install it
+locally:
+
+```sh
+$ git clone https://github.com/ReadAlongs/Studio.git
+$ cd Studio
+$ pip install -e .
+```
+
+### Verifying your installation
+
+Run `readalongs -h` to confirm that installation was successful.
+
+If you installed the current development version with Git, you can also run the full test suite:
+
+    cd Studio/test
+    python run.py dev
 
 ## Usage
 
