@@ -70,13 +70,49 @@ $ cd Studio
 $ pip install -e .
 ```
 
-If you don't already have it, you will also need [FFmpeg](https://ffmpeg.org/).
+### Installing dependencies
 
-- Windows: [FFmpeg builds for Windows](https://ffmpeg.zeranoe.com/builds/) ([helpful instructions](https://windowsloop.com/install-ffmpeg-windows-10/))
-- Mac: `brew install ffmpeg`
-- Linux: `<your package manager> install ffmpeg`
+All the Python dependencies are automatically handled by the `pip install` commands shown
+above. You only need the non-Python dependencies: [FFmpeg](https://ffmpeg.org/) and a
+compiler.
 
-On Windows, you might also need [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017) (search for "Build Tools", select C++ when prompted).
+#### Dependencies on MacOS
+
+If FFmpeg is not already installed, `brew install ffmpeg` should add it.
+
+The compiler should already be there.
+
+#### Dependencies on Linux
+
+If FFmpeg is not already installed, `<your package manager> install ffmpeg` should add it.
+
+The compiler should already be there, but run `<your package manager> install gcc` if not.
+
+#### Dependencies on Windows
+
+##### The easy way, using Anaconda
+
+Anaconda will install Python 3 and the required compiler automatically for you, and makes
+ffmpeg installation simple. We recommend this solution.
+
+Download and install the latest Anaconda installer for Python 3 from
+https://www.anaconda.com/products/individual .
+
+Launch an Anaconda Prompt (this should be available from your Start menu after
+installation) and run:
+
+    conda intall ffmpeg
+
+You can then run the pip install commands above and use readalongs, all from the Anaconda
+Prompt.
+
+##### The hard way
+
+This procedure is for experts only, as it can be quite difficult to configure correctly.
+
+ - Install Python3 for Windows.
+ - Install [FFmpeg builds for Windows](https://ffmpeg.zeranoe.com/builds/) ([alternative instructions](https://windowsloop.com/install-ffmpeg-windows-10/)).
+ - Install [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017) (search for "Build Tools", select C++ when prompted).
 
 ## Usage
 
