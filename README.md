@@ -134,6 +134,9 @@ If you installed the current development version with Git, you can also run the 
     cd Studio/test
     python run.py dev
 
+And you can download our [open samples on GitHub](https://github.com/ReadAlongs/OpenSamples)
+to run your first alignments.
+
 ## Usage
 
 ReadAlong-Studio can be used either through the command line, a distributed web application or Docker.
