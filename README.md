@@ -72,9 +72,9 @@ Before you can install the ReadAlong Studio, you will need to install these depe
 
 First install Homebrew, then use it to install FFmpeg with `brew install ffmpeg`.
 
-TODO: xcode?
-
 The compiler should already be on your machine.
+
+Consider Xcode for your XML and text file editor.
 
 #### Dependencies on Linux
 
@@ -87,7 +87,7 @@ The compiler should already be there, but run `<your package manager> install gc
 ##### The easy way, using Anaconda
 
 Anaconda/Miniconda will install Python 3 and the required compiler automatically for you,
-and makes ffmpeg installation simple. We recommend this solution.
+and simplifies ffmpeg and git installation. We recommend this solution.
 
 Download and install the latest "Miniconda3 Windows 64-bit" installer from
 https://docs.conda.io/en/latest/miniconda.html.
@@ -99,12 +99,12 @@ installation) and run:
     conda install ffmpeg
     conda install git
 
-You can then run the pip install commands below and use readalongs, all from the Anaconda
+You can then run the pip install and git commands below, and use readalongs, all from the Anaconda
 Prompt.
 
 ##### The hard way
 
-This procedure is for experts only, as it can be quite difficult to configure correctly.
+If you know what you're doing, you can install the dependencies directly on your machine:
 
  - Install Python3 for Windows.
  - Install [FFmpeg builds for Windows](https://ffmpeg.zeranoe.com/builds/) ([alternative instructions](https://windowsloop.com/install-ffmpeg-windows-10/)).
