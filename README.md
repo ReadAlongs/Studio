@@ -7,8 +7,6 @@
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/ReadAlongs/Studio)
 [![Documentation Status](https://readthedocs.org/projects/readalong-studio/badge/)](https://readalong-studio.readthedocs.io)
 
-:warning: :construction: This repo is currently **under construction** and is not stable. :construction: :warning:
-
 > Audiobook alignment for Indigenous languages!
 
 This library is an end-to-end audio/text aligner. It is meant to be used together with the [ReadAlong-Web-Component](https://github.com/roedoejet/ReadAlong-Web-Component) to interactively visualize the alignment.
