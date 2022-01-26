@@ -120,4 +120,7 @@ def read_audio_from_file(path: str) -> AudioSegment:
         return AudioSegment.from_file(path)
     except Exception as e:
         # need repr(e) here instead of e since these exceptions don't all have messages
-        raise RuntimeError("Error reading audio file %s: %s" % (path, repr(e))) from e
+        raise RuntimeError(
+            "Error reading audio file %s: %s. Please make sure you "
+            "provide a valid audio file." % (path, repr(e))
+        ) from e

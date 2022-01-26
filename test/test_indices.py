@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+"""Test suite for handling g2p indices"""
+
 from unittest import TestCase, main
 
 from g2p import make_g2p
@@ -10,7 +12,10 @@ from readalongs.log import LOGGER
 
 
 class TestIndices(TestCase):
+    """Test suite for handling g2p indices"""
+
     def test_basic_composition(self):
+        """Indices mapped through a two-step basic composition"""
         mapping = Mapping([{"in": "a", "out": "b"}])
         transducer = Transducer(mapping)
         tg = transducer("abba")
@@ -18,6 +23,7 @@ class TestIndices(TestCase):
         self.assertEqual(tg.edges, [(0, 0), (1, 1), (2, 2), (3, 3)])
 
     def test_tiered_composition(self):
+        """Indices mapped through a more complex, three-step composition"""
         transducer = make_g2p("dan", "eng-arpabet")
         tg = transducer("hej")
         self.assertEqual(tg.output_string, "HH EH Y ")

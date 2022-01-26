@@ -7,8 +7,6 @@
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/ReadAlongs/Studio)
 [![Documentation Status](https://readthedocs.org/projects/readalong-studio/badge/)](https://readalong-studio.readthedocs.io)
 
-:warning: :construction: This repo is currently **under construction** and is not stable. :construction: :warning:
-
 > Audiobook alignment for Indigenous languages!
 
 This library is an end-to-end audio/text aligner. It is meant to be used together with the [ReadAlong-Web-Component](https://github.com/roedoejet/ReadAlong-Web-Component) to interactively visualize the alignment.
@@ -19,9 +17,12 @@ This library is an end-to-end audio/text aligner. It is meant to be used togethe
   - [Table of Contents](#table-of-contents)
   - [Background](#background)
   - [Install](#install)
+    - [Dependencies](#installing-dependencies)
+    - [Studio itself](#Installing-ReadAlongs-Studio-itself)
+    - [Validation](#Verifying-your-installation)
   - [Usage](#usage)
     - [CLI](#cli)
-    - [Studio](#studio)
+    - [Studio](#Studio-web-application)
     - [Docker](#docker)
   - [Maintainers](#maintainers)
   - [Contributing](#contributing)
@@ -42,8 +43,7 @@ i.e. a package of:
 
 Which can be loaded using the read-along [web component](https://github.com/roedoejet/ReadAlong-Web-Component). See also [Studio Output Realizations](https://readalong-studio.readthedocs.io/en/latest/outputs.html).
 
-Optionally a book can be generated as a standalone HTML page or
-as an ePub file.
+Optionally a book can be generated as a standalone HTML page, XHTML, Praat TextGrid, ELAN Eaf file, as well as WebVTT or SRT subitle formats.
 
 1. (optional) Pre-segment inputs, consisting of:
    - Single audio file
@@ -57,10 +57,62 @@ as an ePub file.
 
 ## Install
 
-You will need: **Python 3.7 or higher**.
+### Installing dependencies
 
-To install the latest version published to PyPI, you can run a standard pip
-installation: `pip install readalongs`. Be warned, however, that this project is currectly very active so the published version could be out-of-date. Consider installing the current development version instead.
+Before you can install the ReadAlong Studio, you will need to install these dependencies:
+
+ - Python, version 3.7 or higher,
+ - [FFmpeg](https://ffmpeg.org/),
+ - a C compiler,
+ - Git (optional, needed to get the current development version).
+
+#### Dependencies on MacOS
+
+First install Homebrew, then use it to install FFmpeg with `brew install ffmpeg`.
+
+The compiler should already be on your machine.
+
+Consider Xcode for your XML and text file editor.
+
+#### Dependencies on Linux
+
+If FFmpeg is not already installed, `<your package manager> install ffmpeg` should add it.
+
+The compiler should already be there, but run `<your package manager> install gcc` if not.
+
+#### Dependencies on Windows
+
+##### The easy way, using Anaconda
+
+Anaconda/Miniconda will install Python 3 and the required compiler automatically for you,
+and simplifies ffmpeg and git installation. We recommend this solution.
+
+Download and install the latest "Miniconda3 Windows 64-bit" installer from
+https://docs.conda.io/en/latest/miniconda.html.
+You can accept all the default options suggested by the installer.
+
+Launch an Anaconda Prompt (this should be available from your Start menu after
+installation) and run:
+
+    conda install ffmpeg
+    conda install git
+
+You can then run the pip install and git commands below, and use readalongs, all from the Anaconda
+Prompt.
+
+##### The hard way
+
+If you know what you're doing, you can install the dependencies directly on your machine:
+
+ - Install Python3 for Windows.
+ - Install [FFmpeg builds for Windows](https://ffmpeg.zeranoe.com/builds/) ([alternative instructions](https://windowsloop.com/install-ffmpeg-windows-10/)).
+ - Install [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017) (search for "Build Tools", select C++ when prompted).
+ - Install Git for Windows (optional).
+
+### Installing ReadAlongs Studio itself
+
+To install the latest version of readalongs published to PyPI, you can run a standard pip
+installation: `pip install readalongs`. Be warned, however, that this project is still very active so the published version could be out-of-date. Consider installing the current development version instead.
 
 To install the current development version, clone the repo and pip install it
 locally:
@@ -71,13 +123,17 @@ $ cd Studio
 $ pip install -e .
 ```
 
-If you don't already have it, you will also need [FFmpeg](https://ffmpeg.org/).
+### Verifying your installation
 
-- Windows: [FFmpeg builds for Windows](https://ffmpeg.zeranoe.com/builds/) ([helpful instructions](https://windowsloop.com/install-ffmpeg-windows-10/))
-- Mac: `brew install ffmpeg`
-- Linux: `<your package manager> install ffmpeg`
+Run `readalongs -h` to confirm that installation was successful.
 
-On Windows, you might also need [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017) (search for "Build Tools", select C++ when prompted).
+If you installed the current development version with Git, you can also run the full test suite:
+
+    cd Studio/test
+    python run.py dev
+
+And you can download our [open samples on GitHub](https://github.com/ReadAlongs/OpenSamples)
+to run your first alignments.
 
 ## Usage
 
@@ -97,13 +153,6 @@ For more information about how the command line interface works:
 Basic alignment is done with the following command.
 
 `readalongs align TEXTFILE WAVFILE OUTPUTNAME`
-
-#### ePub
-
-In order to generate an ePub, there are two steps:
-
-1. `readalongs align --output-xhtml TEXTFILE WAVFILE OUTPUTNAME`
-2. `readalongs epub OUTPUTNAME.smil OUTPUTNAME.epub`
 
 ### Studio web application
 

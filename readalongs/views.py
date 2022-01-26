@@ -19,16 +19,12 @@ from subprocess import run
 from tempfile import mkdtemp
 from zipfile import ZipFile
 
-import g2p.mappings.langs as g2p_langs
 from flask import abort, redirect, render_template, request, send_file, session, url_for
 from flask_socketio import emit
-from networkx import has_path
 
 from readalongs.app import app, socketio
 from readalongs.log import LOGGER
 from readalongs.util import getLangs
-
-LANGS, LANG_NAMES = getLangs()
 
 ALLOWED_TEXT = ["txt", "xml", "docx"]
 ALLOWED_AUDIO = ["wav", "mp3"]
@@ -144,10 +140,11 @@ def steps(step):
         session.clear()
         session["temp_dir"] = mkdtemp()
         temp_dir = session["temp_dir"]
+        langs, lang_names = getLangs()
         return render_template(
             "upload.html",
             uploaded=uploaded_files(temp_dir),
-            maps=[{"code": m, "name": LANG_NAMES[m]} for m in LANGS],
+            maps=[{"code": m, "name": lang_names[m]} for m in langs],
         )
     elif step == 2:
         return render_template("preview.html")
@@ -178,10 +175,10 @@ def steps(step):
             _, audio_ext = os.path.splitext(session["audio"])
             data = {"audio_ext": audio_ext, "base": output_base}
             if session["config"].get("show-log", False):
-                log = run(args, capture_output=True)
+                log = run(args, capture_output=True, check=False)
                 data["log"] = log
             else:
-                run(args)
+                run(args, check=False)
             data["audio_path"] = os.path.join(
                 session["temp_dir"], output_base, output_base + audio_ext
             )

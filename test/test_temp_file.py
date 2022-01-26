@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 
-"""
-Test PortableNamedTemporaryFile class
-"""
+"""Test PortableNamedTemporaryFile class"""
 
 import os
-import sys
 import unittest
 from tempfile import NamedTemporaryFile
 
@@ -14,37 +11,49 @@ from readalongs.portable_tempfile import PortableNamedTemporaryFile
 
 
 class TestTempFile(unittest.TestCase):
-    def testBasicFile(self):
-        f = open("delme_test_temp_file", mode="w")
+    """Test PortableNamedTemporaryFile class"""
+
+    def test_basic_file(self):
+        """Test basic file IO usage. This was more for me to learn file IO in Python..."""
+        f = open("delme_test_temp_file", mode="w", encoding="utf8")
         f.write("some text")
         f.close()
+        self.assertTrue(os.path.exists("delme_test_temp_file"))
         os.unlink("delme_test_temp_file")
+        self.assertFalse(os.path.exists("delme_test_temp_file"))
 
-    def testNTF(self):
+    def test_ntf(self):
+        """Regular usage of tempfile.NamedTemporaryFile from the standard library"""
         tf = NamedTemporaryFile(prefix="testtempfile_testNTF_", delete=False, mode="w")
         tf.write("Some text")
         # LOGGER.debug("tf.name {}".format(tf.name))
         tf.close()
-        readf = open(tf.name, mode="r")
+        readf = open(tf.name, mode="r", encoding="utf8")
         text = readf.readline()
         self.assertEqual(text, "Some text")
         readf.close()
         os.unlink(tf.name)
 
-    def testDeleteFalse(self):
+    def test_delete_false(self):
+        """PortableNamedTemporaryFile with delete=False behaves like tempfile.NamedTemporaryFile"""
         tf = PortableNamedTemporaryFile(
             prefix="testtempfile_testDeleteFalse_", delete=False, mode="w"
         )
         tf.write("Some text")
         tf.close()
         # LOGGER.info(tf.name)
-        readf = open(tf.name, mode="r")
+        readf = open(tf.name, mode="r", encoding="utf8")
         text = readf.readline()
         readf.close()
         self.assertEqual(text, "Some text")
         os.unlink(tf.name)
 
-    def testTypicalUsage(self):
+    def test_typical_usage(self):
+        """Typical usage of PortableNamedTemporaryFile, i.e., with delete=True
+
+        This is what PortableNamedTemporaryFile is all about, since tempfile.NamedTemporaryFile
+        with delete=True on Windows does not work like we might want it to.
+        """
         tf = PortableNamedTemporaryFile(
             prefix="testtempfile_testTypicalUsage_", delete=True, mode="w"
         )
@@ -52,12 +61,13 @@ class TestTempFile(unittest.TestCase):
         tf.write("Some text")
         tf.close()
         # LOGGER.info(tf.name)
-        readf = open(tf.name, mode="r")
+        readf = open(tf.name, mode="r", encoding="utf8")
         text = readf.readline()
         readf.close()
         self.assertEqual(text, "Some text")
 
-    def testUsingWith(self):
+    def test_using_with(self):
+        """In a with statement, the file will be deleted when the with exits"""
         with PortableNamedTemporaryFile(
             prefix="testtempfile_testUsingWith_", delete=True, mode="w"
         ) as tf:
@@ -65,12 +75,16 @@ class TestTempFile(unittest.TestCase):
             tf.write("Some text")
             tf.close()
             # LOGGER.info(tf.name)
-            readf = open(tf.name, mode="r")
+            filename = tf.name
+            readf = open(tf.name, mode="r", encoding="utf8")
             text = readf.readline()
             readf.close()
             self.assertEqual(text, "Some text")
+            self.assertTrue(os.path.exists(filename))
+        self.assertFalse(os.path.exists(filename))
 
-    def testSeek(self):
+    def test_seek(self):
+        """read/write operations should work on a PortableNamedTemporaryFile"""
         tf = PortableNamedTemporaryFile(
             prefix="testtempfile_testSeek_", delete=True, mode="w+"
         )

@@ -40,15 +40,40 @@ def xpath_default(xml, query, default_namespace_prefix="i"):
         yield e
 
 
-def get_lang_attrib(element):
-    lang_path = element.xpath("./@xml:lang")
-    if not lang_path and "lang" in element.attrib:
-        lang_path = element.attrib["lang"]
-    if not lang_path and element.getparent() is not None:
-        return get_lang_attrib(element.getparent())
-    if not lang_path:
+def get_attrib_recursive(element, *attribs):
+    """Find the first attribute in attribs in element or its closest ancestor
+    that has any of the attributes in attribs.
+
+    Usage examples:
+        get_attrib_recursive(el, "fallback-langs")
+        get_attrib_recursive(el, "xml:lang", "lang")
+
+    Args:
+        element: an etree element where to search for attributes in attribs
+        attribs: one or more attribute label(s) to search for
+
+    Returns:
+        the value of the first attribute in attribes found in element or the
+        closest ancestor that has any of the attributes in attribs, or None
+    """
+    for attrib in attribs:
+        # We could also element.attrib[attrib] instead of xpath, but it only
+        # works for attributes without a name, like attrib="lang", while xpath
+        # also works for attributes with a namespace, like attrib="xml:lang".
+        path = element.xpath("./@" + attrib)
+        if path:
+            return path[0]
+    if element.getparent() is not None:
+        return get_attrib_recursive(element.getparent(), *attribs)
+    else:
         return None
-    return lang_path[0]
+
+
+def get_lang_attrib(element):
+    """Return the xml:lang (in priority) or lang (fallback) attribute from element
+    or its closest ancestor that has either, or None when neither is found.
+    """
+    return get_attrib_recursive(element, "xml:lang", "lang")
 
 
 def is_do_not_align(element):
