@@ -127,7 +127,7 @@ def cli():
     """
 
 
-@cli.command(  # noqa: C901
+@cli.command(  # noqa: C901  # some versions of flake8 need this here
     context_settings=CONTEXT_SETTINGS, short_help="Force align a text and a sound file."
 )
 @click.argument("textfile", type=click.Path(exists=True, readable=True))
@@ -157,7 +157,6 @@ def cli():
         + SUPPORTED_OUTPUT_FORMATS_DESC
     ),
 )
-@click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
 @click.option(
     "-f", "--force-overwrite", is_flag=True, help="Force overwrite output files"
 )
@@ -201,13 +200,15 @@ def cli():
     default=None,
     help="OBSOLETE; enable the g2p cascade by giving -l with multiple langs instead",
 )
+@click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
+@click.option("--debug-aligner", is_flag=True, help="Display logs from the aligner")
 @click.option(
     "--g2p-verbose",
     is_flag=True,
     default=False,
     help="Display verbose g2p error messages",
 )
-def align(**kwargs):
+def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here instead
     """Align TEXTFILE and AUDIOFILE and create output files as OUTPUT_BASE.* in directory
     OUTPUT_BASE/.
 
@@ -358,6 +359,7 @@ def align(**kwargs):
             config=config,
             save_temps=temp_base,
             verbose_g2p_warnings=kwargs["g2p_verbose"],
+            debug_aligner=kwargs["debug_aligner"],
         )
     except RuntimeError as e:
         raise click.UsageError(e) from e

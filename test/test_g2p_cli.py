@@ -214,6 +214,7 @@ class TestG2pCli(BasicTestCase):
             )
         self.assertNotEqual(results.exit_code, 0)
         self.assertIn("could not be g2p", results.output)
+        self.assertNotIn("Number of aligned segments", results.output)
 
         with SoundSwallowerStub("t0b0d0p0s0w0:920:1620", "t0b0d0p0s1w0:1620:1690"):
             results = self.runner.invoke(
@@ -236,8 +237,8 @@ class TestG2pCli(BasicTestCase):
             )
         self.assertIn("Trying fallback: fra", results.output)
         self.assertIn("Trying fallback: iku", results.output)
-        # We get the found segments printed only if g2p succeeded:
-        self.assertIn("Segment: t0b0d0p0s0w0", results.output)
+        self.assertNotIn("could not be g2p", results.output)
+        self.assertIn("Number of aligned segments", results.output)
 
     def test_with_stdin(self):
         """readalongs g2p running with stdin as input"""

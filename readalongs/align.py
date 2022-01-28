@@ -162,6 +162,7 @@ def align_audio(  # noqa: C901
     config=None,
     save_temps=None,
     verbose_g2p_warnings=False,
+    debug_aligner=False,
 ):
     """Align an XML input file to an audio file.
 
@@ -211,7 +212,7 @@ def align_audio(  # noqa: C901
             "Run with --g2p-verbose for more detailed g2p error logs."
         )
 
-    # Prepare the SoundsSwallower (formerly PocketSphinx) configuration
+    # Prepare the SoundSwallower (formerly PocketSphinx) configuration
     cfg = soundswallower.Decoder.default_config()
     model_path = soundswallower.get_model_path()
     cfg.set_boolean("-remove_noise", False)
@@ -220,6 +221,17 @@ def align_audio(  # noqa: C901
     # cfg.set_string('-samprate', "no no")
     cfg.set_float("-beam", 1e-100)
     cfg.set_float("-wbeam", 1e-80)
+
+    if not debug_aligner:
+        # With --debug-aligner, we display the SoundSwallower logs on screen, but
+        # otherwise we redirect them away from the terminal.
+        if save_temps:
+            # With --save-temps, we save the SoundSwallower logs to a file.
+            ss_log = save_temps + ".soundswallower.log"
+        else:
+            # Otherwise, we send the SoundSwallower logs to the bit bucket.
+            ss_log = os.devnull
+        cfg.set_string("-logfn", ss_log)
 
     # Read the audio file
     audio = read_audio_from_file(audio_path)
@@ -361,7 +373,8 @@ def align_audio(  # noqa: C901
                 start = start_ms / 1000
                 end = end_ms / 1000
             results["words"].append({"id": seg.word, "start": start, "end": end})
-            LOGGER.info("Segment: %s (%.3f : %.3f)", seg.word, start, end)
+            if debug_aligner:
+                LOGGER.info("Segment: %s (%.3f : %.3f)", seg.word, start, end)
         aligned_segment_count = len(results["words"]) - prev_segment_count
         if aligned_segment_count != len(word_sequence.words):
             LOGGER.warning(
@@ -372,12 +385,17 @@ def align_audio(  # noqa: C901
             )
     final_end = end
 
-    if len(results["words"]) == 0:
+    aligned_segment_count = len(results["words"])
+    token_count = len(results["tokenized"].xpath("//" + unit))
+    LOGGER.info(f"Number of words founds: {token_count}")
+    LOGGER.info(f"Number of aligned segments: {aligned_segment_count}")
+
+    if aligned_segment_count == 0:
         raise RuntimeError(
             "Alignment produced only noise or silence segments, "
             "please verify that the text is an actual transcript of the audio."
         )
-    if len(results["words"]) != len(results["tokenized"].xpath("//" + unit)):
+    if aligned_segment_count != token_count:
         LOGGER.warning(
             "Alignment produced a different number of segments and tokens than "
             "were in the input. Sequences between some anchors probably did not "
