@@ -28,9 +28,9 @@ from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import save_xml, write_xml
 from readalongs.util import (
     JoinerCallbackForClick,
+    get_langs,
+    get_langs_deferred,
     get_obsolete_callback_for_click,
-    getLangs,
-    getLangsDeferred,
 )
 
 SUPPORTED_OUTPUT_FORMATS = {
@@ -189,7 +189,7 @@ def cli():
     "--language",
     "--languages",
     multiple=True,
-    callback=JoinerCallbackForClick(getLangsDeferred()),
+    callback=JoinerCallbackForClick(get_langs_deferred()),
     help=(
         "The language code(s) for text in TEXTFILE (use only with plain text input); "
         "multiple codes can be joined by ',' or ':', or by repeating the option, "
@@ -410,7 +410,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
     "--languages",
     required=True,
     multiple=True,
-    callback=JoinerCallbackForClick(getLangsDeferred()),
+    callback=JoinerCallbackForClick(get_langs_deferred()),
     help=(
         "The language code(s) for text in PLAINTEXTFILE; "
         "multiple codes can be joined by ',' or ':', or by repeating the option, "
@@ -675,6 +675,6 @@ def langs():
     """List all the language codes and names currently supported by g2p
     that can be used for ReadAlongs creation.
     """
-    lang_codes, lang_names = getLangs()
+    lang_codes, lang_names = get_langs()
     for lang in lang_codes:
         print("%-8s\t%s" % (lang, lang_names[lang]))

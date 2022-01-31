@@ -49,7 +49,7 @@ from readalongs.text.util import (
     load_xml,
     save_xml,
 )
-from readalongs.util import getLangs
+from readalongs.util import get_langs
 
 
 def convert_words(  # noqa: C901
@@ -113,12 +113,12 @@ def convert_words(  # noqa: C901
             except InvalidLanguageCode as e:
                 raise ValueError(
                     f'Could not g2p "{word}" as "{lang}": invalid language code. '
-                    f"Use one of {getLangs()[0]}"
+                    f"Use one of {get_langs()[0]}"
                 ) from e
             except NoPath as e:
                 raise ValueError(
                     f'Count not g2p "{word}" as "{lang}": no path to "{output_orthography}". '
-                    f"Use one of {getLangs()[0]}"
+                    f"Use one of {get_langs()[0]}"
                 ) from e
             tg = converter(word)
             text = tg.output_string.strip()

@@ -8,16 +8,16 @@ LANGS = None
 LANG_NAMES = None
 
 
-def getLangsDeferred() -> Iterable:
+def get_langs_deferred() -> Iterable:
     """Lazilly get the list of language codes supported by g2p library
 
     Yields an Iterable in such a way that the g2p database is only loaded when
     the results are iterated over, rather than when this function is called.
     """
-    yield from getLangs()[0]
+    yield from get_langs()[0]
 
 
-def getLangs():
+def get_langs():
     """Get the list of language codes and names supported by the g2p library
 
     Returns:

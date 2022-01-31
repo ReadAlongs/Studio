@@ -24,7 +24,7 @@ from flask_socketio import emit
 
 from readalongs.app import app, socketio
 from readalongs.log import LOGGER
-from readalongs.util import getLangs
+from readalongs.util import get_langs
 
 ALLOWED_TEXT = ["txt", "xml", "docx"]
 ALLOWED_AUDIO = ["wav", "mp3"]
@@ -140,7 +140,7 @@ def steps(step):
         session.clear()
         session["temp_dir"] = mkdtemp()
         temp_dir = session["temp_dir"]
-        langs, lang_names = getLangs()
+        langs, lang_names = get_langs()
         return render_template(
             "upload.html",
             uploaded=uploaded_files(temp_dir),
