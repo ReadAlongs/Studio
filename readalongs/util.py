@@ -78,7 +78,7 @@ def getLangs():
         return LANGS, LANG_NAMES
 
 
-class JoinerCallback:
+class JoinerCallbackForClick:
     """Command-line parameter validation for multiple-value options.
 
     The values can be repeated by giving the option multiple times on the
@@ -89,7 +89,13 @@ class JoinerCallback:
     """
 
     def __init__(self, valid_values: Iterable, joiner_re=r"[,:]"):
-        self.valid_values = valid_values
+        """Get a joiner callback.
+
+        Args:
+            valid_values: list of valid values for the multi-value option
+            joiner_re: regex for how to user may join multiple values
+        """
+        self.valid_values = valid_values  # ***do not convert this to a list here!***
         self.joiner_re = joiner_re
 
     # This signature meets the requirements of click.option's callback parameter:
@@ -113,3 +119,20 @@ class JoinerCallback:
     def quoted_list(values):
         """Display a list of values quoted, for easy reading in error messages."""
         return ", ".join("'" + v + "'" for v in values)
+
+
+def get_obsolete_callback_for_click(message):
+    """Click callback for telling the user an option is obsolete in a helpful way.
+
+    Args:
+        message (str): message telling the user what the option is replaced by
+    """
+
+    def _callback(_ctx, param, value_groups):
+        if value_groups:
+            joiner = "' / '"
+            raise click.BadParameter(
+                f"The '{joiner.join(param.opts)}' option is obsolete.\n" + message
+            )
+
+    return _callback

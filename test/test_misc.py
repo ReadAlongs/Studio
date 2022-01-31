@@ -11,7 +11,7 @@ from test_dna_utils import segments_from_pairs
 
 from readalongs.align import split_silences
 from readalongs.text.util import get_attrib_recursive, get_lang_attrib, parse_time
-from readalongs.util import JoinerCallback
+from readalongs.util import JoinerCallbackForClick
 
 
 class TestMisc(TestCase):
@@ -154,7 +154,7 @@ class TestMisc(TestCase):
         # get_attrib_recursive() --EJJ Nov 2021
 
     def test_joiner_callback(self):
-        cb = JoinerCallback(iter("qwer"))  # iterable over four characters
+        cb = JoinerCallbackForClick(iter("qwer"))  # iterable over four characters
         self.assertEqual(cb(None, None, ["e:r"]), ["e", "r"])
         self.assertEqual(cb(None, None, ["q,w"]), ["q", "w"])
         with self.assertRaises(click.BadParameter):

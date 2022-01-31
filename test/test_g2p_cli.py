@@ -70,6 +70,17 @@ class TestG2pCli(BasicTestCase):
                 f"output {g2p_file} and reference {ref_file} differ.",
             )
 
+    def test_invoke_with_obsolete_switches(self):
+        """Using obsolete options should yield a helpful error message"""
+
+        input_file = os.path.join(self.data_dir, "fra-tokenized.xml")
+        g2p_file = os.path.join(self.tempdir, "obsolete1.xml")
+        results = self.runner.invoke(
+            g2p, ["--g2p-fallback", "fra:und", input_file, g2p_file]
+        )
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("is obsolete", results.output)
+
     # Write text to a temp file, pass it through prepare -l lang, and then tokenize,
     # saving the final results into filename.
     # filename is assumed to be inside self.tempdir, so we count on tearDown() to clean up.

@@ -447,19 +447,35 @@ class TestAlignCli(BasicTestCase):
         self.assertNotEqual(results.exit_code, 0)
         self.assertIn("Error parsing XML", results.output)
 
+    def test_obsolete_switches(self):
         # Giving -i switch generates an obsolete-switch error message
         with SoundSwallowerStub("word:0:1"):
             results = self.runner.invoke(
                 align,
                 [
                     "-i",
-                    infile5,
+                    join(self.data_dir, "fra.txt"),
                     join(self.data_dir, "noise.mp3"),
                     join(self.tempdir, "outdir6"),
                 ],
             )
         self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("The -i option is obsolete.", results.output)
+        self.assertIn("is obsolete.", results.output)
+
+        # Giving --g2p-fallback switch generates an obsolete-switch error message
+        with SoundSwallowerStub("word:0:1"):
+            results = self.runner.invoke(
+                align,
+                [
+                    "--g2p-fallback",
+                    "fra:end:und",
+                    join(self.data_dir, "fra.txt"),
+                    join(self.data_dir, "noise.mp3"),
+                    join(self.tempdir, "outdir8"),
+                ],
+            )
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("is obsolete.", results.output)
 
 
 if __name__ == "__main__":

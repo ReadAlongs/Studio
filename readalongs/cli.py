@@ -26,7 +26,12 @@ from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import save_xml, write_xml
-from readalongs.util import JoinerCallback, getLangs, getLangsDeferred
+from readalongs.util import (
+    JoinerCallbackForClick,
+    get_obsolete_callback_for_click,
+    getLangs,
+    getLangsDeferred,
+)
 
 SUPPORTED_OUTPUT_FORMATS = {
     "eaf": "ELAN file",
@@ -149,7 +154,7 @@ def cli():
     "-o",
     "--output-formats",
     multiple=True,
-    callback=JoinerCallback(SUPPORTED_OUTPUT_FORMATS),
+    callback=JoinerCallbackForClick(SUPPORTED_OUTPUT_FORMATS),
     help=(
         "Comma- or colon-separated list of additional output file formats to export to. "
         "The text is always exported as XML and alignments as SMIL, but "
@@ -166,7 +171,11 @@ def cli():
     hidden=True,
     is_flag=True,
     default=None,
-    help="OBSOLETE; the input format is now guessedb by extension or contents",
+    help="OBSOLETE; the input format is now guessed by extension or contents",
+    callback=get_obsolete_callback_for_click(
+        ".txt files are now read as plain text, .xml as XML, and other files based on\n"
+        "whether they start with <?xml or not."
+    ),
 )
 @click.option(
     "--lang-no-append-und",
@@ -180,7 +189,7 @@ def cli():
     "--language",
     "--languages",
     multiple=True,
-    callback=JoinerCallback(getLangsDeferred()),
+    callback=JoinerCallbackForClick(getLangsDeferred()),
     help=(
         "The language code(s) for text in TEXTFILE (use only with plain text input); "
         "multiple codes can be joined by ',' or ':', or by repeating the option, "
@@ -199,6 +208,10 @@ def cli():
     hidden=True,
     default=None,
     help="OBSOLETE; enable the g2p cascade by giving -l with multiple langs instead",
+    callback=get_obsolete_callback_for_click(
+        "Specify multiple languages with the -l/--language option instead,\n"
+        "or by adding the 'fallback-langs' attribute where relevant in your XML input."
+    ),
 )
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
 @click.option("--debug-aligner", is_flag=True, help="Display logs from the aligner")
@@ -278,13 +291,6 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
             f"Cannot write into output folder '{output_dir}'. Please verify permissions."
         ) from e
 
-    if kwargs["g2p_fallback"] is not None:
-        raise click.BadParameter(
-            "The --g2p-fallback option is obsolete.\n"
-            "Specify multiple languages with the -l/--language option instead,\n"
-            "or by adding the 'fallback-langs' attribute where relevant in your XML input."
-        )
-
     output_basename = os.path.basename(output_dir)
     temp_base = None
     if kwargs["save_temps"]:
@@ -297,12 +303,6 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
 
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
-
-    if kwargs["text_input"] is not None:
-        raise click.BadParameter(
-            "The -i option is obsolete. .txt files are now read as plain text, "
-            ".xml as XML, and other files based on whether they start with <?xml or not."
-        )
 
     # Determine if the file is plain text or XML
     textfile_name = kwargs["textfile"]
@@ -402,7 +402,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
     "--languages",
     required=True,
     multiple=True,
-    callback=JoinerCallback(getLangsDeferred()),
+    callback=JoinerCallbackForClick(getLangsDeferred()),
     help=(
         "The language code(s) for text in PLAINTEXTFILE; "
         "multiple codes can be joined by ',' or ':', or by repeating the option, "
@@ -550,6 +550,10 @@ def tokenize(**kwargs):
     hidden=True,
     default=None,
     help="OBSOLETE; enable the g2p cascade by giving -l with multiple langs to prepare instead",
+    callback=get_obsolete_callback_for_click(
+        "Specify multiple languages with the -l/--language option to prepare instead,\n"
+        "or by adding the 'fallback-langs' attribute where relevant in your XML input."
+    ),
 )
 @click.option(
     "-f", "--force-overwrite", is_flag=True, help="Force overwrite output files"
