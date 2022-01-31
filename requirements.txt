@@ -7,11 +7,8 @@ g2p>=0.5.20210825
 lxml==4.6.5
 networkx==2.5
 numpy>=1.16.4
-panphon>=0.14
 soundswallower==0.1.1
 pydub==0.23.1
 pympi-ling==1.69
 python-slugify==5.0.0
-six==1.12.0
-tqdm==4.31.1
 webvtt-py==0.4.2
