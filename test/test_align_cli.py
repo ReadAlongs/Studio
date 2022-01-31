@@ -462,6 +462,20 @@ class TestAlignCli(BasicTestCase):
         self.assertNotEqual(results.exit_code, 0)
         self.assertIn("is obsolete.", results.output)
 
+        # Giving --g2p-verbose switch generates an obsolete-switch error message
+        with SoundSwallowerStub("word:0:1"):
+            results = self.runner.invoke(
+                align,
+                [
+                    "--g2p-verbose",
+                    join(self.data_dir, "fra.txt"),
+                    join(self.data_dir, "noise.mp3"),
+                    join(self.tempdir, "outdir7"),
+                ],
+            )
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("is obsolete.", results.output)
+
         # Giving --g2p-fallback switch generates an obsolete-switch error message
         with SoundSwallowerStub("word:0:1"):
             results = self.runner.invoke(

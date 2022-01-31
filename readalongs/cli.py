@@ -216,10 +216,18 @@ def cli():
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
 @click.option("--debug-aligner", is_flag=True, help="Display logs from the aligner")
 @click.option(
-    "--g2p-verbose",
+    "--debug-g2p",
     is_flag=True,
     default=False,
     help="Display verbose g2p error messages",
+)
+@click.option(
+    "--g2p-verbose",
+    is_flag=True,
+    hidden=True,
+    default=None,
+    help="OBSOLETE: now --debug-g2p",
+    callback=get_obsolete_callback_for_click("Use --debug-g2p instead."),
 )
 def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here instead
     """Align TEXTFILE and AUDIOFILE and create output files as OUTPUT_BASE.* in directory
@@ -358,7 +366,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
             bare=bare,
             config=config,
             save_temps=temp_base,
-            verbose_g2p_warnings=kwargs["g2p_verbose"],
+            verbose_g2p_warnings=kwargs["debug_g2p"],
             debug_aligner=kwargs["debug_aligner"],
         )
     except RuntimeError as e:
@@ -559,12 +567,20 @@ def tokenize(**kwargs):
     "-f", "--force-overwrite", is_flag=True, help="Force overwrite output files"
 )
 @click.option(
-    "--g2p-verbose",
+    "--debug-g2p",
     is_flag=True,
     default=False,
     help="Display verbose messages about g2p errors.",
 )
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
+@click.option(
+    "--g2p-verbose",
+    is_flag=True,
+    hidden=True,
+    default=None,
+    help="OBSOLETE: now --debug-g2p",
+    callback=get_obsolete_callback_for_click("Use --debug-g2p instead."),
+)
 def g2p(**kwargs):
     """Apply g2p mappings to TOKFILE into G2PFILE.
 
@@ -631,7 +647,7 @@ def g2p(**kwargs):
     xml = add_ids(xml)
 
     # Apply the g2p mappings.
-    xml, valid = convert_xml(xml, verbose_warnings=kwargs["g2p_verbose"],)
+    xml, valid = convert_xml(xml, verbose_warnings=kwargs["debug_g2p"],)
 
     if output_path == "-":
         write_xml(sys.stdout.buffer, xml)
@@ -643,8 +659,8 @@ def g2p(**kwargs):
         LOGGER.error(
             "Some word(s) could not be g2p'd correctly."
             + (
-                " Run again with --g2p-verbose to get more detailed error messages."
-                if not kwargs["g2p_verbose"]
+                " Run again with --debug-g2p to get more detailed error messages."
+                if not kwargs["debug_g2p"]
                 else ""
             )
         )

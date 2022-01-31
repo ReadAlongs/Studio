@@ -155,7 +155,7 @@ created, as ``output_base*``
 |                                   | configuration file (in JSON                   |
 |                                   | format)                                       |
 +-----------------------------------+-----------------------------------------------+
-| ``--g2p-verbose``                 | Display verbose g2p error messages            |
+| ``--debug-g2p``                   | Display verbose g2p debugging messages        |
 +-----------------------------------+-----------------------------------------------+
 | ``-s, --save-temps``              | Save intermediate stages of                   |
 |                                   | processing and temporary files                |
@@ -311,7 +311,7 @@ The warning messages issued by ``readalongs g2p`` and ``readalongs align``
 indicate which words are causing g2p problems and what fallbacks were tried.
 It can be worth inspecting to input text to fix any encoding or spelling
 errors highlighted by these warnings. More detailed messages can be
-produced by adding the ``--g2p-verbose`` switch, to obtain a lot more
+produced by adding the ``--debug-g2p`` switch, to obtain a lot more
 information about g2p'ing words in each language g2p was unsucessfully
 attempted.
 

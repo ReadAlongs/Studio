@@ -81,6 +81,11 @@ class TestG2pCli(BasicTestCase):
         self.assertNotEqual(results.exit_code, 0)
         self.assertIn("is obsolete", results.output)
 
+        g2p_file = os.path.join(self.tempdir, "obsolete2.xml")
+        results = self.runner.invoke(g2p, ["--g2p-verbose", input_file, g2p_file])
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("is obsolete", results.output)
+
     # Write text to a temp file, pass it through prepare -l lang, and then tokenize,
     # saving the final results into filename.
     # filename is assumed to be inside self.tempdir, so we count on tearDown() to clean up.
@@ -183,7 +188,7 @@ class TestG2pCli(BasicTestCase):
 
         # Run with verbose output and look for the warning messages
         results = self.runner.invoke(
-            g2p, ["--g2p-verbose", tok_file, g2p_file + "verbose"],
+            g2p, ["--debug-g2p", tok_file, g2p_file + "verbose"],
         )
         if self.show_invoke_output:
             print(
