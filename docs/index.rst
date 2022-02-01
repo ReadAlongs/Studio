@@ -1,7 +1,9 @@
-Welcome to ReadAlong-Studio's documentation!
-============================================
+Welcome to ReadAlong-Studio's documentation
+===========================================
 
-.. note:: ReadAlong-Studio is UNDER CONSTRUCTION and should not be expected to be fully documented or even work as expected! Check back soon for more information.
+Audiobook alignment for Indigenous languages
+
+This site provides the full user documentation for ReadAlongs-Studio.
 
 .. toctree::
    :maxdepth: 2
@@ -13,6 +15,7 @@ Welcome to ReadAlong-Studio's documentation!
    cli-ref
    outputs
    advanced-use
+   troubleshooting
 
 
 Indices and tables

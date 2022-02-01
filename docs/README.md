@@ -7,12 +7,17 @@ this folder.
 
 ## Build the documentation locally
 
-To build the documention for local inspection, run one of these commands,
-which will build the documentation in `./_build/html/` or
-`./_build/singlehtml/`:
+To build the documentation for local inspection:
 
-    make html  # multi-page HTML site
-    make singlehtml  # single-page HTML document
+1. Install the required build software, Sphinx:
+
+        pip install -r requirements.txt
+
+2. Run one of these commands, which will build the documentation in `./_build/html/`
+   or `./_build/singlehtml/`:
+
+        make html  # multi-page HTML site
+        make singlehtml  # single-page HTML document
 
 ## View the documentation locally
 
