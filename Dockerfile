@@ -3,13 +3,18 @@ FROM debian:bullseye-slim
 ENV APPHOME /opt/readalong-studio
 ENV PORT 5000
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Lean, optimized installation of system dependencies
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --yes \
         python3 \
         python3-pip \
         git \
         ffmpeg \
-        vim-nox
+        vim-nox \
+	less \
+    && apt-get clean \
+    && apt-get autoremove \
+    && rm -fr /var/lib/apt/lists/*
 
 # Install 3rd party dependencies in their own layer, for faster rebuilds when we
 # change ReadAlong-Studio source code
