@@ -4,6 +4,7 @@ import copy
 import io
 import os
 import shutil
+import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import timedelta
@@ -225,8 +226,9 @@ def align_audio(  # noqa: C901
     if not debug_aligner:
         # With --debug-aligner, we display the SoundSwallower logs on screen, but
         # otherwise we redirect them away from the terminal.
-        if save_temps:
+        if save_temps and (sys.platform not in ("win32", "cygwin")):
             # With --save-temps, we save the SoundSwallower logs to a file.
+            # This is buggy on Windows, so we don't do it on Windows variants
             ss_log = save_temps + ".soundswallower.log"
         else:
             # Otherwise, we send the SoundSwallower logs to the bit bucket.
