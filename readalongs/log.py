@@ -1,13 +1,6 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-#######################################################################
-#
-# log.py
-#
-#   Setup a logger that has colours!
-#
-#######################################################################
+"""
+log.py: Setup a logger that has colours!
+"""
 
 import logging
 
@@ -17,7 +10,7 @@ FIELD_STYLES = dict(levelname=dict(color="green", bold=coloredlogs.CAN_USE_BOLD_
 
 
 def setup_logger(name):
-    """ Create logger and configure with cool colors!
+    """Create logger and configure with cool colors!
     """
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(name)

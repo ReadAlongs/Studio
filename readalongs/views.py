@@ -1,15 +1,9 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+"""
+views.py: Views for ReadAlong Studio web application
 
-#######################################################################
-#
-# views.py
-#
-#   Views for ReadAlong Studio web application
-#   Interactions are described as websocket events and responses
-#   Corresponding JavaScript is found in readalongs/static/js/main.js
-#
-#######################################################################
+Interactions are described as websocket events and responses
+Corresponding JavaScript is found in readalongs/static/js/main.js
+"""
 
 import io
 import os
