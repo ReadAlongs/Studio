@@ -78,6 +78,14 @@ def get_langs():
         return LANGS, LANG_NAMES
 
 
+# For backwards compatibility, we keep the old names getLangs and getLangsDeferred around.
+# For example, ReadAlongsDesktop
+# (https://github.com/tobyatgithub/ReadalongsDesktop) depended on the old name,
+# and even when it's updated, it'll be helpful to avoid breaking older versions.
+getLangs = get_langs
+getLangsDeferred = get_langs_deferred
+
+
 class JoinerCallbackForClick:
     """Command-line parameter validation for multiple-value options.
 
