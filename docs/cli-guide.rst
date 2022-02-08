@@ -184,6 +184,18 @@ A full command could be something like:
 - With other extensions, the beginning of the file is examined to
   automatically determine if it's XML or plain text.
 
+Supported languages
+~~~~~~~~~~~~~~~~~~~
+
+The ``readalongs langs`` command can be used to list all supported languages.
+
+Here is that list at the time of compiling this documentation:
+
+.. command-output:: readalongs langs
+
+See :ref:`adding-a-lang` for references on adding new languages to that list.
+
+
 The config.json file
 ~~~~~~~~~~~~~~~~~~~~
 

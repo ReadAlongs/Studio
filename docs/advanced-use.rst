@@ -3,6 +3,8 @@
 Advanced topics
 ===============
 
+.. _adding-a-lang:
+
 Adding a new language to g2p
 ----------------------------
 
