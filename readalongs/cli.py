@@ -451,7 +451,7 @@ def prepare(**kwargs):
                 out_file = out_file[:-4]
             out_file += ".xml"
 
-    languages = kwargs["language"]
+    languages = list(kwargs["language"])
     if not kwargs["lang_no_append_und"] and "und" not in languages:
         languages.append("und")
 
