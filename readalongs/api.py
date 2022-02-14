@@ -9,10 +9,10 @@ def align(textfile, audiofile, output_base, language=None, **kwargs):
     """Run the "readalongs align" command from within a Python script.
 
     Args:
-        textfile (str): input text file (XML or plain text)
-        audiofile (str): input audio file (format supported by ffmpeg)
-        output_base (str): basename for output files
-        language (list[str]): Specify only of textfile is plain text;
+        textfile (str | Path): input text file (XML or plain text)
+        audiofile (str | Path): input audio file (format supported by ffmpeg)
+        output_base (str | Path): basename for output files
+        language (List[str]): Specify only of textfile is plain text;
             list of languages for g2p and g2p cascade
         save_temps (bool): Optional; whether to save temporary files
 
