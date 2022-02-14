@@ -342,7 +342,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
                 "No input language specified for plain text input. "
                 "Please provide the -l/--language switch."
             )
-        languages = kwargs["language"]
+        languages = list(kwargs["language"])
         if not kwargs["lang_no_append_und"] and "und" not in languages:
             languages.append("und")
         plain_textfile = kwargs["textfile"]

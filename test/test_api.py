@@ -18,12 +18,13 @@ class TestAlignApi(BasicTestCase):
     def test_call_align(self):
         data_dir = Path(self.data_dir)
         temp_dir = Path(self.tempdir)
+        langs = ("fra",)  # make sure language can be an iterable, not just a list.
         with SoundSwallowerStub("t0b0d0p0s0w0:920:1520", "t0b0d0p0s1w0:1620:1690"):
             api.align(
                 str(data_dir / "ej-fra.txt"),
                 str(data_dir / "ej-fra.m4a"),
                 str(temp_dir / "output"),
-                ["fra"],
+                langs,
                 output_formats=["html"],
             )
         expected_output_files = (
@@ -38,6 +39,7 @@ class TestAlignApi(BasicTestCase):
                 (temp_dir / "output" / f).exists(),
                 f"successful alignment should have created {f}",
             )
+        self.assertEqual(list(langs), ["fra"], "Make sure the API call doesn't not modify my variables")
 
 
 if __name__ == "__main__":
