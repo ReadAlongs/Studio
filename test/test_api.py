@@ -7,6 +7,7 @@ Test suite for the API way to call align
 from pathlib import Path
 from unittest import main
 
+import click
 from basic_test_case import BasicTestCase
 from sound_swallower_stub import SoundSwallowerStub
 
@@ -47,6 +48,23 @@ class TestAlignApi(BasicTestCase):
             ["fra"],
             "Make sure the API call doesn't not modify my variables",
         )
+
+    def test_call_prepare(self):
+        data_dir = Path(self.data_dir)
+        temp_dir = Path(self.tempdir)
+        api.prepare(data_dir / "ej-fra.txt", temp_dir / "prepared.xml", ("fra", "eng"))
+        with open(temp_dir / "prepared.xml") as f:
+            xml_text = f.read()
+            self.assertIn('xml:lang="fra" fallback-langs="eng,und"', xml_text)
+
+        with self.assertRaises(click.BadParameter):
+            api.prepare(
+                data_dir / "ej-fra.txt", temp_dir / "bad.xml", ("fra", "not-a-lang")
+            )
+        with self.assertRaises(click.UsageError):
+            api.prepare(
+                data_dir / "file-not-found.txt", temp_dir / "none.xml", ("fra",)
+            )
 
 
 if __name__ == "__main__":

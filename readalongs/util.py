@@ -107,7 +107,7 @@ class JoinerCallbackForClick:
         self.joiner_re = joiner_re
 
     # This signature meets the requirements of click.option's callback parameter:
-    def __call__(self, _ctx, _param, value_groups):
+    def __call__(self, _ctx=None, _param=None, value_groups=()):
         # Defer potentially expensive expansion of valid_values until we really need it.
         self.valid_values, valid_values_iterator = tee(self.valid_values, 2)
         lc_valid_values = [valid_value.lower() for valid_value in valid_values_iterator]

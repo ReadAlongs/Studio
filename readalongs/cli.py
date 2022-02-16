@@ -352,7 +352,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
                 text_languages=languages,
                 save_temps=temp_base,
             )
-        except RuntimeError as e:
+        except (RuntimeError, OSError) as e:
             raise click.UsageError(e) from e
     else:
         xml_textfile = kwargs["textfile"]
@@ -475,7 +475,7 @@ def prepare(**kwargs):
                 text_languages=languages,
                 output_file=out_file,
             )
-    except RuntimeError as e:
+    except (RuntimeError, OSError) as e:
         raise click.UsageError(e) from e
 
     LOGGER.info("Wrote {}".format(out_file))
