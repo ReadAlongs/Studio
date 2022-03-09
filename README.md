@@ -156,7 +156,7 @@ Basic alignment is done with the following command.
 
 ### Studio web application
 
-ReadAlong-Studio has a web interface for creating interactive audiobooks. The web app can be served by first installing ReadAlong-Studio and then running `readalongs run`. A web app will then be available on port 5000.
+ReadAlong-Studio has a web interface for creating interactive audiobooks. The web app can be served by first installing ReadAlong-Studio and then running `python3 run.py`. A web app will then be available on port 5000.
 
 ### Docker
 
