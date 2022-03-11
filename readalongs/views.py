@@ -17,6 +17,7 @@ from zipfile import ZipFile
 from flask import abort, redirect, render_template, request, send_file, session, url_for
 from flask_socketio import emit
 
+from readalongs.api import align
 from readalongs.app import app, socketio
 from readalongs.log import LOGGER
 from readalongs.util import get_langs
@@ -139,6 +140,12 @@ def remove_file():
     return redirect(url_for("steps", step=1))
 
 
+def option_to_kwargs(option: str) -> str:
+    if option[0:2] == "--":
+        option = option[2:]
+    return option.replace("-", "_")
+
+
 @app.route("/step/<int:step>")
 def steps(step):
     """ Go through steps """
@@ -158,43 +165,50 @@ def steps(step):
         if "audio" not in session or "text" not in session:
             log = "Sorry, it looks like something is wrong with your audio or text. Please try again"
         else:
-            flags = ["--force-overwrite"]
-            if session["config"].get("--save-temps", False):
-                flags.append("--save-temps")
-            output_formats = []
+            kwargs = dict()
+            kwargs["force_overwrite"] = True
+            kwargs["save_temps"] = session["config"].get("--save-temps", False)
+            kwargs["output_formats"] = []
             if session["config"].get("--closed-captioning", False):
-                output_formats.append("srt")
+                kwargs["output_formats"].append("srt")
             if session["config"].get("--text-grid", False):
-                output_formats.append("TextGrid")
-            if output_formats:
-                flags.extend(("-o", ",".join(output_formats)))
+                kwargs["output_formats"].append("TextGrid")
             if session["text"].endswith("txt"):
-                flags.append("--language")
-                flags.append(session["config"]["lang"])
+                kwargs["language"] = [session["config"]["lang"]]
+
             timestamp = str(int(datetime.now().timestamp()))
             output_base = "aligned" + timestamp
-            args = (
-                ["readalongs", "align"]
-                + flags
-                + [
-                    session["text"],
-                    session["audio"],
-                    os.path.join(session["temp_dir"], output_base),
-                ]
-            )
-            LOGGER.warning(args)
+
+            kwargs["textfile"] = session["text"]
+            kwargs["audiofile"] = session["audio"]
+            kwargs["output_base"] = os.path.join(session["temp_dir"], output_base)
+            LOGGER.info(kwargs)
+
             _, audio_ext = os.path.splitext(session["audio"])
             data = {"audio_ext": audio_ext, "base": output_base}
             if session["config"].get("show-log", False):
-                log = run(args, capture_output=True, check=False)
+                # log = run(args, capture_output=True, check=False)
+                # TODO this code does not capture the logs, they just go to console...
+                try:
+                    align(**kwargs)
+                    log = "All OK"
+                except Exception as e:
+                    log = str(e)
                 data["log"] = log
-                log_lines = list(re.split(r"\r?\n", safe_decode(log.stdout)))
-                log_lines.extend(list(re.split(r"\r?\n", safe_decode(log.stderr))))
-                data["log_lines"] = [
-                    re.sub(r"\x1b\[\d*m", "", line) for line in log_lines
-                ]
+                # log_lines = list(re.split(r"\r?\n", safe_decode(log.stdout)))
+                # log_lines.extend(list(re.split(r"\r?\n", safe_decode(log.stderr))))
+                # data["log_lines"] = [
+                #     re.sub(r"\x1b\[\d*m", "", line) for line in log_lines
+                # ]
             else:
-                run(args, check=False)
+                # run(args, check=False)
+                try:
+                    log = align(**kwargs)
+                except Exception as e:
+                    # TODO this is not really that helpful a log...
+                    log = str(e)
+                    data["log"] = log
+
             data["audio_path"] = os.path.join(
                 session["temp_dir"], output_base, output_base + audio_ext
             )
@@ -247,7 +261,7 @@ def show_zip(base):
 @app.route("/file/<string:fname>", methods=["GET"])
 def return_temp_file(fname):
     fn, _ = os.path.splitext(fname)
-    LOGGER.warning(session["temp_dir"])
+    LOGGER.info(session["temp_dir"])
     path = os.path.join(session["temp_dir"], fn, fname)
     if os.path.exists(path):
         return send_file(path)
