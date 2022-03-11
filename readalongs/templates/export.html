@@ -31,6 +31,11 @@
         <h1 class='title'>Log</h1>
         <p>Here's a log for debugging.</p>
         <p>{{data.log}}</p>
+        {% if 'log_lines' in data %}
+           {% for line in data.log_lines %}
+               <p>{{line}}</p>
+           {% endfor %}
+        {% endif %}
     </div>
     {% endif %}
 </section>

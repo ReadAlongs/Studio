@@ -7,6 +7,7 @@ Corresponding JavaScript is found in readalongs/static/js/main.js
 
 import io
 import os
+import re
 from datetime import datetime
 from pathlib import Path
 from subprocess import run
@@ -36,6 +37,17 @@ def allowed_file(filename: str) -> bool:
         bool: True if allowed
     """
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def safe_decode(byte_seq: bytes) -> str:
+    """Convert byte_seq to str if it's valid utf8, otherwise return its str rep
+
+    Does not raise any exceptions: non-utf8 inputs will yield escaped specials.
+    """
+    try:
+        return byte_seq.decode()
+    except UnicodeDecodeError:
+        return str(byte_seq)
 
 
 def uploaded_files(dir_path: str) -> dict:
@@ -147,11 +159,16 @@ def steps(step):
             log = "Sorry, it looks like something is wrong with your audio or text. Please try again"
         else:
             flags = ["--force-overwrite"]
-            for option in ["--closed-captioning", "--save-temps", "--text-grid"]:
-                if session["config"].get(option, False):
-                    flags.append(option)
+            if session["config"].get("--save-temps", False):
+                flags.append("--save-temps")
+            output_formats = []
+            if session["config"].get("--closed-captioning", False):
+                output_formats.append("srt")
+            if session["config"].get("--text-grid", False):
+                output_formats.append("TextGrid")
+            if output_formats:
+                flags.extend(("-o", ",".join(output_formats)))
             if session["text"].endswith("txt"):
-                flags.append("--text-input")
                 flags.append("--language")
                 flags.append(session["config"]["lang"])
             timestamp = str(int(datetime.now().timestamp()))
@@ -171,6 +188,11 @@ def steps(step):
             if session["config"].get("show-log", False):
                 log = run(args, capture_output=True, check=False)
                 data["log"] = log
+                log_lines = list(re.split(r"\r?\n", safe_decode(log.stdout)))
+                log_lines.extend(list(re.split(r"\r?\n", safe_decode(log.stderr))))
+                data["log_lines"] = [
+                    re.sub(r"\x1b\[\d*m", "", line) for line in log_lines
+                ]
             else:
                 run(args, check=False)
             data["audio_path"] = os.path.join(
@@ -207,7 +229,7 @@ def show_zip(base):
     with ZipFile(data, mode="w") as z:
         for fname in files_to_download:
             path = os.path.join(session["temp_dir"], base, fname)
-            if fname.startswith("aligned"):
+            if fname.startswith("aligned") or fname == "index.html":
                 z.write(path, fname)
     data.seek(0)
 
