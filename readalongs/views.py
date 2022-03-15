@@ -163,7 +163,13 @@ def steps(step):
         return render_template("preview.html")
     elif step == 3:
         if "audio" not in session or "text" not in session:
-            log = "Sorry, it looks like something is wrong with your audio or text. Please try again"
+            log = "Sorry, it looks like something is wrong with your audio or text. Please try again."
+            data = {"log": log}
+        elif session["text"].endswith("txt") and not session.get("config", {}).get(
+            "lang"
+        ):
+            log = "Sorry, the language setting is required for plain text files. Please try again."
+            data = {"log": log}
         else:
             kwargs = dict()
             kwargs["force_overwrite"] = True
@@ -186,28 +192,17 @@ def steps(step):
 
             _, audio_ext = os.path.splitext(session["audio"])
             data = {"audio_ext": audio_ext, "base": output_base}
+            (status, exception, log_text) = align(**kwargs)
+            status_text = "OK" if status == 0 else "Error"
             if session["config"].get("show-log", False):
-                # log = run(args, capture_output=True, check=False)
-                # TODO this code does not capture the logs, they just go to console...
-                try:
-                    align(**kwargs)
-                    log = "All OK"
-                except Exception as e:
-                    log = str(e)
-                data["log"] = log
-                # log_lines = list(re.split(r"\r?\n", safe_decode(log.stdout)))
-                # log_lines.extend(list(re.split(r"\r?\n", safe_decode(log.stderr))))
-                # data["log_lines"] = [
-                #     re.sub(r"\x1b\[\d*m", "", line) for line in log_lines
-                # ]
+                data["log"] = f"Status: {status_text}"
+                if exception:
+                    data["log"] += f"; Exception: {exception!r}"
+                data["log_lines"] = list(re.split(r"\r?\n", log_text))
             else:
-                # run(args, check=False)
-                try:
-                    log = align(**kwargs)
-                except Exception as e:
-                    # TODO this is not really that helpful a log...
-                    log = str(e)
-                    data["log"] = log
+                if status != 0 or exception:
+                    # Always display errors, even when logs are not requested
+                    data["log"] = f"Status: {status_text}; Exception: {exception!r}"
 
             data["audio_path"] = os.path.join(
                 session["temp_dir"], output_base, output_base + audio_ext

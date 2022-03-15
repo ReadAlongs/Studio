@@ -24,13 +24,16 @@ class TestAlignApi(BasicTestCase):
         temp_dir = Path(self.tempdir)
         langs = ("fra",)  # make sure language can be an iterable, not just a list.
         with SoundSwallowerStub("t0b0d0p0s0w0:920:1520", "t0b0d0p0s1w0:1620:1690"):
-            api.align(
+            (status, exception, log) = api.align(
                 data_dir / "ej-fra.txt",
                 data_dir / "ej-fra.m4a",
                 temp_dir / "output",
                 langs,
                 output_formats=["html"],
             )
+        self.assertEqual(status, 0)
+        self.assertTrue(exception is None)
+        self.assertIn("Words (<w>) not present; tokenizing", log)
         expected_output_files = (
             "output.smil",
             "output.xml",
@@ -52,19 +55,27 @@ class TestAlignApi(BasicTestCase):
     def test_call_prepare(self):
         data_dir = Path(self.data_dir)
         temp_dir = Path(self.tempdir)
-        api.prepare(data_dir / "ej-fra.txt", temp_dir / "prepared.xml", ("fra", "eng"))
+        (status, exception, log) = api.prepare(
+            data_dir / "ej-fra.txt", temp_dir / "prepared.xml", ("fra", "eng")
+        )
+        self.assertEqual(status, 0)
+        self.assertTrue(exception is None)
+        self.assertIn("Wrote ", log)
         with open(temp_dir / "prepared.xml") as f:
             xml_text = f.read()
             self.assertIn('xml:lang="fra" fallback-langs="eng,und"', xml_text)
 
-        with self.assertRaises(click.BadParameter):
-            api.prepare(
-                data_dir / "ej-fra.txt", temp_dir / "bad.xml", ("fra", "not-a-lang")
-            )
-        with self.assertRaises(click.UsageError):
-            api.prepare(
-                data_dir / "file-not-found.txt", temp_dir / "none.xml", ("fra",)
-            )
+        (status, exception, log) = api.prepare(
+            data_dir / "ej-fra.txt", temp_dir / "bad.xml", ("fra", "not-a-lang")
+        )
+        self.assertNotEqual(status, 0)
+        self.assertTrue(isinstance(exception, click.BadParameter))
+
+        (status, exception, log) = api.prepare(
+            data_dir / "file-not-found.txt", temp_dir / "none.xml", ("fra",)
+        )
+        self.assertNotEqual(status, 0)
+        self.assertTrue(isinstance(exception, click.UsageError))
 
 
 if __name__ == "__main__":
