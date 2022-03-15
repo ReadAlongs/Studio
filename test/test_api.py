@@ -52,6 +52,10 @@ class TestAlignApi(BasicTestCase):
             "Make sure the API call doesn't not modify my variables",
         )
 
+        (status, exception, log) = api.align("", "", temp_dir / "errors")
+        self.assertNotEqual(status, 0)
+        self.assertFalse(exception is None)
+
     def test_call_prepare(self):
         data_dir = Path(self.data_dir)
         temp_dir = Path(self.tempdir)
