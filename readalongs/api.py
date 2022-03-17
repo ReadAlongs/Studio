@@ -89,7 +89,6 @@ def align(
             **kwargs
         )
 
-        assert cli.align.callback is not None  # to make mypy happy
         cli.align.callback(**align_args)
 
         return (0, None, logging_stream.getvalue())
@@ -134,7 +133,6 @@ def prepare(
                     ),
                     **kwargs
                 )
-                assert cli.prepare.callback is not None  # to make mypy happy
                 cli.prepare.callback(**prepare_args)
         except OSError as e:
             # e.g.: FileNotFoundError or PermissionError on open(plaintextfile) above

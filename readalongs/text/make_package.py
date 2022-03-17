@@ -87,7 +87,6 @@ def encode_from_path(path: str) -> str:
         # TODO: Check other popular audio formats, .wav, .mp3, .ogg, etc...
         mime_type = "audio/mp4"
     elif mime[0]:
-        assert mime[0] is not None  # keep mypy happy. Q why is `if mime[0]` not enough?
         mime_type = mime[0].replace(
             "video", "audio"
         )  # Hack: until we properly extract audio from video files, force any video-based mime type to be read as audio
