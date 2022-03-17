@@ -3,7 +3,7 @@ api.py: API for calling readalongs CLI commands programmatically
 
 In this API, functions take the same arguments as on the readalongs
 command-line interface. The mapping between CLI options and API options is
-that the first long variant of an option described in "readalongs cmd -h" is
+that the first long variant of an option described in "readalongs <cmd> -h" is
 the API option name, with hyphens replaced by undercores.
 
 Example from readalongs align -h:
