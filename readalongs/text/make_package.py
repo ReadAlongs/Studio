@@ -60,7 +60,7 @@ def encode_from_path(path: str) -> str:
 
     with open(path, "rb") as f:
         path_bytes = f.read()
-    if path.endswith("xml"):
+    if str(path).endswith("xml"):
         root = etree.fromstring(path_bytes)
         for img in root.xpath("//graphic"):
             url = img.get("url")
@@ -81,7 +81,7 @@ def encode_from_path(path: str) -> str:
         path_bytes = etree.tostring(root)
     b64 = str(b64encode(path_bytes), encoding="utf8")
     mime = guess_type(path)
-    if path.endswith(
+    if str(path).endswith(
         ".m4a"
     ):  # hack to get around guess_type choosing the wrong mime type for .m4a files
         # TODO: Check other popular audio formats, .wav, .mp3, .ogg, etc...

@@ -389,7 +389,7 @@ def align_audio(  # noqa: C901
 
     aligned_segment_count = len(results["words"])
     token_count = len(results["tokenized"].xpath("//" + unit))
-    LOGGER.info(f"Number of words founds: {token_count}")
+    LOGGER.info(f"Number of words found: {token_count}")
     LOGGER.info(f"Number of aligned segments: {aligned_segment_count}")
 
     if aligned_segment_count == 0:

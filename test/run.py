@@ -19,6 +19,7 @@ from unittest import TestLoader, TestSuite, TextTestRunner
 
 from test_align_cli import TestAlignCli
 from test_anchors import TestAnchors
+from test_api import TestAlignApi
 from test_audio import TestAudio
 from test_config import TestConfig
 from test_dna_text import TestDNAText
@@ -57,6 +58,7 @@ other_tests = [
         TestPrepareCli,
         TestAudio,
         TestAlignCli,
+        TestAlignApi,
         TestG2pCli,
         TestMisc,
         TestSilence,

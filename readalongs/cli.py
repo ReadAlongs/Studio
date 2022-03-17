@@ -263,7 +263,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
     config_file = kwargs.get("config", None)
     config = None
     if config_file:
-        if config_file.endswith("json"):
+        if str(config_file).endswith("json"):
             try:
                 with open(config_file, encoding="utf8") as f:
                     config = json.load(f)
@@ -314,9 +314,9 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
 
     # Determine if the file is plain text or XML
     textfile_name = kwargs["textfile"]
-    if textfile_name.endswith(".xml"):
+    if str(textfile_name).endswith(".xml"):
         textfile_is_plaintext = False  # .xml is XML
-    elif textfile_name.endswith(".txt"):
+    elif str(textfile_name).endswith(".txt"):
         textfile_is_plaintext = True  # .txt is plain text
     else:
         # Files other than .xml or .txt are parsed using etree. If the parse is
@@ -342,7 +342,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
                 "No input language specified for plain text input. "
                 "Please provide the -l/--language switch."
             )
-        languages = kwargs["language"]
+        languages = list(kwargs["language"])
         if not kwargs["lang_no_append_und"] and "und" not in languages:
             languages.append("und")
         plain_textfile = kwargs["textfile"]
@@ -352,7 +352,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
                 text_languages=languages,
                 save_temps=temp_base,
             )
-        except RuntimeError as e:
+        except (RuntimeError, OSError) as e:
             raise click.UsageError(e) from e
     else:
         xml_textfile = kwargs["textfile"]
@@ -447,11 +447,11 @@ def prepare(**kwargs):
     if not out_file:
         out_file = get_click_file_name(input_file)
         if out_file != "-":
-            if out_file.endswith(".txt"):
+            if str(out_file).endswith(".txt"):
                 out_file = out_file[:-4]
             out_file += ".xml"
 
-    languages = kwargs["language"]
+    languages = list(kwargs["language"])
     if not kwargs["lang_no_append_und"] and "und" not in languages:
         languages.append("und")
 
@@ -463,7 +463,7 @@ def prepare(**kwargs):
             with io.open(filename, encoding="utf8") as f:
                 sys.stdout.write(f.read())
         else:
-            if not out_file.endswith(".xml"):
+            if not str(out_file).endswith(".xml"):
                 out_file += ".xml"
             if os.path.exists(out_file) and not kwargs["force_overwrite"]:
                 raise click.BadParameter(
@@ -475,7 +475,7 @@ def prepare(**kwargs):
                 text_languages=languages,
                 output_file=out_file,
             )
-    except RuntimeError as e:
+    except (RuntimeError, OSError) as e:
         raise click.UsageError(e) from e
 
     LOGGER.info("Wrote {}".format(out_file))
@@ -516,12 +516,12 @@ def tokenize(**kwargs):
     if not kwargs["tokfile"]:
         output_path = get_click_file_name(input_file)
         if output_path != "-":
-            if output_path.endswith(".xml"):
+            if str(output_path).endswith(".xml"):
                 output_path = output_path[:-4]
             output_path += ".tokenized.xml"
     else:
         output_path = kwargs["tokfile"]
-        if not output_path.endswith(".xml") and not output_path == "-":
+        if not str(output_path).endswith(".xml") and not output_path == "-":
             output_path += ".xml"
 
     if os.path.exists(output_path) and not kwargs["force_overwrite"]:
@@ -620,14 +620,14 @@ def g2p(**kwargs):
     if not kwargs["g2pfile"]:
         output_path = get_click_file_name(input_file)
         if output_path != "-":
-            if output_path.endswith(".xml"):
+            if str(output_path).endswith(".xml"):
                 output_path = output_path[:-4]
-            if output_path.endswith(".tokenized"):
+            if str(output_path).endswith(".tokenized"):
                 output_path = output_path[: -len(".tokenized")]
             output_path += ".g2p.xml"
     else:
         output_path = kwargs["g2pfile"]
-        if not output_path.endswith(".xml") and not output_path == "-":
+        if not str(output_path).endswith(".xml") and not output_path == "-":
             output_path += ".xml"
 
     if os.path.exists(output_path) and not kwargs["force_overwrite"]:
