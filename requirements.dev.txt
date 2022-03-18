@@ -2,3 +2,8 @@ pre-commit>=2.6.0
 black==19.10b0
 flake8>=3.8.3
 isort>=5.4.2
+mypy>=0.941
+types-pyyaml>=6.0.5
+types-python-slugify>=5.0.3
+types-setuptools>=57.4.9
+types-requests>=2.27.11

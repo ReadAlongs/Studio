@@ -132,7 +132,7 @@ def cli():
     """
 
 
-@cli.command(  # noqa: C901  # some versions of flake8 need this here
+@cli.command(  # type: ignore  # noqa: C901  # some versions of flake8 need this here
     context_settings=CONTEXT_SETTINGS, short_help="Force align a text and a sound file."
 )
 @click.argument("textfile", type=click.Path(exists=True, readable=True))
@@ -387,7 +387,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
     )
 
 
-@cli.command(
+@cli.command(  # type: ignore  # quench spurious mypy error: "Command" has no attribute "command"
     context_settings=CONTEXT_SETTINGS,
     short_help="Convert a plain text file into the XML format for alignment.",
 )
@@ -481,7 +481,7 @@ def prepare(**kwargs):
     LOGGER.info("Wrote {}".format(out_file))
 
 
-@cli.command(
+@cli.command(  # type: ignore  # quench spurious mypy error: "Command" has no attribute "command"
     context_settings=CONTEXT_SETTINGS,
     short_help="Tokenize a prepared XML file, in preparation for alignment.",
 )
@@ -547,7 +547,7 @@ def tokenize(**kwargs):
     LOGGER.info("Wrote {}".format(output_path))
 
 
-@cli.command(
+@cli.command(  # type: ignore  # quench spurious mypy error: "Command" has no attribute "command"
     context_settings=CONTEXT_SETTINGS,
     short_help="Apply g2p to a tokenized file, in preparation for alignment.",
 )
@@ -667,7 +667,7 @@ def g2p(**kwargs):
         sys.exit(1)
 
 
-@cli.command(
+@cli.command(  # type: ignore  # quench spurious mypy error: "Command" has no attribute "command"
     context_settings=CONTEXT_SETTINGS,
     short_help="List the languages supported by g2p for readalongs.",
 )
