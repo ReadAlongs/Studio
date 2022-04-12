@@ -163,6 +163,7 @@ def parse_and_prepare_input(
     config: dict,
     save_temps: Optional[str] = None,
     verbose_g2p_warnings: Optional[bool] = False,
+    output_orthography: str = "eng-arpabet",
 ) -> etree.ElementTree:
     """Parse XML input and run tokenization and G2P.
 
@@ -196,7 +197,11 @@ def parse_and_prepare_input(
     xml = add_ids(xml)
     if save_temps is not None:
         save_xml(save_temps + ".ids.xml", xml)
-    xml, valid = convert_xml(xml, verbose_warnings=verbose_g2p_warnings)
+    xml, valid = convert_xml(
+        xml,
+        verbose_warnings=verbose_g2p_warnings,
+        output_orthography=output_orthography,
+    )
     if save_temps is not None:
         save_xml(save_temps + ".g2p.xml", xml)
     if not valid:
@@ -506,6 +511,7 @@ def align_audio(
     save_temps: Optional[str] = None,
     verbose_g2p_warnings: Optional[bool] = False,
     debug_aligner: Optional[bool] = False,
+    output_orthography: str = "eng-arpabet",
 ):
     """Align an XML input file to an audio file.
 
@@ -538,6 +544,7 @@ def align_audio(
         config=config,
         verbose_g2p_warnings=verbose_g2p_warnings,
         save_temps=save_temps,
+        output_orthography=output_orthography,
     )
     results["tokenized"] = xml
 

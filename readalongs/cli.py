@@ -185,6 +185,13 @@ def cli():
     help="Hidden option to disable to automatic appending of und (Undetermined) to -l",
 )
 @click.option(
+    "-oo",
+    "--output-orth",
+    default="eng-arpabet",
+    hidden=True,
+    help="Hidden option to disable to change output orthography",
+)
+@click.option(
     "-l",
     "--language",
     "--languages",
@@ -368,6 +375,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
             save_temps=temp_base,
             verbose_g2p_warnings=kwargs["debug_g2p"],
             debug_aligner=kwargs["debug_aligner"],
+            output_orthography=kwargs["output_orth"],
         )
     except RuntimeError as e:
         raise click.UsageError(e) from e
