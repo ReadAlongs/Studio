@@ -223,9 +223,9 @@ def align_audio(  # noqa: C901
     cfg.set_boolean("-remove_silence", False)
     cfg.set_string("-hmm", os.path.join(model_path, "en-us"))
     # cfg.set_string('-samprate', "no no")
-    cfg.set_float("-beam", 1e-200)
-    cfg.set_float("-wbeam", 1e-200)
-    cfg.set_float("-pbeam", 1e-200)
+    cfg.set_float("-beam", 1e-400)
+    cfg.set_float("-wbeam", 1e-400)
+    cfg.set_float("-pbeam", 1e-400)
 
     # Read the audio file
     audio = read_audio_from_file(audio_path)
