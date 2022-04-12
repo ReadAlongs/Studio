@@ -177,6 +177,13 @@ def cli():
     help="Hidden option to disable to automatic appending of und (Undetermined) to -l",
 )
 @click.option(
+    "-oo",
+    "--output-orth",
+    default="eng-arpabet",
+    hidden=True,
+    help="Hidden option to disable to change output orthography",
+)
+@click.option(
     "-l",
     "--language",
     "--languages",
@@ -358,6 +365,7 @@ def align(**kwargs):
             config=config,
             save_temps=temp_base,
             verbose_g2p_warnings=kwargs["g2p_verbose"],
+            output_orthography=kwargs["output_orth"],
         )
     except RuntimeError as e:
         raise click.UsageError(e) from e

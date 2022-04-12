@@ -162,6 +162,7 @@ def align_audio(  # noqa: C901
     config=None,
     save_temps=None,
     verbose_g2p_warnings=False,
+    output_orthography="eng-arpabet",
 ):
     """Align an XML input file to an audio file.
 
@@ -202,7 +203,11 @@ def align_audio(  # noqa: C901
     results["tokenized"] = xml = add_ids(xml)
     if save_temps:
         save_xml(save_temps + ".ids.xml", xml)
-    xml, valid = convert_xml(xml, verbose_warnings=verbose_g2p_warnings)
+    xml, valid = convert_xml(
+        xml,
+        verbose_warnings=verbose_g2p_warnings,
+        output_orthography=output_orthography,
+    )
     if save_temps:
         save_xml(save_temps + ".g2p.xml", xml)
     if not valid:
@@ -218,8 +223,9 @@ def align_audio(  # noqa: C901
     cfg.set_boolean("-remove_silence", False)
     cfg.set_string("-hmm", os.path.join(model_path, "en-us"))
     # cfg.set_string('-samprate', "no no")
-    cfg.set_float("-beam", 1e-100)
-    cfg.set_float("-wbeam", 1e-80)
+    cfg.set_float("-beam", 1e-200)
+    cfg.set_float("-wbeam", 1e-200)
+    cfg.set_float("-pbeam", 1e-200)
 
     # Read the audio file
     audio = read_audio_from_file(audio_path)

@@ -56,8 +56,9 @@ def tokenize_xml_in_place(xml):
     Returns:
         etree: tokenized xml
     """
+    from g2p import get_tokenizer
 
-    from g2p.mappings.tokenizer import get_tokenizer  # Defer expensive import
+    # from g2p.mappings.tokenizer import get_tokenizer  # Defer expensive import
 
     def add_word_children(element):
         """Recursive helper for tokenize_xml_in_place()"""
