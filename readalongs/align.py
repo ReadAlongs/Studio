@@ -511,13 +511,13 @@ def save_readalong(  # noqa C901
     output_base = os.path.join(output_dir, output_basename)
 
     # Create textgrid object if outputting to TextGrid or eaf
-    if "TextGrid" in output_formats or "eaf" in output_formats:
+    if "textgrid" in output_formats or "eaf" in output_formats:
         audio = read_audio_from_file(audiofile)
         duration = audio.frame_count() / audio.frame_rate
         words, sentences = return_words_and_sentences(align_results)
         textgrid = write_to_text_grid(words, sentences, duration)
 
-        if "TextGrid" in output_formats:
+        if "textgrid" in output_formats:
             textgrid.to_file(output_base + ".TextGrid")
 
         if "eaf" in output_formats:

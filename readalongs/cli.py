@@ -154,7 +154,7 @@ def cli():
     "-o",
     "--output-formats",
     multiple=True,
-    callback=JoinerCallbackForClick(SUPPORTED_OUTPUT_FORMATS),
+    callback=JoinerCallbackForClick(SUPPORTED_OUTPUT_FORMATS, drop_case=True),
     help=(
         "Comma- or colon-separated list of additional output file formats to export to. "
         "The text is always exported as XML and alignments as SMIL, but "

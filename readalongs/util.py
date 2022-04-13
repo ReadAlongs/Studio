@@ -93,33 +93,38 @@ class JoinerCallbackForClick:
     command line, or by joining them with strings matching joiner_re (colon or
     comma, arbitrarily mixed, by default).
 
-    Matching is case insensitive.
+    Matching is case insensitive iff drop_case is True.
     """
 
-    def __init__(self, valid_values: Iterable, joiner_re=r"[,:]"):
+    def __init__(self, valid_values: Iterable, joiner_re=r"[,:]", drop_case=False):
         """Get a joiner callback.
 
         Args:
             valid_values: list of valid values for the multi-value option
             joiner_re: regex for how to user may join multiple values
+            drop_case: when true, processed results will be converted to lowercase
         """
         self.valid_values = valid_values  # ***do not convert this to a list here!***
         self.joiner_re = joiner_re
+        self.drop_case = drop_case
 
     # This signature meets the requirements of click.option's callback parameter:
     def __call__(self, _ctx=None, _param=None, value_groups=()):
-        # Defer potentially expensive expansion of valid_values until we really need it.
-        self.valid_values, valid_values_iterator = tee(self.valid_values, 2)
-        lc_valid_values = [valid_value.lower() for valid_value in valid_values_iterator]
+        # Potentially expensive expansion actually required here, so do it now.
+        self.valid_values = list(self.valid_values)
+        if self.drop_case:
+            self.valid_values = [value.lower() for value in self.valid_values]
         results = [
             value.strip()
             for value_group in value_groups
             for value in re.split(self.joiner_re, value_group)
         ]
+        if self.drop_case:
+            results = [value.lower() for value in results]
         for value in results:
-            if value.lower() not in lc_valid_values:
+            if value not in self.valid_values:
                 raise click.BadParameter(
-                    f"'{value}' is not one of {self.quoted_list(lc_valid_values)}."
+                    f"'{value}' is not one of {self.quoted_list(self.valid_values)}."
                 )
         return results
 
