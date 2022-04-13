@@ -57,7 +57,12 @@ def tokenize_xml_in_place(xml):
         etree: tokenized xml
     """
 
-    from g2p.mappings.tokenizer import get_tokenizer  # Defer expensive import
+    # Defer expensive import, and use the new version, but keep it
+    # compatible with older versions of g2p for at least a little while.
+    try:
+        from g2p import make_tokenizer
+    except ImportError:
+        from g2p import get_tokenizer as make_tokenizer
 
     def add_word_children(element):
         """Recursive helper for tokenize_xml_in_place()"""
@@ -78,7 +83,7 @@ def tokenize_xml_in_place(xml):
             new_element.attrib[key] = value
 
         lang = get_lang_attrib(element)
-        tokenizer = get_tokenizer(lang)
+        tokenizer = make_tokenizer(lang)
         if element.text:
             new_element.text = ""
             for unit in tokenizer.tokenize_text(element.text):
