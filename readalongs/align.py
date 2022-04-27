@@ -214,14 +214,9 @@ def align_audio(  # noqa: C901
         )
 
     # Prepare the SoundSwallower (formerly PocketSphinx) configuration
-    cfg = soundswallower.Decoder.default_config()
-    model_path = soundswallower.get_model_path()
-    cfg.set_boolean("-remove_noise", False)
-    cfg.set_boolean("-remove_silence", False)
-    cfg.set_string("-hmm", os.path.join(model_path, "en-us"))
-    # cfg.set_string('-samprate', "no no")
-    cfg.set_float("-beam", 1e-100)
-    cfg.set_float("-wbeam", 1e-80)
+    cfg = soundswallower.Config(
+        hmm=soundswallower.get_model_path("en-us"), beam=1e-100, wbeam=1e-80
+    )
 
     if not debug_aligner:
         # With --debug-aligner, we display the SoundSwallower logs on screen, but
@@ -233,14 +228,14 @@ def align_audio(  # noqa: C901
         else:
             # Otherwise, we send the SoundSwallower logs to the bit bucket.
             ss_log = os.devnull
-        cfg.set_string("-logfn", ss_log)
+        cfg["logfn"] = ss_log
 
     # Read the audio file
     audio = read_audio_from_file(audio_path)
     audio = audio.set_channels(1).set_sample_width(2)
     audio_length_in_ms = len(audio.raw_data)
     #  Downsampling is (probably) not necessary
-    cfg.set_float("-samprate", audio.frame_rate)
+    cfg["samprate"] = audio.frame_rate
 
     # Process audio, silencing or removing any DNA segments
     dna_segments = []
@@ -286,12 +281,12 @@ def align_audio(  # noqa: C901
         audio_data = audio
 
     # Initialize the SoundSwallower decoder with the sample rate from the audio
-    frame_points = int(cfg.get_float("-samprate") * cfg.get_float("-wlen"))
+    frame_points = int(cfg["samprate"] * cfg["wlen"])
     fft_size = 1
     while fft_size < frame_points:
         fft_size = fft_size << 1
-    cfg.set_int("-nfft", fft_size)
-    frame_size = 1.0 / cfg.get_int("-frate")
+    cfg["nfft"] = fft_size
+    frame_size = 1.0 / cfg["frate"]
 
     # Note: the frames are typically 0.01s long (i.e., the frame rate is typically 100),
     # while the audio segments manipulated using pydub are sliced and accessed in
@@ -337,8 +332,8 @@ def align_audio(  # noqa: C901
             write_audio_to_file(audio_segment, save_temps + ".wav" + i_suffix)
 
         # Configure soundswallower for this sequence's dict and fsg
-        cfg.set_string("-dict", dict_file.name)
-        cfg.set_string("-fsg", fsg_file.name)
+        cfg["dict"] = dict_file.name
+        cfg["fsg"] = fsg_file.name
         ps = soundswallower.Decoder(cfg)
         # Align this word sequence
         ps.start_utt()
