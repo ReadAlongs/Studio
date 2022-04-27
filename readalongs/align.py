@@ -215,10 +215,7 @@ def align_audio(  # noqa: C901
 
     # Prepare the SoundSwallower (formerly PocketSphinx) configuration
     cfg = soundswallower.Config(
-        hmm=soundswallower.get_model_path("en-us"),
-        beam=1e-100,
-        wbeam=1e-80,
-        pbeam=1e-100,
+        hmm=soundswallower.get_model_path("en-us"), beam=1e-100, wbeam=1e-80
     )
 
     if not debug_aligner:
