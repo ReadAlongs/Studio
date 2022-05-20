@@ -189,7 +189,7 @@ def cli():
     "--output-orth",
     default="eng-arpabet",
     hidden=True,
-    help="Hidden option to disable to change output orthography",
+    help="Hidden option to change the output orthography",
 )
 @click.option(
     "-l",

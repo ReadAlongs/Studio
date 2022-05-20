@@ -358,11 +358,11 @@ class TestG2pCli(BasicTestCase):
         """
         )
         with self.assertLogs(LOGGER, level="WARNING") as cm:
-            c_xml, valid = convert_xml(xml)
+            c_xml, valid = convert_xml(xml, verbose_warnings=True)
         self.assertFalse(valid)
         logger_output = "\n".join(cm.output)
-        self.assertIn('"foo": invalid language code', logger_output)
-        self.assertIn('"crx-syl": no path to "eng-arpabet"', logger_output)
+        self.assertIn('No language called: "foo"', logger_output)
+        self.assertIn('no path from "crx-syl"', logger_output)
 
 
 if __name__ == "__main__":

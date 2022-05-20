@@ -491,6 +491,68 @@ class TestAlignCli(BasicTestCase):
         self.assertNotEqual(results.exit_code, 0)
         self.assertIn("is obsolete.", results.output)
 
+    def test_oo_option(self):
+        """Exercise the hidden -oo / --output-orth option"""
+        with SoundSwallowerStub("word:0:1"):
+            results = self.runner.invoke(
+                align,
+                [
+                    "-oo",
+                    "eng-arpabet",
+                    join(self.data_dir, "ej-fra.xml"),
+                    join(self.data_dir, "noise.mp3"),
+                    join(self.tempdir, "outdir9"),
+                ],
+            )
+        self.assertEqual(results.exit_code, 0)
+
+        with SoundSwallowerStub("word:0:1"):
+            results = self.runner.invoke(
+                align,
+                [
+                    "-oo",
+                    "not-an-alphabet",
+                    join(self.data_dir, "ej-fra.xml"),
+                    join(self.data_dir, "noise.mp3"),
+                    join(self.tempdir, "outdir10"),
+                ],
+            )
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("Could not g2p", results.output)
+        self.assertIn("not-an-alphabet", results.output)
+
+        with SoundSwallowerStub("word:0:1"):
+            results = self.runner.invoke(
+                align,
+                [
+                    "-oo",
+                    "dan-ipa",
+                    join(self.data_dir, "ej-fra.xml"),
+                    join(self.data_dir, "noise.mp3"),
+                    join(self.tempdir, "outdir11"),
+                ],
+            )
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("Could not g2p", results.output)
+        self.assertIn("no path", results.output)
+
+        with SoundSwallowerStub("word:0:1"):
+            results = self.runner.invoke(
+                align,
+                [
+                    "-oo",
+                    "dan-ipa",
+                    "-l",
+                    "eng",
+                    join(self.data_dir, "fra.txt"),
+                    join(self.data_dir, "noise.mp3"),
+                    join(self.tempdir, "outdir12"),
+                ],
+            )
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("Could not g2p", results.output)
+        self.assertIn('Cannot g2p "eng" to output orthography', results.output)
+
 
 if __name__ == "__main__":
     main()
