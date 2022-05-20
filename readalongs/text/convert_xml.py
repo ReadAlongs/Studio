@@ -59,6 +59,9 @@ def convert_words(  # noqa: C901
     xml is modified in place returned itself, instead of making a copy.
     """
 
+    if output_orthography != "eng-arpabet":
+        LOGGER.info(f"output_orthography={output_orthography}")
+
     # Defer expensive import of g2p to do them only if and when they are needed
     from g2p.mappings.langs.utils import is_arpabet
 
@@ -94,7 +97,7 @@ def convert_words(  # noqa: C901
             # Note: adding eng_ prefix to vars that are used in both blocks to make mypy
             # happy. Since the two sides of the if and in the same scope, it complains about
             # type checking otherwise.
-            assert output_orthography == "eng-arpabet"
+            assert "eng-arpabet" in output_orthography
             eng_converter = getLexiconG2P(
                 os.path.join(os.path.dirname(LEXICON_PATH), "cmu_sphinx.metadata.json")
             )
