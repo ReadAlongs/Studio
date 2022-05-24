@@ -214,9 +214,11 @@ def align_audio(  # noqa: C901
         )
 
     # Prepare the SoundSwallower (formerly PocketSphinx) configuration
-    cfg = soundswallower.Config(
-        hmm=soundswallower.get_model_path("en-us"), beam=1e-100, wbeam=1e-80
-    )
+    cfg = soundswallower.Decoder.default_config()
+    cfg.set_string("-hmm", os.path.join(soundswallower.get_model_path(), "en-us"))
+    cfg.set_float("-beam", 1e-100)
+    cfg.set_float("-pbeam", 1e-100)
+    cfg.set_float("-wbeam", 1e-80)
 
     if not debug_aligner:
         # With --debug-aligner, we display the SoundSwallower logs on screen, but
@@ -228,14 +230,15 @@ def align_audio(  # noqa: C901
         else:
             # Otherwise, we send the SoundSwallower logs to the bit bucket.
             ss_log = os.devnull
-        cfg["logfn"] = ss_log
+        cfg.set_string("-logfn", ss_log)
+        cfg.set_string("-loglevel", "DEBUG")
 
     # Read the audio file
     audio = read_audio_from_file(audio_path)
     audio = audio.set_channels(1).set_sample_width(2)
     audio_length_in_ms = len(audio.raw_data)
     #  Downsampling is (probably) not necessary
-    cfg["samprate"] = audio.frame_rate
+    cfg.set_float("-samprate", audio.frame_rate)
 
     # Process audio, silencing or removing any DNA segments
     dna_segments = []
@@ -280,19 +283,22 @@ def align_audio(  # noqa: C901
     else:
         audio_data = audio
 
-    # Initialize the SoundSwallower decoder with the sample rate from the audio
-    frame_points = int(cfg["samprate"] * cfg["wlen"])
+    # Set the minimum FFT size (no longer necessary since
+    # SoundSwallower 0.2, but we keep this here for compatibility with
+    # old versions in case we need to debug things)
+    frame_points = int(cfg.get_float("-samprate") * cfg.get_float("-wlen"))
     fft_size = 1
     while fft_size < frame_points:
         fft_size = fft_size << 1
-    cfg["nfft"] = fft_size
-    frame_size = 1.0 / cfg["frate"]
+    cfg.set_int("-nfft", fft_size)
 
     # Note: the frames are typically 0.01s long (i.e., the frame rate is typically 100),
     # while the audio segments manipulated using pydub are sliced and accessed in
     # millisecond intervals. For audio segments, the ms slice assumption is hard-coded
     # all over, while frames_to_time() is used to convert segment boundaries returned by
     # soundswallower, which are indexes in frames, into durations in seconds.
+    frame_size = 1.0 / cfg.get_int("-frate")
+
     def frames_to_time(frames):
         return frames * frame_size
 
@@ -332,8 +338,10 @@ def align_audio(  # noqa: C901
             write_audio_to_file(audio_segment, save_temps + ".wav" + i_suffix)
 
         # Configure soundswallower for this sequence's dict and fsg
-        cfg["dict"] = dict_file.name
-        cfg["fsg"] = fsg_file.name
+        cfg.set_string("-dict", dict_file.name)
+        cfg.set_string("-fsg", fsg_file.name)
+        cfg.set_int("-remove_noise", 0)
+        cfg.set_int("-remove_silence", 0)
         ps = soundswallower.Decoder(cfg)
         # Align this word sequence
         ps.start_utt()
