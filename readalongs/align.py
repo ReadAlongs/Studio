@@ -186,6 +186,8 @@ def align_audio(  # noqa: C901
         TODO
     """
     results: Dict[str, List] = {"words": [], "audio": None}
+    if config is None:
+        config = {}
 
     # First do G2P
     try:
@@ -194,9 +196,9 @@ def align_audio(  # noqa: C901
         raise RuntimeError(
             "Error parsing XML input file %s: %s." % (xml_path, e)
         ) from e
-    if config and "images" in config:
+    if "images" in config:
         xml = add_images(xml, config)
-    if config and "xml" in config:
+    if "xml" in config:
         xml = add_supplementary_xml(xml, config)
     xml = tokenize_xml(xml)
     if save_temps:
@@ -215,7 +217,12 @@ def align_audio(  # noqa: C901
 
     # Prepare the SoundSwallower (formerly PocketSphinx) configuration
     cfg = soundswallower.Decoder.default_config()
-    cfg.set_string("-hmm", os.path.join(soundswallower.get_model_path(), "en-us"))
+    cfg.set_string(
+        "-hmm",
+        config.get(
+            "acoustic_model", os.path.join(soundswallower.get_model_path(), "en-us")
+        ),
+    )
     cfg.set_float("-beam", 1e-100)
     cfg.set_float("-pbeam", 1e-100)
     cfg.set_float("-wbeam", 1e-80)
@@ -243,7 +250,7 @@ def align_audio(  # noqa: C901
     # Process audio, silencing or removing any DNA segments
     dna_segments = []
     removed_segments = []
-    if config and "do-not-align" in config:
+    if "do-not-align" in config:
         # Sort un-alignable segments and join overlapping ones
         dna_segments = sort_and_join_dna_segments(config["do-not-align"]["segments"])
         method = config["do-not-align"].get("method", "remove")
@@ -505,6 +512,8 @@ def save_readalong(  # noqa C901
     Raises:
         [TODO]
     """
+    if config is None:
+        config = {}
     # Round all times to three digits, anything more is excess precision
     # poluting the output files, and usually due to float rounding errors anyway.
     for w in align_results["words"]:
@@ -590,7 +599,7 @@ def save_readalong(  # noqa C901
     )
 
     # Copy the image files to the output's asset directory, if any are found
-    if config and "images" in config:
+    if "images" in config:
         assets_dir = os.path.join(output_dir, "assets")
         try:
             os.mkdir(assets_dir)
