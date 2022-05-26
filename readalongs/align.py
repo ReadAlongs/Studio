@@ -217,12 +217,11 @@ def align_audio(  # noqa: C901
 
     # Prepare the SoundSwallower (formerly PocketSphinx) configuration
     cfg = soundswallower.Decoder.default_config()
-    cfg.set_string(
-        "-hmm",
-        config.get(
-            "acoustic_model", os.path.join(soundswallower.get_model_path(), "en-us")
-        ),
+    acoustic_model = config.get(
+        "acoustic_model", os.path.join(soundswallower.get_model_path(), "en-us")
     )
+
+    cfg.set_string("-hmm", acoustic_model)
     cfg.set_float("-beam", 1e-100)
     cfg.set_float("-pbeam", 1e-100)
     cfg.set_float("-wbeam", 1e-80)
@@ -230,7 +229,7 @@ def align_audio(  # noqa: C901
     # Read the list of noise words
     try:
         noisewords = set()
-        with open(os.path.join(cfg.get_string("-hmm"), "noisedict"), "rt") as dictfh:
+        with open(os.path.join(acoustic_model, "noisedict"), "rt") as dictfh:
             for line in dictfh:
                 if line.startswith("##") or line.startswith(";;"):
                     continue
