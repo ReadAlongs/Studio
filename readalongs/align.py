@@ -227,6 +227,18 @@ def align_audio(  # noqa: C901
     cfg.set_float("-pbeam", 1e-100)
     cfg.set_float("-wbeam", 1e-80)
 
+    # Read the list of noise words
+    try:
+        noisewords = set()
+        with open(os.path.join(cfg.get_string("-hmm"), "noisedict"), "rt") as dictfh:
+            for line in dictfh:
+                if line.startswith("##") or line.startswith(";;"):
+                    continue
+                noisewords.add(line.strip().split()[0])
+    except FileNotFoundError:
+        LOGGER.warning("Could not find noisedict, using defaults")
+        noisewords = {"<sil>", "[NOISE]"}
+
     if not debug_aligner:
         # With --debug-aligner, we display the SoundSwallower logs on screen, but
         # otherwise we redirect them away from the terminal.
@@ -368,7 +380,7 @@ def align_audio(  # noqa: C901
 
         prev_segment_count = len(results["words"])
         for seg in ps.seg():
-            if seg.word in ("<sil>", "[NOISE]"):
+            if seg.word in noisewords:
                 continue
             start = frames_to_time(seg.start_frame)
             end = frames_to_time(seg.end_frame + 1)
