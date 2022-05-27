@@ -309,7 +309,7 @@ def align_audio(  # noqa: C901
             dict_file = io.open(save_temps + ".dict" + i_suffix, "wb")
         else:
             dict_file = PortableNamedTemporaryFile(
-                prefix="readalongs_dict_", delete=False
+                prefix="readalongs_dict_", delete=True
             )
         dict_file.write(dict_data.encode("utf-8"))
         dict_file.close()
@@ -318,9 +318,7 @@ def align_audio(  # noqa: C901
         if save_temps:
             fsg_file = io.open(save_temps + ".fsg" + i_suffix, "wb")
         else:
-            fsg_file = PortableNamedTemporaryFile(
-                prefix="readalongs_fsg_", delete=False
-            )
+            fsg_file = PortableNamedTemporaryFile(prefix="readalongs_fsg_", delete=True)
         fsg_file.write(fsg_data.encode("utf-8"))
         fsg_file.close()
 
