@@ -45,6 +45,9 @@ from readalongs.text.make_smil import make_smil
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import parse_time, save_minimal_index_html, save_txt, save_xml
 
+MODEL_DIR = os.path.join(os.path.dirname(__file__), "static", "model")
+DEFAULT_ACOUSTIC_MODEL = "cmusphinx-en-us-5.2"
+
 
 @dataclass
 class WordSequence:
@@ -218,7 +221,7 @@ def align_audio(  # noqa: C901
     # Prepare the SoundSwallower (formerly PocketSphinx) configuration
     cfg = soundswallower.Decoder.default_config()
     acoustic_model = config.get(
-        "acoustic_model", os.path.join(soundswallower.get_model_path(), "en-us")
+        "acoustic_model", os.path.join(MODEL_DIR, DEFAULT_ACOUSTIC_MODEL)
     )
 
     cfg.set_string("-hmm", acoustic_model)
