@@ -267,7 +267,14 @@ def create_asr_config(
 
 
 def read_noisedict(asr_config: soundswallower.Config) -> Set[str]:
-    # Read the list of noise words to ignore
+    """Read the list of noise words from the acoustic model.
+
+    Args:
+        asr_config (soundswallower.Config): ASR configuration.
+    Returns:
+        Set[str]: Set of noise words from noisedict, or a default set
+            if it could not be found.
+    """
     try:
         noisewords = set()
         acoustic_model = asr_config.get_string("-hmm")
