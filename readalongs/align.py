@@ -199,9 +199,9 @@ def align_audio(  # noqa: C901
         raise RuntimeError(
             "Error parsing XML input file %s: %s." % (xml_path, e)
         ) from e
-    if config and "images" in config:
+    if "images" in config:
         xml = add_images(xml, config)
-    if config and "xml" in config:
+    if "xml" in config:
         xml = add_supplementary_xml(xml, config)
     xml = tokenize_xml(xml)
     if save_temps:
@@ -264,7 +264,7 @@ def align_audio(  # noqa: C901
     # Process audio, silencing or removing any DNA segments
     dna_segments = []
     removed_segments = []
-    if config and "do-not-align" in config:
+    if "do-not-align" in config:
         # Sort un-alignable segments and join overlapping ones
         dna_segments = sort_and_join_dna_segments(config["do-not-align"]["segments"])
         method = config["do-not-align"].get("method", "remove")
@@ -530,6 +530,9 @@ def save_readalong(  # noqa C901
         w["start"] = round(w["start"], 3)
         w["end"] = round(w["end"], 3)
 
+    if config is None:
+        config = {}
+
     output_base = os.path.join(output_dir, output_basename)
 
     # Create textgrid object if outputting to TextGrid or eaf
@@ -609,7 +612,7 @@ def save_readalong(  # noqa C901
     )
 
     # Copy the image files to the output's asset directory, if any are found
-    if config and "images" in config:
+    if "images" in config:
         assets_dir = os.path.join(output_dir, "assets")
         try:
             os.mkdir(assets_dir)
