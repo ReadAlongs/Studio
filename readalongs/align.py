@@ -8,7 +8,7 @@ import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 import chevron
 import regex as re
@@ -158,40 +158,27 @@ def split_silences(words: List[dict], final_end, excluded_segments: List[dict]) 
     _ = words.pop()
 
 
-def align_audio(  # noqa: C901
-    xml_path,
-    audio_path,
-    unit="w",
-    bare=False,
-    config=None,
-    save_temps=None,
-    verbose_g2p_warnings=False,
-    debug_aligner=False,
-):
-    """Align an XML input file to an audio file.
+def parse_and_prepare_input(
+    xml_path: str,
+    config: dict,
+    save_temps: Optional[str],
+    verbose_g2p_warnings: Optional[bool],
+) -> etree.ElementTree:
+    """Parse XML input and run tokenization and G2P.
 
     Args:
         xml_path (str): Path to XML input file in TEI-like format
-        audio_path (str): Path to audio input. Must be in a format supported by ffmpeg
-        unit (str): Optional; Element to create alignments for, by default 'w'
-        bare (boolean): Optional;
-            If False, split silence into adjoining tokens (default)
-            If True, keep the bare tokens without adjoining silences.
-        config (object): Optional; ReadAlong-Studio configuration to use
+        config (dict): Optional; ReadAlong-Studio configuration to use
         save_temps (str): Optional; Save temporary files, by default None
         verbose_g2p_warnings (boolean): Optional; display all g2p errors and warnings
             iff True
 
     Returns:
-        Dict[str, List]: TODO
+        lxml.etree.ElementTree: Parsed and prepared XML
 
     Raises:
-        TODO
-    """
-    results: Dict[str, List] = {"words": [], "audio": None}
-    if config is None:
-        config = {}
-
+        RuntimeError: If XML failed to parse
+"""
     # First do G2P
     try:
         xml = etree.parse(xml_path).getroot()
@@ -206,7 +193,7 @@ def align_audio(  # noqa: C901
     xml = tokenize_xml(xml)
     if save_temps:
         save_xml(save_temps + ".tokenized.xml", xml)
-    results["tokenized"] = xml = add_ids(xml)
+    xml = add_ids(xml)
     if save_temps:
         save_xml(save_temps + ".ids.xml", xml)
     xml, valid = convert_xml(xml, verbose_warnings=verbose_g2p_warnings)
@@ -217,6 +204,50 @@ def align_audio(  # noqa: C901
             "Some words could not be g2p'd correctly. Aborting. "
             "Run with --debug-g2p for more detailed g2p error logs."
         )
+    return xml
+
+
+def align_audio(  # noqa: C901
+    xml_path: str,
+    audio_path: str,
+    unit: Optional[str] = "w",
+    bare: Optional[bool] = False,
+    config: Optional[dict] = None,
+    save_temps: Optional[str] = None,
+    verbose_g2p_warnings: Optional[bool] = False,
+    debug_aligner: Optional[bool] = False,
+):
+    """Align an XML input file to an audio file.
+
+    Args:
+        xml_path (str): Path to XML input file in TEI-like format
+        audio_path (str): Path to audio input. Must be in a format supported by ffmpeg
+        unit (str): Optional; Element to create alignments for, by default 'w'
+        bare (boolean): Optional;
+            If False, split silence into adjoining tokens (default)
+            If True, keep the bare tokens without adjoining silences.
+        config (dict): Optional; ReadAlong-Studio configuration to use
+        save_temps (str): Optional; Save temporary files, by default None
+        verbose_g2p_warnings (boolean): Optional; display all g2p errors and warnings
+            iff True
+
+    Returns:
+        dict: TODO
+
+    Raises:
+        TODO
+    """
+    results: Dict[str, Any] = {"words": [], "audio": None}
+    if config is None:
+        config = {}
+
+    xml = parse_and_prepare_input(
+        xml_path=xml_path,
+        config=config,
+        verbose_g2p_warnings=verbose_g2p_warnings,
+        save_temps=save_temps,
+    )
+    results["tokenized"] = xml
 
     # Prepare the SoundSwallower (formerly PocketSphinx) configuration
     cfg = soundswallower.Decoder.default_config()
@@ -279,9 +310,9 @@ def align_audio(  # noqa: C901
             processed_audio = audio
             # Process the DNA segments in reverse order so we don't have to correct
             # for previously processed ones when using the "remove" method.
-            for seg in reversed(dna_segments):
+            for dna_seg in reversed(dna_segments):
                 processed_audio = dna_method(
-                    processed_audio, int(seg["begin"]), int(seg["end"])
+                    processed_audio, int(dna_seg["begin"]), int(dna_seg["end"])
                 )
             if save_temps:
                 _, ext = os.path.splitext(audio_path)
@@ -324,7 +355,7 @@ def align_audio(  # noqa: C901
 
     # Extract the list of sequences of words in the XML
     word_sequences = get_sequences(xml, xml_path, unit=unit)
-    end = 0
+    end = 0.0
     for i, word_sequence in enumerate(word_sequences):
 
         i_suffix = "" if i == 0 else "." + str(i + 1)
@@ -378,14 +409,14 @@ def align_audio(  # noqa: C901
         )
 
         prev_segment_count = len(results["words"])
-        for seg in ps.seg():
-            if seg.word in noisewords:
+        for word_seg in ps.seg():
+            if word_seg.word in noisewords:
                 continue
-            start = frames_to_time(seg.start_frame)
-            end = frames_to_time(seg.end_frame + 1)
+            start = frames_to_time(word_seg.start_frame)
+            end = frames_to_time(word_seg.end_frame + 1)
             # change to ms
-            start_ms = start * 1000
-            end_ms = end * 1000
+            start_ms = int(start * 1000)
+            end_ms = int(end * 1000)
             if curr_removed_segments:
                 start_ms += calculate_adjustment(start_ms, curr_removed_segments)
                 end_ms += calculate_adjustment(end_ms, curr_removed_segments)
@@ -395,9 +426,9 @@ def align_audio(  # noqa: C901
                 # change back to seconds to write to smil
                 start = start_ms / 1000
                 end = end_ms / 1000
-            results["words"].append({"id": seg.word, "start": start, "end": end})
+            results["words"].append({"id": word_seg.word, "start": start, "end": end})
             if debug_aligner:
-                LOGGER.info("Segment: %s (%.3f : %.3f)", seg.word, start, end)
+                LOGGER.info("Segment: %s (%.3f : %.3f)", word_seg.word, start, end)
         aligned_segment_count = len(results["words"]) - prev_segment_count
         if aligned_segment_count != len(word_sequence.words):
             LOGGER.warning(
@@ -409,7 +440,7 @@ def align_audio(  # noqa: C901
     final_end = end
 
     aligned_segment_count = len(results["words"])
-    token_count = len(results["tokenized"].xpath("//" + unit))
+    token_count = len(results["tokenized"].xpath(f"//{unit}"))
     LOGGER.info(f"Number of words found: {token_count}")
     LOGGER.info(f"Number of aligned segments: {aligned_segment_count}")
 
@@ -446,7 +477,7 @@ def align_audio(  # noqa: C901
     words_dict = {
         x["id"]: {"start": x["start"], "end": x["end"]} for x in results["words"]
     }
-    silence_offsets = defaultdict(int)
+    silence_offsets: defaultdict = defaultdict(int)
     silence = 0
     if results["tokenized"].xpath("//silence"):
         endpoint = 0
