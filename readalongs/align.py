@@ -259,6 +259,10 @@ def create_asr_config(
         fft_size = fft_size << 1
     asr_config.set_int("-nfft", fft_size)
 
+    # Disable VAD (not necessary but here for PocketSphinx compatibility)
+    asr_config.set_int("-remove_noise", 0)
+    asr_config.set_int("-remove_silence", 0)
+
     return asr_config
 
 
@@ -333,6 +337,76 @@ def process_dna(
                 processed_audio.export(save_temps + "_processed" + ".wav")
         removed_segments = dna_segments
     return processed_audio, dna_segments, removed_segments
+
+
+def align_sequence(
+    audio_data: AudioSegment,
+    word_sequence: WordSequence,
+    asr_config: soundswallower.Config,
+    xml_path: str,
+    i: int,
+    unit: Optional[str] = "w",
+    save_temps: Optional[str] = None,
+) -> AudioSegment:
+    """Run alignment for a word sequence.
+
+    Args:
+        audio_data (AudioSegment): Full input audio.
+        word_sequence (WordSequence): Sequence of units to align.
+        asr_config (soundswallower.Config): Aligner configuration.
+        unit (str): Name of unit we are aligning.
+        xml_path (str): Path to input XML file.
+        i (int): Index of this sequence in the full file.
+
+        save_temps (str): Optional; Prefix for saving temporary files,
+            or None to not save them.
+
+    Returns:
+        Iterable[soundswallower.Segment]: Word (or other unit) alignments.
+
+    Raises:
+        RuntimeError: If alignment fails (TODO: figure out why).
+    """
+    i_suffix = "" if i == 0 else "." + str(i + 1)
+
+    # Generate dictionary and FSG for the current sequence of words
+    dict_data = make_dict(word_sequence.words, xml_path, unit=unit)
+    if save_temps is not None:
+        dict_file = io.open(save_temps + ".dict" + i_suffix, "wb")
+    else:
+        dict_file = PortableNamedTemporaryFile(prefix="readalongs_dict_", delete=False)
+    dict_file.write(dict_data.encode("utf-8"))
+    dict_file.close()
+
+    fsg_data = make_fsg(word_sequence.words, xml_path)
+    if save_temps is not None:
+        fsg_file = io.open(save_temps + ".fsg" + i_suffix, "wb")
+    else:
+        fsg_file = PortableNamedTemporaryFile(prefix="readalongs_fsg_", delete=False)
+    fsg_file.write(fsg_data.encode("utf-8"))
+    fsg_file.close()
+
+    # Extract the part of the audio corresponding to this word sequence
+    audio_segment = extract_section(audio_data, word_sequence.start, word_sequence.end)
+    if save_temps is not None and audio_segment is not audio_data:
+        write_audio_to_file(audio_segment, save_temps + ".wav" + i_suffix)
+
+    # Configure soundswallower for this sequence's dict and fsg
+    asr_config.set_string("-dict", dict_file.name)
+    asr_config.set_string("-fsg", fsg_file.name)
+
+    ps = soundswallower.Decoder(asr_config)
+    # Align this word sequence
+    ps.start_utt()
+    ps.process_raw(audio_segment.raw_data, no_search=False, full_utt=True)
+    ps.end_utt()
+
+    if not ps.seg():
+        raise RuntimeError(
+            "Alignment produced no segments, "
+            "please examine dictionary and input audio and text."
+        )
+    return ps.seg()
 
 
 def align_audio(  # noqa: C901
@@ -414,51 +488,16 @@ def align_audio(  # noqa: C901
     word_sequences = get_sequences(xml, xml_path, unit=unit)
     end = 0.0
     for i, word_sequence in enumerate(word_sequences):
-
-        i_suffix = "" if i == 0 else "." + str(i + 1)
-
-        # Generate dictionary and FSG for the current sequence of words
-        dict_data = make_dict(word_sequence.words, xml_path, unit=unit)
-        if save_temps is not None:
-            dict_file = io.open(save_temps + ".dict" + i_suffix, "wb")
-        else:
-            dict_file = PortableNamedTemporaryFile(
-                prefix="readalongs_dict_", delete=True
-            )
-        dict_file.write(dict_data.encode("utf-8"))
-        dict_file.close()
-
-        fsg_data = make_fsg(word_sequence.words, xml_path)
-        if save_temps is not None:
-            fsg_file = io.open(save_temps + ".fsg" + i_suffix, "wb")
-        else:
-            fsg_file = PortableNamedTemporaryFile(prefix="readalongs_fsg_", delete=True)
-        fsg_file.write(fsg_data.encode("utf-8"))
-        fsg_file.close()
-
-        # Extract the part of the audio corresponding to this word sequence
-        audio_segment = extract_section(
-            audio_data, word_sequence.start, word_sequence.end
+        # Run the aligner on this sequence
+        segmentation = align_sequence(
+            audio_data=audio_data,
+            word_sequence=word_sequence,
+            asr_config=asr_config,
+            xml_path=xml_path,
+            i=i,
+            unit=unit,
+            save_temps=save_temps,
         )
-        if save_temps is not None and audio_segment is not audio_data:
-            write_audio_to_file(audio_segment, save_temps + ".wav" + i_suffix)
-
-        # Configure soundswallower for this sequence's dict and fsg
-        asr_config.set_string("-dict", dict_file.name)
-        asr_config.set_string("-fsg", fsg_file.name)
-        asr_config.set_int("-remove_noise", 0)
-        asr_config.set_int("-remove_silence", 0)
-        ps = soundswallower.Decoder(asr_config)
-        # Align this word sequence
-        ps.start_utt()
-        ps.process_raw(audio_segment.raw_data, no_search=False, full_utt=True)
-        ps.end_utt()
-
-        if not ps.seg():
-            raise RuntimeError(
-                "Alignment produced no segments, "
-                "please examine dictionary and input audio and text."
-            )
 
         # List of removed segments for the sequence we are currently processing
         curr_removed_segments = dna_union(
@@ -466,7 +505,7 @@ def align_audio(  # noqa: C901
         )
 
         prev_segment_count = len(results["words"])
-        for word_seg in ps.seg():
+        for word_seg in segmentation:
             if word_seg.word in noisewords:
                 continue
             start = frames_to_time(word_seg.start_frame)
