@@ -571,9 +571,6 @@ def align_audio(
     # soundswallower, which are indexes in frames, into durations in seconds.
     frame_size = 1.0 / asr_config.get_int("-frate")
 
-    def frames_to_time(frames: int) -> float:
-        return frames * frame_size
-
     # Get list of words to ignore in aligner output
     noisewords = read_noisedict(asr_config)
 
@@ -598,7 +595,11 @@ def align_audio(
         )
         # Adjust alignments for DNA
         aligned_words = adjust_dna_segmentation(
-            segmentation, curr_removed_segments, noisewords, frame_size, debug_aligner
+            segmentation=segmentation,
+            curr_removed_segments=curr_removed_segments,
+            noisewords=noisewords,
+            frame_size=frame_size,
+            debug_aligner=debug_aligner,
         )
         results["words"].extend(aligned_words)
         if aligned_words:
