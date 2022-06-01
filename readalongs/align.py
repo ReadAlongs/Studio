@@ -404,7 +404,7 @@ def align_audio(  # noqa: C901
     # soundswallower, which are indexes in frames, into durations in seconds.
     frame_size = 1.0 / asr_config.get_int("-frate")
 
-    def frames_to_time(frames):
+    def frames_to_time(frames: int) -> float:
         return frames * frame_size
 
     # Get list of words to ignore in aligner output
