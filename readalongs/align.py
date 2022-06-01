@@ -408,11 +408,6 @@ def align_sequence(
     ps.process_raw(audio_segment.raw_data, no_search=False, full_utt=True)
     ps.end_utt()
 
-    if not ps.seg():
-        raise RuntimeError(
-            "Alignment produced no segments, "
-            "please examine dictionary and input audio and text."
-        )
     return ps.seg()
 
 
