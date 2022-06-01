@@ -593,21 +593,28 @@ def align_audio(
         curr_removed_segments = dna_union(
             word_sequence.start, word_sequence.end, audio_length_in_ms, removed_segments
         )
-        # Adjust alignments for DNA
-        aligned_words = adjust_dna_segmentation(
-            segmentation=segmentation,
-            curr_removed_segments=curr_removed_segments,
-            noisewords=noisewords,
-            frame_size=frame_size,
-            debug_aligner=debug_aligner,
-        )
-        results["words"].extend(aligned_words)
-        if aligned_words:
-            final_end = aligned_words[-1]["end"]
-        if len(aligned_words) != len(word_sequence.words):
+        try:
+            # Adjust alignments for DNA
+            aligned_words = adjust_dna_segmentation(
+                segmentation=segmentation,
+                curr_removed_segments=curr_removed_segments,
+                noisewords=noisewords,
+                frame_size=frame_size,
+                debug_aligner=debug_aligner,
+            )
+            results["words"].extend(aligned_words)
+            if aligned_words:
+                final_end = aligned_words[-1]["end"]
+                if len(aligned_words) != len(word_sequence.words):
+                    LOGGER.warning(
+                        f"Word sequence {i+1} had {len(word_sequence.words)} tokens "
+                        f"but produced {len(aligned_words)} segments. "
+                        "Check that the anchors are well positioned or "
+                        "that the audio corresponds to the text."
+                    )
+        except RuntimeError:
             LOGGER.warning(
-                f"Word sequence {i+1} had {len(word_sequence.words)} tokens "
-                f"but produced {len(aligned_words)} segments. "
+                f"Word sequence {i+1} produced no alignments.  "
                 "Check that the anchors are well positioned or "
                 "that the audio corresponds to the text."
             )
