@@ -607,21 +607,15 @@ def align_audio(
             # raise an error rather than returning an empty list
             aligned_words = []
         results["words"].extend(aligned_words)
-        if len(aligned_words) == 0:
+        if aligned_words:
+            final_end = aligned_words[-1]["end"]
+        if len(aligned_words) != len(word_sequence.words):
             LOGGER.warning(
-                f"Word sequence {i+1} produced no alignments.  "
+                f"Word sequence {i+1} had {len(word_sequence.words)} tokens "
+                f"but produced {len(aligned_words)} segments. "
                 "Check that the anchors are well positioned or "
                 "that the audio corresponds to the text."
             )
-        else:
-            final_end = aligned_words[-1]["end"]
-            if len(aligned_words) != len(word_sequence.words):
-                LOGGER.warning(
-                    f"Word sequence {i+1} had {len(word_sequence.words)} tokens "
-                    f"but produced {len(aligned_words)} segments. "
-                    "Check that the anchors are well positioned or "
-                    "that the audio corresponds to the text."
-                )
 
     aligned_segment_count = len(results["words"])
     token_count = len(results["tokenized"].xpath(f"//{unit}"))
