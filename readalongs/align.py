@@ -161,8 +161,8 @@ def split_silences(words: List[dict], final_end, excluded_segments: List[dict]) 
 def parse_and_prepare_input(
     xml_path: str,
     config: dict,
-    save_temps: Optional[str],
-    verbose_g2p_warnings: Optional[bool],
+    save_temps: Optional[str] = None,
+    verbose_g2p_warnings: Optional[bool] = False,
 ) -> etree.ElementTree:
     """Parse XML input and run tokenization and G2P.
 
@@ -191,13 +191,13 @@ def parse_and_prepare_input(
     if "xml" in config:
         xml = add_supplementary_xml(xml, config)
     xml = tokenize_xml(xml)
-    if save_temps:
+    if save_temps is not None:
         save_xml(save_temps + ".tokenized.xml", xml)
     xml = add_ids(xml)
-    if save_temps:
+    if save_temps is not None:
         save_xml(save_temps + ".ids.xml", xml)
     xml, valid = convert_xml(xml, verbose_warnings=verbose_g2p_warnings)
-    if save_temps:
+    if save_temps is not None:
         save_xml(save_temps + ".g2p.xml", xml)
     if not valid:
         raise RuntimeError(
@@ -275,7 +275,7 @@ def align_audio(  # noqa: C901
     if not debug_aligner:
         # With --debug-aligner, we display the SoundSwallower logs on screen, but
         # otherwise we redirect them away from the terminal.
-        if save_temps and (sys.platform not in ("win32", "cygwin")):
+        if save_temps is not None and (sys.platform not in ("win32", "cygwin")):
             # With --save-temps, we save the SoundSwallower logs to a file.
             # This is buggy on Windows, so we don't do it on Windows variants
             ss_log = save_temps + ".soundswallower.log"
@@ -314,7 +314,7 @@ def align_audio(  # noqa: C901
                 processed_audio = dna_method(
                     processed_audio, int(dna_seg["begin"]), int(dna_seg["end"])
                 )
-            if save_temps:
+            if save_temps is not None:
                 _, ext = os.path.splitext(audio_path)
                 try:
                     processed_audio.export(
@@ -362,7 +362,7 @@ def align_audio(  # noqa: C901
 
         # Generate dictionary and FSG for the current sequence of words
         dict_data = make_dict(word_sequence.words, xml_path, unit=unit)
-        if save_temps:
+        if save_temps is not None:
             dict_file = io.open(save_temps + ".dict" + i_suffix, "wb")
         else:
             dict_file = PortableNamedTemporaryFile(
@@ -372,7 +372,7 @@ def align_audio(  # noqa: C901
         dict_file.close()
 
         fsg_data = make_fsg(word_sequence.words, xml_path)
-        if save_temps:
+        if save_temps is not None:
             fsg_file = io.open(save_temps + ".fsg" + i_suffix, "wb")
         else:
             fsg_file = PortableNamedTemporaryFile(prefix="readalongs_fsg_", delete=True)
@@ -383,7 +383,7 @@ def align_audio(  # noqa: C901
         audio_segment = extract_section(
             audio_data, word_sequence.start, word_sequence.end
         )
-        if save_temps and audio_segment is not audio_data:
+        if save_temps is not None and audio_segment is not audio_data:
             write_audio_to_file(audio_segment, save_temps + ".wav" + i_suffix)
 
         # Configure soundswallower for this sequence's dict and fsg
@@ -900,11 +900,11 @@ def create_input_tei(**kwargs):
     kwargs["main_lang"] = text_langs[0]
     kwargs["fallback_langs"] = ",".join(text_langs[1:])
 
-    save_temps = kwargs.get("save_temps", False)
+    save_temps = kwargs.get("save_temps", None)
     if kwargs.get("output_file", False):
         filename = kwargs.get("output_file")
         outfile = io.open(filename, "wb")
-    elif save_temps:
+    elif save_temps is not None:
         filename = save_temps + ".input.xml"
         outfile = io.open(filename, "wb")
     else:
