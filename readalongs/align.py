@@ -209,14 +209,16 @@ def parse_and_prepare_input(
 
 def create_asr_config(
     config: dict,
+    audio: AudioSegment,
     save_temps: Optional[str] = None,
     debug_aligner: Optional[bool] = False,
 ) -> soundswallower.Config:
     """Create the base SoundSwallower (formerly PocketSphinx) configuration.
 
     Args:
-        config (dict): ReadAlong-Studio configuration to use
-        save_temps (str): Optional; Prefix for saving temporary files, by default None
+        config (dict): ReadAlong-Studio configuration to use.
+        audio (AudioSegment): Audio input from which to take parameters.
+        save_temps (str): Optional; Prefix for saving temporary files, by default None.
         debug_aligner (boolean): Optional; Output debugging info from the aligner.
 
     Returns:
@@ -243,6 +245,20 @@ def create_asr_config(
         asr_config.set_string("-logfn", ss_log)
         asr_config.set_string("-loglevel", "DEBUG")
 
+    # Set sampling rate based on audio (FIXME: this may cause problems
+    # later on if it is too low)
+    asr_config.set_float("-samprate", audio.frame_rate)
+    # Set the minimum FFT size (no longer necessary since
+    # SoundSwallower 0.2, but we keep this here for compatibility with
+    # old versions in case we need to debug things)
+    frame_points = int(
+        asr_config.get_float("-samprate") * asr_config.get_float("-wlen")
+    )
+    fft_size = 1
+    while fft_size < frame_points:
+        fft_size = fft_size << 1
+    asr_config.set_int("-nfft", fft_size)
+
     return asr_config
 
 
@@ -261,6 +277,49 @@ def read_noisedict(asr_config: soundswallower.Config) -> Set[str]:
         noisewords = {"<sil>", "[NOISE]"}
 
     return noisewords
+
+
+def process_dna(
+    dna_config: Dict[str, Any],
+    audio: AudioSegment,
+    audio_path: str,
+    save_temps: Optional[str],
+) -> Tuple[AudioSegment, List[dict], List[dict]]:
+    """Apply do-not-align processing to audio"""
+    # Sort un-alignable segments and join overlapping ones
+    dna_segments = sort_and_join_dna_segments(dna_config["segments"])
+    method = dna_config.get("method", "remove")
+    # Determine do-not-align method
+    if method == "mute":
+        dna_method = mute_section
+    elif method == "remove":
+        dna_method = remove_section
+    else:
+        LOGGER.error("Unknown do-not-align method declared")
+    # Process audio and save temporary files
+    if method in ("mute", "remove"):
+        processed_audio = audio
+        # Process the DNA segments in reverse order so we don't have to correct
+        # for previously processed ones when using the "remove" method.
+        for dna_seg in reversed(dna_segments):
+            processed_audio = dna_method(
+                processed_audio, int(dna_seg["begin"]), int(dna_seg["end"])
+            )
+        if save_temps is not None:
+            _, ext = os.path.splitext(audio_path)
+            try:
+                processed_audio.export(save_temps + "_processed" + ext, format=ext[1:])
+            except CouldntEncodeError:
+                try:
+                    os.remove(save_temps + "_processed" + ext)
+                except BaseException:
+                    pass
+                LOGGER.warning(
+                    f"Couldn't find encoder for '{ext[1:]}', defaulting to 'wav'"
+                )
+                processed_audio.export(save_temps + "_processed" + ".wav")
+        removed_segments = dna_segments
+    return processed_audio, dna_segments, removed_segments
 
 
 def align_audio(  # noqa: C901
@@ -307,67 +366,23 @@ def align_audio(  # noqa: C901
     )
     results["tokenized"] = xml
 
-    asr_config = create_asr_config(config, save_temps, debug_aligner)
-
     # Read the audio file
     audio = read_audio_from_file(audio_path)
     audio = audio.set_channels(1).set_sample_width(2)
     audio_length_in_ms = len(audio.raw_data)
-    asr_config.set_float("-samprate", audio.frame_rate)
+
+    # Create the ASR configuration
+    asr_config = create_asr_config(config, audio, save_temps, debug_aligner)
 
     # Process audio, silencing or removing any DNA segments
-    dna_segments = []
-    removed_segments = []
     if "do-not-align" in config:
-        # Sort un-alignable segments and join overlapping ones
-        dna_segments = sort_and_join_dna_segments(config["do-not-align"]["segments"])
-        method = config["do-not-align"].get("method", "remove")
-        # Determine do-not-align method
-        if method == "mute":
-            dna_method = mute_section
-        elif method == "remove":
-            dna_method = remove_section
-        else:
-            LOGGER.error("Unknown do-not-align method declared")
-        # Process audio and save temporary files
-        if method in ("mute", "remove"):
-            processed_audio = audio
-            # Process the DNA segments in reverse order so we don't have to correct
-            # for previously processed ones when using the "remove" method.
-            for dna_seg in reversed(dna_segments):
-                processed_audio = dna_method(
-                    processed_audio, int(dna_seg["begin"]), int(dna_seg["end"])
-                )
-            if save_temps is not None:
-                _, ext = os.path.splitext(audio_path)
-                try:
-                    processed_audio.export(
-                        save_temps + "_processed" + ext, format=ext[1:]
-                    )
-                except CouldntEncodeError:
-                    try:
-                        os.remove(save_temps + "_processed" + ext)
-                    except BaseException:
-                        pass
-                    LOGGER.warning(
-                        f"Couldn't find encoder for '{ext[1:]}', defaulting to 'wav'"
-                    )
-                    processed_audio.export(save_temps + "_processed" + ".wav")
-            removed_segments = dna_segments
-        audio_data = processed_audio
+        audio_data, dna_segments, removed_segments = process_dna(
+            config["do-not-align"], audio, audio_path, save_temps
+        )
     else:
         audio_data = audio
-
-    # Set the minimum FFT size (no longer necessary since
-    # SoundSwallower 0.2, but we keep this here for compatibility with
-    # old versions in case we need to debug things)
-    frame_points = int(
-        asr_config.get_float("-samprate") * asr_config.get_float("-wlen")
-    )
-    fft_size = 1
-    while fft_size < frame_points:
-        fft_size = fft_size << 1
-    asr_config.set_int("-nfft", fft_size)
+        dna_segments = []
+        removed_segments = []
 
     # Note: the frames are typically 0.01s long (i.e., the frame rate is typically 100),
     # while the audio segments manipulated using pydub are sliced and accessed in
@@ -379,6 +394,7 @@ def align_audio(  # noqa: C901
     def frames_to_time(frames):
         return frames * frame_size
 
+    # Get list of words to ignore in aligner output
     noisewords = read_noisedict(asr_config)
 
     # Extract the list of sequences of words in the XML
