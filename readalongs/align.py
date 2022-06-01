@@ -258,7 +258,6 @@ def align_audio(  # noqa: C901
     audio = read_audio_from_file(audio_path)
     audio = audio.set_channels(1).set_sample_width(2)
     audio_length_in_ms = len(audio.raw_data)
-    #  Downsampling is (probably) not necessary
     cfg.set_float("-samprate", audio.frame_rate)
 
     # Process audio, silencing or removing any DNA segments
