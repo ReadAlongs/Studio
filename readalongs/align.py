@@ -8,7 +8,7 @@ import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import chevron
 import regex as re
@@ -207,6 +207,62 @@ def parse_and_prepare_input(
     return xml
 
 
+def create_asr_config(
+    config: dict,
+    save_temps: Optional[str] = None,
+    debug_aligner: Optional[bool] = False,
+) -> soundswallower.Config:
+    """Create the base SoundSwallower (formerly PocketSphinx) configuration.
+
+    Args:
+        config (dict): ReadAlong-Studio configuration to use
+        save_temps (str): Optional; Prefix for saving temporary files, by default None
+        debug_aligner (boolean): Optional; Output debugging info from the aligner.
+
+    Returns:
+        soundswallower.Config: Basic configuration."""
+    asr_config = soundswallower.Decoder.default_config()
+    acoustic_model = config.get(
+        "acoustic_model", os.path.join(MODEL_DIR, DEFAULT_ACOUSTIC_MODEL)
+    )
+    asr_config.set_string("-hmm", acoustic_model)
+    asr_config.set_float("-beam", 1e-100)
+    asr_config.set_float("-pbeam", 1e-100)
+    asr_config.set_float("-wbeam", 1e-80)
+
+    if not debug_aligner:
+        # With --debug-aligner, we display the SoundSwallower logs on screen, but
+        # otherwise we redirect them away from the terminal.
+        if save_temps is not None and (sys.platform not in ("win32", "cygwin")):
+            # With --save-temps, we save the SoundSwallower logs to a file.
+            # This is buggy on Windows, so we don't do it on Windows variants
+            ss_log = save_temps + ".soundswallower.log"
+        else:
+            # Otherwise, we send the SoundSwallower logs to the bit bucket.
+            ss_log = os.devnull
+        asr_config.set_string("-logfn", ss_log)
+        asr_config.set_string("-loglevel", "DEBUG")
+
+    return asr_config
+
+
+def read_noisedict(asr_config: soundswallower.Config) -> Set[str]:
+    # Read the list of noise words to ignore
+    try:
+        noisewords = set()
+        acoustic_model = asr_config.get_string("-hmm")
+        with open(os.path.join(acoustic_model, "noisedict"), "rt") as dictfh:
+            for line in dictfh:
+                if line.startswith("##") or line.startswith(";;"):
+                    continue
+                noisewords.add(line.strip().split()[0])
+    except FileNotFoundError:
+        LOGGER.warning("Could not find noisedict, using defaults")
+        noisewords = {"<sil>", "[NOISE]"}
+
+    return noisewords
+
+
 def align_audio(  # noqa: C901
     xml_path: str,
     audio_path: str,
@@ -227,12 +283,14 @@ def align_audio(  # noqa: C901
             If False, split silence into adjoining tokens (default)
             If True, keep the bare tokens without adjoining silences.
         config (dict): Optional; ReadAlong-Studio configuration to use
-        save_temps (str): Optional; Save temporary files, by default None
+        save_temps (str): Optional; Prefix for saving temporary files, or None if
+            temporary files are not to be saved.
         verbose_g2p_warnings (boolean): Optional; display all g2p errors and warnings
             iff True
+        debug_aligner (boolean): Optional, output debugging info from the aligner.
 
     Returns:
-        dict: TODO
+        Dict[str, Any]: TODO
 
     Raises:
         TODO
@@ -249,47 +307,13 @@ def align_audio(  # noqa: C901
     )
     results["tokenized"] = xml
 
-    # Prepare the SoundSwallower (formerly PocketSphinx) configuration
-    cfg = soundswallower.Decoder.default_config()
-    acoustic_model = config.get(
-        "acoustic_model", os.path.join(MODEL_DIR, DEFAULT_ACOUSTIC_MODEL)
-    )
-
-    cfg.set_string("-hmm", acoustic_model)
-    cfg.set_float("-beam", 1e-100)
-    cfg.set_float("-pbeam", 1e-100)
-    cfg.set_float("-wbeam", 1e-80)
-
-    # Read the list of noise words
-    try:
-        noisewords = set()
-        with open(os.path.join(acoustic_model, "noisedict"), "rt") as dictfh:
-            for line in dictfh:
-                if line.startswith("##") or line.startswith(";;"):
-                    continue
-                noisewords.add(line.strip().split()[0])
-    except FileNotFoundError:
-        LOGGER.warning("Could not find noisedict, using defaults")
-        noisewords = {"<sil>", "[NOISE]"}
-
-    if not debug_aligner:
-        # With --debug-aligner, we display the SoundSwallower logs on screen, but
-        # otherwise we redirect them away from the terminal.
-        if save_temps is not None and (sys.platform not in ("win32", "cygwin")):
-            # With --save-temps, we save the SoundSwallower logs to a file.
-            # This is buggy on Windows, so we don't do it on Windows variants
-            ss_log = save_temps + ".soundswallower.log"
-        else:
-            # Otherwise, we send the SoundSwallower logs to the bit bucket.
-            ss_log = os.devnull
-        cfg.set_string("-logfn", ss_log)
-        cfg.set_string("-loglevel", "DEBUG")
+    asr_config = create_asr_config(config, save_temps, debug_aligner)
 
     # Read the audio file
     audio = read_audio_from_file(audio_path)
     audio = audio.set_channels(1).set_sample_width(2)
     audio_length_in_ms = len(audio.raw_data)
-    cfg.set_float("-samprate", audio.frame_rate)
+    asr_config.set_float("-samprate", audio.frame_rate)
 
     # Process audio, silencing or removing any DNA segments
     dna_segments = []
@@ -337,21 +361,25 @@ def align_audio(  # noqa: C901
     # Set the minimum FFT size (no longer necessary since
     # SoundSwallower 0.2, but we keep this here for compatibility with
     # old versions in case we need to debug things)
-    frame_points = int(cfg.get_float("-samprate") * cfg.get_float("-wlen"))
+    frame_points = int(
+        asr_config.get_float("-samprate") * asr_config.get_float("-wlen")
+    )
     fft_size = 1
     while fft_size < frame_points:
         fft_size = fft_size << 1
-    cfg.set_int("-nfft", fft_size)
+    asr_config.set_int("-nfft", fft_size)
 
     # Note: the frames are typically 0.01s long (i.e., the frame rate is typically 100),
     # while the audio segments manipulated using pydub are sliced and accessed in
     # millisecond intervals. For audio segments, the ms slice assumption is hard-coded
     # all over, while frames_to_time() is used to convert segment boundaries returned by
     # soundswallower, which are indexes in frames, into durations in seconds.
-    frame_size = 1.0 / cfg.get_int("-frate")
+    frame_size = 1.0 / asr_config.get_int("-frate")
 
     def frames_to_time(frames):
         return frames * frame_size
+
+    noisewords = read_noisedict(asr_config)
 
     # Extract the list of sequences of words in the XML
     word_sequences = get_sequences(xml, xml_path, unit=unit)
@@ -387,11 +415,11 @@ def align_audio(  # noqa: C901
             write_audio_to_file(audio_segment, save_temps + ".wav" + i_suffix)
 
         # Configure soundswallower for this sequence's dict and fsg
-        cfg.set_string("-dict", dict_file.name)
-        cfg.set_string("-fsg", fsg_file.name)
-        cfg.set_int("-remove_noise", 0)
-        cfg.set_int("-remove_silence", 0)
-        ps = soundswallower.Decoder(cfg)
+        asr_config.set_string("-dict", dict_file.name)
+        asr_config.set_string("-fsg", fsg_file.name)
+        asr_config.set_int("-remove_noise", 0)
+        asr_config.set_int("-remove_silence", 0)
+        ps = soundswallower.Decoder(asr_config)
         # Align this word sequence
         ps.start_utt()
         ps.process_raw(audio_segment.raw_data, no_search=False, full_utt=True)
