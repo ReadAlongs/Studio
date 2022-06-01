@@ -602,22 +602,26 @@ def align_audio(
                 frame_size=frame_size,
                 debug_aligner=debug_aligner,
             )
-            results["words"].extend(aligned_words)
-            if aligned_words:
-                final_end = aligned_words[-1]["end"]
-                if len(aligned_words) != len(word_sequence.words):
-                    LOGGER.warning(
-                        f"Word sequence {i+1} had {len(word_sequence.words)} tokens "
-                        f"but produced {len(aligned_words)} segments. "
-                        "Check that the anchors are well positioned or "
-                        "that the audio corresponds to the text."
-                    )
         except RuntimeError:
+            # We need this here because soundswallower<=0.2.2 will
+            # raise an error rather than returning an empty list
+            aligned_words = []
+        results["words"].extend(aligned_words)
+        if len(aligned_words) == 0:
             LOGGER.warning(
                 f"Word sequence {i+1} produced no alignments.  "
                 "Check that the anchors are well positioned or "
                 "that the audio corresponds to the text."
             )
+        else:
+            final_end = aligned_words[-1]["end"]
+            if len(aligned_words) != len(word_sequence.words):
+                LOGGER.warning(
+                    f"Word sequence {i+1} had {len(word_sequence.words)} tokens "
+                    f"but produced {len(aligned_words)} segments. "
+                    "Check that the anchors are well positioned or "
+                    "that the audio corresponds to the text."
+                )
 
     aligned_segment_count = len(results["words"])
     token_count = len(results["tokenized"].xpath(f"//{unit}"))
