@@ -98,8 +98,7 @@ class TestXHTML(BasicTestCase):
             txt = load_txt(tf.name)
             self.maxDiff = None
             self.assertEqual(
-                txt,
-                load_txt(os.path.join(self.data_dir, "ej-fra-converted.xhtml")),
+                txt, load_txt(os.path.join(self.data_dir, "ej-fra-converted.xhtml")),
             )
 
 
