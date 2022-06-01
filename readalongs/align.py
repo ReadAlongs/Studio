@@ -8,7 +8,7 @@ import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 import chevron
 import regex as re
@@ -409,7 +409,93 @@ def align_sequence(
     return ps.seg()
 
 
-def align_audio(  # noqa: C901
+def adjust_dna_segmentation(
+    segmentation: Iterable[soundswallower.Segment],
+    curr_removed_segments: List[dict],
+    noisewords: Set[str],
+    frame_size: float,
+    debug_aligner: Optional[bool] = False,
+) -> List[Dict[str, Any]]:
+    """Correct output alignments based on do-not-align segments."""
+    aligned_words = []
+    for word_seg in segmentation:
+        if word_seg.word in noisewords:
+            continue
+        start = word_seg.start_frame * frame_size
+        end = (word_seg.end_frame + 1) * frame_size
+        # change to ms
+        start_ms = int(start * 1000)
+        end_ms = int(end * 1000)
+        if curr_removed_segments:
+            start_ms += calculate_adjustment(start_ms, curr_removed_segments)
+            end_ms += calculate_adjustment(end_ms, curr_removed_segments)
+            start_ms, end_ms = correct_adjustments(
+                start_ms, end_ms, curr_removed_segments
+            )
+            # change back to seconds to write to smil
+            start = start_ms / 1000
+            end = end_ms / 1000
+        aligned_words.append({"id": word_seg.word, "start": start, "end": end})
+        if debug_aligner:
+            LOGGER.info("Segment: %s (%.3f : %.3f)", word_seg.word, start, end)
+    return aligned_words
+
+
+def insert_silence(
+    results: Dict[str, Any],
+    word_sequences: List[WordSequence],
+    dna_segments: List[dict],
+    audio: AudioSegment,
+    final_end: float,
+    xml_path: Optional[str] = "XML Input",
+):
+    words_dict = {
+        x["id"]: {"start": x["start"], "end": x["end"]} for x in results["words"]
+    }
+    silence_offsets: defaultdict = defaultdict(int)
+    silence = 0
+    if results["tokenized"].xpath("//silence"):
+        endpoint = 0
+        all_good = True
+        for el in results["tokenized"].xpath("//*"):
+            if el.tag == "silence" and "dur" in el.attrib:
+                try:
+                    silence_ms = parse_time(el.attrib["dur"])
+                except ValueError as err:
+                    LOGGER.error(
+                        f'Invalid silence element in {xml_path}: invalid "time" '
+                        f'attribute "{el.attrib["dur"]}": {err}'
+                    )
+                    all_good = False
+                    continue
+                silence_segment = AudioSegment.silent(
+                    duration=silence_ms
+                )  # create silence segment
+                silence += silence_ms  # add silence length to total silence
+                audio = (
+                    audio[:endpoint] + silence_segment + audio[endpoint:]
+                )  # insert silence at previous endpoint
+                endpoint += silence_ms  # add silence to previous endpoint
+            if el.tag == "w":
+                silence_offsets[el.attrib["id"]] += (
+                    silence / 1000
+                )  # add silence in seconds to silence offset for word id
+                endpoint = (
+                    words_dict[el.attrib["id"]]["end"] * 1000
+                ) + silence  # bump endpoint and include silence
+        if not all_good:
+            raise RuntimeError(
+                f"Could not parse all duration attributes in silence elements in {xml_path}, please make sure each silence "
+                'element is properly formatted, e.g., <silence dur="1.5s"/>.  Aborting.'
+            )
+    if silence:
+        for word in results["words"]:
+            word["start"] += silence_offsets[word["id"]]
+            word["end"] += silence_offsets[word["id"]]
+        results["audio"] = audio
+
+
+def align_audio(
     xml_path: str,
     audio_path: str,
     unit: Optional[str] = "w",
@@ -486,7 +572,6 @@ def align_audio(  # noqa: C901
 
     # Extract the list of sequences of words in the XML
     word_sequences = get_sequences(xml, xml_path, unit=unit)
-    end = 0.0
     for i, word_sequence in enumerate(word_sequences):
         # Run the aligner on this sequence
         segmentation = align_sequence(
@@ -503,37 +588,20 @@ def align_audio(  # noqa: C901
         curr_removed_segments = dna_union(
             word_sequence.start, word_sequence.end, audio_length_in_ms, removed_segments
         )
-
-        prev_segment_count = len(results["words"])
-        for word_seg in segmentation:
-            if word_seg.word in noisewords:
-                continue
-            start = frames_to_time(word_seg.start_frame)
-            end = frames_to_time(word_seg.end_frame + 1)
-            # change to ms
-            start_ms = int(start * 1000)
-            end_ms = int(end * 1000)
-            if curr_removed_segments:
-                start_ms += calculate_adjustment(start_ms, curr_removed_segments)
-                end_ms += calculate_adjustment(end_ms, curr_removed_segments)
-                start_ms, end_ms = correct_adjustments(
-                    start_ms, end_ms, curr_removed_segments
-                )
-                # change back to seconds to write to smil
-                start = start_ms / 1000
-                end = end_ms / 1000
-            results["words"].append({"id": word_seg.word, "start": start, "end": end})
-            if debug_aligner:
-                LOGGER.info("Segment: %s (%.3f : %.3f)", word_seg.word, start, end)
-        aligned_segment_count = len(results["words"]) - prev_segment_count
-        if aligned_segment_count != len(word_sequence.words):
+        # Adjust alignments for DNA
+        aligned_words = adjust_dna_segmentation(
+            segmentation, curr_removed_segments, noisewords, frame_size, debug_aligner
+        )
+        results["words"].extend(aligned_words)
+        if aligned_words:
+            final_end = aligned_words[-1]["end"]
+        if len(aligned_words) != len(word_sequence.words):
             LOGGER.warning(
                 f"Word sequence {i+1} had {len(word_sequence.words)} tokens "
-                f"but produced {aligned_segment_count} segments. "
+                f"but produced {len(aligned_words)} segments. "
                 "Check that the anchors are well positioned or "
                 "that the audio corresponds to the text."
             )
-    final_end = end
 
     aligned_segment_count = len(results["words"])
     token_count = len(results["tokenized"].xpath(f"//{unit}"))
@@ -552,6 +620,7 @@ def align_audio(  # noqa: C901
             "align successfully. Look for more anchors-related warnings above in the log."
         )
 
+    # Split silences if requested
     if not bare:
         # Take all the boundaries (anchors) around segments and add them as DNA
         # segments for the purpose of splitting silences
@@ -568,52 +637,17 @@ def align_audio(  # noqa: C901
         dna_for_silence_splitting = sort_and_join_dna_segments(
             dna_for_silence_splitting
         )
-
         split_silences(results["words"], final_end, dna_for_silence_splitting)
-    words_dict = {
-        x["id"]: {"start": x["start"], "end": x["end"]} for x in results["words"]
-    }
-    silence_offsets: defaultdict = defaultdict(int)
-    silence = 0
-    if results["tokenized"].xpath("//silence"):
-        endpoint = 0
-        all_good = True
-        for el in results["tokenized"].xpath("//*"):
-            if el.tag == "silence" and "dur" in el.attrib:
-                try:
-                    silence_ms = parse_time(el.attrib["dur"])
-                except ValueError as err:
-                    LOGGER.error(
-                        f'Invalid silence element in {xml_path}: invalid "time" '
-                        f'attribute "{el.attrib["dur"]}": {err}'
-                    )
-                    all_good = False
-                    continue
-                silence_segment = AudioSegment.silent(
-                    duration=silence_ms
-                )  # create silence segment
-                silence += silence_ms  # add silence length to total silence
-                audio = (
-                    audio[:endpoint] + silence_segment + audio[endpoint:]
-                )  # insert silence at previous endpoint
-                endpoint += silence_ms  # add silence to previous endpoint
-            if el.tag == "w":
-                silence_offsets[el.attrib["id"]] += (
-                    silence / 1000
-                )  # add silence in seconds to silence offset for word id
-                endpoint = (
-                    words_dict[el.attrib["id"]]["end"] * 1000
-                ) + silence  # bump endpoint and include silence
-        if not all_good:
-            raise RuntimeError(
-                f"Could not parse all duration attributes in silence elements in {xml_path}, please make sure each silence "
-                'element is properly formatted, e.g., <silence dur="1.5s"/>.  Aborting.'
-            )
-    if silence:
-        for word in results["words"]:
-            word["start"] += silence_offsets[word["id"]]
-            word["end"] += silence_offsets[word["id"]]
-        results["audio"] = audio
+
+    # Insert silences if requested
+    insert_silence(
+        results=results,
+        word_sequences=word_sequences,
+        dna_segments=dna_segments,
+        audio=audio,
+        final_end=final_end,
+        xml_path=xml_path,
+    )
     return results
 
 
