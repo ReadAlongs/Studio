@@ -579,6 +579,7 @@ def align_audio(
 
     # Extract the list of sequences of words in the XML
     word_sequences = get_sequences(xml, xml_path, unit=unit)
+    final_end = 0.0
     for i, word_sequence in enumerate(word_sequences):
         # Run the aligner on this sequence
         segmentation = align_sequence(
