@@ -7,6 +7,7 @@ Test force-alignment with SoundsSwallower FSG search from Python API
 import os
 import shutil
 import unittest
+import wave
 from tempfile import TemporaryDirectory
 
 from basic_test_case import BasicTestCase
@@ -83,6 +84,18 @@ class TestForceAlignment(BasicTestCase):
         self.assertEqual(len(words), len(xml_words))
         for w, xw in zip(words, xml_words):
             self.assertEqual(xw.attrib["id"], w["id"])
+
+    def test_align_fail(self):
+        """Alignment test case with bad audio that should fail."""
+        xml_path = os.path.join(self.data_dir, "ej-fra.xml")
+        with PortableNamedTemporaryFile(suffix=".wav") as tf:
+            with wave.open(tf, "wb") as writer:
+                writer.setnchannels(1)
+                writer.setsampwidth(2)
+                writer.setframerate(16000)
+                writer.writeframes(b"\x00\x00")
+            with self.assertRaises(RuntimeError):
+                _ = align_audio(xml_path, tf.name, unit="w",)
 
 
 class TestXHTML(BasicTestCase):
