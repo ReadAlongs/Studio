@@ -73,6 +73,9 @@ class SoundSwallowerDecoderStub:
         def get_float(self, *args):
             return 1.0
 
+        def get_string(self, *args):
+            return "SPAM"
+
         def get_int(self, name):
             if name == "-frate":
                 # Pretend the framerate is always 1000, so the stub times are all in ms
