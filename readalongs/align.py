@@ -282,10 +282,22 @@ def read_noisedict(asr_config: soundswallower.Config) -> Set[str]:
 def process_dna(
     dna_config: Dict[str, Any],
     audio: AudioSegment,
-    audio_path: str,
-    save_temps: Optional[str],
+    audio_path: Optional[str] = None,
+    save_temps: Optional[str] = None,
 ) -> Tuple[AudioSegment, List[dict], List[dict]]:
-    """Apply do-not-align processing to audio"""
+    """Apply do-not-align processing to audio.
+
+    Args:
+        dna_config (dict): Do-not-align configuration, containing at least "segments" and "method".
+        audio (AudioSegment): Original audio segment.
+        audio_path (str): Optional; Path from which audio was loaded (needed for save_temps).
+        save_temps (str): Optional; Prefix for saving temporary files, by default None.
+
+    Returns:
+        Tuple[AudioSegment, List[dict], List[dict]]: Processed audio
+            segment, list of segments marked do-not-align, list of segments
+            actually removed.
+    """
     # Sort un-alignable segments and join overlapping ones
     dna_segments = sort_and_join_dna_segments(dna_config["segments"])
     method = dna_config.get("method", "remove")
@@ -306,6 +318,7 @@ def process_dna(
                 processed_audio, int(dna_seg["begin"]), int(dna_seg["end"])
             )
         if save_temps is not None:
+            assert audio_path is not None
             _, ext = os.path.splitext(audio_path)
             try:
                 processed_audio.export(save_temps + "_processed" + ext, format=ext[1:])
