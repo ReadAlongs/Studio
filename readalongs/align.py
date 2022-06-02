@@ -747,6 +747,40 @@ def save_audio(
     return audio_path
 
 
+def save_images(config: Dict[str, Any], output_dir: str):
+    """Save image files specified in config.
+
+    Args:
+        config (dict): ReadAlong-Studio configuration
+        output_dir (str): Output directory
+    Raises:
+        FileExistsError: If output directory already exists
+    """
+    assets_dir = os.path.join(output_dir, "assets")
+    try:
+        os.mkdir(assets_dir)
+    except FileExistsError:
+        if not os.path.isdir(assets_dir):
+            raise
+    for _, image in config["images"].items():
+        if image[0:4] == "http":
+            LOGGER.warning(
+                f"Please make sure {image} is accessible to clients using your read-along."
+            )
+        else:
+            try:
+                shutil.copy(image, assets_dir)
+            except Exception as e:
+                LOGGER.warning(
+                    f"Please copy {image} to {assets_dir} before deploying your read-along. ({e})"
+                )
+            if os.path.basename(image) != image:
+                LOGGER.warning(
+                    f"Read-along images were tested with absolute urls (starting with http(s):// "
+                    f"and filenames without a path. {image} might not work as specified."
+                )
+
+
 def save_readalong(
     # this * forces all arguments to be passed by name, because I don't want any
     # code to depend on their order in the future
@@ -842,29 +876,7 @@ def save_readalong(
 
     # Copy the image files to the output's asset directory, if any are found
     if "images" in config:
-        assets_dir = os.path.join(output_dir, "assets")
-        try:
-            os.mkdir(assets_dir)
-        except FileExistsError:
-            if not os.path.isdir(assets_dir):
-                raise
-        for _, image in config["images"].items():
-            if image[0:4] == "http":
-                LOGGER.warning(
-                    f"Please make sure {image} is accessible to clients using your read-along."
-                )
-            else:
-                try:
-                    shutil.copy(image, assets_dir)
-                except Exception as e:
-                    LOGGER.warning(
-                        f"Please copy {image} to {assets_dir} before deploying your read-along. ({e})"
-                    )
-                if os.path.basename(image) != image:
-                    LOGGER.warning(
-                        f"Read-along images were tested with absolute urls (starting with http(s):// "
-                        f"and filenames without a path. {image} might not work as specified."
-                    )
+        save_images(config=config, output_dir=output_dir)
 
 
 def return_word_from_id(xml: etree, el_id: str) -> str:
