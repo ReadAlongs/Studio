@@ -336,7 +336,7 @@ def process_dna(
             except CouldntEncodeError:
                 try:
                     os.remove(save_temps + "_processed" + ext)
-                except BaseException:
+                except BaseException:  # Ignore Windows file removal failures
                     pass
                 LOGGER.warning(
                     f"Couldn't find encoder for '{ext[1:]}', defaulting to 'wav'"
@@ -411,7 +411,7 @@ def align_sequence(
     return ps.seg()
 
 
-def adjust_dna_segmentation(
+def process_segmentation(
     segmentation: Iterable[soundswallower.Segment],
     curr_removed_segments: List[dict],
     noisewords: Set[str],
@@ -552,7 +552,10 @@ def align_audio(
     # Process audio, silencing or removing any DNA segments
     if "do-not-align" in config:
         audio_data, dna_segments, removed_segments = process_dna(
-            config["do-not-align"], audio, audio_path, save_temps
+            dna_config=config["do-not-align"],
+            audio=audio,
+            audio_path=audio_path,
+            save_temps=save_temps,
         )
     else:
         audio_data = audio
@@ -562,7 +565,7 @@ def align_audio(
     # Note: the frames are typically 0.01s long (i.e., the frame rate is typically 100),
     # while the audio segments manipulated using pydub are sliced and accessed in
     # millisecond intervals. For audio segments, the ms slice assumption is hard-coded
-    # all over, while frames_to_time() is used to convert segment boundaries returned by
+    # all over, while frame_size is used to convert segment boundaries returned by
     # soundswallower, which are indexes in frames, into durations in seconds.
     frame_size = 1.0 / asr_config.get_int("-frate")
 
@@ -589,8 +592,8 @@ def align_audio(
             word_sequence.start, word_sequence.end, audio_length_in_ms, removed_segments
         )
         try:
-            # Adjust alignments for DNA
-            aligned_words = adjust_dna_segmentation(
+            # Process raw segmentation, adjusting alignments for DNA
+            aligned_words = process_segmentation(
                 segmentation=segmentation,
                 curr_removed_segments=curr_removed_segments,
                 noisewords=noisewords,
