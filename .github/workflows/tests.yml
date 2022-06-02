@@ -26,14 +26,12 @@ jobs:
           if pip-licenses | grep -v 'Artistic License' | grep -v LGPL | grep GNU; then echo 'Please avoid introducing *GPL dependencies'; false; fi
           # Install testing requirements
           pip install -r requirements.dev.txt
-          pip install coverage
-          pip install codecov
-          pip install gunicorn
+          pip install coverage codecov gunicorn
 
       - name: Run tests
         run: |
           gunicorn readalongs.app:app --bind 0.0.0.0:5000 --daemon
-          (cd test && coverage run run.py prod)
+          (cd test && coverage run run.py prod && coverage xml)
 
       - name: coding style nit-picking, we want black compliance
         run: find . -name \*.py | xargs black --check
