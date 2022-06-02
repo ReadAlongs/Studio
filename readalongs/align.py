@@ -663,8 +663,91 @@ def align_audio(
     return results
 
 
-def save_readalong(  # noqa C901
-    # noqa C901 - ignore the complexity of this function
+def save_label_files(
+    align_results: Dict[str, List],
+    audiofile: str,
+    output_base: str,
+    output_formats: Iterable[str],
+):
+    """Save label (TextGrid and/or EAF) files.
+
+    Args:
+        align_results (Dict[str, List]): results of alignment
+        audiofile (str): Path to input audio
+        output_base (str): Base path for output files
+        output_formats (Iterable[str]): List of output formats
+    """
+    audio = read_audio_from_file(audiofile)
+    duration = audio.frame_count() / audio.frame_rate
+    words, sentences = return_words_and_sentences(align_results)
+    textgrid = write_to_text_grid(words, sentences, duration)
+
+    if "textgrid" in output_formats:
+        textgrid.to_file(output_base + ".TextGrid")
+
+    if "eaf" in output_formats:
+        textgrid.to_eaf().to_file(output_base + ".eaf")
+
+
+def save_subtitles(
+    align_results: Dict[str, List], output_base: str, output_formats=Iterable[str]
+):
+    """Save subtitle (SRT and/or VTT) files.
+
+    Args:
+        align_results (Dict[str, List]): results of alignment
+        output_base (str): Base path for output files
+        output_formats (Iterable[str]): List of output formats
+    """
+    words, sentences = return_words_and_sentences(align_results)
+    cc_sentences = write_to_subtitles(sentences)
+    cc_words = write_to_subtitles(words)
+
+    if "srt" in output_formats:
+        cc_sentences.save_as_srt(output_base + "_sentences.srt")
+        cc_words.save_as_srt(output_base + "_words.srt")
+
+    if "vtt" in output_formats:
+        cc_words.save(output_base + "_words.vtt")
+        cc_sentences.save(output_base + "_sentences.vtt")
+
+
+def save_audio(
+    audiofile: str, output_base: str, audiosegment: Optional[AudioSegment] = None
+) -> str:
+    """Save audio file.
+
+    Args:
+        audiofile (str): Path to input audio
+        output_base (str): Base path for output files
+        output_formats (Iterable[str]): List of output formats
+        audiosegment (AudioSegment): Optional; trimmed/muted audio
+    Returns:
+        str: Path to output audio file.
+    """
+    _, audio_ext = os.path.splitext(audiofile)
+    audio_path = output_base + audio_ext
+    audio_format = audio_ext[1:]
+    if audiosegment is not None:
+        if audio_format in ["m4a", "aac"]:
+            audio_format = "ipod"
+        try:
+            audiosegment.export(audio_path, format=audio_format)
+        except CouldntEncodeError:
+            LOGGER.warning(
+                f"The audio file at {audio_path} could \
+                not be exported in the {audio_format} format. \
+                Please ensure your installation of ffmpeg has \
+                the necessary codecs."
+            )
+            audio_path = output_base + ".wav"
+            audiosegment.export(audio_path, format="wav")
+    else:
+        shutil.copy(audiofile, audio_path)
+    return audio_path
+
+
+def save_readalong(
     # this * forces all arguments to be passed by name, because I don't want any
     # code to depend on their order in the future
     *,
@@ -696,43 +779,33 @@ def save_readalong(  # noqa C901
     Raises:
         [TODO]
     """
+    if config is None:
+        config = {}
+
     # Round all times to three digits, anything more is excess precision
     # poluting the output files, and usually due to float rounding errors anyway.
     for w in align_results["words"]:
         w["start"] = round(w["start"], 3)
         w["end"] = round(w["end"], 3)
 
-    if config is None:
-        config = {}
-
     output_base = os.path.join(output_dir, output_basename)
 
     # Create textgrid object if outputting to TextGrid or eaf
     if "textgrid" in output_formats or "eaf" in output_formats:
-        audio = read_audio_from_file(audiofile)
-        duration = audio.frame_count() / audio.frame_rate
-        words, sentences = return_words_and_sentences(align_results)
-        textgrid = write_to_text_grid(words, sentences, duration)
-
-        if "textgrid" in output_formats:
-            textgrid.to_file(output_base + ".TextGrid")
-
-        if "eaf" in output_formats:
-            textgrid.to_eaf().to_file(output_base + ".eaf")
+        save_label_files(
+            align_results=align_results,
+            audiofile=audiofile,
+            output_base=output_base,
+            output_formats=output_formats,
+        )
 
     # Create webvtt object if outputting to vtt or srt
     if "srt" in output_formats or "vtt" in output_formats:
-        words, sentences = return_words_and_sentences(align_results)
-        cc_sentences = write_to_subtitles(sentences)
-        cc_words = write_to_subtitles(words)
-
-        if "srt" in output_formats:
-            cc_sentences.save_as_srt(output_base + "_sentences.srt")
-            cc_words.save_as_srt(output_base + "_words.srt")
-
-        if "vtt" in output_formats:
-            cc_words.save(output_base + "_words.vtt")
-            cc_sentences.save(output_base + "_sentences.vtt")
+        save_subtitles(
+            align_results=align_results,
+            output_base=output_base,
+            output_formats=output_formats,
+        )
 
     tokenized_xml_path = output_base + ".xml"
     save_xml(tokenized_xml_path, align_results["tokenized"])
@@ -742,25 +815,9 @@ def save_readalong(  # noqa C901
         tokenized_xhtml_path = output_base + ".xhtml"
         save_xml(tokenized_xhtml_path, align_results["tokenized"])
 
-    _, audio_ext = os.path.splitext(audiofile)
-    audio_path = output_base + audio_ext
-    audio_format = audio_ext[1:]
-    if audiosegment:
-        if audio_format in ["m4a", "aac"]:
-            audio_format = "ipod"
-        try:
-            audiosegment.export(audio_path, format=audio_format)
-        except CouldntEncodeError:
-            LOGGER.warning(
-                f"The audio file at {audio_path} could \
-                not be exported in the {audio_format} format. \
-                Please ensure your installation of ffmpeg has \
-                the necessary codecs."
-            )
-            audio_path = output_base + ".wav"
-            audiosegment.export(audio_path, format="wav")
-    else:
-        shutil.copy(audiofile, audio_path)
+    audio_path = save_audio(
+        audiofile=audiofile, output_base=output_base, audiosegment=audiosegment
+    )
 
     smil_path = output_base + ".smil"
     smil = make_smil(
