@@ -8,7 +8,7 @@ import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import Dict, List, Union
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 import chevron
 import regex as re
@@ -158,40 +158,27 @@ def split_silences(words: List[dict], final_end, excluded_segments: List[dict]) 
     _ = words.pop()
 
 
-def align_audio(  # noqa: C901
-    xml_path,
-    audio_path,
-    unit="w",
-    bare=False,
-    config=None,
-    save_temps=None,
-    verbose_g2p_warnings=False,
-    debug_aligner=False,
-):
-    """Align an XML input file to an audio file.
+def parse_and_prepare_input(
+    xml_path: str,
+    config: dict,
+    save_temps: Optional[str] = None,
+    verbose_g2p_warnings: Optional[bool] = False,
+) -> etree.ElementTree:
+    """Parse XML input and run tokenization and G2P.
 
     Args:
         xml_path (str): Path to XML input file in TEI-like format
-        audio_path (str): Path to audio input. Must be in a format supported by ffmpeg
-        unit (str): Optional; Element to create alignments for, by default 'w'
-        bare (boolean): Optional;
-            If False, split silence into adjoining tokens (default)
-            If True, keep the bare tokens without adjoining silences.
-        config (object): Optional; ReadAlong-Studio configuration to use
+        config (dict): Optional; ReadAlong-Studio configuration to use
         save_temps (str): Optional; Save temporary files, by default None
         verbose_g2p_warnings (boolean): Optional; display all g2p errors and warnings
             iff True
 
     Returns:
-        Dict[str, List]: TODO
+        lxml.etree.ElementTree: Parsed and prepared XML
 
     Raises:
-        TODO
-    """
-    results: Dict[str, List] = {"words": [], "audio": None}
-    if config is None:
-        config = {}
-
+        RuntimeError: If XML failed to parse
+"""
     # First do G2P
     try:
         xml = etree.parse(xml_path).getroot()
@@ -199,39 +186,98 @@ def align_audio(  # noqa: C901
         raise RuntimeError(
             "Error parsing XML input file %s: %s." % (xml_path, e)
         ) from e
-    if config and "images" in config:
+    if "images" in config:
         xml = add_images(xml, config)
-    if config and "xml" in config:
+    if "xml" in config:
         xml = add_supplementary_xml(xml, config)
     xml = tokenize_xml(xml)
-    if save_temps:
+    if save_temps is not None:
         save_xml(save_temps + ".tokenized.xml", xml)
-    results["tokenized"] = xml = add_ids(xml)
-    if save_temps:
+    xml = add_ids(xml)
+    if save_temps is not None:
         save_xml(save_temps + ".ids.xml", xml)
     xml, valid = convert_xml(xml, verbose_warnings=verbose_g2p_warnings)
-    if save_temps:
+    if save_temps is not None:
         save_xml(save_temps + ".g2p.xml", xml)
     if not valid:
         raise RuntimeError(
             "Some words could not be g2p'd correctly. Aborting. "
             "Run with --debug-g2p for more detailed g2p error logs."
         )
+    return xml
 
-    # Prepare the SoundSwallower (formerly PocketSphinx) configuration
-    cfg = soundswallower.Decoder.default_config()
+
+def create_asr_config(
+    config: dict,
+    audio: AudioSegment,
+    save_temps: Optional[str] = None,
+    debug_aligner: Optional[bool] = False,
+) -> soundswallower.Config:
+    """Create the base SoundSwallower (formerly PocketSphinx) configuration.
+
+    Args:
+        config (dict): ReadAlong-Studio configuration to use.
+        audio (AudioSegment): Audio input from which to take parameters.
+        save_temps (str): Optional; Prefix for saving temporary files, by default None.
+        debug_aligner (boolean): Optional; Output debugging info from the aligner.
+
+    Returns:
+        soundswallower.Config: Basic configuration."""
+    asr_config = soundswallower.Decoder.default_config()
     acoustic_model = config.get(
         "acoustic_model", os.path.join(MODEL_DIR, DEFAULT_ACOUSTIC_MODEL)
     )
+    asr_config.set_string("-hmm", acoustic_model)
+    asr_config.set_float("-beam", 1e-100)
+    asr_config.set_float("-pbeam", 1e-100)
+    asr_config.set_float("-wbeam", 1e-80)
 
-    cfg.set_string("-hmm", acoustic_model)
-    cfg.set_float("-beam", 1e-100)
-    cfg.set_float("-pbeam", 1e-100)
-    cfg.set_float("-wbeam", 1e-80)
+    if not debug_aligner:
+        # With --debug-aligner, we display the SoundSwallower logs on screen, but
+        # otherwise we redirect them away from the terminal.
+        if save_temps is not None and (sys.platform not in ("win32", "cygwin")):
+            # With --save-temps, we save the SoundSwallower logs to a file.
+            # This is buggy on Windows, so we don't do it on Windows variants
+            ss_log = save_temps + ".soundswallower.log"
+        else:
+            # Otherwise, we send the SoundSwallower logs to the bit bucket.
+            ss_log = os.devnull
+        asr_config.set_string("-logfn", ss_log)
+        asr_config.set_string("-loglevel", "DEBUG")
 
-    # Read the list of noise words
+    # Set sampling rate based on audio (FIXME: this may cause problems
+    # later on if it is too low)
+    asr_config.set_float("-samprate", audio.frame_rate)
+    # Set the minimum FFT size (no longer necessary since
+    # SoundSwallower 0.2, but we keep this here for compatibility with
+    # old versions in case we need to debug things)
+    frame_points = int(
+        asr_config.get_float("-samprate") * asr_config.get_float("-wlen")
+    )
+    fft_size = 1
+    while fft_size < frame_points:
+        fft_size = fft_size << 1
+    asr_config.set_int("-nfft", fft_size)
+
+    # Disable VAD (not necessary but here for PocketSphinx compatibility)
+    asr_config.set_int("-remove_noise", 0)
+    asr_config.set_int("-remove_silence", 0)
+
+    return asr_config
+
+
+def read_noisedict(asr_config: soundswallower.Config) -> Set[str]:
+    """Read the list of noise words from the acoustic model.
+
+    Args:
+        asr_config (soundswallower.Config): ASR configuration.
+    Returns:
+        Set[str]: Set of noise words from noisedict, or a default set
+            if it could not be found.
+    """
     try:
         noisewords = set()
+        acoustic_model = asr_config.get_string("-hmm")
         with open(os.path.join(acoustic_model, "noisedict"), "rt") as dictfh:
             for line in dictfh:
                 if line.startswith("##") or line.startswith(";;"):
@@ -241,213 +287,174 @@ def align_audio(  # noqa: C901
         LOGGER.warning("Could not find noisedict, using defaults")
         noisewords = {"<sil>", "[NOISE]"}
 
-    if not debug_aligner:
-        # With --debug-aligner, we display the SoundSwallower logs on screen, but
-        # otherwise we redirect them away from the terminal.
-        if save_temps and (sys.platform not in ("win32", "cygwin")):
-            # With --save-temps, we save the SoundSwallower logs to a file.
-            # This is buggy on Windows, so we don't do it on Windows variants
-            ss_log = save_temps + ".soundswallower.log"
-        else:
-            # Otherwise, we send the SoundSwallower logs to the bit bucket.
-            ss_log = os.devnull
-        cfg.set_string("-logfn", ss_log)
-        cfg.set_string("-loglevel", "DEBUG")
+    return noisewords
 
-    # Read the audio file
-    audio = read_audio_from_file(audio_path)
-    audio = audio.set_channels(1).set_sample_width(2)
-    audio_length_in_ms = len(audio.raw_data)
-    #  Downsampling is (probably) not necessary
-    cfg.set_float("-samprate", audio.frame_rate)
 
-    # Process audio, silencing or removing any DNA segments
-    dna_segments = []
-    removed_segments = []
-    if config and "do-not-align" in config:
-        # Sort un-alignable segments and join overlapping ones
-        dna_segments = sort_and_join_dna_segments(config["do-not-align"]["segments"])
-        method = config["do-not-align"].get("method", "remove")
-        # Determine do-not-align method
-        if method == "mute":
-            dna_method = mute_section
-        elif method == "remove":
-            dna_method = remove_section
-        else:
-            LOGGER.error("Unknown do-not-align method declared")
-        # Process audio and save temporary files
-        if method in ("mute", "remove"):
-            processed_audio = audio
-            # Process the DNA segments in reverse order so we don't have to correct
-            # for previously processed ones when using the "remove" method.
-            for seg in reversed(dna_segments):
-                processed_audio = dna_method(
-                    processed_audio, int(seg["begin"]), int(seg["end"])
-                )
-            if save_temps:
-                _, ext = os.path.splitext(audio_path)
-                try:
-                    processed_audio.export(
-                        save_temps + "_processed" + ext, format=ext[1:]
-                    )
-                except CouldntEncodeError:
-                    try:
-                        os.remove(save_temps + "_processed" + ext)
-                    except BaseException:
-                        pass
-                    LOGGER.warning(
-                        f"Couldn't find encoder for '{ext[1:]}', defaulting to 'wav'"
-                    )
-                    processed_audio.export(save_temps + "_processed" + ".wav")
-            removed_segments = dna_segments
-        audio_data = processed_audio
+def process_dna(
+    dna_config: Dict[str, Any],
+    audio: AudioSegment,
+    audio_path: Optional[str] = None,
+    save_temps: Optional[str] = None,
+) -> Tuple[AudioSegment, List[dict], List[dict]]:
+    """Apply do-not-align processing to audio.
+
+    Args:
+        dna_config (dict): Do-not-align configuration, containing at least "segments" and "method".
+        audio (AudioSegment): Original audio segment.
+        audio_path (str): Optional; Path from which audio was loaded (needed for save_temps).
+        save_temps (str): Optional; Prefix for saving temporary files, by default None.
+
+    Returns:
+        Tuple[AudioSegment, List[dict], List[dict]]: Processed audio
+            segment, list of segments marked do-not-align, list of segments
+            actually removed.
+    """
+    # Sort un-alignable segments and join overlapping ones
+    dna_segments = sort_and_join_dna_segments(dna_config["segments"])
+    method = dna_config.get("method", "remove")
+    # Determine do-not-align method
+    if method == "mute":
+        dna_method = mute_section
+    elif method == "remove":
+        dna_method = remove_section
     else:
-        audio_data = audio
-
-    # Set the minimum FFT size (no longer necessary since
-    # SoundSwallower 0.2, but we keep this here for compatibility with
-    # old versions in case we need to debug things)
-    frame_points = int(cfg.get_float("-samprate") * cfg.get_float("-wlen"))
-    fft_size = 1
-    while fft_size < frame_points:
-        fft_size = fft_size << 1
-    cfg.set_int("-nfft", fft_size)
-
-    # Note: the frames are typically 0.01s long (i.e., the frame rate is typically 100),
-    # while the audio segments manipulated using pydub are sliced and accessed in
-    # millisecond intervals. For audio segments, the ms slice assumption is hard-coded
-    # all over, while frames_to_time() is used to convert segment boundaries returned by
-    # soundswallower, which are indexes in frames, into durations in seconds.
-    frame_size = 1.0 / cfg.get_int("-frate")
-
-    def frames_to_time(frames):
-        return frames * frame_size
-
-    # Extract the list of sequences of words in the XML
-    word_sequences = get_sequences(xml, xml_path, unit=unit)
-    end = 0
-    for i, word_sequence in enumerate(word_sequences):
-
-        i_suffix = "" if i == 0 else "." + str(i + 1)
-
-        # Generate dictionary and FSG for the current sequence of words
-        dict_data = make_dict(word_sequence.words, xml_path, unit=unit)
-        if save_temps:
-            dict_file = io.open(save_temps + ".dict" + i_suffix, "wb")
-        else:
-            dict_file = PortableNamedTemporaryFile(
-                prefix="readalongs_dict_", delete=True
+        LOGGER.error("Unknown do-not-align method declared")
+    # Process audio and save temporary files
+    if method in ("mute", "remove"):
+        processed_audio = audio
+        # Process the DNA segments in reverse order so we don't have to correct
+        # for previously processed ones when using the "remove" method.
+        for dna_seg in reversed(dna_segments):
+            processed_audio = dna_method(
+                processed_audio, int(dna_seg["begin"]), int(dna_seg["end"])
             )
-        dict_file.write(dict_data.encode("utf-8"))
-        dict_file.close()
-
-        fsg_data = make_fsg(word_sequence.words, xml_path)
-        if save_temps:
-            fsg_file = io.open(save_temps + ".fsg" + i_suffix, "wb")
-        else:
-            fsg_file = PortableNamedTemporaryFile(prefix="readalongs_fsg_", delete=True)
-        fsg_file.write(fsg_data.encode("utf-8"))
-        fsg_file.close()
-
-        # Extract the part of the audio corresponding to this word sequence
-        audio_segment = extract_section(
-            audio_data, word_sequence.start, word_sequence.end
-        )
-        if save_temps and audio_segment is not audio_data:
-            write_audio_to_file(audio_segment, save_temps + ".wav" + i_suffix)
-
-        # Configure soundswallower for this sequence's dict and fsg
-        cfg.set_string("-dict", dict_file.name)
-        cfg.set_string("-fsg", fsg_file.name)
-        cfg.set_int("-remove_noise", 0)
-        cfg.set_int("-remove_silence", 0)
-        ps = soundswallower.Decoder(cfg)
-        # Align this word sequence
-        ps.start_utt()
-        ps.process_raw(audio_segment.raw_data, no_search=False, full_utt=True)
-        ps.end_utt()
-
-        if not ps.seg():
-            raise RuntimeError(
-                "Alignment produced no segments, "
-                "please examine dictionary and input audio and text."
-            )
-
-        # List of removed segments for the sequence we are currently processing
-        curr_removed_segments = dna_union(
-            word_sequence.start, word_sequence.end, audio_length_in_ms, removed_segments
-        )
-
-        prev_segment_count = len(results["words"])
-        for seg in ps.seg():
-            if seg.word in noisewords:
-                continue
-            start = frames_to_time(seg.start_frame)
-            end = frames_to_time(seg.end_frame + 1)
-            # change to ms
-            start_ms = start * 1000
-            end_ms = end * 1000
-            if curr_removed_segments:
-                start_ms += calculate_adjustment(start_ms, curr_removed_segments)
-                end_ms += calculate_adjustment(end_ms, curr_removed_segments)
-                start_ms, end_ms = correct_adjustments(
-                    start_ms, end_ms, curr_removed_segments
+        if save_temps is not None:
+            assert audio_path is not None
+            _, ext = os.path.splitext(audio_path)
+            try:
+                processed_audio.export(save_temps + "_processed" + ext, format=ext[1:])
+            except CouldntEncodeError:
+                try:
+                    os.remove(save_temps + "_processed" + ext)
+                except BaseException:  # Ignore Windows file removal failures
+                    pass
+                LOGGER.warning(
+                    f"Couldn't find encoder for '{ext[1:]}', defaulting to 'wav'"
                 )
-                # change back to seconds to write to smil
-                start = start_ms / 1000
-                end = end_ms / 1000
-            results["words"].append({"id": seg.word, "start": start, "end": end})
-            if debug_aligner:
-                LOGGER.info("Segment: %s (%.3f : %.3f)", seg.word, start, end)
-        aligned_segment_count = len(results["words"]) - prev_segment_count
-        if aligned_segment_count != len(word_sequence.words):
-            LOGGER.warning(
-                f"Word sequence {i+1} had {len(word_sequence.words)} tokens "
-                f"but produced {aligned_segment_count} segments. "
-                "Check that the anchors are well positioned or "
-                "that the audio corresponds to the text."
+                processed_audio.export(save_temps + "_processed" + ".wav")
+        removed_segments = dna_segments
+    return processed_audio, dna_segments, removed_segments
+
+
+def align_sequence(
+    audio_data: AudioSegment,
+    word_sequence: WordSequence,
+    asr_config: soundswallower.Config,
+    xml_path: str,
+    i: int,
+    unit: Optional[str] = "w",
+    save_temps: Optional[str] = None,
+) -> AudioSegment:
+    """Run alignment for a word sequence.
+
+    Args:
+        audio_data (AudioSegment): Full input audio.
+        word_sequence (WordSequence): Sequence of units to align.
+        asr_config (soundswallower.Config): Aligner configuration.
+        unit (str): Name of unit we are aligning.
+        xml_path (str): Path to input XML file.
+        i (int): Index of this sequence in the full file.
+
+        save_temps (str): Optional; Prefix for saving temporary files,
+            or None to not save them.
+
+    Returns:
+        Iterable[soundswallower.Segment]: Word (or other unit) alignments.
+
+    Raises:
+        RuntimeError: If alignment fails (TODO: figure out why).
+    """
+    i_suffix = "" if i == 0 else "." + str(i + 1)
+
+    # Generate dictionary and FSG for the current sequence of words
+    dict_data = make_dict(word_sequence.words, xml_path, unit=unit)
+    if save_temps is not None:
+        dict_file = io.open(save_temps + ".dict" + i_suffix, "wb")
+    else:
+        dict_file = PortableNamedTemporaryFile(prefix="readalongs_dict_", delete=False)
+    dict_file.write(dict_data.encode("utf-8"))
+    dict_file.close()
+
+    fsg_data = make_fsg(word_sequence.words, xml_path)
+    if save_temps is not None:
+        fsg_file = io.open(save_temps + ".fsg" + i_suffix, "wb")
+    else:
+        fsg_file = PortableNamedTemporaryFile(prefix="readalongs_fsg_", delete=False)
+    fsg_file.write(fsg_data.encode("utf-8"))
+    fsg_file.close()
+
+    # Extract the part of the audio corresponding to this word sequence
+    audio_segment = extract_section(audio_data, word_sequence.start, word_sequence.end)
+    if save_temps is not None and audio_segment is not audio_data:
+        write_audio_to_file(audio_segment, save_temps + ".wav" + i_suffix)
+
+    # Configure soundswallower for this sequence's dict and fsg
+    asr_config.set_string("-dict", dict_file.name)
+    asr_config.set_string("-fsg", fsg_file.name)
+
+    ps = soundswallower.Decoder(asr_config)
+    # Align this word sequence
+    ps.start_utt()
+    ps.process_raw(audio_segment.raw_data, no_search=False, full_utt=True)
+    ps.end_utt()
+
+    return ps.seg()
+
+
+def process_segmentation(
+    segmentation: Iterable[soundswallower.Segment],
+    curr_removed_segments: List[dict],
+    noisewords: Set[str],
+    frame_size: float,
+    debug_aligner: Optional[bool] = False,
+) -> List[Dict[str, Any]]:
+    """Correct output alignments based on do-not-align segments."""
+    aligned_words = []
+    for word_seg in segmentation:
+        if word_seg.word in noisewords:
+            continue
+        start = word_seg.start_frame * frame_size
+        end = (word_seg.end_frame + 1) * frame_size
+        # change to ms
+        start_ms = int(start * 1000)
+        end_ms = int(end * 1000)
+        if curr_removed_segments:
+            start_ms += calculate_adjustment(start_ms, curr_removed_segments)
+            end_ms += calculate_adjustment(end_ms, curr_removed_segments)
+            start_ms, end_ms = correct_adjustments(
+                start_ms, end_ms, curr_removed_segments
             )
-    final_end = end
+            # change back to seconds to write to smil
+            start = start_ms / 1000
+            end = end_ms / 1000
+        aligned_words.append({"id": word_seg.word, "start": start, "end": end})
+        if debug_aligner:
+            LOGGER.info("Segment: %s (%.3f : %.3f)", word_seg.word, start, end)
+    return aligned_words
 
-    aligned_segment_count = len(results["words"])
-    token_count = len(results["tokenized"].xpath("//" + unit))
-    LOGGER.info(f"Number of words found: {token_count}")
-    LOGGER.info(f"Number of aligned segments: {aligned_segment_count}")
 
-    if aligned_segment_count == 0:
-        raise RuntimeError(
-            "Alignment produced only noise or silence segments, "
-            "please verify that the text is an actual transcript of the audio."
-        )
-    if aligned_segment_count != token_count:
-        LOGGER.warning(
-            "Alignment produced a different number of segments and tokens than "
-            "were in the input. Sequences between some anchors probably did not "
-            "align successfully. Look for more anchors-related warnings above in the log."
-        )
-
-    if not bare:
-        # Take all the boundaries (anchors) around segments and add them as DNA
-        # segments for the purpose of splitting silences
-        dna_for_silence_splitting = copy.deepcopy(dna_segments)
-        last_end = None
-        for seq in word_sequences:
-            if last_end or seq.start:
-                dna_for_silence_splitting.append(
-                    {"begin": (last_end or seq.start), "end": (seq.start or last_end)}
-                )
-            last_end = seq.end
-        if last_end:
-            dna_for_silence_splitting.append({"begin": last_end, "end": last_end})
-        dna_for_silence_splitting = sort_and_join_dna_segments(
-            dna_for_silence_splitting
-        )
-
-        split_silences(results["words"], final_end, dna_for_silence_splitting)
+def insert_silence(
+    results: Dict[str, Any],
+    word_sequences: List[WordSequence],
+    dna_segments: List[dict],
+    audio: AudioSegment,
+    final_end: float,
+    xml_path: Optional[str] = "XML Input",
+):
     words_dict = {
         x["id"]: {"start": x["start"], "end": x["end"]} for x in results["words"]
     }
-    silence_offsets = defaultdict(int)
+    silence_offsets: defaultdict = defaultdict(int)
     silence = 0
     if results["tokenized"].xpath("//silence"):
         endpoint = 0
@@ -488,11 +495,293 @@ def align_audio(  # noqa: C901
             word["start"] += silence_offsets[word["id"]]
             word["end"] += silence_offsets[word["id"]]
         results["audio"] = audio
+
+
+def align_audio(
+    xml_path: str,
+    audio_path: str,
+    unit: Optional[str] = "w",
+    bare: Optional[bool] = False,
+    config: Optional[dict] = None,
+    save_temps: Optional[str] = None,
+    verbose_g2p_warnings: Optional[bool] = False,
+    debug_aligner: Optional[bool] = False,
+):
+    """Align an XML input file to an audio file.
+
+    Args:
+        xml_path (str): Path to XML input file in TEI-like format
+        audio_path (str): Path to audio input. Must be in a format supported by ffmpeg
+        unit (str): Optional; Element to create alignments for, by default 'w'
+        bare (boolean): Optional;
+            If False, split silence into adjoining tokens (default)
+            If True, keep the bare tokens without adjoining silences.
+        config (dict): Optional; ReadAlong-Studio configuration to use
+        save_temps (str): Optional; Prefix for saving temporary files, or None if
+            temporary files are not to be saved.
+        verbose_g2p_warnings (boolean): Optional; display all g2p errors and warnings
+            iff True
+        debug_aligner (boolean): Optional, output debugging info from the aligner.
+
+    Returns:
+        Dict[str, Any]: TODO
+
+    Raises:
+        TODO
+    """
+    results: Dict[str, Any] = {"words": [], "audio": None}
+    if config is None:
+        config = {}
+
+    xml = parse_and_prepare_input(
+        xml_path=xml_path,
+        config=config,
+        verbose_g2p_warnings=verbose_g2p_warnings,
+        save_temps=save_temps,
+    )
+    results["tokenized"] = xml
+
+    # Read the audio file
+    audio = read_audio_from_file(audio_path)
+    audio = audio.set_channels(1).set_sample_width(2)
+    audio_length_in_ms = len(audio.raw_data)
+
+    # Create the ASR configuration
+    asr_config = create_asr_config(config, audio, save_temps, debug_aligner)
+
+    # Process audio, silencing or removing any DNA segments
+    if "do-not-align" in config:
+        audio_data, dna_segments, removed_segments = process_dna(
+            dna_config=config["do-not-align"],
+            audio=audio,
+            audio_path=audio_path,
+            save_temps=save_temps,
+        )
+    else:
+        audio_data = audio
+        dna_segments = []
+        removed_segments = []
+
+    # Note: the frames are typically 0.01s long (i.e., the frame rate is typically 100),
+    # while the audio segments manipulated using pydub are sliced and accessed in
+    # millisecond intervals. For audio segments, the ms slice assumption is hard-coded
+    # all over, while frame_size is used to convert segment boundaries returned by
+    # soundswallower, which are indexes in frames, into durations in seconds.
+    frame_size = 1.0 / asr_config.get_int("-frate")
+
+    # Get list of words to ignore in aligner output
+    noisewords = read_noisedict(asr_config)
+
+    # Extract the list of sequences of words in the XML
+    word_sequences = get_sequences(xml, xml_path, unit=unit)
+    final_end = 0.0
+    for i, word_sequence in enumerate(word_sequences):
+        # Run the aligner on this sequence
+        segmentation = align_sequence(
+            audio_data=audio_data,
+            word_sequence=word_sequence,
+            asr_config=asr_config,
+            xml_path=xml_path,
+            i=i,
+            unit=unit,
+            save_temps=save_temps,
+        )
+
+        # List of removed segments for the sequence we are currently processing
+        curr_removed_segments = dna_union(
+            word_sequence.start, word_sequence.end, audio_length_in_ms, removed_segments
+        )
+        try:
+            # Process raw segmentation, adjusting alignments for DNA
+            aligned_words = process_segmentation(
+                segmentation=segmentation,
+                curr_removed_segments=curr_removed_segments,
+                noisewords=noisewords,
+                frame_size=frame_size,
+                debug_aligner=debug_aligner,
+            )
+        except RuntimeError:
+            # We need this here because soundswallower<=0.2.2 will
+            # raise an error rather than returning an empty list
+            aligned_words = []
+        results["words"].extend(aligned_words)
+        if aligned_words:
+            final_end = aligned_words[-1]["end"]
+        if len(aligned_words) != len(word_sequence.words):
+            LOGGER.warning(
+                f"Word sequence {i+1} had {len(word_sequence.words)} tokens "
+                f"but produced {len(aligned_words)} segments. "
+                "Check that the anchors are well positioned or "
+                "that the audio corresponds to the text."
+            )
+
+    aligned_segment_count = len(results["words"])
+    token_count = len(results["tokenized"].xpath(f"//{unit}"))
+    LOGGER.info(f"Number of words found: {token_count}")
+    LOGGER.info(f"Number of aligned segments: {aligned_segment_count}")
+
+    if aligned_segment_count == 0:
+        raise RuntimeError(
+            "Alignment produced only noise or silence segments, "
+            "please verify that the text is an actual transcript of the audio."
+        )
+    if aligned_segment_count != token_count:
+        LOGGER.warning(
+            "Alignment produced a different number of segments and tokens than "
+            "were in the input. Sequences between some anchors probably did not "
+            "align successfully. Look for more anchors-related warnings above in the log."
+        )
+
+    # Split silences if requested
+    if not bare:
+        # Take all the boundaries (anchors) around segments and add them as DNA
+        # segments for the purpose of splitting silences
+        dna_for_silence_splitting = copy.deepcopy(dna_segments)
+        last_end = None
+        for seq in word_sequences:
+            if last_end or seq.start:
+                dna_for_silence_splitting.append(
+                    {"begin": (last_end or seq.start), "end": (seq.start or last_end)}
+                )
+            last_end = seq.end
+        if last_end:
+            dna_for_silence_splitting.append({"begin": last_end, "end": last_end})
+        dna_for_silence_splitting = sort_and_join_dna_segments(
+            dna_for_silence_splitting
+        )
+        split_silences(results["words"], final_end, dna_for_silence_splitting)
+
+    # Insert silences if requested
+    insert_silence(
+        results=results,
+        word_sequences=word_sequences,
+        dna_segments=dna_segments,
+        audio=audio,
+        final_end=final_end,
+        xml_path=xml_path,
+    )
     return results
 
 
-def save_readalong(  # noqa C901
-    # noqa C901 - ignore the complexity of this function
+def save_label_files(
+    align_results: Dict[str, List],
+    audiofile: str,
+    output_base: str,
+    output_formats: Iterable[str],
+):
+    """Save label (TextGrid and/or EAF) files.
+
+    Args:
+        align_results (Dict[str, List]): results of alignment
+        audiofile (str): Path to input audio
+        output_base (str): Base path for output files
+        output_formats (Iterable[str]): List of output formats
+    """
+    audio = read_audio_from_file(audiofile)
+    duration = audio.frame_count() / audio.frame_rate
+    words, sentences = return_words_and_sentences(align_results)
+    textgrid = write_to_text_grid(words, sentences, duration)
+
+    if "textgrid" in output_formats:
+        textgrid.to_file(output_base + ".TextGrid")
+
+    if "eaf" in output_formats:
+        textgrid.to_eaf().to_file(output_base + ".eaf")
+
+
+def save_subtitles(
+    align_results: Dict[str, List], output_base: str, output_formats=Iterable[str]
+):
+    """Save subtitle (SRT and/or VTT) files.
+
+    Args:
+        align_results (Dict[str, List]): results of alignment
+        output_base (str): Base path for output files
+        output_formats (Iterable[str]): List of output formats
+    """
+    words, sentences = return_words_and_sentences(align_results)
+    cc_sentences = write_to_subtitles(sentences)
+    cc_words = write_to_subtitles(words)
+
+    if "srt" in output_formats:
+        cc_sentences.save_as_srt(output_base + "_sentences.srt")
+        cc_words.save_as_srt(output_base + "_words.srt")
+
+    if "vtt" in output_formats:
+        cc_words.save(output_base + "_words.vtt")
+        cc_sentences.save(output_base + "_sentences.vtt")
+
+
+def save_audio(
+    audiofile: str, output_base: str, audiosegment: Optional[AudioSegment] = None
+) -> str:
+    """Save audio file.
+
+    Args:
+        audiofile (str): Path to input audio
+        output_base (str): Base path for output files
+        output_formats (Iterable[str]): List of output formats
+        audiosegment (AudioSegment): Optional; trimmed/muted audio
+    Returns:
+        str: Path to output audio file.
+    """
+    _, audio_ext = os.path.splitext(audiofile)
+    audio_path = output_base + audio_ext
+    audio_format = audio_ext[1:]
+    if audiosegment is not None:
+        if audio_format in ["m4a", "aac"]:
+            audio_format = "ipod"
+        try:
+            audiosegment.export(audio_path, format=audio_format)
+        except CouldntEncodeError:
+            LOGGER.warning(
+                f"The audio file at {audio_path} could \
+                not be exported in the {audio_format} format. \
+                Please ensure your installation of ffmpeg has \
+                the necessary codecs."
+            )
+            audio_path = output_base + ".wav"
+            audiosegment.export(audio_path, format="wav")
+    else:
+        shutil.copy(audiofile, audio_path)
+    return audio_path
+
+
+def save_images(config: Dict[str, Any], output_dir: str):
+    """Save image files specified in config.
+
+    Args:
+        config (dict): ReadAlong-Studio configuration
+        output_dir (str): Output directory
+    Raises:
+        FileExistsError: If output directory already exists
+    """
+    assets_dir = os.path.join(output_dir, "assets")
+    try:
+        os.mkdir(assets_dir)
+    except FileExistsError:
+        if not os.path.isdir(assets_dir):
+            raise
+    for _, image in config["images"].items():
+        if image[0:4] == "http":
+            LOGGER.warning(
+                f"Please make sure {image} is accessible to clients using your read-along."
+            )
+        else:
+            try:
+                shutil.copy(image, assets_dir)
+            except Exception as e:
+                LOGGER.warning(
+                    f"Please copy {image} to {assets_dir} before deploying your read-along. ({e})"
+                )
+            if os.path.basename(image) != image:
+                LOGGER.warning(
+                    f"Read-along images were tested with absolute urls (starting with http(s):// "
+                    f"and filenames without a path. {image} might not work as specified."
+                )
+
+
+def save_readalong(
     # this * forces all arguments to be passed by name, because I don't want any
     # code to depend on their order in the future
     *,
@@ -524,6 +813,9 @@ def save_readalong(  # noqa C901
     Raises:
         [TODO]
     """
+    if config is None:
+        config = {}
+
     # Round all times to three digits, anything more is excess precision
     # poluting the output files, and usually due to float rounding errors anyway.
     for w in align_results["words"]:
@@ -534,30 +826,20 @@ def save_readalong(  # noqa C901
 
     # Create textgrid object if outputting to TextGrid or eaf
     if "textgrid" in output_formats or "eaf" in output_formats:
-        audio = read_audio_from_file(audiofile)
-        duration = audio.frame_count() / audio.frame_rate
-        words, sentences = return_words_and_sentences(align_results)
-        textgrid = write_to_text_grid(words, sentences, duration)
-
-        if "textgrid" in output_formats:
-            textgrid.to_file(output_base + ".TextGrid")
-
-        if "eaf" in output_formats:
-            textgrid.to_eaf().to_file(output_base + ".eaf")
+        save_label_files(
+            align_results=align_results,
+            audiofile=audiofile,
+            output_base=output_base,
+            output_formats=output_formats,
+        )
 
     # Create webvtt object if outputting to vtt or srt
     if "srt" in output_formats or "vtt" in output_formats:
-        words, sentences = return_words_and_sentences(align_results)
-        cc_sentences = write_to_subtitles(sentences)
-        cc_words = write_to_subtitles(words)
-
-        if "srt" in output_formats:
-            cc_sentences.save_as_srt(output_base + "_sentences.srt")
-            cc_words.save_as_srt(output_base + "_words.srt")
-
-        if "vtt" in output_formats:
-            cc_words.save(output_base + "_words.vtt")
-            cc_sentences.save(output_base + "_sentences.vtt")
+        save_subtitles(
+            align_results=align_results,
+            output_base=output_base,
+            output_formats=output_formats,
+        )
 
     tokenized_xml_path = output_base + ".xml"
     save_xml(tokenized_xml_path, align_results["tokenized"])
@@ -567,25 +849,9 @@ def save_readalong(  # noqa C901
         tokenized_xhtml_path = output_base + ".xhtml"
         save_xml(tokenized_xhtml_path, align_results["tokenized"])
 
-    _, audio_ext = os.path.splitext(audiofile)
-    audio_path = output_base + audio_ext
-    audio_format = audio_ext[1:]
-    if audiosegment:
-        if audio_format in ["m4a", "aac"]:
-            audio_format = "ipod"
-        try:
-            audiosegment.export(audio_path, format=audio_format)
-        except CouldntEncodeError:
-            LOGGER.warning(
-                f"The audio file at {audio_path} could \
-                not be exported in the {audio_format} format. \
-                Please ensure your installation of ffmpeg has \
-                the necessary codecs."
-            )
-            audio_path = output_base + ".wav"
-            audiosegment.export(audio_path, format="wav")
-    else:
-        shutil.copy(audiofile, audio_path)
+    audio_path = save_audio(
+        audiofile=audiofile, output_base=output_base, audiosegment=audiosegment
+    )
 
     smil_path = output_base + ".smil"
     smil = make_smil(
@@ -609,30 +875,8 @@ def save_readalong(  # noqa C901
     )
 
     # Copy the image files to the output's asset directory, if any are found
-    if config and "images" in config:
-        assets_dir = os.path.join(output_dir, "assets")
-        try:
-            os.mkdir(assets_dir)
-        except FileExistsError:
-            if not os.path.isdir(assets_dir):
-                raise
-        for _, image in config["images"].items():
-            if image[0:4] == "http":
-                LOGGER.warning(
-                    f"Please make sure {image} is accessible to clients using your read-along."
-                )
-            else:
-                try:
-                    shutil.copy(image, assets_dir)
-                except Exception as e:
-                    LOGGER.warning(
-                        f"Please copy {image} to {assets_dir} before deploying your read-along. ({e})"
-                    )
-                if os.path.basename(image) != image:
-                    LOGGER.warning(
-                        f"Read-along images were tested with absolute urls (starting with http(s):// "
-                        f"and filenames without a path. {image} might not work as specified."
-                    )
+    if "images" in config:
+        save_images(config=config, output_dir=output_dir)
 
 
 def return_word_from_id(xml: etree, el_id: str) -> str:
@@ -867,11 +1111,11 @@ def create_input_tei(**kwargs):
     kwargs["main_lang"] = text_langs[0]
     kwargs["fallback_langs"] = ",".join(text_langs[1:])
 
-    save_temps = kwargs.get("save_temps", False)
+    save_temps = kwargs.get("save_temps", None)
     if kwargs.get("output_file", False):
         filename = kwargs.get("output_file")
         outfile = io.open(filename, "wb")
-    elif save_temps:
+    elif save_temps is not None:
         filename = save_temps + ".input.xml"
         outfile = io.open(filename, "wb")
     else:
