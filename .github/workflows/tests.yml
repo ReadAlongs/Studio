@@ -1,0 +1,44 @@
+name: Run Tests
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install ffmpeg
+        run: sudo apt-get -y install ffmpeg
+
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.7"
+          cache: "pip"
+
+      - name: Install Python dependencies
+        run: |
+          # Install Python dependencies
+          pip install -r requirements.txt
+          # Install Studio itself
+          pip install -e .
+          # Legal check: make sure we don't have or introduce GPL dependencies
+          pip install pip-licenses
+          if pip-licenses | grep -v 'Artistic License' | grep -v LGPL | grep GNU; then echo 'Please avoid introducing *GPL dependencies'; false; fi
+          # Install testing requirements
+          pip install -r requirements.dev.txt
+          pip install coverage
+          pip install codecov
+          pip install gunicorn
+
+      - name: Run tests
+        run: |
+          gunicorn readalongs.app:app --bind 0.0.0.0:5000 --daemon
+          (cd test && coverage run run.py prod)
+
+      - name: coding style nit-picking, we want black compliance
+        run: find . -name \*.py | xargs black --check
+
+      - uses: codecov/codecov-action@v2
+        with:
+          directory: ./test
+          fail_ci_if_error: true # optional (default = false)
