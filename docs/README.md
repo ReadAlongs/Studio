@@ -13,13 +13,17 @@ To build the documentation and review your own changes locally:
 
        pip install -r requirements.txt
 
-2. Run one of these commands, which will build the documentation in `./_build/html/`
+2. Install Studio itself
+
+       (cd .. && pip install -e .)
+
+3. Run one of these commands, which will build the documentation in `./_build/html/`
    or `./_build/singlehtml/`:
 
        make html  # multi-page HTML site
        make singlehtml  # single-page HTML document
 
-3. View the documentation by running an HTTP server in the directory where the
+2. View the documentation by running an HTTP server in the directory where the
    build is found, e.g.,
 
        cd _build/html

@@ -1,13 +1,17 @@
 version: 2
 
 build:
-    os: ubuntu-20.04
-    tools:
-        python: "3.7"
+  os: ubuntu-20.04
+  tools:
+    python: "3.7"
+  jobs:
+    pre_create_environment:
+      - echo "Installing Studio in its current state"
+      - pip install -e .
 
 sphinx:
-    configuration: docs/conf.py
+  configuration: docs/conf.py
 
 python:
-    install:
-        - requirements: docs/requirements.txt
+  install:
+    - requirements: docs/requirements.txt

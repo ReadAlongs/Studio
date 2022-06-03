@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
 project = "ReadAlongs-Studio"
-copyright = "2019-2021 David Huggins-Daines and National Research Council Canada"
+copyright = "2019-2022 David Huggins-Daines and National Research Council Canada"
 author = "David Huggins-Daines, Eric Joanis, Patrick Littell, Aidan Pine"
 
 # The short X.Y version
