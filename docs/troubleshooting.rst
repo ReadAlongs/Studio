@@ -92,7 +92,11 @@ Type 2
 
 .. note:: TODO
 
+Common error type 2...
+
 Type 3
 ------
 
 .. note:: TODO
+
+Common error type 3...

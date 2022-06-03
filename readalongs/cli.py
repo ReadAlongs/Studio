@@ -220,7 +220,7 @@ def cli():
         "or by adding the 'fallback-langs' attribute where relevant in your XML input."
     ),
 )
-@click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
+@click.option("-d", "--debug", is_flag=True, help="Display debugging messages")
 @click.option("--debug-aligner", is_flag=True, help="Display logs from the aligner")
 @click.option(
     "--debug-g2p",
