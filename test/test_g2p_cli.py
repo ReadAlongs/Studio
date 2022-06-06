@@ -188,7 +188,7 @@ class TestG2pCli(BasicTestCase):
 
         # Run with verbose output and look for the warning messages
         results = self.runner.invoke(
-            g2p, ["--debug-g2p", tok_file, g2p_file + "verbose"],
+            g2p, ["--debug-g2p", tok_file, g2p_file + "verbose"]
         )
         if self.show_invoke_output:
             print(

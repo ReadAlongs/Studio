@@ -6,12 +6,11 @@ import logging
 
 import coloredlogs
 
-FIELD_STYLES = dict(levelname=dict(color="green", bold=coloredlogs.CAN_USE_BOLD_FONT),)
+FIELD_STYLES = dict(levelname=dict(color="green", bold=coloredlogs.CAN_USE_BOLD_FONT))
 
 
 def setup_logger(name):
-    """Create logger and configure with cool colors!
-    """
+    """Create logger and configure with cool colors!"""
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(name)
 

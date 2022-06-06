@@ -94,7 +94,7 @@ def update_session_config(**kwargs) -> dict:
 
 @app.route("/")
 def home():
-    """ Home View - go to Step 1 which is for uploading files """
+    """Home View - go to Step 1 which is for uploading files"""
     return redirect(url_for("steps", step=1))
 
 
@@ -148,7 +148,7 @@ def option_to_kwargs(option: str) -> str:
 
 @app.route("/step/<int:step>")
 def steps(step):
-    """ Go through steps """
+    """Go through steps"""
     if step == 1:
         session.clear()
         session["temp_dir"] = mkdtemp()

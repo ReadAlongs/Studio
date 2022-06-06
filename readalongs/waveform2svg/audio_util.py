@@ -29,7 +29,7 @@ SAMPLE_RATE = 16000
 
 
 def smooth(x, window_size=5):
-    """ Smooth the waveform to look... well, smooth """
+    """Smooth the waveform to look... well, smooth"""
     if window_size < 3:
         return x
     s = np.r_[2 * x[0] - x[window_size - 1 :: -1], x, 2 * x[-1] - x[-1:-window_size:-1]]
@@ -39,8 +39,8 @@ def smooth(x, window_size=5):
 
 
 def load_smil(input_path):
-    """ Get the bucketed max and min value from a sequence of WAV files as
-        expressed in a SMIL document """
+    """Get the bucketed max and min value from a sequence of WAV files as
+    expressed in a SMIL document"""
     xml = load_xml(input_path)
     dirname = os.path.dirname(input_path)
     data = None

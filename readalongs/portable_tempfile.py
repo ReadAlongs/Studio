@@ -11,7 +11,7 @@ from tempfile import NamedTemporaryFile, template
 
 
 class _PortableNamedTemporaryFileWrapper:
-    """ Wrapper object around the real NamedTemporaryFile that forwards calls as needed
+    """Wrapper object around the real NamedTemporaryFile that forwards calls as needed
 
     The difference with NamedTemporaryFile is that we cleanup on exit and del, rather
     than on close.
@@ -54,7 +54,7 @@ class _PortableNamedTemporaryFileWrapper:
 def PortableNamedTemporaryFile(
     mode="w+b", suffix="", prefix=template, dir=None, delete=True
 ):
-    """ Portable named temporary file that works on Windows, Linux and Mac.
+    """Portable named temporary file that works on Windows, Linux and Mac.
 
     This class wraps tempfile.NamedTemporaryFile() with a portable behaviour that works
     on Windows, Linux and Mac as we need it to.

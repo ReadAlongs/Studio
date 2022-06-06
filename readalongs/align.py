@@ -178,8 +178,7 @@ def parse_and_prepare_input(
         lxml.etree.ElementTree: Parsed and prepared XML
 
     Raises:
-        RuntimeError: If XML failed to parse
-"""
+        RuntimeError: If XML failed to parse"""
     # First do G2P
     try:
         xml = etree.parse(xml_path).getroot()

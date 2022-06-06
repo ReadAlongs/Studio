@@ -93,18 +93,18 @@ def load_xml_zip(zip_path, input_path):
 
 
 def load_xml_with_encoding(input_path):
-    """ etree.fromstring messes up on declared encodings """
+    """etree.fromstring messes up on declared encodings"""
     return etree.parse(input_path)
 
 
 def write_xml(output_filelike, xml):
-    """ Write XML to already opened file-like object """
+    """Write XML to already opened file-like object"""
     output_filelike.write(etree.tostring(xml, encoding="utf-8", xml_declaration=True))
     output_filelike.write("\n".encode("utf-8"))
 
 
 def save_xml(output_path, xml):
-    """ Save XML to specific PATH """
+    """Save XML to specific PATH"""
     ensure_dirs(output_path)
     with open(output_path, "wb") as fout:
         write_xml(fout, xml)
@@ -218,7 +218,7 @@ def unicode_normalize_xml(element):
 
 
 def parse_time(time_string: str) -> int:
-    """ Parse a time stamp in h/m/s(default)/ms or any combination of these units.
+    """Parse a time stamp in h/m/s(default)/ms or any combination of these units.
 
     Args:
         time_string (str): timestamp, e.g., "0.23s", "5.234" (implied s), "1234 ms",
