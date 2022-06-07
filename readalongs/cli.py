@@ -466,7 +466,7 @@ def prepare(**kwargs):
     try:
         if out_file == "-":
             _, filename = create_input_tei(
-                input_file_handle=input_file, text_languages=languages,
+                input_file_handle=input_file, text_languages=languages
             )
             with io.open(filename, encoding="utf8") as f:
                 sys.stdout.write(f.read())
@@ -515,7 +515,7 @@ def tokenize(**kwargs):
         LOGGER.setLevel("DEBUG")
         LOGGER.info(
             "Running readalongs tokenize(xmlfile={}, tokfile={}, force-overwrite={}).".format(
-                kwargs["xmlfile"], kwargs["tokfile"], kwargs["force_overwrite"],
+                kwargs["xmlfile"], kwargs["tokfile"], kwargs["force_overwrite"]
             )
         )
 
@@ -619,7 +619,7 @@ def g2p(**kwargs):
         LOGGER.setLevel("DEBUG")
         LOGGER.info(
             "Running readalongs g2p(tokfile={}, g2pfile={}, force-overwrite={}).".format(
-                kwargs["tokfile"], kwargs["g2pfile"], kwargs["force_overwrite"],
+                kwargs["tokfile"], kwargs["g2pfile"], kwargs["force_overwrite"]
             )
         )
 
@@ -655,7 +655,7 @@ def g2p(**kwargs):
     xml = add_ids(xml)
 
     # Apply the g2p mappings.
-    xml, valid = convert_xml(xml, verbose_warnings=kwargs["debug_g2p"],)
+    xml, valid = convert_xml(xml, verbose_warnings=kwargs["debug_g2p"])
 
     if output_path == "-":
         write_xml(sys.stdout.buffer, xml)

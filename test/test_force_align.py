@@ -95,7 +95,7 @@ class TestForceAlignment(BasicTestCase):
                 writer.setframerate(16000)
                 writer.writeframes(b"\x00\x00")
             with self.assertRaises(RuntimeError):
-                _ = align_audio(xml_path, tf.name, unit="w",)
+                _ = align_audio(xml_path, tf.name, unit="w")
 
 
 class TestXHTML(BasicTestCase):
@@ -111,7 +111,7 @@ class TestXHTML(BasicTestCase):
             txt = load_txt(tf.name)
             self.maxDiff = None
             self.assertEqual(
-                txt, load_txt(os.path.join(self.data_dir, "ej-fra-converted.xhtml")),
+                txt, load_txt(os.path.join(self.data_dir, "ej-fra-converted.xhtml"))
             )
 
 

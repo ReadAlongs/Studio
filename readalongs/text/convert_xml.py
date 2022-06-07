@@ -53,7 +53,7 @@ from readalongs.util import get_langs
 
 
 def convert_words(  # noqa: C901
-    xml, word_unit="w", output_orthography="eng-arpabet", verbose_warnings=False,
+    xml, word_unit="w", output_orthography="eng-arpabet", verbose_warnings=False
 ):
     """Helper for convert_xml(), with the same Args and Return values, except
     xml is modified in place returned itself, instead of making a copy.
@@ -191,7 +191,7 @@ def convert_words(  # noqa: C901
 
 
 def convert_xml(
-    xml, word_unit="w", output_orthography="eng-arpabet", verbose_warnings=False,
+    xml, word_unit="w", output_orthography="eng-arpabet", verbose_warnings=False
 ):
     """Convert all the words in XML though g2p, putting the results in attribute ARPABET
 

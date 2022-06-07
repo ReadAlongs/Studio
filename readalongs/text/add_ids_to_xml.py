@@ -42,7 +42,7 @@ TAGS_TO_IGNORE = ["head", "teiHeader", "script"]
 
 
 def add_ids_aux(element: etree, ids: defaultdict, parent_id: str = "") -> defaultdict:
-    """ Add ids to xml element
+    """Add ids to xml element
 
     Args:
         element (etree): Element to add ids to
