@@ -23,7 +23,7 @@ def run_convert_xml(input_string):
 
 def two_xml_elements(xml_text):
     """Extract the opening part of the leading two XML elements in xml_text"""
-    return xml_text[: xml_text.find("<")]
+    return xml_text[: 1 + xml_text.find(">", 1 + xml_text.find(">"))]
 
 
 class TestG2pCli(BasicTestCase):
@@ -385,20 +385,25 @@ class TestG2pCli(BasicTestCase):
             two_xml_elements(converted_as_a_whole),
         )
 
-        moh_example_input_with_highlights = "<s xml:lang='moh'><w><span class='pronoun'>tati</span><span class='root'>atkèn:se</span><span class='aspect'>hkwe'</span></w></s>"
-        moh_example_input_merged = "<s xml:lang='moh'><w>tatiatkèn:sehkwe'</w></s>"
+        moh_eg_with_highlights = "<s xml:lang='moh'><w><span class='pronoun'>tati</span><span class='root'>atkèn:se</span><span class='aspect'>hkwe'</span></w></s>"
+        moh_eg_merged = "<s xml:lang='moh'><w>tatiatkèn:sehkwe'</w></s>"
+        self.assertEqual(two_xml_elements(moh_eg_merged), "<s xml:lang='moh'><w>")
         self.assertEqual(
-            two_xml_elements(run_convert_xml(moh_example_input_with_highlights)),
-            two_xml_elements(run_convert_xml(moh_example_input_merged)),
+            two_xml_elements(run_convert_xml(moh_eg_with_highlights)),
+            two_xml_elements(run_convert_xml(moh_eg_merged)),
         )
 
         moh_example_input_full = """
             <document xml:lang='moh'>
               <s>
-                <w><span class='pronoun'>tati</span><span class='root'>atkèn:se</span><span class='aspect'>hkwe'</span></w>
+                <w>
+                  <span class='pronoun'>tati</span>
+                  <span class='root'>atkèn:se</span>
+                  <span class='aspect'>hkwe'</span>
+                </w>
               </s>
             </document>"""
-        # print(run_convert_xml(moh_example_input_full))
+        _ = run_convert_xml(moh_example_input_full)
 
         example_with_fallback_lang = """
             <document xml:lang="fra" fallback-langs="eng"><s>
