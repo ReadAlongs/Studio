@@ -3,6 +3,7 @@
 """Test suite for the readalongs g2p CLI command"""
 
 import os
+import re
 from unittest import main
 
 from basic_test_case import BasicTestCase
@@ -13,6 +14,16 @@ from readalongs.align import align_audio
 from readalongs.cli import align, g2p, prepare, tokenize
 from readalongs.log import LOGGER
 from readalongs.text.convert_xml import convert_xml
+
+
+def run_convert_xml(input_string):
+    """wrap convert_xml to make unit testing easier"""
+    return etree.tounicode(convert_xml(etree.fromstring(input_string))[0])
+
+
+def two_xml_elements(xml_text):
+    """Extract the opening part of the leading two XML elements in xml_text"""
+    return xml_text[: xml_text.find("<")]
 
 
 class TestG2pCli(BasicTestCase):
@@ -304,10 +315,6 @@ class TestG2pCli(BasicTestCase):
             self.assertIn("HH EH Y", dict_file)  # "Hej" in dan
             self.assertIn("D G IY T UW P IY D", dict_file)  # pre-g2p'd OOV
 
-    def run_convert_xml(self, input_string):
-        """wrap convert_xml to make unit testing easier"""
-        return etree.tounicode(convert_xml(etree.fromstring(input_string))[0])
-
     def test_convert_xml(self):
         """unit testing for readalongs.text.convert_xml.convert_xml()
 
@@ -315,12 +322,12 @@ class TestG2pCli(BasicTestCase):
         It's not very well named, but it still needs unit testing. :)
         """
         self.assertEqual(
-            self.run_convert_xml("<t><w>word</w><w></w><n>not word</n></t>"),
+            run_convert_xml("<t><w>word</w><w></w><n>not word</n></t>"),
             '<t><w ARPABET="W OW D D">word</w><w/><n>not word</n></t>',
         )
 
         self.assertEqual(
-            self.run_convert_xml(
+            run_convert_xml(
                 '<s><w xml:lang="eng">Patrick</w><w xml:lang="kwk-umista">xtła̱n</w></s>'
             ),
             '<s><w xml:lang="eng" ARPABET="P AE T R IH K">Patrick</w>'
@@ -328,8 +335,81 @@ class TestG2pCli(BasicTestCase):
         )
 
         self.assertEqual(
-            self.run_convert_xml('<s><w xml:lang="und">Patrickxtła̱n</w></s>'),
+            run_convert_xml('<s><w xml:lang="und">Patrickxtła̱n</w></s>'),
             '<s><w xml:lang="und" ARPABET="P AA T D IY CH K K T L AA N">Patrickxtła̱n</w></s>',
+        )
+
+    def test_convert_xml_with_newlines(self):
+        """Newlines inside words are weird, but they should not cause errors"""
+
+        def compact_arpabet(xml_string: str) -> str:
+            etree_root = etree.fromstring(xml_string)
+            arpabet = etree_root[0].attrib["ARPABET"]
+            return re.sub(r"\s+", " ", arpabet)
+
+        converted_1 = run_convert_xml(
+            """<s><w>
+               <part>first part of the word</part>
+               <part>second part of the word</part>
+               </w></s>"""
+        )
+        converted_2 = run_convert_xml(
+            "<s><w><part>first part of the word</part><part>second part of the word</part></w></s>"
+        )
+        self.assertEqual(compact_arpabet(converted_1), compact_arpabet(converted_2))
+
+    def test_convert_xml_subwords(self):
+        """Unit testing for reintroducing subword units"""
+        self.assertEqual(
+            run_convert_xml(
+                '<s><w><part xml:lang="eng">Patrick</part><part xml:lang="kwk-umista">xtła̱n</part></w></s>'
+            ),
+            '<s><w ARPABET="P AE T R IH K K Y T S AH N"><part xml:lang="eng">Patrick</part>'
+            '<part xml:lang="kwk-umista">xtła̱n</part></w></s>',
+        )
+
+        self.assertEqual(
+            run_convert_xml(
+                '<s><w>foo<syl xml:lang="eng">Patrick</syl>bar<syl xml:lang="kwk-umista">xtła̱n</syl>baz</w></s>'
+            ),
+            '<s><w ARPABET="F OW OW P AE T R IH K B AA D K Y T S AH N B AA Z">'
+            'foo<syl xml:lang="eng">Patrick</syl>bar<syl xml:lang="kwk-umista">xtła̱n</syl>baz</w></s>',
+        )
+
+        converted_by_syllable = run_convert_xml(
+            '<s><w xml:lang="und"><syl>abc</syl><syl>def</syl><syl>ghi</syl></w></s>'
+        )
+        converted_as_a_whole = run_convert_xml('<s><w xml:lang="und">abcdefghi</w></s>')
+        self.assertEqual(
+            two_xml_elements(converted_by_syllable),
+            two_xml_elements(converted_as_a_whole),
+        )
+
+        moh_example_input_with_highlights = "<s xml:lang='moh'><w><span class='pronoun'>tati</span><span class='root'>atkèn:se</span><span class='aspect'>hkwe'</span></w></s>"
+        moh_example_input_merged = "<s xml:lang='moh'><w>tatiatkèn:sehkwe'</w></s>"
+        self.assertEqual(
+            two_xml_elements(run_convert_xml(moh_example_input_with_highlights)),
+            two_xml_elements(run_convert_xml(moh_example_input_merged)),
+        )
+
+        moh_example_input_full = """
+            <document xml:lang='moh'>
+              <s>
+                <w><span class='pronoun'>tati</span><span class='root'>atkèn:se</span><span class='aspect'>hkwe'</span></w>
+              </s>
+            </document>"""
+        # print(run_convert_xml(moh_example_input_full))
+
+        example_with_fallback_lang = """
+            <document xml:lang="fra" fallback-langs="eng"><s>
+              <w><part lang="fra">ceci</part><part lang="iku">not_really_iku</part></w>
+            </s></document>"""
+        with self.assertLogs(LOGGER, level="WARNING") as cm:
+            result = run_convert_xml(example_with_fallback_lang)
+        self.assertIn("S AH S IY not_really_iku", result)
+        logger_output = "\n".join(cm.output)
+        self.assertIn(
+            'No valid g2p conversion found for "not_really_iku"', logger_output
         )
 
     def test_convert_xml_invalid(self):
