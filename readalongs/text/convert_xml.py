@@ -46,10 +46,31 @@ from readalongs.text.lexicon_g2p_mappings import __file__ as LEXICON_PATH
 from readalongs.text.util import (
     get_attrib_recursive,
     get_lang_attrib,
+    iterate_over_text,
     load_xml,
     save_xml,
 )
 from readalongs.util import get_langs
+
+
+def get_same_language_units(element):
+    """Find all the text in element, grouped by units of the same language
+
+    Returns: list of (lang, text) pairs
+    """
+    same_language_units = []
+    current_sublang, current_subword = None, None
+    for sublang, subword in iterate_over_text(element):
+        sublang = sublang.strip() if sublang else ""
+        if current_subword and sublang == current_sublang:
+            current_subword += subword
+        else:
+            if current_subword:
+                same_language_units.append((current_sublang, current_subword))
+            current_sublang, current_subword = sublang, subword
+    if current_subword:
+        same_language_units.append((current_sublang, current_subword))
+    return same_language_units
 
 
 def convert_words(  # noqa: C901
@@ -127,7 +148,7 @@ def convert_words(  # noqa: C901
                     f'\nRun "readalongs langs" to list languages supported by ReadAlongs Studio.'
                 ) from e
             tg = converter(word)
-            text = tg.output_string.strip()
+            text = tg.output_string
             valid = converter.check(tg, shallow=True)
             if not valid and verbose_warnings:
                 converter.check(tg, shallow=False, display_warnings=verbose_warnings)
@@ -145,47 +166,55 @@ def convert_words(  # noqa: C901
                 all_g2p_valid = False
             continue
         # only convert text within words
-        if not word.text:
+        same_language_units = get_same_language_units(word)
+        if not same_language_units:
             continue
-        g2p_lang = get_lang_attrib(word) or "und"  # default: Undetermined
-        g2p_fallbacks = get_attrib_recursive(word, "fallback-langs")
-        text_to_g2p = word.text
-        try:
-            g2p_text, valid = convert_word(text_to_g2p, g2p_lang.strip())
-            if not valid:
-                # This is where we apply the g2p cascade
-                for lang in re.split(r"[,:]", g2p_fallbacks) if g2p_fallbacks else []:
-                    LOGGER.warning(
-                        f'Could not g2p "{text_to_g2p}" as {g2p_lang}. '
-                        f"Trying fallback: {lang}."
-                    )
-                    g2p_lang = lang.strip()
-                    g2p_text, valid = convert_word(text_to_g2p, g2p_lang)
-                    if valid:
-                        word.attrib["effective-g2p-lang"] = g2p_lang
-                        break
-                else:
-                    all_g2p_valid = False
-                    LOGGER.warning(
-                        f'No valid g2p conversion found for "{text_to_g2p}". '
-                        f"Check its orthography and language code, "
-                        f"or pick suitable g2p fallback languages."
-                    )
+        all_arpabet = ""
+        for lang, text in same_language_units:
+            g2p_lang = lang or "und"  # default: Undetermined
+            g2p_fallbacks = get_attrib_recursive(word, "fallback-langs")
+            text_to_g2p = text.strip()
+            try:
+                g2p_text, valid = convert_word(text_to_g2p, g2p_lang)
+                if not valid:
+                    # This is where we apply the g2p cascade
+                    for lang in (
+                        re.split(r"[,:]", g2p_fallbacks) if g2p_fallbacks else []
+                    ):
+                        LOGGER.warning(
+                            f'Could not g2p "{text_to_g2p}" as {g2p_lang}. '
+                            f"Trying fallback: {lang}."
+                        )
+                        g2p_lang = lang.strip()
+                        g2p_text, valid = convert_word(text_to_g2p, g2p_lang)
+                        if valid:
+                            word.attrib["effective-g2p-lang"] = g2p_lang
+                            break
+                    else:
+                        all_g2p_valid = False
+                        LOGGER.warning(
+                            f'No valid g2p conversion found for "{text_to_g2p}". '
+                            f"Check its orthography and language code, "
+                            f"or pick suitable g2p fallback languages."
+                        )
 
-            # Save the g2p_text from the last conversion attemps, even when
-            # it's not valid, so it's in the g2p output if the user wants to
-            # inspect it manually.
-            word.attrib["ARPABET"] = g2p_text
+                # Save the g2p_text from the last conversion attemps, even when
+                # it's not valid, so it's in the g2p output if the user wants to
+                # inspect it manually.
 
-        except ValueError as e:
-            LOGGER.warning(
-                f'Could not g2p "{text_to_g2p}" due to an incorrect '
-                f'"xml:lang", "lang" or "fallback-langs" attribute in the XML: {e}'
-            )
-            all_g2p_valid = False
+                all_arpabet = all_arpabet + " " + g2p_text.strip()
 
-            if not verbose_warnings:
-                break
+            except ValueError as e:
+                LOGGER.warning(
+                    f'Could not g2p "{text_to_g2p}" due to an incorrect '
+                    f'"xml:lang", "lang" or "fallback-langs" attribute in the XML: {e}'
+                )
+                all_g2p_valid = False
+
+                if not verbose_warnings:
+                    break
+
+        word.attrib["ARPABET"] = all_arpabet.strip()
 
     return xml, all_g2p_valid
 

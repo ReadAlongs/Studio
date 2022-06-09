@@ -69,6 +69,21 @@ def get_attrib_recursive(element, *attribs):
         return None
 
 
+def iterate_over_text(element):
+    """Iterate over all actual text contained with element and its sub-elements
+
+    Yields:
+        (language_code, text) pairs
+    """
+    lang = get_lang_attrib(element)
+    if element.text:
+        yield (lang, element.text)
+    for child in element:
+        yield from iterate_over_text(child)
+        if child.tail:
+            yield (lang, child.tail)
+
+
 def get_lang_attrib(element):
     """Return the xml:lang (in priority) or lang (fallback) attribute from element
     or its closest ancestor that has either, or None when neither is found.
