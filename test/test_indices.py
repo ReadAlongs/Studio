@@ -55,7 +55,7 @@ class TestIndices(TestCase):
 
     def test_composition_with_none(self):
         transducer = make_g2p("ctp", "eng-arpabet")
-        tg = transducer("Qne\u1D2C")
+        tg = transducer("qne\u1D2C")
         self.assertEqual(tg.output_string, "HH N EY ")
         self.assertEqual(
             tg.edges,
