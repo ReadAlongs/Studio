@@ -48,9 +48,14 @@ class TestAudio(BasicTestCase):
 
     def test_mute_section(self):
         """Should mute section of audio"""
+        max_before = self.audio_segment[1000:2000].max
         muted_segment = mute_section(self.audio_segment, 1000, 2000)
         muted_section = muted_segment[1000:2000]
-        self.assertLessEqual(muted_section.max, 1)
+        # This worked with pydub 0.23.1, but it does not work with 0.25.1
+        # self.assertLessEqual(muted_section.max, 1)
+        # Muting applies a gain of -120, so the results is not necessarily 0,
+        # it's just much smaller.
+        self.assertLessEqual(muted_section.max, max_before / 1000)
 
     def test_remove_section(self):
         """Should remove section of audio"""
