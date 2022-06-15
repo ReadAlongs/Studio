@@ -17,12 +17,20 @@ with open("requirements.txt") as f:
 
 setup(
     name="readalongs",
+    license="MIT",
     python_requires=">=3.7",
     version=VERSION,
-    long_description="ReadAlong Studio",
+    description="ReadAlong Studio",
+    long_description="ReadAlong Studio, Audiobook alignment for Indigenous languages",
+    platform=["any"],
     packages=find_packages(exclude=["test"]),
     include_package_data=True,
     zip_safe=False,
     install_requires=required,
     entry_points={"console_scripts": ["readalongs = readalongs.cli:cli"]},
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ],
 )
