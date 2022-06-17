@@ -89,6 +89,8 @@ class TestAudio(BasicTestCase):
             "pip install --force-reinstall --upgrade might be required "
             "if dependencies changed.",
         )
+        # Make sure ss logs are disabled
+        self.assertNotIn("Current configuration", process.stderr)
 
     def test_align_removed(self):
         """Try aligning section with removed audio"""
@@ -100,7 +102,7 @@ class TestAudio(BasicTestCase):
         # Align
         input_text_path = os.path.join(self.data_dir, "audio_sample.txt")
         input_audio_path = audio_output_path
-        flags = ["-l", "eng"]
+        flags = ["-l", "eng", "--debug-aligner"]
         output_path = os.path.join(self.tempdir, "output_removed")
         process = self.align(input_text_path, input_audio_path, output_path, flags)
         if process.returncode != 0:
@@ -114,6 +116,8 @@ class TestAudio(BasicTestCase):
             "pip install --force-reinstall --upgrade might be required "
             "if dependencies changed.",
         )
+        # Make sure ss logs are enabled
+        self.assertIn("Current configuration", process.stderr)
 
     def test_align_muted(self):
         """Try aligning section with muted audio"""

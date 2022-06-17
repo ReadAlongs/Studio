@@ -236,18 +236,21 @@ def create_asr_config(
     asr_config.set_float("-pbeam", 1e-100)
     asr_config.set_float("-wbeam", 1e-80)
 
-    if not debug_aligner:
-        # With --debug-aligner, we display the SoundSwallower logs on screen, but
-        # otherwise we redirect them away from the terminal.
+    if debug_aligner:
+        # With --debug-aligner, we display the SoundSwallower logs on
+        # screen and set them to maximum strength
+        asr_config.set_string("-loglevel", "DEBUG")
+    else:
+        # Otherwise, we enable logging and direct it to a file if
+        # saving temporary files
         if save_temps is not None and (sys.platform not in ("win32", "cygwin")):
             # With --save-temps, we save the SoundSwallower logs to a file.
             # This is buggy on Windows, so we don't do it on Windows variants
+            # (NOTE: should be fixed in SoundSwallower 0.3 though)
             ss_log = save_temps + ".soundswallower.log"
-        else:
-            # Otherwise, we send the SoundSwallower logs to the bit bucket.
-            ss_log = os.devnull
-        asr_config.set_string("-logfn", ss_log)
-        asr_config.set_string("-loglevel", "DEBUG")
+            asr_config.set_string("-logfn", ss_log)
+            asr_config.set_string("-loglevel", "INFO")
+        # And otherwise the default is fine (only error messages are printed)
 
     # Set sampling rate based on audio (FIXME: this may cause problems
     # later on if it is too low)
