@@ -27,7 +27,7 @@ class TestForceAlignment(BasicTestCase):
         """Basic alignment test case with XML input"""
         xml_path = os.path.join(self.data_dir, "ej-fra.xml")
         wav_path = os.path.join(self.data_dir, "ej-fra.m4a")
-        results = align_audio(xml_path, wav_path, unit="w")
+        results = align_audio(xml_path, wav_path, unit="w", debug_aligner=True)
 
         # Verify that the same IDs are in the output
         converted_path = os.path.join(self.data_dir, "ej-fra-converted.xml")
