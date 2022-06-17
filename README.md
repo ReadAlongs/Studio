@@ -202,7 +202,17 @@ Feel free to dive in! [Open an issue](https://github.com/ReadAlongs/Studio/issue
 
 This repo follows the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.
 
-Have a look at [Contributing.md](Contributing.md) for help using our standardized formatting conventions and pre-commit hooks.
+You can install our standard Git hooks by running these commands in your sandbox:
+
+```sh
+pip install -r requirements.dev.txt
+pre-commit install
+gitlint install-hook
+```
+
+Have a look at [Contributing.md](Contributing.md) for the full details on the
+Conventional Commit messages we prefer, our code formatting conventions, and
+our Git hooks.
 
 ### Contributors
 

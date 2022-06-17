@@ -208,7 +208,3 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/linux,macos,python,windows,visualstudiocode
-
-# Node stuff, ignore even package-log.json since it's just for pre-commit hooks
-node_modules
-package-lock.json
