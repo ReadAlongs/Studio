@@ -111,7 +111,7 @@ We run commitlint on each commit message that you write by enabling the commit-m
 Git. It is run via [husky](https://www.npmjs.com/package/husky), which is a JS Git hook
 manager, and you need Node to run it.
 
-If you don't already use Node, this is a bit more work to install that the pre-commit
+If you don't already use Node, this is a bit more work to install than the pre-commit
 hooks above, but please take a moment to do this:
 
 - If you don't already use Node or nvm, or if you don't have admin access to the system
