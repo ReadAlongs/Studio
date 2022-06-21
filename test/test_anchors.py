@@ -71,7 +71,7 @@ class TestAnchors(BasicTestCase):
                 f"{partial_wav_file} should not be empty",
             )
 
-    def test_anchors_failures(self):
+    def test_anchors_align_modes(self):
         xml_with_anchors = """<doc xml:lang="fra"><body>
             <s>Bonjour.</s>
             <anchor time="1.62s"/>
@@ -86,7 +86,6 @@ class TestAnchors(BasicTestCase):
             results = align_audio(
                 xml_file,
                 os.path.join(self.data_dir, "noise.mp3"),
-                debug_aligner=False,
             )
         words = results["words"]
         self.assertEqual(len(words), 10)
