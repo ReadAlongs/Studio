@@ -5,8 +5,9 @@ build:
   tools:
     python: "3.7"
   jobs:
-    pre_create_environment:
-      - echo "Installing Studio in its current state"
+    post_install:
+      - echo "Installing Studio itself in its current state"
+      - which pip python
       - pip install -e .
 
 sphinx:
