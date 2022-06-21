@@ -196,8 +196,8 @@ Here is that list at the time of compiling this documentation:
 See :ref:`adding-a-lang` for references on adding new languages to that list.
 
 
-The config.json file
-~~~~~~~~~~~~~~~~~~~~
+Adding images and do-not-align segments via the config.json file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Some additional parameters can be specified via a config file: create a JSON
 file called ``config.json``, possibly in the same folder as your other ReadAlong
