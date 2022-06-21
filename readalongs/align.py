@@ -216,6 +216,7 @@ def create_asr_config(
     audio: AudioSegment,
     save_temps: Optional[str] = None,
     debug_aligner: Optional[bool] = False,
+    alignment_mode: str = "auto",
 ) -> soundswallower.Config:
     """Create the base SoundSwallower (formerly PocketSphinx) configuration.
 
@@ -224,6 +225,7 @@ def create_asr_config(
         audio (AudioSegment): Audio input from which to take parameters.
         save_temps (str): Optional; Prefix for saving temporary files, by default None.
         debug_aligner (boolean): Optional; Output debugging info from the aligner.
+        alignment_mode (str): Optional, controls the decoder beam width
 
     Returns:
         soundswallower.Config: Basic configuration."""
@@ -232,9 +234,20 @@ def create_asr_config(
         "acoustic_model", os.path.join(MODEL_DIR, DEFAULT_ACOUSTIC_MODEL)
     )
     asr_config.set_string("-hmm", acoustic_model)
-    asr_config.set_float("-beam", 1e-100)
-    asr_config.set_float("-pbeam", 1e-100)
-    asr_config.set_float("-wbeam", 1e-80)
+    if alignment_mode == "strict":
+        asr_config.set_float("-beam", 1e-100)
+        asr_config.set_float("-pbeam", 1e-100)
+        asr_config.set_float("-wbeam", 1e-80)
+    elif alignment_mode == "moderate":
+        asr_config.set_float("-beam", 1e-200)
+        asr_config.set_float("-pbeam", 1e-200)
+        asr_config.set_float("-wbeam", 1e-160)
+    elif alignment_mode == "loose":
+        asr_config.set_float("-beam", 0)
+        asr_config.set_float("-pbeam", 0)
+        asr_config.set_float("-wbeam", 0)
+    else:
+        assert False and "invalid alignment_mode value"
 
     if debug_aligner:
         # With --debug-aligner, we display the SoundSwallower logs on
@@ -507,6 +520,7 @@ def insert_silence(
 def align_audio(
     xml_path: str,
     audio_path: str,
+    *,  # force the remaining arguments to be passed by name
     unit: Optional[str] = "w",
     bare: Optional[bool] = False,
     config: Optional[dict] = None,
@@ -514,6 +528,7 @@ def align_audio(
     verbose_g2p_warnings: Optional[bool] = False,
     debug_aligner: Optional[bool] = False,
     output_orthography: str = "eng-arpabet",
+    alignment_mode: str = "auto",
 ):
     """Align an XML input file to an audio file.
 
@@ -530,6 +545,7 @@ def align_audio(
         verbose_g2p_warnings (boolean): Optional; display all g2p errors and warnings
             iff True
         debug_aligner (boolean): Optional, output debugging info from the aligner.
+        alignment_mode (str): Optional, controls the decoder beam width
 
     Returns:
         Dict[str, Any]: TODO
@@ -555,8 +571,18 @@ def align_audio(
     audio = audio.set_channels(1).set_sample_width(2)
     audio_length_in_ms = len(audio.raw_data)
 
-    # Create the ASR configuration
-    asr_config = create_asr_config(config, audio, save_temps, debug_aligner)
+    # Expand the list of alignment modes to try
+    if alignment_mode == "auto":
+        align_modes = ["strict", "moderate", "loose"]
+    else:
+        align_modes = [alignment_mode]
+
+    # Create the ASR configuration for each alignment mode needed
+    asr_configs = [
+        create_asr_config(config, audio, save_temps, debug_aligner, align_mode)
+        for align_mode in align_modes
+    ]
+    asr_config = asr_configs[0]  # Default/first ASR Config
 
     # Process audio, silencing or removing any DNA segments
     if "do-not-align" in config:
@@ -585,34 +611,45 @@ def align_audio(
     word_sequences = get_sequences(xml, xml_path, unit=unit)
     final_end = 0.0
     for i, word_sequence in enumerate(word_sequences):
-        # Run the aligner on this sequence
-        segmentation = align_sequence(
-            audio_data=audio_data,
-            word_sequence=word_sequence,
-            asr_config=asr_config,
-            xml_path=xml_path,
-            i=i,
-            unit=unit,
-            save_temps=save_temps,
-        )
-
-        # List of removed segments for the sequence we are currently processing
-        curr_removed_segments = dna_union(
-            word_sequence.start, word_sequence.end, audio_length_in_ms, removed_segments
-        )
-        try:
-            # Process raw segmentation, adjusting alignments for DNA
-            aligned_words = process_segmentation(
-                segmentation=segmentation,
-                curr_removed_segments=curr_removed_segments,
-                noisewords=noisewords,
-                frame_size=frame_size,
-                debug_aligner=debug_aligner,
+        for j, cur_asr_config in enumerate(asr_configs):
+            # Run the aligner on this sequence
+            segmentation = align_sequence(
+                audio_data=audio_data,
+                word_sequence=word_sequence,
+                asr_config=cur_asr_config,
+                xml_path=xml_path,
+                i=i,
+                unit=unit,
+                save_temps=save_temps,
             )
-        except RuntimeError:
-            # We need this here because soundswallower<=0.2.2 will
-            # raise an error rather than returning an empty list
-            aligned_words = []
+
+            # List of removed segments for the sequence we are currently processing
+            curr_removed_segments = dna_union(
+                word_sequence.start,
+                word_sequence.end,
+                audio_length_in_ms,
+                removed_segments,
+            )
+            try:
+                # Process raw segmentation, adjusting alignments for DNA
+                aligned_words = process_segmentation(
+                    segmentation=segmentation,
+                    curr_removed_segments=curr_removed_segments,
+                    noisewords=noisewords,
+                    frame_size=frame_size,
+                    debug_aligner=debug_aligner,
+                )
+            except RuntimeError:
+                # We need this here because soundswallower<=0.2.2 will
+                # raise an error rather than returning an empty list
+                aligned_words = []
+
+            if len(aligned_words) != len(word_sequence.words):
+                LOGGER.warning(f"Align mode {align_modes[j]} failed for sequence {i}.")
+            else:
+                LOGGER.info(f"Align mode {align_modes[j]} succeeded for sequence {i}.")
+                break
+
         results["words"].extend(aligned_words)
         if aligned_words:
             final_end = aligned_words[-1]["end"]
