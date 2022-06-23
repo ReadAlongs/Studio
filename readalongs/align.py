@@ -727,7 +727,7 @@ def save_label_files(
     """
     audio = read_audio_from_file(audiofile)
     duration = audio.frame_count() / audio.frame_rate
-    words, sentences = return_words_and_sentences(align_results)
+    words, sentences = get_words_and_sentences(align_results)
     textgrid = write_to_text_grid(words, sentences, duration)
 
     if "textgrid" in output_formats:
@@ -747,7 +747,7 @@ def save_subtitles(
         output_base (str): Base path for output files
         output_formats (Iterable[str]): List of output formats
     """
-    words, sentences = return_words_and_sentences(align_results)
+    words, sentences = get_words_and_sentences(align_results)
     cc_sentences = write_to_subtitles(sentences)
     cc_words = write_to_subtitles(words)
 
@@ -927,35 +927,34 @@ def save_readalong(
         save_images(config=config, output_dir=output_dir)
 
 
-def return_word_from_id(xml: etree, el_id: str) -> str:
-    """Given an XML document, return the innertext at id
+def get_word_from_id(xml: etree, el_id: str) -> str:
+    """Given an XML document, get the innertext at id
 
     Args:
         xml (etree): XML document
         el_id (str): ID
 
     Returns:
-        str: Innertext of element with el_id in xml
+        str: Innertext of element with id==el_id in xml
     """
     return xml.xpath('//*[@id="%s"]/text()' % el_id)[0]
 
 
-def return_words_and_sentences(results):
+def get_words_and_sentences(results) -> Tuple[List[dict], List[List[dict]]]:
     """Parse xml into word and sentence 'tier' data
 
     Args:
-        results([TODO type]): [TODO description]
+        results([TODO type]): the results object returned by align_audio
 
     Returns:
-        [TODO type]: [TODO description]
+        list of words, list of sentences
     """
-    result_id_pattern = re.compile(
+    # We consider the sentence ID to be everything before the word id
+    # E.g., for word with id t0b0d1p1s0w7, the sent id is t0b0d1p1s0,
+    # and for p2s3w5, the sent id is p2s3
+    sent_word_id_pattern = re.compile(
         r"""
-        t(?P<table>\d*)            # Table
-        b(?P<body>\d*)             # Body
-        d(?P<div>\d*)              # Div ( Break )
-        p(?P<par>\d*)              # Paragraph
-        s(?P<sent>\d+)             # Sentence
+        (?P<sent>.*\d+)            # All the layers above/before word
         w(?P<word>\d+)             # Word
         """,
         re.VERBOSE,
@@ -964,28 +963,30 @@ def return_words_and_sentences(results):
     all_els = results["words"]
     xml = results["tokenized"]
     sentences = []
-    words = []
+    words: List[dict] = []
     all_words = []
-    current_sent = 0
+    current_sent = None
     for el in all_els:
-        parsed = re.search(result_id_pattern, el["id"])
+        parsed = re.search(sent_word_id_pattern, el["id"])
         sent_i = parsed.group("sent")
-        if int(sent_i) is not current_sent:
-            sentences.append(words)
+        if sent_i != current_sent:
+            if words:
+                sentences.append(words)
             words = []
-            current_sent += 1
+            current_sent = sent_i
         word = {
-            "text": return_word_from_id(xml, el["id"]),
+            "text": get_word_from_id(xml, el["id"]),
             "start": el["start"],
             "end": el["end"],
         }
         words.append(word)
         all_words.append(word)
-    sentences.append(words)
+    if words:
+        sentences.append(words)
     return all_words, sentences
 
 
-def write_to_text_grid(words: List[dict], sentences: List[dict], duration: float):
+def write_to_text_grid(words: List[dict], sentences: List[List[dict]], duration: float):
     """Write results to Praat TextGrid. Because we are using pympi, we can also export to Elan EAF.
 
     Args:

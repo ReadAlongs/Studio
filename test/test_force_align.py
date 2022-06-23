@@ -14,7 +14,12 @@ from basic_test_case import BasicTestCase
 from lxml import etree
 from soundswallower import get_model_path
 
-from readalongs.align import align_audio, convert_to_xhtml, create_input_tei
+from readalongs.align import (
+    align_audio,
+    convert_to_xhtml,
+    create_input_tei,
+    get_words_and_sentences,
+)
 from readalongs.log import LOGGER
 from readalongs.portable_tempfile import PortableNamedTemporaryFile
 from readalongs.text.util import load_txt, save_xml
@@ -55,6 +60,12 @@ class TestForceAlignment(BasicTestCase):
         self.assertEqual(len(words), len(xml_words))
         for w, xw in zip(words, xml_words):
             self.assertEqual(xw.attrib["id"], w["id"])
+
+        # White-box testing to make sure srt, TextGrid and vtt output will have the
+        # sentences collected correctly.
+        words, sentences = get_words_and_sentences(results)
+        self.assertEqual(len(sentences), 7)
+        self.assertEqual(len(words), 99)
 
     def test_align_switch_am(self):
         """Alignment test case with an alternate acoustic model and custom
