@@ -76,9 +76,9 @@ def align(
                 value_groups=language
             )
         if output_formats:
-            output_formats = JoinerCallbackForClick(cli.SUPPORTED_OUTPUT_FORMATS)(
-                value_groups=output_formats
-            )
+            output_formats = JoinerCallbackForClick(
+                cli.SUPPORTED_OUTPUT_FORMATS, drop_case=True
+            )(value_groups=output_formats)
 
         align_args.update(
             textfile=textfile,
@@ -89,7 +89,7 @@ def align(
             **kwargs
         )
 
-        cli.align.callback(**align_args)
+        cli.align.callback(**align_args)  # type: ignore
 
         return (0, None, logging_stream.getvalue())
     except Exception as e:
@@ -133,7 +133,7 @@ def prepare(
                     ),
                     **kwargs
                 )
-                cli.prepare.callback(**prepare_args)
+                cli.prepare.callback(**prepare_args)  # type: ignore
         except OSError as e:
             # e.g.: FileNotFoundError or PermissionError on open(plaintextfile) above
             raise click.UsageError(str(e)) from e
