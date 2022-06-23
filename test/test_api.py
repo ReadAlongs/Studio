@@ -29,7 +29,7 @@ class TestAlignApi(BasicTestCase):
                 data_dir / "ej-fra.m4a",
                 temp_dir / "output",
                 langs,
-                output_formats=["html"],
+                output_formats=["html", "TextGrid", "srt"],
             )
         self.assertEqual(status, 0)
         self.assertTrue(exception is None)
@@ -38,6 +38,9 @@ class TestAlignApi(BasicTestCase):
             "output.smil",
             "output.xml",
             "output.m4a",
+            "output.TextGrid",
+            "output_sentences.srt",
+            "output_words.srt",
             "index.html",
             "output.html",
         )
