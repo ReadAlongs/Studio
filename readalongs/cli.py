@@ -205,6 +205,20 @@ def cli():
     ),
 )
 @click.option(
+    "-m",
+    "--align-mode",
+    type=click.Choice(["strict", "moderate", "loose", "auto"], case_sensitive=False),
+    help=(
+        "Decoder search parameters: "
+        "'strict' means a narrow beam, fastest but might fail to find an alignment; "
+        "'loose' means an unlimited beam, slowest, should always succeed but the alignment is more likely to be wrong; "
+        "'moderate' is in between; "
+        "'auto' (the default) means try strict first, and fall back to moderate "
+        "then loose if no alignment is found."
+    ),
+    default="auto",
+)
+@click.option(
     "-s",
     "--save-temps",
     is_flag=True,
@@ -376,6 +390,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
             verbose_g2p_warnings=kwargs["debug_g2p"],
             debug_aligner=kwargs["debug_aligner"],
             output_orthography=kwargs["output_orth"],
+            alignment_mode=kwargs["align_mode"],
         )
     except RuntimeError as e:
         raise click.UsageError(e) from e

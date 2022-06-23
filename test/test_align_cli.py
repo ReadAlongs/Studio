@@ -41,6 +41,8 @@ class TestAlignCli(BasicTestCase):
                 "srt:TextGrid,eaf",  # tests that we can give -o multiple values, separated by : or ,
                 "-l",
                 "fra",
+                "--align-mode",
+                "auto",
                 "--config",
                 join(self.data_dir, "sample-config.json"),
                 join(self.data_dir, "ej-fra.txt"),
@@ -82,6 +84,7 @@ class TestAlignCli(BasicTestCase):
         self.assertIn("image-for-page2.jpg is accessible ", results.stdout)
         os.unlink("image-for-page1.jpg")
         self.assertFalse(exists("image-for-page1.jpg"))
+        self.assertIn("Align mode strict succeeded for sequence 0.", results.stdout)
         # print(results.stdout)
 
         # Move the alignment output to compare with further down
@@ -97,6 +100,8 @@ class TestAlignCli(BasicTestCase):
             [
                 "-o",
                 "xhtml",
+                "--align-mode",
+                "moderate",
                 "-s",
                 "--config",
                 join(self.data_dir, "sample-config.json"),
@@ -119,6 +124,9 @@ class TestAlignCli(BasicTestCase):
         self.assertFalse(
             exists(join(output, "assets", "image-for-page1.jpg")),
             "image-for-page1.jpg was not on disk, cannot have been copied",
+        )
+        self.assertIn(
+            "Align mode moderate succeeded for sequence 0.", results_dna.stdout
         )
 
         # Functionally the same as self.assertTrue(filecmp.cmp(f1, f2)), but show where

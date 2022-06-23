@@ -97,6 +97,14 @@ class TestForceAlignment(BasicTestCase):
             with self.assertRaises(RuntimeError):
                 _ = align_audio(xml_path, tf.name, unit="w")
 
+    def test_bad_align_mode(self):
+        with self.assertRaises(AssertionError):
+            _ = align_audio(
+                os.path.join(self.data_dir, "ej-fra.xml"),
+                os.path.join(self.data_dir, "noise.mp3"),
+                alignment_mode="invalid-mode",
+            )
+
 
 class TestXHTML(BasicTestCase):
     """Test converting the output to xhtml"""
