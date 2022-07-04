@@ -6,6 +6,7 @@ Flask>=2.0.0
 Flask-Session==0.3.2
 flask-socketio==4.3.2
 g2p>=0.5.20210825
+gunicorn
 lxml==4.6.5
 networkx==2.5
 numpy>=1.16.4
@@ -13,5 +14,6 @@ pydub==0.23.1
 pympi-ling==1.69
 python-slugify==5.0.0
 soundswallower~=0.2.2
+uvicorn
 webvtt-py==0.4.2
 werkzeug==2.0.3
