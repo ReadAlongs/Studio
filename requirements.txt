@@ -1,6 +1,7 @@
 chevron==0.14.0
 click==8.0.4
 coloredlogs==10.0
+fastapi==0.78.0
 Flask>=2.0.0
 Flask-Session==0.3.2
 flask-socketio==4.3.2

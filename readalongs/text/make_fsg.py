@@ -36,7 +36,7 @@ FSG_END
 """
 
 
-def make_fsg(word_elements, filename):
+def make_fsg(word_elements, filename="'in-memory'"):
     name = slugify(os.path.splitext(os.path.basename(filename))[0])
     data = {
         "name": name,  # If name includes special characters, pocketsphinx throws a RuntimeError: new_Decoder returned -1

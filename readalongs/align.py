@@ -66,7 +66,9 @@ class WordSequence:
     words: List
 
 
-def get_sequences(xml, xml_filename, unit="w", anchor="anchor") -> List[WordSequence]:
+def get_sequences(
+    xml, xml_filename="memory", unit="w", anchor="anchor"
+) -> List[WordSequence]:
     """Return the list of anchor-separated word sequences in xml
 
     Args:
@@ -1111,6 +1113,54 @@ TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 """
 
 
+def create_tei_from_text(text, **kwargs):
+    """Create input xml in TEI standard.
+        Uses readlines to infer paragraph and sentence structure from plain text.
+        TODO: Check if path, if it's just plain text, then render that instead of reading from the file
+        Assumes a double blank line marks a page break, and a single blank line
+        marks a paragraph break.
+        Outputs to uft-8 XML using pymustache.
+
+    Args:
+        **kwargs: dict containing these arguments:
+            input_file_name (str, optional): input text file name
+            input_file_handle (file_handle, optional): opened file handle for input text
+                Only provide one of input_file_name or input_file_handle!
+            text_languages (List[str]): language(s) for the text, in the order
+                they should be attempted for g2p.
+            save_temps (str, optional): prefix for output file name,
+                which will be kept; or None to create a temporary file
+            output_file (str, optional): if specified, the output file
+                will have exactly this name
+    """
+    text_langs = kwargs.get("text_languages", None)
+    assert text_langs and isinstance(text_langs, (list, tuple)), "need text_languages"
+    kwargs["main_lang"] = text_langs[0]
+    kwargs["fallback_langs"] = ",".join(text_langs[1:])
+    pages = []
+    paragraphs = []
+    sentences = []
+    for line in text:
+        if line == "\n":
+            if not sentences:
+                # consider this a page break (unless at the beginning)
+                pages.append({"paragraphs": paragraphs})
+                paragraphs = []
+            else:
+                # add sentences and begin new paragraph
+                paragraphs.append({"sentences": sentences})
+                sentences = []
+        else:
+            # Add text to sentence
+            sentences.append(line.strip())
+    # Add the last paragraph/sentence
+    if sentences:
+        paragraphs.append({"sentences": sentences})
+    if paragraphs:
+        pages.append({"paragraphs": paragraphs})
+    return chevron.render(TEI_TEMPLATE, {**kwargs, **{"pages": pages}})
+
+
 def create_input_tei(**kwargs):
     """Create input xml in TEI standard.
         Uses readlines to infer paragraph and sentence structure from plain text.
@@ -1169,28 +1219,7 @@ def create_input_tei(**kwargs):
             prefix="readalongs_xml_", suffix=".xml", delete=True
         )
         filename = outfile.name
-    pages = []
-    paragraphs = []
-    sentences = []
-    for line in text:
-        if line == "\n":
-            if not sentences:
-                # consider this a page break (unless at the beginning)
-                pages.append({"paragraphs": paragraphs})
-                paragraphs = []
-            else:
-                # add sentences and begin new paragraph
-                paragraphs.append({"sentences": sentences})
-                sentences = []
-        else:
-            # Add text to sentence
-            sentences.append(line.strip())
-    # Add the last paragraph/sentence
-    if sentences:
-        paragraphs.append({"sentences": sentences})
-    if paragraphs:
-        pages.append({"paragraphs": paragraphs})
-    xml = chevron.render(TEI_TEMPLATE, {**kwargs, **{"pages": pages}})
+    xml = create_tei_from_text(text, **kwargs)
     outfile.write(xml.encode("utf-8"))
     outfile.flush()
     outfile.close()

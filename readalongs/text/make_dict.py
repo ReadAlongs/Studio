@@ -28,7 +28,25 @@ DICT_TEMPLATE = """{{#items}}
 """
 
 
-def make_dict(word_elements, input_filename, unit="m"):
+def make_dict_object(word_elements, input_filename="'in-memory'", unit="m"):
+    data = {}
+    nwords = 0
+    for e in word_elements:
+        if "id" not in e.attrib:
+            LOGGER.error(
+                "%s-type element without id in file %s" % (unit, input_filename)
+            )
+        text = e.attrib.get("ARPABET", "").strip()
+        if not text:
+            continue
+        nwords += 1
+        data[e.attrib["id"]] = text
+    if nwords == 0:
+        raise RuntimeError("No words in dictionary!")
+    return data
+
+
+def make_dict(word_elements, input_filename="'in-memory'", unit="m"):
     data = {"items": []}
     nwords = 0
     for e in word_elements:

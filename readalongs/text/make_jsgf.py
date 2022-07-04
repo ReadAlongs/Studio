@@ -40,14 +40,14 @@ public <s> = {{#words}} {{id}} {{/words}} ;
 """
 
 
-def make_jsgf(xml, filename, unit="m"):
+def make_jsgf(word_elements, filename="'in-memory'"):
     data = {
         "name": os.path.splitext(os.path.basename(filename))[0],
         "date": datetime.datetime.today().strftime("%Y-%m-%d"),
         "words": [],
     }
 
-    for e in xml.xpath(".//" + unit):
+    for e in word_elements:
         if "id" not in e.attrib:  # don't put in elements with no id
             continue
         text = e.text.strip()
