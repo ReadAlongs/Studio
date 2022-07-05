@@ -154,6 +154,20 @@ Basic alignment is done with the following command.
 
 `readalongs align TEXTFILE WAVFILE OUTPUTNAME`
 
+### Web API
+
+This page lists only the most basic commands.
+
+For more information about how the command line interface works consult the interactive [API Documentation](https://readalong-studio.herokuapp.com/api/v1/docs).
+
+#### /langs
+
+To query a list of available languages in the ReadAlong Studio API, send a GET request to https://readalongs-studio.herokuapp.com/api/v1/langs
+
+#### /assemble
+
+This endpoint is a remote procedural call that assembles the data needed to build a readalong using the JavaScript-based [SoundSwallower decoder](https://github.com/ReadAlongs/SoundSwallower). It is an endpoint that accepts POST requests with either plaintext or XML input. Please see the [documentation](https://readalong-studio.herokuapp.com/api/v1/docs) for more information.
+
 ### Studio web application
 
 ReadAlong-Studio has a web interface for creating interactive audiobooks. The web app can be served by first installing ReadAlong-Studio and then running `python3 run.py`. A web app will then be available on port 5000.
