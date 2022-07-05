@@ -28,8 +28,7 @@ DICT_TEMPLATE = """{{#items}}
 """
 
 
-def make_dict_object(word_elements, input_filename="'in-memory'", unit="m"):
-    data = {}
+def generate_dict_entries(word_elements, input_filename, unit):
     nwords = 0
     for e in word_elements:
         if "id" not in e.attrib:
@@ -40,27 +39,27 @@ def make_dict_object(word_elements, input_filename="'in-memory'", unit="m"):
         if not text:
             continue
         nwords += 1
-        data[e.attrib["id"]] = text
+        yield e.attrib["id"], text
     if nwords == 0:
         raise RuntimeError("No words in dictionary!")
-    return data
+
+
+def make_dict_object(word_elements, input_filename="'in-memory'", unit="m"):
+    return {
+        word_id: text
+        for word_id, text in generate_dict_entries(word_elements, input_filename, unit)
+    }
 
 
 def make_dict(word_elements, input_filename="'in-memory'", unit="m"):
-    data = {"items": []}
-    nwords = 0
-    for e in word_elements:
-        if "id" not in e.attrib:
-            LOGGER.error(
-                "%s-type element without id in file %s" % (unit, input_filename)
+    data = {
+        "items": [
+            {"id": word_id, "pronunciation": text}
+            for word_id, text in generate_dict_entries(
+                word_elements, input_filename, unit
             )
-        text = e.attrib.get("ARPABET", "").strip()
-        if not text:
-            continue
-        nwords += 1
-        data["items"].append({"id": e.attrib["id"], "pronunciation": text})
-    if nwords == 0:
-        raise RuntimeError("No words in dictionary!")
+        ]
+    }
     return chevron.render(DICT_TEMPLATE, data)
 
 
