@@ -12,7 +12,7 @@ VERSION = readalongs.VERSION + "." + build_no
 with open(version_path, "w") as f:
     print(f'__version__ = "{VERSION}"', file=f)
 
-with open("requirements.txt") as f:
+with open("requirements.min.txt") as f:
     required = f.read().splitlines()
 
 setup(
