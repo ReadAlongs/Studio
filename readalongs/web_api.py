@@ -11,7 +11,7 @@ from readalongs.align import create_tei_from_text
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.make_dict import make_dict_object
-from readalongs.text.make_jsgf import make_jsgf
+from readalongs.text.make_fsg import make_jsgf
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.util import get_langs
 
