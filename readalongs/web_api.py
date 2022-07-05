@@ -7,11 +7,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from lxml import etree
 from pydantic import BaseModel
 
-from readalongs.align import create_tei_from_text, get_sequences
+from readalongs.align import create_tei_from_text
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.make_dict import make_dict_object
-from readalongs.text.make_fsg import make_fsg
 from readalongs.text.make_jsgf import make_jsgf
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.util import get_langs
@@ -105,8 +104,9 @@ async def readalong(input: Union[XMLRequest, PlainTextRequest]):
 
 
 def create_grammar(xml):
-    dict_data = make_dict_object(xml.xpath("//w"))
-    fsg_data = make_jsgf(xml.xpath("//w"), filename="test")
+    word_elements = xml.xpath("//w")
+    dict_data = make_dict_object(word_elements)
+    fsg_data = make_jsgf(word_elements, filename="test")
     text_data = " ".join(xml.xpath("//w/@id"))
     return dict_data, fsg_data, text_data
 
