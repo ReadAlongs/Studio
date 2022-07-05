@@ -23,6 +23,7 @@ class TestWebApi(BasicTestCase):
         self.basicRequest = {"encoding": "utf-8", "debug": False}
 
     def test_assemble_from_plain_text(self):
+        # Test the assemble endpoint with plain text
         with open(os.path.join(self.data_dir, "ej-fra.txt"), encoding="utf8") as f:
             data = f.read().strip()
         request = deepcopy(self.basicRequest)
@@ -32,14 +33,17 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_bad_path(self):
+        # Test a request to a path that doesn't exist
         response = API_CLIENT.get("/pathdoesntexist")
         self.assertEqual(response.status_code, 404)
 
     def test_bad_method(self):
+        # Test a request to a valid path with a bad method
         response = API_CLIENT.get("/api/v1/assemble")
         self.assertEqual(response.status_code, 405)
 
     def test_assemble_from_xml(self):
+        # Test the assemble endpoint with XML
         with open(os.path.join(self.data_dir, "ej-fra.xml"), encoding="utf8") as f:
             data = f.read().strip()
         request = deepcopy(self.basicRequest)
@@ -49,6 +53,7 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_wrapper(self):
+        # Test the xml processing wrapper
         with open(os.path.join(self.data_dir, "ej-fra.xml"), encoding="utf8") as f:
             data = f.read().strip()
         xml_request = XMLRequest(xml=data, text_languages=["test"])
@@ -57,6 +62,7 @@ class TestWebApi(BasicTestCase):
         )
 
     def test_bad_xml(self):
+        # Test the assemble endpoint with invalid XML
         data = "this is not xml"
         request = deepcopy(self.basicRequest)
         request["xml"] = data
@@ -65,6 +71,7 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(response.status_code, 422)
 
     def test_create_grammar(self):
+        # Test the create grammar function
         with open(os.path.join(self.data_dir, "ej-fra.xml"), encoding="utf8") as f:
             data = f.read().strip()
         parsed = etree.fromstring(bytes(data, encoding="utf8"))
@@ -78,6 +85,7 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(len(word_dict), 99)
 
     def test_bad_g2p(self):
+        # Test the assemble endpoint with invalid g2p languages
         with open(os.path.join(self.data_dir, "ej-fra.txt"), encoding="utf8") as f:
             data = f.read().strip()
         request = deepcopy(self.basicRequest)
@@ -87,10 +95,12 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_langs(self):
+        # Test the langs endpoint
         response = API_CLIENT.get("/api/v1/langs")
         self.assertEqual(response.json(), get_langs()[1])
 
     def test_debug(self):
+        # Test the assemble endpoint with debug mode on
         with open(os.path.join(self.data_dir, "ej-fra.txt"), encoding="utf8") as f:
             data = f.read().strip()
         request = deepcopy(self.basicRequest)

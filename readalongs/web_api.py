@@ -15,8 +15,11 @@ from readalongs.text.make_fsg import make_jsgf
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.util import get_langs
 
+# Create the app
 web_api_app = FastAPI()
+# Create the v1 version of the API
 v1 = FastAPI()
+# Call get_langs() when the server loads to load the languages into memory
 LANGS = get_langs()
 
 if not os.getenv("PRODUCTION", False):
@@ -45,7 +48,9 @@ class XMLRequest(RequestBase):
 
 
 def process_xml(func):
-    # Wrapper for processing XML
+    # Wrapper for processing XML, reads the XML with proper encoding,
+    # then applies the given function to it,
+    # then converts the result back to utf-8 XML and returns it
     def wrapper(xml, **kwargs):
         parsed = etree.fromstring(bytes(xml.xml, encoding=xml.encoding))
         processed = func(parsed, **kwargs)
@@ -56,12 +61,15 @@ def process_xml(func):
 
 @v1.get("/langs")
 async def langs():
+    # Return the list of languages
     return LANGS[1]
 
 
 @v1.post("/assemble")
 async def readalong(input: Union[XMLRequest, PlainTextRequest]):
-    # take XML as default
+    # Create input TEI from the given text
+    # Also creates the required grammar, pronunciation dictionary,
+    # and text needed by the decoder
     if isinstance(input, XMLRequest):
         try:
             parsed = etree.fromstring(bytes(input.xml, encoding=input.encoding))
@@ -104,6 +112,7 @@ async def readalong(input: Union[XMLRequest, PlainTextRequest]):
 
 
 def create_grammar(xml):
+    # Create the grammar and dictionary data from w elements in the given XML
     word_elements = xml.xpath("//w")
     dict_data = make_dict_object(word_elements)
     fsg_data = make_jsgf(word_elements, filename="test")
@@ -111,4 +120,5 @@ def create_grammar(xml):
     return dict_data, fsg_data, text_data
 
 
+# Mount the v1 version of the API to the root of the app
 web_api_app.mount("/api/v1", v1)
