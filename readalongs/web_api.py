@@ -59,7 +59,7 @@ async def langs():
     return LANGS[1]
 
 
-@v1.post("/prepare")
+@v1.post("/assemble")
 async def readalong(input: Union[XMLRequest, PlainTextRequest]):
     # take XML as default
     if isinstance(input, XMLRequest):

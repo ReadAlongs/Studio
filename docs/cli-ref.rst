@@ -10,8 +10,8 @@ The ReadAlongs CLI has five key commands:
 
 - :ref:`cli-align`: full alignment pipeline, from plain text or XML to a
   viewable readalong
-- :ref:`cli-prepare`: convert a plain text file into XML, for align
-- :ref:`cli-tokenize`: tokenize a prepared XML file
+- :ref:`cli-make-xml`: convert a plain text file into XML, for align
+- :ref:`cli-tokenize`: tokenize an XML file
 - :ref:`cli-g2p`: g2p a tokenized XML file
 - :ref:`cli-langs`: list supported languages
 
@@ -22,9 +22,9 @@ e.g., ``readalongs -h``, ``readalongs align --help``.
 .. click:: readalongs.cli:align
   :prog: readalongs align
 
-.. _cli-prepare:
-.. click:: readalongs.cli:prepare
-  :prog: readalongs prepare
+.. _cli-make-xml:
+.. click:: readalongs.cli:make-xml
+  :prog: readalongs make-xml
 
 .. _cli-tokenize:
 .. click:: readalongs.cli:tokenize

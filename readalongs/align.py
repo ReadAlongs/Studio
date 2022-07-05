@@ -160,7 +160,7 @@ def split_silences(words: List[dict], final_end, excluded_segments: List[dict]) 
     _ = words.pop()
 
 
-def parse_and_prepare_input(
+def parse_and_make_xml(
     xml_path: str,
     config: dict,
     save_temps: Optional[str] = None,
@@ -559,7 +559,7 @@ def align_audio(
     if config is None:
         config = {}
 
-    xml = parse_and_prepare_input(
+    xml = parse_and_make_xml(
         xml_path=xml_path,
         config=config,
         verbose_g2p_warnings=verbose_g2p_warnings,

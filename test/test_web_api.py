@@ -22,13 +22,13 @@ class TestWebApi(BasicTestCase):
         super().setUp()
         self.basicRequest = {"encoding": "utf-8", "debug": False}
 
-    def test_prepare_from_plain_text(self):
+    def test_assemble_from_plain_text(self):
         with open(os.path.join(self.data_dir, "ej-fra.txt"), encoding="utf8") as f:
             data = f.read().strip()
         request = deepcopy(self.basicRequest)
         request["text"] = data
         request["text_languages"] = ["fra"]
-        response = API_CLIENT.post("/api/v1/prepare", json=request)
+        response = API_CLIENT.post("/api/v1/assemble", json=request)
         self.assertEqual(response.status_code, 200)
 
     def test_bad_path(self):
@@ -36,16 +36,16 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_bad_method(self):
-        response = API_CLIENT.get("/api/v1/prepare")
+        response = API_CLIENT.get("/api/v1/assemble")
         self.assertEqual(response.status_code, 405)
 
-    def test_prepare_from_xml(self):
+    def test_assemble_from_xml(self):
         with open(os.path.join(self.data_dir, "ej-fra.xml"), encoding="utf8") as f:
             data = f.read().strip()
         request = deepcopy(self.basicRequest)
         request["xml"] = data
         request["text_languages"] = ["fra"]
-        response = API_CLIENT.post("/api/v1/prepare", json=request)
+        response = API_CLIENT.post("/api/v1/assemble", json=request)
         self.assertEqual(response.status_code, 200)
 
     def test_wrapper(self):
@@ -61,7 +61,7 @@ class TestWebApi(BasicTestCase):
         request = deepcopy(self.basicRequest)
         request["xml"] = data
         request["text_languages"] = ["fra"]
-        response = API_CLIENT.post("/api/v1/prepare", json=request)
+        response = API_CLIENT.post("/api/v1/assemble", json=request)
         self.assertEqual(response.status_code, 422)
 
     def test_create_grammar(self):
@@ -83,7 +83,7 @@ class TestWebApi(BasicTestCase):
         request = deepcopy(self.basicRequest)
         request["text"] = data
         request["text_languages"] = ["test"]
-        response = API_CLIENT.post("/api/v1/prepare", json=request)
+        response = API_CLIENT.post("/api/v1/assemble", json=request)
         self.assertEqual(response.status_code, 400)
 
     def test_langs(self):
@@ -97,7 +97,7 @@ class TestWebApi(BasicTestCase):
         request["text"] = data
         request["debug"] = True
         request["text_languages"] = ["fra"]
-        response = API_CLIENT.post("/api/v1/prepare", json=request)
+        response = API_CLIENT.post("/api/v1/assemble", json=request)
         content = response.json()
         self.assertEqual(content["input"], request)
         self.assertGreater(len(content["tokenized"]), 10)

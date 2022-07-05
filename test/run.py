@@ -27,9 +27,9 @@ from test_dna_utils import TestDNAUtils
 from test_force_align import TestForceAlignment, TestXHTML
 from test_g2p_cli import TestG2pCli
 from test_indices import TestIndices
+from test_make_xml_cli import TestMakeXMLCli
 from test_misc import TestMisc
 from test_package_urls import TestPackageURLs
-from test_prepare_cli import TestPrepareCli
 from test_silence import TestSilence
 from test_temp_file import TestTempFile
 from test_tokenize_cli import TestTokenizeCli
@@ -60,7 +60,7 @@ other_tests = [
         TestTokenizer,
         TestTokenizeCli,
         TestTempFile,
-        TestPrepareCli,
+        TestMakeXMLCli,
         TestAudio,
         TestAlignCli,
         TestAlignApi,
@@ -68,6 +68,7 @@ other_tests = [
         TestMisc,
         TestSilence,
         TestPackageURLs,
+        TestWebApi,
     ]
 ]
 

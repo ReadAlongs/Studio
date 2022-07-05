@@ -59,10 +59,10 @@ class TestAlignApi(BasicTestCase):
         self.assertNotEqual(status, 0)
         self.assertFalse(exception is None)
 
-    def test_call_prepare(self):
+    def test_call_make_xml(self):
         data_dir = Path(self.data_dir)
         temp_dir = Path(self.tempdir)
-        (status, exception, log) = api.prepare(
+        (status, exception, log) = api.make_xml(
             data_dir / "ej-fra.txt", temp_dir / "prepared.xml", ("fra", "eng")
         )
         self.assertEqual(status, 0)
@@ -72,13 +72,13 @@ class TestAlignApi(BasicTestCase):
             xml_text = f.read()
             self.assertIn('xml:lang="fra" fallback-langs="eng,und"', xml_text)
 
-        (status, exception, log) = api.prepare(
+        (status, exception, log) = api.make_xml(
             data_dir / "ej-fra.txt", temp_dir / "bad.xml", ("fra", "not-a-lang")
         )
         self.assertNotEqual(status, 0)
         self.assertTrue(isinstance(exception, click.BadParameter))
 
-        (status, exception, log) = api.prepare(
+        (status, exception, log) = api.make_xml(
             data_dir / "file-not-found.txt", temp_dir / "none.xml", ("fra",)
         )
         self.assertNotEqual(status, 0)

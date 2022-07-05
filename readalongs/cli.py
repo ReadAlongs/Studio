@@ -4,8 +4,8 @@ The main purpose of the cli is to align text and audio files
 
 CLI commands implemented in this file:
  - align   : main command to align text and audio
- - prepare : prepare XML input for align from plain text
- - tokenize: tokenize the prepared file
+ - make-xml : make XML input for align from plain text
+ - tokenize: tokenize the XML file
  - g2p     : apply g2p to the tokenized file
  - langs   : list languages supported by align
 """
@@ -89,7 +89,7 @@ def cli():
     although other output formats like subtitles or Praat TextGrids are available.
 
     You can use this command line tool in two ways. The "end-to-end" method with the
-    "align" command, or using a sequence of steps with "prepare", "tokenize", and "g2p"
+    "align" command, or using a sequence of steps with "make-xml", "tokenize", and "g2p"
     to get more control over the process.
 
     ## End-to-End
@@ -107,16 +107,16 @@ def cli():
     Using ReadAlongs this way, you must use the following commands in sequence.
 
     \b
-    prepare
+    make-xml
     =======
     If you have plain text and you want to mark up some of the XML, you can
-    use this command to "prepare" your plain text into the XML structure
+    use this command to turn your plain text into the XML structure
     used by readalongs.
 
     \b
     tokenize
     ========
-    Use this command to tokenize the output of the previous "readalongs prepare" command.
+    Use this command to tokenize the output of the previous "readalongs make-xml" command.
 
     \b
     g2p
@@ -259,7 +259,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
     \b
     If TEXTFILE has a .xml extension or starts with an XML declaration line,
     it is parsed as XML and can be in one of three formats:
-     - the output of 'readalongs prepare',
+     - the output of 'readalongs make-xml',
      - the output of 'readalongs tokenize', or
      - the output of 'readalongs g2p'.
 
@@ -413,6 +413,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
 @cli.command(  # type: ignore  # quench spurious mypy error: "Command" has no attribute "command"
     context_settings=CONTEXT_SETTINGS,
     short_help="Convert a plain text file into the XML format for alignment.",
+    deprecated=True,
 )
 @click.argument("plaintextfile", type=click.File("r", encoding="utf8", lazy=True))
 @click.argument("xmlfile", type=click.Path(), required=False, default="")
@@ -442,7 +443,57 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
     ),
 )
 def prepare(**kwargs):
-    """Prepare XMLFILE for 'readalongs align' from PLAINTEXTFILE.
+    """DEPRECATED - use `readalongs make-xml` instead
+
+    make XMLFILE for 'readalongs align' from PLAINTEXTFILE.
+
+    PLAINTEXTFILE must be plain text encoded in UTF-8, with one sentence per line,
+    paragraph breaks marked by a blank line, and page breaks marked by two
+    blank lines.
+
+    PLAINTEXTFILE: Path to the plain text input file, or - for stdin
+
+    XMLFILE:       Path to the XML output file, or - for stdout [default: PLAINTEXTFILE.xml]
+    """
+    LOGGER.warn(
+        'WARNING: "readalongs prepare" is deprecated. Use "readalongs make-xml" instead.'
+    )
+    make_xml.callback(**kwargs)
+
+
+@cli.command(  # type: ignore  # quench spurious mypy error: "Command" has no attribute "command"
+    context_settings=CONTEXT_SETTINGS,
+    short_help="Convert a plain text file into the XML format for alignment.",
+)
+@click.argument("plaintextfile", type=click.File("r", encoding="utf8", lazy=True))
+@click.argument("xmlfile", type=click.Path(), required=False, default="")
+@click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
+@click.option(
+    "-f", "--force-overwrite", is_flag=True, help="Force overwrite output files"
+)
+@click.option(
+    "--lang-no-append-und",
+    is_flag=True,
+    default=False,
+    hidden=True,
+    help="Hidden option to disable to automatic appending of und (Undetermined) to -l",
+)
+@click.option(
+    "-l",
+    "--language",
+    "--languages",
+    required=True,
+    multiple=True,
+    callback=JoinerCallbackForClick(get_langs_deferred()),
+    help=(
+        "The language code(s) for text in PLAINTEXTFILE; "
+        "multiple codes can be joined by ',' or ':', or by repeating the option, "
+        "to enable the g2p cascade (run 'readalongs g2p -h' for details); "
+        "run 'readalongs langs' to list all supported languages."
+    ),
+)
+def make_xml(**kwargs):
+    """make XMLFILE for 'readalongs align' from PLAINTEXTFILE.
 
     PLAINTEXTFILE must be plain text encoded in UTF-8, with one sentence per line,
     paragraph breaks marked by a blank line, and page breaks marked by two
@@ -456,7 +507,7 @@ def prepare(**kwargs):
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
         LOGGER.info(
-            "Running readalongs prepare(lang={}, force-overwrite={}, plaintextfile={}, xmlfile={}).".format(
+            "Running readalongs make-xml(lang={}, force-overwrite={}, plaintextfile={}, xmlfile={}).".format(
                 kwargs["language"],
                 kwargs["force_overwrite"],
                 kwargs["plaintextfile"],
@@ -506,7 +557,7 @@ def prepare(**kwargs):
 
 @cli.command(  # type: ignore  # quench spurious mypy error: "Command" has no attribute "command"
     context_settings=CONTEXT_SETTINGS,
-    short_help="Tokenize a prepared XML file, in preparation for alignment.",
+    short_help="Tokenize an XML file, in preparation for alignment.",
 )
 @click.argument("xmlfile", type=click.File("rb"))
 @click.argument("tokfile", type=click.Path(), required=False, default="")
@@ -517,7 +568,7 @@ def prepare(**kwargs):
 def tokenize(**kwargs):
     """Tokenize XMLFILE for 'readalongs align' into TOKFILE.
 
-    XMLFILE should have been produced by 'readalongs prepare'.
+    XMLFILE should have been produced by 'readalongs make-xml'.
     TOKFILE can then be augmented with word-specific language codes.
     'readalongs align' can be called with either XMLFILE or TOKFILE as XML input.
 
@@ -614,7 +665,7 @@ def g2p(**kwargs):
     The g2p cascade will be enabled whenever an XML element or any of its
     ancestors in TOKFILE has the attribute "fallback-langs" containing a comma-
     or colon-separated list of language codes. Provide multiple language codes to
-    "readalongs prepare" via its -l option to generate this attribute globally,
+    "readalongs make-xml" via its -l option to generate this attribute globally,
     or add it manually where needed. Undetermined, "und", is automatically
     added at the end of the language list provided via -l.
 
