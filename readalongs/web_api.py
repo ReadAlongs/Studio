@@ -14,9 +14,11 @@ from readalongs.text.make_dict import make_dict_object
 from readalongs.text.make_fsg import make_fsg
 from readalongs.text.make_jsgf import make_jsgf
 from readalongs.text.tokenize_xml import tokenize_xml
+from readalongs.util import get_langs
 
 web_api_app = FastAPI()
 v1 = FastAPI()
+LANGS = get_langs()
 
 if not os.getenv("PRODUCTION", False):
     origins = ["http://localhost:4200"]  # Allow requests from Angular app
@@ -51,6 +53,11 @@ def process_xml(func):
         return etree.tostring(processed, encoding="utf-8", xml_declaration=True)
 
     return wrapper
+
+
+@v1.get("/langs")
+async def langs():
+    return LANGS[1]
 
 
 @v1.post("/prepare")
@@ -90,10 +97,10 @@ async def readalong(input: Union[XMLRequest, PlainTextRequest]):
         "processed_xml": etree.tostring(g2ped, encoding="utf8").decode(),
     }
     if input.debug:
-        response["input"] = (input,)
-        response["parsed"] = (parsed,)
-        response["tokenized"] = (tokenized,)
-        response["g2ped"] = g2ped
+        response["input"] = input.dict()
+        response["parsed"] = etree.tostring(parsed, encoding="utf8")
+        response["tokenized"] = etree.tostring(tokenized, encoding="utf8")
+        response["g2ped"] = etree.tostring(g2ped, encoding="utf8")
     return response
 
 

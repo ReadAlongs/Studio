@@ -34,6 +34,7 @@ from test_silence import TestSilence
 from test_temp_file import TestTempFile
 from test_tokenize_cli import TestTokenizeCli
 from test_tokenize_xml import TestTokenizer
+from test_web_api import TestWebApi
 
 from readalongs.log import LOGGER
 
@@ -44,6 +45,10 @@ e2e_tests = [
 ]
 
 indices_tests = [loader.loadTestsFromTestCase(test) for test in [TestIndices]]
+
+api_tests = [
+    loader.loadTestsFromTestCase(test) for test in [TestWebApi]
+]  # TODO: add some load testing with https://locust.io/
 
 other_tests = [
     loader.loadTestsFromTestCase(test)
@@ -72,6 +77,8 @@ def run_tests(suite):
 
     if suite == "e2e":
         suite = TestSuite(e2e_tests)
+    elif suite == "api":
+        suite = TestSuite(api_tests)
     elif suite == "dev":
         suite = TestSuite(indices_tests + other_tests + e2e_tests)
     elif suite in ("prod", "all"):

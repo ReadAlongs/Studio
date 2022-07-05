@@ -9,6 +9,7 @@ from lxml import etree
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.tokenize_xml import tokenize_xml
+from readalongs.util import get_langs
 from readalongs.web_api import XMLRequest, create_grammar, process_xml, web_api_app
 
 API_CLIENT = TestClient(web_api_app)
@@ -82,6 +83,24 @@ class TestWebApi(BasicTestCase):
         request["text_languages"] = ["test"]
         response = API_CLIENT.post("/api/v1/prepare", json=request)
         self.assertEqual(response.status_code, 400)
+
+    def test_langs(self):
+        response = API_CLIENT.get("/api/v1/langs")
+        self.assertEqual(response.json(), get_langs()[1])
+
+    def test_debug(self):
+        with open(os.path.join(self.data_dir, "ej-fra.txt")) as f:
+            data = f.read().strip()
+        request = deepcopy(self.basicRequest)
+        request["text"] = data
+        request["debug"] = True
+        request["text_languages"] = ["fra"]
+        response = API_CLIENT.post("/api/v1/prepare", json=request)
+        content = response.json()
+        self.assertEqual(content["input"], request)
+        self.assertGreater(len(content["tokenized"]), 10)
+        self.assertGreater(len(content["parsed"]), 10)
+        self.assertGreater(len(content["g2ped"]), 10)
 
 
 if __name__ == "__main__":
