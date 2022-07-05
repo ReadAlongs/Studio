@@ -27,20 +27,12 @@ FSG_END
 """
 
 
-def make_fsg(word_elements: list, filename: str = "'in-memory'") -> str:
-    """Generate an FSG for the given words elements
+def get_ids(word_elements: list):
+    """Extract the sequence of id's from word_elements with both an id and text.
 
-    Returns: the text contents of the FSG file for processing by PocketSphinx
+    Yields:
+        text_ids
     """
-
-    # If name includes special characters, pocketsphinx throws a RuntimeError:
-    # new_Decoder returned -1, so pass it through slugify() first
-    name = slugify(os.path.splitext(os.path.basename(filename))[0])
-    data = {
-        "name": name,
-        "states": [],
-        "num_states": 0,
-    }
 
     for e in word_elements:
         if "id" not in e.attrib:  # don't put in elements with no id
@@ -48,20 +40,28 @@ def make_fsg(word_elements: list, filename: str = "'in-memory'") -> str:
         if not e.text or not e.text.strip():
             LOGGER.warning("No text in node %s", e.attrib["id"])
             continue
-        text = e.text.strip()
-        # if not e.text.strip():  # don't put in elements with no text
-        #    continue
-        data["states"].append(
-            {
-                "id": e.attrib["id"] if text else "",
-                "current": data["num_states"],
-                "next": data["num_states"] + 1,
-            }
-        )
-        data["num_states"] += 1
+        yield e.attrib["id"]
 
-    data["final_state"] = data["num_states"]
-    data["num_states"] += 1
+
+def make_fsg(word_elements: list, filename: str = "'in-memory'") -> str:
+    """Generate an FSG for the given words elements
+
+    Returns: the text contents of the FSG file for processing by PocketSphinx
+    """
+
+    states = [
+        {"id": text_id, "current": i, "next": i + 1}
+        for i, text_id in enumerate(get_ids(word_elements))
+    ]
+
+    data = {
+        # If name includes special characters, pocketsphinx throws a RuntimeError:
+        # new_Decoder returned -1, so pass it through slugify() first
+        "name": slugify(os.path.splitext(os.path.basename(filename))[0]),
+        "states": states,
+        "final_state": len(states),
+        "num_states": len(states) + 1,
+    }
 
     return chevron.render(FSG_TEMPLATE, data)
 
@@ -92,15 +92,7 @@ def make_jsgf(word_elements: list, filename: str = "'in-memory'") -> str:
     data = {
         "name": os.path.splitext(os.path.basename(filename))[0],
         "date": datetime.datetime.today().strftime("%Y-%m-%d"),
-        "words": [],
+        "words": [{"id": text_id} for text_id in get_ids(word_elements)],
     }
-
-    for e in word_elements:
-        if "id" not in e.attrib:  # don't put in elements with no id
-            continue
-        text = e.text.strip()
-        if text == "":  # don't put in elements with no text
-            continue
-        data["words"].append({"id": e.attrib["id"]})
 
     return chevron.render(JSGF_TEMPLATE, data)
