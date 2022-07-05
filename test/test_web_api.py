@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 from copy import deepcopy
 from unittest import main
@@ -21,7 +23,7 @@ class TestWebApi(BasicTestCase):
         self.basicRequest = {"encoding": "utf-8", "debug": False}
 
     def test_prepare_from_plain_text(self):
-        with open(os.path.join(self.data_dir, "ej-fra.txt")) as f:
+        with open(os.path.join(self.data_dir, "ej-fra.txt"), encoding="utf8") as f:
             data = f.read().strip()
         request = deepcopy(self.basicRequest)
         request["text"] = data
@@ -38,7 +40,7 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(response.status_code, 405)
 
     def test_prepare_from_xml(self):
-        with open(os.path.join(self.data_dir, "ej-fra.xml")) as f:
+        with open(os.path.join(self.data_dir, "ej-fra.xml"), encoding="utf8") as f:
             data = f.read().strip()
         request = deepcopy(self.basicRequest)
         request["xml"] = data
@@ -47,7 +49,7 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_wrapper(self):
-        with open(os.path.join(self.data_dir, "ej-fra.xml")) as f:
+        with open(os.path.join(self.data_dir, "ej-fra.xml"), encoding="utf8") as f:
             data = f.read().strip()
         xml_request = XMLRequest(xml=data, text_languages=["test"])
         self.assertAlmostEqual(
@@ -63,20 +65,20 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(response.status_code, 422)
 
     def test_create_grammar(self):
-        with open(os.path.join(self.data_dir, "ej-fra.xml")) as f:
+        with open(os.path.join(self.data_dir, "ej-fra.xml"), encoding="utf8") as f:
             data = f.read().strip()
         parsed = etree.fromstring(bytes(data, encoding="utf8"))
         tokenized = tokenize_xml(parsed)
         ids_added = add_ids(tokenized)
         g2ped, valid = convert_xml(ids_added)
-        dict, fsg, text = create_grammar(g2ped)
+        word_dict, fsg, text = create_grammar(g2ped)
         self.assertTrue(valid)
         self.assertIn("Auto-generated JSGF grammar", fsg)
-        self.assertEqual(len(dict), len(text.split()))
-        self.assertEqual(len(dict), 99)
+        self.assertEqual(len(word_dict), len(text.split()))
+        self.assertEqual(len(word_dict), 99)
 
     def test_bad_g2p(self):
-        with open(os.path.join(self.data_dir, "ej-fra.txt")) as f:
+        with open(os.path.join(self.data_dir, "ej-fra.txt"), encoding="utf8") as f:
             data = f.read().strip()
         request = deepcopy(self.basicRequest)
         request["text"] = data
@@ -89,7 +91,7 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(response.json(), get_langs()[1])
 
     def test_debug(self):
-        with open(os.path.join(self.data_dir, "ej-fra.txt")) as f:
+        with open(os.path.join(self.data_dir, "ej-fra.txt"), encoding="utf8") as f:
             data = f.read().strip()
         request = deepcopy(self.basicRequest)
         request["text"] = data
