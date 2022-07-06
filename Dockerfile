@@ -18,11 +18,10 @@ RUN apt-get update \
 
 # Install 3rd party dependencies in their own layer, for faster rebuilds when we
 # change ReadAlong-Studio source code
-ADD requirements.txt $APPHOME/requirements.txt
+ADD requirements.* $APPHOME/
 RUN python3 -m pip install --upgrade pip \
     && python3 -m pip install -r $APPHOME/requirements.txt \
     && python3 -m pip install gevent
-# RUN python3 -m pip install gunicorn # If you want to run production server
 
 # We don't want Docker to cache the installation of g2p or Studio, so place them
 # after COPY . $APPHOME, which almost invariable invalidates the cache.
@@ -42,4 +41,8 @@ CMD python3 ./run.py
 
 # For a production server, comment out the default gui CMD above, and run the
 # gui using gunicorn instead:
-# CMD gunicorn -k gevent -w 1 readalongs.app:app --bind 0.0.0.0:5000
+# CMD gunicorn -k gevent -w 1 readalongs.app:app --bind 0.0.0.0:$PORT
+
+# For the web API, use this CMD instead, the same on our Heroku deployment, except
+# with binding to port 5000
+# CMD gunicorn -w 4 -k uvicorn.workers.UvicornWorker readalongs.web_api:web_api_app --bind 0.0.0.0:$PORT
