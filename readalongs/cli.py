@@ -412,7 +412,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
 
 @cli.command(  # type: ignore  # quench spurious mypy error: "Command" has no attribute "command"
     context_settings=CONTEXT_SETTINGS,
-    short_help="Convert a plain text file into the XML format for alignment.",
+    short_help="Renamed: use 'readalongs make-xml' instead.",
     deprecated=True,
 )
 @click.argument("plaintextfile", type=click.File("r", encoding="utf8", lazy=True))
@@ -443,7 +443,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
     ),
 )
 def prepare(**kwargs):
-    """DEPRECATED - use `readalongs make-xml` instead
+    """DEPRECATED - renamed: use `readalongs make-xml` instead.
 
     make XMLFILE for 'readalongs align' from PLAINTEXTFILE.
 

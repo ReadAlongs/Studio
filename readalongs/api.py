@@ -149,3 +149,11 @@ def make_xml(
     finally:
         # Remove the log-capturing handler
         LOGGER.removeHandler(logging_handler)
+
+
+def prepare(*args, **kwargs):
+    """Deprecated, use make_xml instead"""
+    LOGGER.warning(
+        "readalongs.api.prepare() is deprecated. Please use make_xml() instead."
+    )
+    return make_xml(*args, **kwargs)

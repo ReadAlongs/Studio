@@ -73,7 +73,7 @@ def encode_from_path(path: str) -> str:
             elif res and res.status_code == 200:
                 img_b64 = str(b64encode(res.content), encoding="utf8")
             else:
-                LOGGER.warn(
+                LOGGER.warning(
                     f"The image declared at {url} could not be found. Please check that it exists."
                 )
                 continue
@@ -92,7 +92,7 @@ def encode_from_path(path: str) -> str:
         )  # Hack: until we properly extract audio from video files, force any video-based mime type to be read as audio
     else:
         mime_type = "application"
-        LOGGER.warn(
+        LOGGER.warning(
             f"We could not guess the mime type of file at {path}, we will try the generic mime type 'application', but this might not work with some files"
         )
     return f"data:{mime_type};base64,{b64}"
@@ -112,7 +112,7 @@ def create_web_component_html(
     js = requests.get(JS_BUNDLE_URL)
     fonts = requests.get(FONTS_BUNDLE_URL)
     if js.status_code != 200:
-        LOGGER.warn(
+        LOGGER.warning(
             f"Sorry, the JavaScript bundle that is supposed to be at {JS_BUNDLE_URL} returned a {js.status_code}. Your ReadAlong will be bundled using a version that may not be up-to-date. Please check your internet connection."
         )
         with open(
@@ -122,7 +122,7 @@ def create_web_component_html(
     else:
         js_raw = js.text
     if fonts.status_code != 200:
-        LOGGER.warn(
+        LOGGER.warning(
             f"Sorry, the fonts bundle that is supposed to be at {FONTS_BUNDLE_URL} returned a {fonts.status_code}. Your ReadAlong will be bundled using a version that may not be up-to-date. Please check your internet connection."
         )
         with open(
