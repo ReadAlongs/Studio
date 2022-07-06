@@ -66,6 +66,7 @@ def tokenize_xml_in_place(xml):
 
     def add_word_children(element):
         """Recursive helper for tokenize_xml_in_place()"""
+
         tag = etree.QName(element.tag).localname
         nsmap = element.nsmap if hasattr(element, "nsmap") else element.getroot().nsmap
         if tag in ["w", "teiHeader", "head"]:  # don't do anything to existing words!

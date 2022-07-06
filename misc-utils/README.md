@@ -19,7 +19,7 @@ categories under "Sonority Hierarchy" to support other languages.
 Must be called manually after
 readalongs tokenize and before readalongs align or readalong g2p:
 
-    readalongs prepare -l my_lang file.txt file.xml
+    readalongs make-xml -l my_lang file.txt file.xml
     readalongs tokenize file.xml file-tok.xml
     ./syll_parse.py file-tok.xml file-tok-syll.xml
 

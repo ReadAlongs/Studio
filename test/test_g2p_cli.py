@@ -11,7 +11,7 @@ from lxml import etree
 from sound_swallower_stub import SoundSwallowerStub
 
 from readalongs.align import align_audio
-from readalongs.cli import align, g2p, prepare, tokenize
+from readalongs.cli import align, g2p, make_xml, tokenize
 from readalongs.log import LOGGER
 from readalongs.text.convert_xml import convert_xml
 
@@ -97,15 +97,15 @@ class TestG2pCli(BasicTestCase):
         self.assertNotEqual(results.exit_code, 0)
         self.assertIn("is obsolete", results.output)
 
-    # Write text to a temp file, pass it through prepare -l lang, and then tokenize,
+    # Write text to a temp file, pass it through make-xml -l lang, and then tokenize,
     # saving the final results into filename.
     # filename is assumed to be inside self.tempdir, so we count on tearDown() to clean up.
-    def write_prepare_tokenize(self, text, lang, filename):
+    def write_make_xml_tokenize(self, text, lang, filename):
         """Create the input file for some test cases in this suite"""
         with open(filename + ".input.txt", "w", encoding="utf8") as f:
             print(text, file=f)
         self.runner.invoke(
-            prepare,
+            make_xml,
             [
                 "-l",
                 lang,
@@ -119,7 +119,7 @@ class TestG2pCli(BasicTestCase):
     def test_english_oov(self):
         """readalongs g2p should handle English OOVs correctly"""
         tok_file = os.path.join(self.tempdir, "tok.xml")
-        self.write_prepare_tokenize("This is a froobnelicious OOV.", "eng", tok_file)
+        self.write_make_xml_tokenize("This is a froobnelicious OOV.", "eng", tok_file)
         results = self.runner.invoke(g2p, [tok_file])
         if self.show_invoke_output:
             print(
@@ -133,7 +133,7 @@ class TestG2pCli(BasicTestCase):
 
         # with a fall back to und, it works
         tok_file_with_fallback = os.path.join(self.tempdir, "fallback.xml")
-        self.write_prepare_tokenize(
+        self.write_make_xml_tokenize(
             "This is a froobnelicious OOV.", "eng:und", tok_file_with_fallback
         )
         results = self.runner.invoke(g2p, [tok_file_with_fallback, "-"])
@@ -149,7 +149,7 @@ class TestG2pCli(BasicTestCase):
         """readalongs g2p should handle French OOVs correctly"""
         tok_file = os.path.join(self.tempdir, "tok.xml")
         g2p_file = os.path.join(self.tempdir, "g2p.xml")
-        self.write_prepare_tokenize(
+        self.write_make_xml_tokenize(
             "Le ñ n'est pas dans l'alphabet français.", "fra", tok_file
         )
         results = self.runner.invoke(g2p, [tok_file, g2p_file])
@@ -164,7 +164,7 @@ class TestG2pCli(BasicTestCase):
 
         # with a fall back to und, it works
         tok_file2 = os.path.join(self.tempdir, "tok2.xml")
-        self.write_prepare_tokenize(
+        self.write_make_xml_tokenize(
             "Le ñ n'est pas dans l'alphabet français.", "fra:und", tok_file2
         )
         g2p_file2 = os.path.join(self.tempdir, "g2p-fallback.xml")
@@ -181,7 +181,7 @@ class TestG2pCli(BasicTestCase):
         """readalongs g2p --g2p-fallback with multi-step cascades"""
         tok_file = os.path.join(self.tempdir, "text.tokenized.xml")
         g2p_file = os.path.join(self.tempdir, "text.g2p.xml")
-        self.write_prepare_tokenize(
+        self.write_make_xml_tokenize(
             "In French été works but Nunavut ᓄᓇᕗᑦ does not.", "eng:fra:iku", tok_file
         )
         # Here we also test generating the output filename from the input filename
@@ -213,7 +213,7 @@ class TestG2pCli(BasicTestCase):
 
         # this text also works with "und", now that we use unidecode
         tok_file2 = os.path.join(self.tempdir, "text.tokenized2.xml")
-        self.write_prepare_tokenize(
+        self.write_make_xml_tokenize(
             "In French été works but Nunavut ᓄᓇᕗᑦ does not.", "eng:und", tok_file2
         )
         results = self.runner.invoke(g2p, [tok_file2, "-"])

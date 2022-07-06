@@ -99,33 +99,38 @@ def align(
         LOGGER.removeHandler(logging_handler)
 
 
-def prepare(
+def make_xml(
     plaintextfile, xmlfile, language, **kwargs
 ) -> Tuple[int, Optional[Exception], str]:
-    """Run the "readalongs prepare" command from withint a Python script.
+    """Run the "readalongs make-xml" command from within a Python script.
 
     Args:
         plaintextfile (str | Path): input plain text file
         xmlfile (str | Path): output XML file
         language (List[str]): list of languages for g2p and g2p cascade
 
-        Run "readalongs prepare -h" or consult
-        https://readalong-studio.readthedocs.io/en/latest/cli-ref.html#readalongs-prepare
+        Run "readalongs make-xml -h" or consult
+        https://readalong-studio.readthedocs.io/en/latest/cli-ref.html#readalongs-make-xml
         for the full list of arguments and their meaning.
 
     Returns: (status, exception, log_text)
     """
-
+    # plaintextfile is not a file object if passed from click
+    plaintextfile = (
+        plaintextfile.name
+        if isinstance(plaintextfile, click.utils.LazyFile)
+        else plaintextfile
+    )
     logging_stream = io.StringIO()
     logging_handler = logging.StreamHandler(logging_stream)
     try:
         # Capture the logs
         LOGGER.addHandler(logging_handler)
 
-        prepare_args = {param.name: param.default for param in cli.prepare.params}
+        make_xml_args = {param.name: param.default for param in cli.make_xml.params}
         try:
             with open(plaintextfile, "r", encoding="utf8") as plaintextfile_handle:
-                prepare_args.update(
+                make_xml_args.update(
                     plaintextfile=plaintextfile_handle,
                     xmlfile=xmlfile,
                     language=JoinerCallbackForClick(get_langs_deferred())(
@@ -133,7 +138,7 @@ def prepare(
                     ),
                     **kwargs
                 )
-                cli.prepare.callback(**prepare_args)  # type: ignore
+                cli.make_xml.callback(**make_xml_args)  # type: ignore
         except OSError as e:
             # e.g.: FileNotFoundError or PermissionError on open(plaintextfile) above
             raise click.UsageError(str(e)) from e
@@ -144,3 +149,11 @@ def prepare(
     finally:
         # Remove the log-capturing handler
         LOGGER.removeHandler(logging_handler)
+
+
+def prepare(*args, **kwargs):
+    """Deprecated, use make_xml instead"""
+    LOGGER.warning(
+        "readalongs.api.prepare() is deprecated. Please use make_xml() instead."
+    )
+    return make_xml(*args, **kwargs)

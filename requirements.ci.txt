@@ -1,4 +1,5 @@
+# These are dependencies required by our continuous integration and testing pipelines
 codecov
 coverage
-gunicorn
 pip-licenses
+-r requirements.api.txt

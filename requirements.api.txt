@@ -1,0 +1,3 @@
+# These are dependencies required by the production Web API
+gunicorn
+uvicorn

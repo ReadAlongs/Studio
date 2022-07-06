@@ -27,13 +27,14 @@ from test_dna_utils import TestDNAUtils
 from test_force_align import TestForceAlignment, TestXHTML
 from test_g2p_cli import TestG2pCli
 from test_indices import TestIndices
+from test_make_xml_cli import TestMakeXMLCli
 from test_misc import TestMisc
 from test_package_urls import TestPackageURLs
-from test_prepare_cli import TestPrepareCli
 from test_silence import TestSilence
 from test_temp_file import TestTempFile
 from test_tokenize_cli import TestTokenizeCli
 from test_tokenize_xml import TestTokenizer
+from test_web_api import TestWebApi
 
 from readalongs.log import LOGGER
 
@@ -45,6 +46,10 @@ e2e_tests = [
 
 indices_tests = [loader.loadTestsFromTestCase(test) for test in [TestIndices]]
 
+api_tests = [
+    loader.loadTestsFromTestCase(test) for test in [TestWebApi]
+]  # TODO: add some load testing with https://locust.io/
+
 other_tests = [
     loader.loadTestsFromTestCase(test)
     for test in [
@@ -55,7 +60,7 @@ other_tests = [
         TestTokenizer,
         TestTokenizeCli,
         TestTempFile,
-        TestPrepareCli,
+        TestMakeXMLCli,
         TestAudio,
         TestAlignCli,
         TestAlignApi,
@@ -63,6 +68,7 @@ other_tests = [
         TestMisc,
         TestSilence,
         TestPackageURLs,
+        TestWebApi,
     ]
 ]
 
@@ -72,6 +78,8 @@ def run_tests(suite):
 
     if suite == "e2e":
         suite = TestSuite(e2e_tests)
+    elif suite == "api":
+        suite = TestSuite(api_tests)
     elif suite == "dev":
         suite = TestSuite(indices_tests + other_tests + e2e_tests)
     elif suite in ("prod", "all"):
