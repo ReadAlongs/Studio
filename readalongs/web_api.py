@@ -34,16 +34,22 @@ if not os.getenv("PRODUCTION", False):
 
 
 class RequestBase(BaseModel):
+    """Base request for assemble"""
+
     text_languages: List[str]
     encoding: str = "utf-8"
     debug: bool = False
 
 
 class PlainTextRequest(RequestBase):
+    """Request to assemble with input as plain text"""
+
     text: str
 
 
 class XMLRequest(RequestBase):
+    """Request to assemble with input as XML"""
+
     xml: str
 
 
@@ -61,15 +67,32 @@ def process_xml(func):
 
 @v1.get("/langs")
 async def langs():
-    # Return the list of languages
+    """Return the list of supported languages and their names as a dict."""
+
     return LANGS[1]
 
 
 @v1.post("/assemble")
-async def readalong(input: Union[XMLRequest, PlainTextRequest]):
-    # Create input TEI from the given text
-    # Also creates the required grammar, pronunciation dictionary,
-    # and text needed by the decoder
+async def assemble(input: Union[XMLRequest, PlainTextRequest]):
+    """Create an input TEI from the given text (as plain text or XML).
+    Also creates the required grammar, pronunciation dictionary,
+    and text needed by the decoder.
+
+    Args (as dict items in the request body):
+     - text_languages: the list of languages for g2p processing
+     - encoding: encoding (default: "utf-8")
+     - debug: set to true for debugging (default: False)
+     - either text or xml:
+        - text: the input text as plain text
+        - xml: the input text as a readalongs-compatible XML structure
+
+    Returns (as dict items in the response body):
+     - dict: maps word IDs to their pronunciation
+     - jsgf: grammar for the forced aligner
+     - text_ids: the list of word_ids as a space-separated string
+     - processed_xml: the XML with all the readalongs info in it
+    """
+
     if isinstance(input, XMLRequest):
         try:
             parsed = etree.fromstring(bytes(input.xml, encoding=input.encoding))
