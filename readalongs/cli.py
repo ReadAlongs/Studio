@@ -749,6 +749,6 @@ def langs():
     """List all the language codes and names currently supported by g2p
     that can be used for ReadAlongs creation.
     """
-    lang_codes, lang_names = get_langs()
-    for lang in lang_codes:
-        print("%-8s\t%s" % (lang, lang_names[lang]))
+    _, langs_dict = get_langs()
+    for code, name in langs_dict.items():
+        print("%-8s\t%s" % (code, name))

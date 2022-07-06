@@ -1,6 +1,5 @@
 import re
 from collections.abc import Iterable
-from itertools import tee
 
 import click
 
@@ -39,23 +38,22 @@ def get_langs():
         import g2p.mappings.langs as g2p_langs
         from networkx import has_path
 
-        # LANGS_AVAILABLE in g2p lists langs inferred by the directory structure of
+        # langs_available in g2p lists langs inferred by the directory structure of
         # g2p/mappings/langs, but in ReadAlongs, we need all input languages to any mappings.
         # E.g., for Michif, we need to allow crg-dv and crg-tmd, but not crg, which is what
-        # LANGS_AVAILABLE contains. So we define our own list of languages here.
-        LANGS_AVAILABLE = []
+        # langs_available contains. So we define our own list of languages here.
+        langs_available = []
 
-        # Set up LANG_NAMES hash table for studio UI to
-        # properly name the dropdown options
-        LANG_NAMES = {"eng": "English"}
+        # this will be the set of all langs in g2p + "eng", which we need temporarily
+        full_lang_names = {"eng": "English"}
 
-        for k, v in g2p_langs.LANGS.items():
+        for _, v in g2p_langs.LANGS.items():
             for mapping in v["mappings"]:
                 # add mapping to names hash table
-                LANG_NAMES[mapping["in_lang"]] = mapping["language_name"]
+                full_lang_names[mapping["in_lang"]] = mapping["language_name"]
                 # add input id to all available langs list
-                if mapping["in_lang"] not in LANGS_AVAILABLE:
-                    LANGS_AVAILABLE.append(mapping["in_lang"])
+                if mapping["in_lang"] not in langs_available:
+                    langs_available.append(mapping["in_lang"])
 
         # get the key from all networks in g2p module that have a path to 'eng-arpabet',
         # which is needed for the readalongs
@@ -63,7 +61,7 @@ def get_langs():
         # Filter out *-norm and crk-no-symbols, these are just intermediate representations.
         LANGS = [
             x
-            for x in LANGS_AVAILABLE
+            for x in langs_available
             if not x.endswith("-ipa")
             and not x.endswith("-equiv")
             and not x.endswith("-no-symbols")
@@ -75,6 +73,10 @@ def get_langs():
         LANGS += ["eng"]
         # Sort LANGS so the -h messages list them alphabetically
         LANGS = sorted(LANGS)
+
+        # Set up LANG_NAMES hash table for studio UI to properly name the dropdown options
+        LANG_NAMES = {lang_code: full_lang_names[lang_code] for lang_code in LANGS}
+
         return LANGS, LANG_NAMES
 
 

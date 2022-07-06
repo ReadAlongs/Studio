@@ -98,6 +98,7 @@ class TestWebApi(BasicTestCase):
         # Test the langs endpoint
         response = API_CLIENT.get("/api/v1/langs")
         self.assertEqual(response.json(), get_langs()[1])
+        self.assertEqual(set(response.json().keys()), set(get_langs()[0]))
 
     def test_debug(self):
         # Test the assemble endpoint with debug mode on
