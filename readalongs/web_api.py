@@ -1,8 +1,8 @@
 import io
 import os
-from typing import List, Union
+from typing import Dict, List, Optional, Union
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Body, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from lxml import etree
 from pydantic import BaseModel
@@ -53,6 +53,17 @@ class XMLRequest(RequestBase):
     xml: str
 
 
+class AssembleResponse(BaseModel):
+    lexicon: Dict[str, str]  # A dictionary of the form {lang_id: lang_name }
+    jsgf: str  # The JSGF-formatted grammar in plain text
+    text_ids: str  # The text ID input for the decoder in plain text
+    processed_xml: str  # The processed XML is returned as a string
+    input: Optional[Union[XMLRequest, PlainTextRequest]]
+    parsed: Optional[str]
+    tokenized: Optional[str]
+    g2ped: Optional[str]
+
+
 def process_xml(func):
     # Wrapper for processing XML, reads the XML with proper encoding,
     # then applies the given function to it,
@@ -65,15 +76,38 @@ def process_xml(func):
     return wrapper
 
 
-@v1.get("/langs")
-async def langs():
+@v1.get("/langs", response_model=Dict[str, str])
+async def langs() -> Dict[str, str]:
     """Return the list of supported languages and their names as a dict."""
 
     return LANGS[1]
 
 
-@v1.post("/assemble")
-async def assemble(input: Union[XMLRequest, PlainTextRequest]):
+@v1.post("/assemble", response_model=AssembleResponse)
+async def assemble(
+    input: Union[XMLRequest, PlainTextRequest] = Body(
+        examples={
+            "text": {
+                "summary": "A basic example with plain text input",
+                "value": {
+                    "text": "hej verden",
+                    "text_languages": ["dan", "und"],
+                    "encoding": "utf-8",
+                    "debug": False,
+                },
+            },
+            "xml": {
+                "summary": "A basic example with xml input",
+                "value": {
+                    "xml": "<?xml version='1.0' encoding='utf-8'?><TEI><text><p><s>hej verden</s></p></text></TEI>",
+                    "text_languages": ["dan", "und"],
+                    "encoding": "utf-8",
+                    "debug": False,
+                },
+            },
+        }
+    )
+):
     """Create an input TEI from the given text (as plain text or XML).
     Also creates the required grammar, pronunciation dictionary,
     and text needed by the decoder.
@@ -87,7 +121,7 @@ async def assemble(input: Union[XMLRequest, PlainTextRequest]):
         - xml: the input text as a readalongs-compatible XML structure
 
     Returns (as dict items in the response body):
-     - dict: maps word IDs to their pronunciation
+     - lexicon: maps word IDs to their pronunciation
      - jsgf: grammar for the forced aligner
      - text_ids: the list of word_ids as a space-separated string
      - processed_xml: the XML with all the readalongs info in it
@@ -121,11 +155,12 @@ async def assemble(input: Union[XMLRequest, PlainTextRequest]):
     # create grammar
     dict_data, jsgf, text_input = create_grammar(g2ped)
     response = {
-        "dict": dict_data,
+        "lexicon": dict_data,
         "jsgf": jsgf,
         "text_ids": text_input,
         "processed_xml": etree.tostring(g2ped, encoding="utf8").decode(),
     }
+
     if input.debug:
         response["input"] = input.dict()
         response["parsed"] = etree.tostring(parsed, encoding="utf8")
