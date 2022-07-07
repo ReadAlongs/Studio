@@ -10,7 +10,12 @@ from lxml import etree
 from test_dna_utils import segments_from_pairs
 
 from readalongs.align import split_silences
-from readalongs.text.util import get_attrib_recursive, get_lang_attrib, parse_time
+from readalongs.text.util import (
+    get_attrib_recursive,
+    get_lang_attrib,
+    get_word_text,
+    parse_time,
+)
 from readalongs.util import JoinerCallbackForClick
 
 
@@ -160,6 +165,28 @@ class TestMisc(TestCase):
         with self.assertRaises(click.BadParameter):
             cb(None, None, ["q:e", "a,w"])
         self.assertEqual(cb(None, None, ["r:q", "w"]), ["r", "q", "w"])
+
+    def test_get_word_text(self):
+        self.assertEqual(
+            get_word_text(etree.fromstring("<w>basicword</w>")),
+            "basicword",
+        )
+        self.assertEqual(
+            get_word_text(etree.fromstring("<w><subw>subwcase</subw></w>")),
+            "subwcase",
+        )
+        self.assertEqual(
+            get_word_text(etree.fromstring("<w><syl>syl1</syl><syl>syl2</syl></w>")),
+            "syl1syl2",
+        )
+        self.assertEqual(
+            get_word_text(etree.fromstring("<w>text<subw>sub</subw>tail</w>")),
+            "textsubtail",
+        )
+        self.assertEqual(
+            get_word_text(etree.fromstring("<w><a>a<b>b</b>c</a>d</w>")),
+            "abcd",
+        )
 
 
 if __name__ == "__main__":
