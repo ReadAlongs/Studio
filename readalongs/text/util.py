@@ -69,7 +69,7 @@ def get_attrib_recursive(element, *attribs):
         return None
 
 
-def iterate_over_text(element):
+def iterate_over_text(element: etree.ElementTree):
     """Iterate over all actual text contained with element and its sub-elements
 
     Yields:
@@ -84,7 +84,12 @@ def iterate_over_text(element):
             yield (lang, child.tail)
 
 
-def get_lang_attrib(element):
+def get_word_text(word_element: etree.ElementTree) -> str:
+    """Given a word element, extract all its text"""
+    return "".join(text for _, text in iterate_over_text(word_element))
+
+
+def get_lang_attrib(element: etree.ElementTree):
     """Return the xml:lang (in priority) or lang (fallback) attribute from element
     or its closest ancestor that has either, or None when neither is found.
     """

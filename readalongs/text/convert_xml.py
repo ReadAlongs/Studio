@@ -46,6 +46,7 @@ from readalongs.text.lexicon_g2p_mappings import __file__ as LEXICON_PATH
 from readalongs.text.util import (
     get_attrib_recursive,
     get_lang_attrib,
+    get_word_text,
     iterate_over_text,
     load_xml,
     save_xml,
@@ -161,7 +162,7 @@ def convert_words(  # noqa: C901
             arpabet = word.attrib["ARPABET"]
             if not is_arpabet(arpabet):
                 LOGGER.warning(
-                    f'Pre-g2p\'d text "{word.text}" has invalid ARPABET conversion "{arpabet}"'
+                    f'Pre-g2p\'d text "{get_word_text(word)}" has invalid ARPABET conversion "{arpabet}"'
                 )
                 all_g2p_valid = False
             continue

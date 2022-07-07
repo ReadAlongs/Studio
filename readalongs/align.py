@@ -43,7 +43,13 @@ from readalongs.text.make_fsg import make_fsg
 from readalongs.text.make_package import create_web_component_html
 from readalongs.text.make_smil import make_smil
 from readalongs.text.tokenize_xml import tokenize_xml
-from readalongs.text.util import parse_time, save_minimal_index_html, save_txt, save_xml
+from readalongs.text.util import (
+    get_word_text,
+    parse_time,
+    save_minimal_index_html,
+    save_txt,
+    save_xml,
+)
 
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "static", "model")
 DEFAULT_ACOUSTIC_MODEL = "cmusphinx-en-us-5.2"
@@ -927,17 +933,9 @@ def save_readalong(
         save_images(config=config, output_dir=output_dir)
 
 
-def get_word_from_id(xml: etree, el_id: str) -> str:
-    """Given an XML document, get the innertext at id
-
-    Args:
-        xml (etree): XML document
-        el_id (str): ID
-
-    Returns:
-        str: Innertext of element with id==el_id in xml
-    """
-    return xml.xpath('//*[@id="%s"]/text()' % el_id)[0]
+def get_word_element(xml: etree.ElementTree, el_id: str) -> etree.ElementTree:
+    """Get the xml etree for a given word by its id"""
+    return xml.xpath(f'//w[@id="{el_id}"]')[0]
 
 
 def get_words_and_sentences(results) -> Tuple[List[dict], List[List[dict]]]:
@@ -975,7 +973,7 @@ def get_words_and_sentences(results) -> Tuple[List[dict], List[List[dict]]]:
             words = []
             current_sent = sent_i
         word = {
-            "text": get_word_from_id(xml, el["id"]),
+            "text": get_word_text(get_word_element(xml, el["id"])),
             "start": el["start"],
             "end": el["end"],
         }

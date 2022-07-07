@@ -14,6 +14,7 @@ import chevron
 from slugify import slugify
 
 from readalongs.log import LOGGER
+from readalongs.text.util import get_word_text
 
 FSG_TEMPLATE = """FSG_BEGIN {{name}}
 NUM_STATES {{num_states}}
@@ -37,7 +38,7 @@ def get_ids(word_elements: list):
     for e in word_elements:
         if "id" not in e.attrib:  # don't put in elements with no id
             continue
-        if not e.text or not e.text.strip():
+        if not get_word_text(e):
             LOGGER.warning("No text in node %s", e.attrib["id"])
             continue
         yield e.attrib["id"]
