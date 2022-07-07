@@ -8,6 +8,7 @@ import os
 import shutil
 import unittest
 import wave
+from copy import copy
 from tempfile import TemporaryDirectory
 
 from basic_test_case import BasicTestCase
@@ -66,6 +67,54 @@ class TestForceAlignment(BasicTestCase):
         words, sentences = get_words_and_sentences(results)
         self.assertEqual(len(sentences), 7)
         self.assertEqual(len(words), 99)
+
+        def make_element(tag, text="", tail=""):
+            """Convenient Element constructor wrapper"""
+            el = etree.Element(tag)
+            el.text = text
+            el.tail = tail
+            return el
+
+        # Do some word doctoring to make sure sub-word units don't cause trouble
+        # This might be nicer in a different test case, but I want to reuse
+        # results from the call above, so I'm glomming it on here...
+        xml = results["tokenized"]
+        for i, word_el in enumerate(xml.xpath(".//w")):
+            if i == 1:
+                # Modify the <w>
+                word_el.text += " stuff"
+            elif i == 2:
+                # Whole <w> text in one <subw>
+                word_el.text = ""
+                word_el.append(make_element("subw", "subwordtext"))
+            elif i == 3:
+                # <w> with three clean <syl> elements
+                word_el.text = ""
+                for i in range(3):
+                    word_el.append(make_element("syl", "syl;"))
+            elif i == 4:
+                # Messy <w> is still valid structure
+                word_el.text = "head text;"
+                word_el.append(make_element("syl", "syllable text;", "syl tail;"))
+                word_el.tail = "tail from the word itself is ignored;"
+                # etree.dump(word_el)
+            elif i == 5:
+                # Nested sub elements
+                word_el.append(make_element("syl", "syl;", "tail;"))
+                word_el[0].append(make_element("subsyl", "sub;"))
+                word_el.append(make_element("syl", "another syl;"))
+                break
+        _, sentences = get_words_and_sentences(results)
+        self.assertEqual(
+            [w["text"] for w in sentences[1]],
+            [
+                "Je stuff",
+                "subwordtext",
+                "syl;syl;syl;",
+                "head text;syllable text;syl tail;",
+                "Joanissyl;sub;tail;another syl;",
+            ],
+        )
 
     def test_align_switch_am(self):
         """Alignment test case with an alternate acoustic model and custom
