@@ -40,15 +40,19 @@ v1 = FastAPI()
 # Call get_langs() when the server loads to load the languages into memory
 LANGS = get_langs()
 
-if not os.getenv("PRODUCTION", False):
-    origins = ["http://localhost:4200"]  # Allow requests from Angular app
-    web_api_app.add_middleware(
-        CORSMiddleware,
-        allow_origins=origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+if os.getenv("PRODUCTION", True):
+    origins = [
+        "https://readalong-studio.mothertongues.org",
+    ]  # Allow requests from mt app
+else:
+    origins = ["*"]  # Allow requests from any origin
+web_api_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
+)
 
 
 class RequestBase(BaseModel):
