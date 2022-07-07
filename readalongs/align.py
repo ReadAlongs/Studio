@@ -78,7 +78,7 @@ def get_sequences(
     """Return the list of anchor-separated word sequences in xml
 
     Args:
-        xml (etree): xml structure in which to search for words and anchors
+        xml (etree.ElementTree): xml structure in which to search for words and anchors
         xml_filename (str): filename, used for error messages only
         unit (str): element tag of the word units
         anchor (str): element tag of the anchors
@@ -938,6 +938,13 @@ def get_word_element(xml: etree.ElementTree, el_id: str) -> etree.ElementTree:
     return xml.xpath(f'//w[@id="{el_id}"]')[0]
 
 
+def get_ancestor_sent_el(word_el: etree.ElementTree) -> Union[None, etree.ElementTree]:
+    """Get the ancestor <s> node for word_el, or None"""
+    while word_el is not None and word_el.tag != "s":
+        word_el = word_el.getparent()
+    return word_el
+
+
 def get_words_and_sentences(results) -> Tuple[List[dict], List[List[dict]]]:
     """Parse xml into word and sentence 'tier' data
 
@@ -947,33 +954,25 @@ def get_words_and_sentences(results) -> Tuple[List[dict], List[List[dict]]]:
     Returns:
         list of words, list of sentences
     """
-    # We consider the sentence ID to be everything before the word id
-    # E.g., for word with id t0b0d1p1s0w7, the sent id is t0b0d1p1s0,
-    # and for p2s3w5, the sent id is p2s3
-    sent_word_id_pattern = re.compile(
-        r"""
-        (?P<sent>.*\d+)            # All the layers above/before word
-        w(?P<word>\d+)             # Word
-        """,
-        re.VERBOSE,
-    )
-
     all_els = results["words"]
     xml = results["tokenized"]
     sentences = []
     words: List[dict] = []
     all_words = []
-    current_sent = None
+    prev_sent_el = None
     for el in all_els:
-        parsed = re.search(sent_word_id_pattern, el["id"])
-        sent_i = parsed.group("sent")
-        if sent_i != current_sent:
+        # The sentence is considered the set of words under the same <s> element.
+        # A word that's not under any <s> element is bad input, but we consider
+        # it a sentence by itself for software robustness.
+        word_el = get_word_element(xml, el["id"])
+        sent_el = get_ancestor_sent_el(word_el)
+        if prev_sent_el is None or sent_el is not prev_sent_el:
             if words:
                 sentences.append(words)
             words = []
-            current_sent = sent_i
+            prev_sent_el = sent_el
         word = {
-            "text": get_word_text(get_word_element(xml, el["id"])),
+            "text": get_word_text(word_el),
             "start": el["start"],
             "end": el["end"],
         }
