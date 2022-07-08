@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 ##################################################
 #
 # tokenize_xml.py
@@ -30,21 +27,12 @@
 ##################################################
 
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-import argparse
 from copy import deepcopy
 
 from lxml import etree
 
 from readalongs.log import LOGGER
-from readalongs.text.util import (
-    get_lang_attrib,
-    is_do_not_align,
-    load_xml,
-    save_xml,
-    unicode_normalize_xml,
-)
+from readalongs.text.util import get_lang_attrib, is_do_not_align, unicode_normalize_xml
 
 
 def tokenize_xml_in_place(xml):
@@ -135,19 +123,3 @@ def tokenize_xml(xml):
         return xml
     LOGGER.info("Words (<w>) not present; tokenizing")
     return tokenize_xml_in_place(xml)
-
-
-def go(input_filename, output_filename):
-    xml = load_xml(input_filename)
-    xml = tokenize_xml(xml)
-    save_xml(output_filename, xml)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Convert XML to another orthography while preserving tags"
-    )
-    parser.add_argument("input", type=str, help="Input XML")
-    parser.add_argument("output", type=str, help="Output XML")
-    args = parser.parse_args()
-    go(args.input, args.output)

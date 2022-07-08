@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 ###################################################################
 #
 # make_smil.py
@@ -10,8 +7,6 @@
 
 
 import chevron
-
-from readalongs.text.util import save_txt
 
 SMIL_TEMPLATE = """<smil xmlns="http://www.w3.org/ns/SMIL" version="3.0">
     <body>

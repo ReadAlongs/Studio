@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 ###################################################
 #
 # add_ids_to_xml.py
@@ -16,15 +13,12 @@
 #
 ###################################################
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-import argparse
 from collections import defaultdict
 from copy import deepcopy
 
 from lxml import etree
 
-from readalongs.text.util import is_do_not_align, load_xml, save_xml
+from readalongs.text.util import is_do_not_align
 
 TAG_TO_ID = {
     "text": "t",
@@ -119,19 +113,3 @@ def add_ids(xml: etree) -> etree:
             continue
         ids = add_ids_aux(child, ids)
     return xml
-
-
-def go(input_filename: str, output_filename: str) -> None:
-    xml = load_xml(input_filename)
-    xml = add_ids(xml)
-    save_xml(output_filename, xml)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Convert XML to another orthography while preserving tags"
-    )
-    parser.add_argument("input", type=str, help="Input XML")
-    parser.add_argument("output", type=str, help="Output XML")
-    args = parser.parse_args()
-    go(args.input, args.output)

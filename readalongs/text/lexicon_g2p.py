@@ -1,7 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-
 #######################################################################
 #
 # lexicon_g2p.py
@@ -24,8 +20,6 @@
 #
 # TODO: Move this to the G2P library
 ######################################################################
-
-from __future__ import division, print_function, unicode_literals
 
 import os
 from collections import defaultdict
