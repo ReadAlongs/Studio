@@ -161,6 +161,8 @@ This page lists only the most basic commands.
 
 For more information about how the command line interface works consult the interactive [API Documentation](https://readalong-studio.herokuapp.com/api/v1/docs).
 
+For information on spinning up your own dev Web API server locally, have a look at [web\_api.py](readalongs/web_api.py).
+
 #### /langs
 
 To query a list of available languages in the ReadAlong Studio API, send a GET request to https://readalongs-studio.herokuapp.com/api/v1/langs
