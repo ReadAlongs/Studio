@@ -29,7 +29,13 @@ FSG_END
 
 
 def get_ids(word_elements: list):
-    """Extract the sequence of id's from word_elements with both an id and text.
+    """Extract the sequence of id's from word_elements with both an id and
+    an arpabet pronounciation.
+
+    Words with empty ARPABET are skipped because soundswallower and
+    pocketsphinx will error out if we give it words with an empty pronunciation
+    key. In general, what *would* it mean to align sounds to an empty sequence
+    of phonemes, after all???
 
     Yields:
         text_ids
@@ -38,8 +44,8 @@ def get_ids(word_elements: list):
     for e in word_elements:
         if "id" not in e.attrib:  # don't put in elements with no id
             continue
-        if not get_word_text(e):
-            LOGGER.warning("No text in node %s", e.attrib["id"])
+        if not e.attrib.get("ARPABET", "").strip():
+            LOGGER.warning("Skipping node %s with no ARPABET", e.attrib["id"])
             continue
         yield e.attrib["id"]
 
