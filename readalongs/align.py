@@ -911,7 +911,15 @@ def save_readalong(
 
     if "html" in output_formats:
         html_out_path = output_base + ".html"
-        html_out = create_web_component_html(tokenized_xml_path, smil_path, audio_path)
+        html_out = create_web_component_html(
+            tokenized_xml_path,
+            smil_path,
+            audio_path,
+            config.get("title", "Title goes here"),
+            config.get("header", "Header goes here"),
+            config.get("subheader", "Subheader goes here"),
+            config.get("theme", "light"),
+        )
         with open(html_out_path, "w") as f:
             f.write(html_out)
 
