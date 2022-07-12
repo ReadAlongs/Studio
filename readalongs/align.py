@@ -43,7 +43,13 @@ from readalongs.text.make_fsg import make_fsg
 from readalongs.text.make_package import create_web_component_html
 from readalongs.text.make_smil import make_smil
 from readalongs.text.tokenize_xml import tokenize_xml
-from readalongs.text.util import parse_time, save_minimal_index_html, save_txt, save_xml
+from readalongs.text.util import (
+    get_word_text,
+    parse_time,
+    save_minimal_index_html,
+    save_txt,
+    save_xml,
+)
 
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "static", "model")
 DEFAULT_ACOUSTIC_MODEL = "cmusphinx-en-us-5.2"
@@ -72,7 +78,7 @@ def get_sequences(
     """Return the list of anchor-separated word sequences in xml
 
     Args:
-        xml (etree): xml structure in which to search for words and anchors
+        xml (etree.ElementTree): xml structure in which to search for words and anchors
         xml_filename (str): filename, used for error messages only
         unit (str): element tag of the word units
         anchor (str): element tag of the anchors
@@ -727,7 +733,7 @@ def save_label_files(
     """
     audio = read_audio_from_file(audiofile)
     duration = audio.frame_count() / audio.frame_rate
-    words, sentences = return_words_and_sentences(align_results)
+    words, sentences = get_words_and_sentences(align_results)
     textgrid = write_to_text_grid(words, sentences, duration)
 
     if "textgrid" in output_formats:
@@ -747,7 +753,7 @@ def save_subtitles(
         output_base (str): Base path for output files
         output_formats (Iterable[str]): List of output formats
     """
-    words, sentences = return_words_and_sentences(align_results)
+    words, sentences = get_words_and_sentences(align_results)
     cc_sentences = write_to_subtitles(sentences)
     cc_words = write_to_subtitles(words)
 
@@ -927,65 +933,57 @@ def save_readalong(
         save_images(config=config, output_dir=output_dir)
 
 
-def return_word_from_id(xml: etree, el_id: str) -> str:
-    """Given an XML document, return the innertext at id
-
-    Args:
-        xml (etree): XML document
-        el_id (str): ID
-
-    Returns:
-        str: Innertext of element with el_id in xml
-    """
-    return xml.xpath('//*[@id="%s"]/text()' % el_id)[0]
+def get_word_element(xml: etree.ElementTree, el_id: str) -> etree.ElementTree:
+    """Get the xml etree for a given word by its id"""
+    return xml.xpath(f'//w[@id="{el_id}"]')[0]
 
 
-def return_words_and_sentences(results):
+def get_ancestor_sent_el(word_el: etree.ElementTree) -> Union[None, etree.ElementTree]:
+    """Get the ancestor <s> node for word_el, or None"""
+    while word_el is not None and word_el.tag != "s":
+        word_el = word_el.getparent()
+    return word_el
+
+
+def get_words_and_sentences(results) -> Tuple[List[dict], List[List[dict]]]:
     """Parse xml into word and sentence 'tier' data
 
     Args:
-        results([TODO type]): [TODO description]
+        results([TODO type]): the results object returned by align_audio
 
     Returns:
-        [TODO type]: [TODO description]
+        list of words, list of sentences
     """
-    result_id_pattern = re.compile(
-        r"""
-        t(?P<table>\d*)            # Table
-        b(?P<body>\d*)             # Body
-        d(?P<div>\d*)              # Div ( Break )
-        p(?P<par>\d*)              # Paragraph
-        s(?P<sent>\d+)             # Sentence
-        w(?P<word>\d+)             # Word
-        """,
-        re.VERBOSE,
-    )
-
     all_els = results["words"]
     xml = results["tokenized"]
     sentences = []
-    words = []
+    words: List[dict] = []
     all_words = []
-    current_sent = 0
+    prev_sent_el = None
     for el in all_els:
-        parsed = re.search(result_id_pattern, el["id"])
-        sent_i = parsed.group("sent")
-        if int(sent_i) is not current_sent:
-            sentences.append(words)
+        # The sentence is considered the set of words under the same <s> element.
+        # A word that's not under any <s> element is bad input, but we consider
+        # it a sentence by itself for software robustness.
+        word_el = get_word_element(xml, el["id"])
+        sent_el = get_ancestor_sent_el(word_el)
+        if prev_sent_el is None or sent_el is not prev_sent_el:
+            if words:
+                sentences.append(words)
             words = []
-            current_sent += 1
+            prev_sent_el = sent_el
         word = {
-            "text": return_word_from_id(xml, el["id"]),
+            "text": get_word_text(word_el),
             "start": el["start"],
             "end": el["end"],
         }
         words.append(word)
         all_words.append(word)
-    sentences.append(words)
+    if words:
+        sentences.append(words)
     return all_words, sentences
 
 
-def write_to_text_grid(words: List[dict], sentences: List[dict], duration: float):
+def write_to_text_grid(words: List[dict], sentences: List[List[dict]], duration: float):
     """Write results to Praat TextGrid. Because we are using pympi, we can also export to Elan EAF.
 
     Args:

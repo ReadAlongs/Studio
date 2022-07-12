@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 ###########################################################################
 #
 # convert_xml.py
@@ -35,7 +33,6 @@
 # TODO: Document functions
 ############################################################################
 
-import argparse
 import copy
 import os
 import re
@@ -45,12 +42,9 @@ from readalongs.text.lexicon_g2p import getLexiconG2P
 from readalongs.text.lexicon_g2p_mappings import __file__ as LEXICON_PATH
 from readalongs.text.util import (
     get_attrib_recursive,
-    get_lang_attrib,
+    get_word_text,
     iterate_over_text,
-    load_xml,
-    save_xml,
 )
-from readalongs.util import get_langs
 
 
 def get_same_language_units(element):
@@ -161,7 +155,7 @@ def convert_words(  # noqa: C901
             arpabet = word.attrib["ARPABET"]
             if not is_arpabet(arpabet):
                 LOGGER.warning(
-                    f'Pre-g2p\'d text "{word.text}" has invalid ARPABET conversion "{arpabet}"'
+                    f'Pre-g2p\'d text "{get_word_text(word)}" has invalid ARPABET conversion "{arpabet}"'
                 )
                 all_g2p_valid = False
             continue
@@ -241,33 +235,3 @@ def convert_xml(
         xml_copy, word_unit, output_orthography, verbose_warnings
     )
     return xml_copy, valid
-
-
-def go(
-    input_filename, output_filename, word_unit="w", output_orthography="eng-arpabet"
-):
-    xml = load_xml(input_filename)
-    converted_xml = convert_xml(xml, word_unit, output_orthography)
-    save_xml(output_filename, converted_xml)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Convert XML to another orthography while preserving tags"
-    )
-    parser.add_argument("input", type=str, help="Input XML")
-    parser.add_argument("output", type=str, help="Output XML")
-    parser.add_argument(
-        "--word_unit",
-        type=str,
-        default="w",
-        help="XML element that " 'represents a word (default: "w")',
-    )
-    parser.add_argument(
-        "--out_orth",
-        type=str,
-        default="eng-arpabet",
-        help='Output orthography (default: "eng-arpabet")',
-    )
-    args = parser.parse_args()
-    go(args.input, args.output, args.word_unit, args.out_orth)
