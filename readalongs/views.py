@@ -10,7 +10,6 @@ import os
 import re
 from datetime import datetime
 from pathlib import Path
-from subprocess import run
 from tempfile import mkdtemp
 from zipfile import ZipFile
 

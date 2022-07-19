@@ -14,7 +14,6 @@ import chevron
 from slugify import slugify
 
 from readalongs.log import LOGGER
-from readalongs.text.util import get_word_text
 
 FSG_TEMPLATE = """FSG_BEGIN {{name}}
 NUM_STATES {{num_states}}

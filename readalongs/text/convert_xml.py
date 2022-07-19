@@ -40,11 +40,7 @@ import re
 from readalongs.log import LOGGER
 from readalongs.text.lexicon_g2p import getLexiconG2P
 from readalongs.text.lexicon_g2p_mappings import __file__ as LEXICON_PATH
-from readalongs.text.util import (
-    get_attrib_recursive,
-    get_word_text,
-    iterate_over_text,
-)
+from readalongs.text.util import get_attrib_recursive, get_word_text, iterate_over_text
 
 
 def get_same_language_units(element):

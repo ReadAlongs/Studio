@@ -1,8 +1,7 @@
 """Common base class for the ReadAlongs test suites"""
 
-import os
-from pathlib import Path
 import tempfile
+from pathlib import Path
 from unittest import TestCase
 
 from readalongs.app import app

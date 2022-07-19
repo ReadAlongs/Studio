@@ -5,7 +5,6 @@ Test suite for the API way to call align
 """
 
 import os
-from pathlib import Path
 from unittest import main
 
 import click

@@ -8,7 +8,6 @@ import os
 import shutil
 import unittest
 import wave
-from copy import copy
 from tempfile import TemporaryDirectory
 
 from basic_test_case import BasicTestCase

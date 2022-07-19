@@ -11,7 +11,6 @@ from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 import chevron
-import regex as re
 import soundswallower
 from lxml import etree
 from pydub import AudioSegment

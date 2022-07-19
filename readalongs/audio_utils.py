@@ -4,7 +4,7 @@ Audio segments and files are manipulated using pydub.AudioSegment, which indexes
 in millisecond slices and lets us manipulate them as if they were simple lists.
 """
 
-from typing import List, Optional, Tuple, Union
+from typing import Union
 
 from pydub import AudioSegment
 
