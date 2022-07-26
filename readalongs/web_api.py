@@ -4,15 +4,18 @@ REST-ish Web API for ReadAlongs Studio text manipulation operations using FastAP
 See https://readalong-studio.herokuapp.com/api/v1/docs for the documentation.
 
 You can spin up this Web API for development purposes with:
-    uvicorn readalongs.web_api:web_api_app --reload
-That --reload switch will watch for changes under the directory where it's
-running and reload the code whenever it changes, so it's best run in
-readalongs/
+    cd readalongs/
+    PRODUCTION= uvicorn readalongs.web_api:web_api_app --reload
+- The --reload switch will watch for changes under the directory where it's
+  running and reload the code whenever it changes, so it's best run in readalongs/
+- PRODUCTION= tells uvicorn to run in non-production mode, i.e., in debug mode,
+  and automatically add the header "access-control-allow-origin: *" to each
+  response so you won't get CORS errors using this locally with Studio-Web.
 
 You can also spin up the API server grade (on Linux, not Windows) with gunicorn:
     gunicorn -w 4 -k uvicorn.workers.UvicornWorker readalongs.web_api:web_api_app
 
-Once spun up, the documentation will be visible at
+Once spun up, the documentation and API playground will be visible at
 http://localhost:8000/api/v1/docs
 """
 
