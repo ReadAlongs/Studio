@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+message: >-
+  If you use this software, please cite our SIGUL 2022 paper using the
+  metadata below.
+title: ReadAlongs Studio
+url: https://github.com/ReadAlongs/Studio
+preferred-citation:
+  type: conference-paper
+  title: >-
+    ReadAlong Studio: Practical Zero-Shot Text-Speech Alignment for Indigenous
+    Language Audiobooks
+  authors:
+    - given-names: Patrick
+      family-names: Littell
+      email: Patrick.Littell@nrc-cnrc.gc.ca
+      affiliation: National Research Council Canada
+    - given-names: Eric
+      family-names: Joanis
+      email: Eric.Joanis@nrc-cnrc.gc.ca
+      affiliation: National Research Council Canada
+    - given-names: Aidan
+      family-names: Pine
+      email: Aidan.Pine@nrc-cnrc.gc.ca
+      affiliation: National Research Council Canada
+    - given-names: Marc
+      family-names: Tessier
+      email: Marc.Tessier@nrc-cnrc.gc.ca
+      affiliation: National Research Council Canada
+    - given-names: David
+      family-names: Huggins-Daines
+      email: dhdaines@gmail.com
+      affiliation: Independent Researcher
+    - given-names: Delasie
+      family-names: Torkornoo
+      email: delasie.torkornoo@carleton.ca
+      affiliation: Carleton University
+  collection-title: Proceedings of SIGUL2022 @LREC2022
+  pages: 23-32
+  year: 2022

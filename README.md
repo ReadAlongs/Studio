@@ -245,6 +245,19 @@ Here is a partial list:
 
 Project web page: [ReadAlong Studio: Application for Indigenous audiobooks and videos project](https://nrc.canada.ca/en/research-development/research-collaboration/programs/readalong-studio-application-indigenous-audiobooks-videos-project)
 
+### Citation
+
+If you use this software, please cite our SIGUL 2022 paper:
+
+```
+@inproceedings{Littell_ReadAlong_Studio_Practical_2022,
+  author = {Littell, Patrick and Joanis, Eric and Pine, Aidan and Tessier, Marc and Huggins-Daines, David and Torkornoo, Delasie},
+  booktitle = {Proceedings of SIGUL2022 @LREC2022},
+  title = {{ReadAlong Studio: Practical Zero-Shot Text-Speech Alignment for Indigenous Language Audiobooks}},
+  year = {2022}
+}
+```
+
 ## License
 
-[MIT](LICENSE) © 2019-2021 David Huggins-Daines and National Research Council Canada
+[MIT](LICENSE) © 2019-2022 David Huggins-Daines and National Research Council Canada
