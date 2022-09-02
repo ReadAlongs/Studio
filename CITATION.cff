@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: >-
-  If you use this software, please cite our SIGUL 2022 paper using the
-  metadata below.
+  If you use this software in a project of yours and write about it, please
+  cite our SIGUL 2022 paper using the following citation data.
 title: ReadAlongs Studio
 url: https://github.com/ReadAlongs/Studio
 preferred-citation:
@@ -35,5 +35,12 @@ preferred-citation:
       email: delasie.torkornoo@carleton.ca
       affiliation: Carleton University
   collection-title: Proceedings of SIGUL2022 @LREC2022
-  pages: 23-32
+  start: 23
+  end: 32
   year: 2022
+  month: 6
+  publisher:
+    name: European Language Resources Assiciation (ELRA)
+  location:
+    name: Marseille
+  url: http://www.lrec-conf.org/proceedings/lrec2022/workshops/SIGUL/pdf/2022.sigul-1.4.pdf

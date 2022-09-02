@@ -247,14 +247,19 @@ Project web page: [ReadAlong Studio: Application for Indigenous audiobooks and v
 
 ### Citation
 
-If you use this software, please cite our SIGUL 2022 paper:
+if you use this software in a project of yours and write about it, please cite
+us using the following:
 
 ```
 @inproceedings{Littell_ReadAlong_Studio_Practical_2022,
   author = {Littell, Patrick and Joanis, Eric and Pine, Aidan and Tessier, Marc and Huggins-Daines, David and Torkornoo, Delasie},
   booktitle = {Proceedings of SIGUL2022 @LREC2022},
   title = {{ReadAlong Studio: Practical Zero-Shot Text-Speech Alignment for Indigenous Language Audiobooks}},
-  year = {2022}
+  year = {2022},
+  month = {6},
+  pages = {23--32},
+  publisher = {European Language Resources Assiciation (ELRA)},
+  url = {http://www.lrec-conf.org/proceedings/lrec2022/workshops/SIGUL/pdf/2022.sigul-1.4.pdf}
 }
 ```
 
