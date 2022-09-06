@@ -21,18 +21,21 @@ http://localhost:8000/api/v1/docs
 
 import io
 import os
+from tempfile import TemporaryDirectory
+from textwrap import dedent
 from typing import Dict, List, Optional, Union
 
 from fastapi import Body, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from lxml import etree
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from readalongs.align import create_tei_from_text
+from readalongs.align import create_tei_from_text, save_label_files
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.make_dict import make_dict_object
 from readalongs.text.make_fsg import make_jsgf
+from readalongs.text.make_smil import parse_smil
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.util import get_langs
 
@@ -201,6 +204,141 @@ def create_grammar(xml):
     fsg_data = make_jsgf(word_elements, filename="test")
     text_data = " ".join(xml.xpath("//w/@id"))
     return dict_data, fsg_data, text_data
+
+
+class ConvertRequest(BaseModel):
+    """Convert Request contains the RAS-processed XML and SMIL alignments"""
+
+    audio_length: float = Field(
+        example=2.01,
+        gt=0.0,
+        title="The length of the audio used to create the alignment, in seconds.",
+    )
+
+    encoding: str = "utf-8"
+
+    xml: str = Field(
+        title="The processed_xml returned by /assemble.",
+        example=dedent(
+            """\
+            <?xml version='1.0' encoding='utf-8'?>
+            <TEI>
+                <text xml:lang="dan" fallback-langs="und" id="t0">
+                    <body id="t0b0">
+                        <div type="page" id="t0b0d0">
+                            <p id="t0b0d0p0">
+                                <s id="t0b0d0p0s0"><w id="t0b0d0p0s0w0" ARPABET="HH EH Y">hej</w> <w id="t0b0d0p0s0w1" ARPABET="V Y D EH N">verden</w></s>
+                            </p>
+                        </div>
+                    </body>
+                </text>
+            </TEI>"""
+        ),
+    )
+
+    smil: str = Field(
+        title="The result of aligning xml to the audio with SoundSwallower(.js)",
+        example=dedent(
+            """\
+            <smil xmlns="http://www.w3.org/ns/SMIL" version="3.0">
+                <body>
+                    <par id="par-t0b0d0p0s0w0">
+                        <text src="hej-verden.xml#t0b0d0p0s0w0"/>
+                        <audio src="hej-verden.mp3" clipBegin="0.14" clipEnd="0.78"/>
+                    </par>
+                    <par id="par-t0b0d0p0s0w1">
+                        <text src="hej-verden.xml#t0b0d0p0s0w1"/>
+                        <audio src="hej-verden.mp3" clipBegin="0.78" clipEnd="1.89"/>
+                    </par>
+                </body>
+            </smil>"""
+        ),
+    )
+
+
+class TextGridResponse(BaseModel):
+    """Convert response has TextGrid file format for the same alignments"""
+
+    textgrid: str = Field(
+        example=dedent(
+            """\
+            File type = "ooTextFile"
+            Object class = "TextGrid"
+
+            xmin = 0.000000
+            xmax = 2.01
+            tiers? <exists>
+            size = 2
+            item []:
+                item [1]:
+                    class = "IntervalTier"
+                    name = "Sentence"
+                    xmin = 0.000000
+                    xmax = 2.01
+                    intervals: size = 3
+                    intervals [1]:
+                        xmin = 0.000000
+                        xmax = 0.140000
+                        text = ""
+                    intervals [2]:
+                        xmin = 0.140000
+                        xmax = 1.890000
+                        text = "hej verden"
+                    intervals [3]:
+                        xmin = 1.890000
+                        xmax = 2.010000
+                        text = ""
+                item [2]:
+                    class = "IntervalTier"
+                    name = "Word"
+                    xmin = 0.000000
+                    xmax = 2.01
+                    intervals: size = 4
+                    intervals [1]:
+                        xmin = 0.000000
+                        xmax = 0.140000
+                        text = ""
+                    intervals [2]:
+                        xmin = 0.140000
+                        xmax = 0.780000
+                        text = "hej"
+                    intervals [3]:
+                        xmin = 0.780000
+                        xmax = 1.890000
+                        text = "verden"
+                    intervals [4]:
+                        xmin = 1.890000
+                        xmax = 2.010000
+                        text = ""
+            """
+        )
+    )
+
+
+@v1.post("/convert_to_TextGrid", response_model=TextGridResponse)
+async def convert_to_TextGrid(input: ConvertRequest) -> TextGridResponse:
+    try:
+        parsed_xml = etree.fromstring(bytes(input.xml, encoding=input.encoding))
+    except etree.XMLSyntaxError as e:
+        raise HTTPException(status_code=422, detail="XML provided is not valid") from e
+
+    if input.encoding not in ["utf-8", "utf8", "UTF-8", "UTF8"]:
+        raise HTTPException(
+            status_code=422, detail="The only encoding actually tested is utf-8..."
+        )
+
+    try:
+        words = parse_smil(input.smil)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail="SMIL provided is not valid") from e
+
+    with TemporaryDirectory() as temp_dir_name:
+        prefix = os.path.join(temp_dir_name, "f")
+        save_label_files(words, parsed_xml, input.audio_length, prefix, "textgrid")
+        with open(prefix + ".TextGrid", mode="r", encoding="utf-8") as f:
+            textgrid_text = f.read()
+
+    return TextGridResponse(textgrid=textgrid_text)
 
 
 # Mount the v1 version of the API to the root of the app

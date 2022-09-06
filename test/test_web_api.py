@@ -2,6 +2,7 @@
 
 import os
 from copy import deepcopy
+from textwrap import dedent
 from unittest import main
 
 from basic_test_case import BasicTestCase
@@ -114,6 +115,147 @@ class TestWebApi(BasicTestCase):
         self.assertGreater(len(content["tokenized"]), 10)
         self.assertGreater(len(content["parsed"]), 10)
         self.assertGreater(len(content["g2ped"]), 10)
+
+    hej_verden_xml = dedent(
+        """\
+        <?xml version='1.0' encoding='utf-8'?>
+        <TEI>
+            <text xml:lang="dan" fallback-langs="und" id="t0">
+                <body id="t0b0">
+                    <div type="page" id="t0b0d0">
+                        <p id="t0b0d0p0">
+                            <s id="t0b0d0p0s0"><w id="wé0" ARPABET="HH EH Y">hej é</w> <w id="wé1" ARPABET="V Y D EH N">verden à</w></s>
+                        </p>
+                    </div>
+                </body>
+            </text>
+        </TEI>
+        """
+    )
+
+    hej_verden_smil = dedent(
+        """\
+        <smil xmlns="http://www.w3.org/ns/SMIL" version="3.0">
+            <body>
+                <par id="par-wé0">
+                    <text src="hej-verden.xml#wé0"/>
+                    <audio src="hej-verden.mp3" clipBegin="17.745" clipEnd="58.6"/>
+                </par>
+                <par id="par-wé1">
+                    <text src="hej-verden.xml#wé1"/>
+                    <audio src="hej-verden.mp3" clipBegin="58.6" clipEnd="82.19"/>
+                </par>
+            </body>
+        </smil>
+        """
+    )
+
+    hej_verden_textgrid = dedent(
+        """\
+        File type = "ooTextFile"
+        Object class = "TextGrid"
+
+        xmin = 0.000000
+        xmax = 83.100000
+        tiers? <exists>
+        size = 2
+        item []:
+            item [1]:
+                class = "IntervalTier"
+                name = "Sentence"
+                xmin = 0.000000
+                xmax = 83.100000
+                intervals: size = 3
+                intervals [1]:
+                    xmin = 0.000000
+                    xmax = 17.745000
+                    text = ""
+                intervals [2]:
+                    xmin = 17.745000
+                    xmax = 82.190000
+                    text = "hej é verden à"
+                intervals [3]:
+                    xmin = 82.190000
+                    xmax = 83.100000
+                    text = ""
+            item [2]:
+                class = "IntervalTier"
+                name = "Word"
+                xmin = 0.000000
+                xmax = 83.100000
+                intervals: size = 4
+                intervals [1]:
+                    xmin = 0.000000
+                    xmax = 17.745000
+                    text = ""
+                intervals [2]:
+                    xmin = 17.745000
+                    xmax = 58.600000
+                    text = "hej é"
+                intervals [3]:
+                    xmin = 58.600000
+                    xmax = 82.190000
+                    text = "verden à"
+                intervals [4]:
+                    xmin = 82.190000
+                    xmax = 83.100000
+                    text = ""
+        """
+    )
+
+    def test_convert_to_TextGrid(self):
+        request = {
+            "encoding": "utf-8",
+            "audio_length": 83.1,
+            "xml": self.hej_verden_xml,
+            "smil": self.hej_verden_smil,
+        }
+        response = API_CLIENT.post("/api/v1/convert_to_TextGrid", json=request)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["textgrid"], self.hej_verden_textgrid)
+
+    def test_convert_to_TextGrid_errors(self):
+        request = {
+            "encoding": "utf-8",
+            "audio_length": 83.1,
+            "xml": "this is not XML",
+            "smil": self.hej_verden_smil,
+        }
+        response = API_CLIENT.post("/api/v1/convert_to_TextGrid", json=request)
+        self.assertEqual(response.status_code, 422, "Invalid XML should fail.")
+
+        request = {
+            "encoding": "utf-8",
+            "audio_length": 83.1,
+            "xml": self.hej_verden_xml,
+            "smil": "This is not SMIL",
+        }
+        response = API_CLIENT.post("/api/v1/convert_to_TextGrid", json=request)
+        self.assertEqual(response.status_code, 422, "Invalid SMIL should fail.")
+
+        request = {
+            "encoding": "utf-8",
+            "audio_length": -10.0,
+            "xml": self.hej_verden_xml,
+            "smil": self.hej_verden_smil,
+        }
+        response = API_CLIENT.post("/api/v1/convert_to_TextGrid", json=request)
+        self.assertEqual(response.status_code, 422, "Negative duration should fail.")
+
+        request = {
+            "encoding": "latin-1",
+            "audio_length": 83.1,
+            "xml": self.hej_verden_xml,
+            "smil": self.hej_verden_smil,
+        }
+        response = API_CLIENT.post("/api/v1/convert_to_TextGrid", json=request)
+        # Figure out how to exercise this case, but for now latin-1 is not even supported...
+        # print(response.status_code, response.json())
+        self.assertEqual(
+            response.status_code, 422, "only utf-8 is allowed at the moment."
+        )
+        # Or, once we do support latin-1:
+        # self.assertEqual(response.status_code, 400)
 
 
 if __name__ == "__main__":
