@@ -26,7 +26,7 @@ from typing import Dict, List, Optional, Union
 from fastapi import Body, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from lxml import etree
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from readalongs.align import create_tei_from_text
 from readalongs.text.add_ids_to_xml import add_ids
@@ -101,11 +101,23 @@ def process_xml(func):
     return wrapper
 
 
-@v1.get("/langs", response_model=Dict[str, str])
-async def langs() -> Dict[str, str]:
+class LangsResponse(BaseModel):
+    """List of languages supported by Studio, a dictionary of the form {land_id: lang_name}"""
+
+    langs: Dict[str, str] = Field(
+        example={
+            "lc1": "Language Name 1",
+            "lc2": "Language Name 2",
+            "lc3": "Language Name 3",
+        }
+    )
+
+
+@v1.get("/langs", response_model=LangsResponse)
+async def langs() -> LangsResponse:
     """Return the list of supported languages and their names as a dict."""
 
-    return LANGS[1]
+    return LangsResponse(langs=LANGS[1])
 
 
 @v1.post("/assemble", response_model=AssembleResponse)
