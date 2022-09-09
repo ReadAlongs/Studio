@@ -211,7 +211,7 @@ To add a title and headers to the output HTML, you can use the keys
   {
     "title": "My awesome read-along",
     "header": "A story in my language",
-    "subheader" "Read by me"
+    "subheader": "Read by me"
   }
 
 To add images, indicate the page number as the key, and the name of the image

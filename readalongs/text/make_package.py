@@ -64,17 +64,23 @@ def encode_from_path(path: str) -> str:
         root = etree.fromstring(path_bytes)
         for img in root.xpath("//graphic"):
             url = img.get("url")
-            res = requests.get(url) if url.startswith("http") else None
+            if url.startswith("http"):
+                try:
+                    request_result = requests.get(url)
+                except requests.exceptions.RequestException:
+                    request_result = None
+            else:
+                request_result = None
             mime = guess_type(url)
             if os.path.exists(url):
                 with open(url, "rb") as f:
                     img_bytes = f.read()
                 img_b64 = str(b64encode(img_bytes), encoding="utf8")
-            elif res and res.status_code == 200:
-                img_b64 = str(b64encode(res.content), encoding="utf8")
+            elif request_result and request_result.status_code == 200:
+                img_b64 = str(b64encode(request_result.content), encoding="utf8")
             else:
                 LOGGER.warning(
-                    f"The image declared at {url} could not be found. Please check that it exists."
+                    f"The image declared at {url} could not be found. Please check that it exists or that the URL is valid."
                 )
                 continue
             img.attrib["url"] = f"data:{mime[0]};base64,{img_b64}"

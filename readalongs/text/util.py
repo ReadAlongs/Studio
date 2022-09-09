@@ -193,15 +193,16 @@ MINIMAL_INDEX_HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Insert Title Here</title>
+        <title>{title}</title>
         <!-- Import fonts. Material Icons are needed by the web component -->
         <link href="https://fonts.googleapis.com/css?family=Lato%7CMaterial+Icons%7CMaterial+Icons+Outlined" rel="stylesheet">
     </head>
 
     <body>
         <!-- Here is how you declare the Web Component. Supported languages: en, fr -->
-        <read-along text="{}" alignment="{}" audio="{}" language="en">
-            <span slot="read-along-header">Insert Title Here Too</span>
+        <read-along text="{text}" alignment="{smil}" audio="{audio}" theme="{theme}" language="en">
+            <span slot='read-along-header'>{header}</span>
+            <span slot='read-along-subheader'>{subheader}</span>
         </read-along>
     </body>
 
@@ -213,12 +214,25 @@ MINIMAL_INDEX_HTML_TEMPLATE = """<!DOCTYPE html>
 
 
 def save_minimal_index_html(
-    output_path, tokenized_xml_basename, smil_basename, audio_basename
+    output_path,
+    tokenized_xml_basename,
+    smil_basename,
+    audio_basename,
+    title,
+    header,
+    subheader,
+    theme,
 ):
     with open(output_path, "w", encoding="utf-8") as fout:
         fout.write(
             MINIMAL_INDEX_HTML_TEMPLATE.format(
-                tokenized_xml_basename, smil_basename, audio_basename
+                title=title,
+                text=tokenized_xml_basename,
+                smil=smil_basename,
+                audio=audio_basename,
+                theme=theme,
+                header=header,
+                subheader=subheader,
             )
         )
 

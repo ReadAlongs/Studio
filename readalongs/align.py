@@ -917,7 +917,7 @@ def save_readalong(
             audio_path,
             config.get("title", "Title goes here"),
             config.get("header", "Header goes here"),
-            config.get("subheader", "Subheader goes here"),
+            config.get("subheader", ""),
             config.get("theme", "light"),
         )
         with open(html_out_path, "w") as f:
@@ -928,6 +928,10 @@ def save_readalong(
         os.path.basename(tokenized_xml_path),
         os.path.basename(smil_path),
         os.path.basename(audio_path),
+        config.get("title", "Title goes here"),
+        config.get("header", "Header goes here"),
+        config.get("subheader", ""),
+        config.get("theme", "light"),
     )
 
     # Copy the image files to the output's asset directory, if any are found
