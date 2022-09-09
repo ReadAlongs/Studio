@@ -196,13 +196,23 @@ Here is that list at the time of compiling this documentation:
 See :ref:`adding-a-lang` for references on adding new languages to that list.
 
 
-Adding images and do-not-align segments via the config.json file
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Adding titles, images and do-not-align segments via the config.json file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Some additional parameters can be specified via a config file: create a JSON
-file called ``config.json``, possibly in the same folder as your other ReadAlong
-input files for convenience. The config file currently accepts two components:
-adding images to your ReadAlongs, and DNA audio (see :ref:`dna`).
+Some additional parameters can be specified via a config file: create
+a JSON file called ``config.json``, possibly in the same folder as
+your other ReadAlong input files for convenience. The config file
+currently accepts a few components: adding titles and headers, adding
+images to your ReadAlongs, and DNA audio (see :ref:`dna`).
+
+To add a title and headers to the output HTML, you can use the keys
+`"title"`, `"header"`, and `"subheader"`, for example::
+
+  {
+    "title": "My awesome read-along",
+    "header": "A story in my language",
+    "subheader": "Read by me"
+  }
 
 To add images, indicate the page number as the key, and the name of the image
 file as the value, as an entry in the ``"images"`` dictionary.

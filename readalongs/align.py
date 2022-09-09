@@ -916,7 +916,15 @@ def save_readalong(
 
     if "html" in output_formats:
         html_out_path = output_base + ".html"
-        html_out = create_web_component_html(tokenized_xml_path, smil_path, audio_path)
+        html_out = create_web_component_html(
+            tokenized_xml_path,
+            smil_path,
+            audio_path,
+            config.get("title", "Title goes here"),
+            config.get("header", "Header goes here"),
+            config.get("subheader", ""),
+            config.get("theme", "light"),
+        )
         with open(html_out_path, "w") as f:
             f.write(html_out)
 
@@ -925,6 +933,10 @@ def save_readalong(
         os.path.basename(tokenized_xml_path),
         os.path.basename(smil_path),
         os.path.basename(audio_path),
+        config.get("title", "Title goes here"),
+        config.get("header", "Header goes here"),
+        config.get("subheader", ""),
+        config.get("theme", "light"),
     )
 
     # Copy the image files to the output's asset directory, if any are found

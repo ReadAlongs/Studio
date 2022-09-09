@@ -25,10 +25,18 @@ class BasicTestCase(TestCase):
 
     # Set this to True to keep the temp dirs after running, for manual inspection
     # but please don't push a commit setting this to True!
+    # To keep temp dirs for just one subclass, add this line to its setUp() function:
+    # function before the call to super().setUp():
+    #     self.keep_temp_dir_after_running = True
     keep_temp_dir_after_running = False
 
     def setUp(self):
-        """Create a temporary directory, self.tempdir, and a test runner, self.runner"""
+        """Create a temporary directory, self.tempdir, and a test runner, self.runner
+
+        If a subclass needs its own setUp() function, make sure to call
+            super().setUp()
+        at the beginning of it.
+        """
         app.logger.setLevel("DEBUG")
         self.runner = app.test_cli_runner()
         tempdir_prefix = f"tmpdir_{type(self).__name__}_"
@@ -44,6 +52,11 @@ class BasicTestCase(TestCase):
         self.tempdir = Path(self.tempdir)
 
     def tearDown(self):
-        """Clean up the temporary directory"""
+        """Clean up the temporary directory
+
+        If a subclass needs its own tearDown() function, make sure to call
+            super().tearDown()
+        at the end of it.
+        """
         if not self.keep_temp_dir_after_running:
             self.tempdirobj.cleanup()

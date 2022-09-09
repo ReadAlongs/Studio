@@ -182,6 +182,8 @@ class TestAlignCli(BasicTestCase):
                     output,
                     "-o",
                     "html",
+                    "--config",
+                    "data/sample-config.json",
                 ],
             )
         # print(results_html.output)
