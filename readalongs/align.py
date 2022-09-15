@@ -910,7 +910,7 @@ def save_readalong(
     smil = make_smil(
         os.path.basename(tokenized_xml_path),
         os.path.basename(audio_path),
-        align_results,
+        align_results["words"],
     )
     save_txt(smil_path, smil)
 
