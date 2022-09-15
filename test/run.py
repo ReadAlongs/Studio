@@ -35,6 +35,7 @@ from test_temp_file import TestTempFile
 from test_tokenize_cli import TestTokenizeCli
 from test_tokenize_xml import TestTokenizer
 from test_web_api import TestWebApi
+from test_smil import TestSmilUtilities
 
 from readalongs.log import LOGGER
 
@@ -67,6 +68,7 @@ other_tests = [
         TestG2pCli,
         TestMisc,
         TestSilence,
+        TestSmilUtilities,
         TestPackageURLs,
         TestWebApi,
     ]
