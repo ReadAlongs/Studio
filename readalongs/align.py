@@ -1100,9 +1100,6 @@ def convert_to_xhtml(tokenized_xml, title="Book"):
 
 TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 <TEI>
-    <!-- To exclude any element from alignment, add the do-not-align="true" attribute to
-         it, e.g., <p do-not-align="true">...</p>, or
-         <s>Some text <foo do-not-align="true">do not align this</foo> more text</s> -->
     <text xml:lang="{{main_lang}}" fallback-langs="{{fallback_langs}}">
         <body>
         {{#pages}}
