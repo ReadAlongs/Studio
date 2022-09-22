@@ -207,48 +207,53 @@ class TestWebApi(BasicTestCase):
         request = {
             "encoding": "utf-8",
             "audio_length": 83.1,
+            "output_format": "TextGrid",
             "xml": self.hej_verden_xml,
             "smil": self.hej_verden_smil,
         }
-        response = API_CLIENT.post("/api/v1/convert_to_TextGrid", json=request)
+        response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["textgrid"], self.hej_verden_textgrid)
+        self.assertEqual(response.json()["file_contents"], self.hej_verden_textgrid)
 
     def test_convert_to_TextGrid_errors(self):
         request = {
             "encoding": "utf-8",
             "audio_length": 83.1,
+            "output_format": "TextGrid",
             "xml": "this is not XML",
             "smil": self.hej_verden_smil,
         }
-        response = API_CLIENT.post("/api/v1/convert_to_TextGrid", json=request)
+        response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
         self.assertEqual(response.status_code, 422, "Invalid XML should fail.")
 
         request = {
             "encoding": "utf-8",
             "audio_length": 83.1,
+            "output_format": "TextGrid",
             "xml": self.hej_verden_xml,
             "smil": "This is not SMIL",
         }
-        response = API_CLIENT.post("/api/v1/convert_to_TextGrid", json=request)
+        response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
         self.assertEqual(response.status_code, 422, "Invalid SMIL should fail.")
 
         request = {
             "encoding": "utf-8",
             "audio_length": -10.0,
+            "output_format": "TextGrid",
             "xml": self.hej_verden_xml,
             "smil": self.hej_verden_smil,
         }
-        response = API_CLIENT.post("/api/v1/convert_to_TextGrid", json=request)
+        response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
         self.assertEqual(response.status_code, 422, "Negative duration should fail.")
 
         request = {
             "encoding": "latin-1",
             "audio_length": 83.1,
+            "output_format": "TextGrid",
             "xml": self.hej_verden_xml,
             "smil": self.hej_verden_smil,
         }
-        response = API_CLIENT.post("/api/v1/convert_to_TextGrid", json=request)
+        response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
         # Figure out how to exercise this case, but for now latin-1 is not even supported...
         # print(response.status_code, response.json())
         self.assertEqual(
@@ -256,6 +261,39 @@ class TestWebApi(BasicTestCase):
         )
         # Or, once we do support latin-1:
         # self.assertEqual(response.status_code, 400)
+
+    def test_convert_to_eaf(self):
+        request = {
+            "encoding": "utf-8",
+            "audio_length": 83.1,
+            "output_format": "eaf",
+            "xml": self.hej_verden_xml,
+            "smil": self.hej_verden_smil,
+        }
+        response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("<ANNOTATION_DOCUMENT", response.json()["file_contents"])
+
+    def test_convert_to_bad_format(self):
+        request = {
+            "encoding": "utf-8",
+            "audio_length": 83.1,
+            "output_format": "not_a_known_format",
+            "xml": self.hej_verden_xml,
+            "smil": self.hej_verden_smil,
+        }
+        response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
+        self.assertEqual(response.status_code, 422)
+
+        request = {
+            "encoding": "utf-8",
+            "audio_length": 83.1,
+            # "output_format" just missing
+            "xml": self.hej_verden_xml,
+            "smil": self.hej_verden_smil,
+        }
+        response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
+        self.assertEqual(response.status_code, 422)
 
 
 if __name__ == "__main__":
