@@ -215,7 +215,16 @@ class ConvertRequest(BaseModel):
         title="The length of the audio used to create the alignment, in seconds.",
     )
 
-    encoding: str = "utf-8"
+    encoding: str = Field(
+        example="utf-8",
+        title="Only utf-8 is supported now, but contact us if you might need support for a different enciding.",
+    )
+
+    output_format: str = Field(
+        example="TextGrid",
+        regex="^(?i)(eaf|TextGrid)$",
+        title="Format to convert to, one of TextGrid (Praat), eaf (ELAN).",
+    )
 
     xml: str = Field(
         title="The processed_xml returned by /assemble.",
@@ -256,75 +265,41 @@ class ConvertRequest(BaseModel):
     )
 
 
-class TextGridResponse(BaseModel):
-    """Convert response has TextGrid file format for the same alignments"""
+class ConvertResponse(BaseModel):
+    """Convert response has the requesed converted file's contents"""
 
-    textgrid: str = Field(
-        example=dedent(
-            """\
-            File type = "ooTextFile"
-            Object class = "TextGrid"
-
-            xmin = 0.000000
-            xmax = 2.01
-            tiers? <exists>
-            size = 2
-            item []:
-                item [1]:
-                    class = "IntervalTier"
-                    name = "Sentence"
-                    xmin = 0.000000
-                    xmax = 2.01
-                    intervals: size = 3
-                    intervals [1]:
-                        xmin = 0.000000
-                        xmax = 0.140000
-                        text = ""
-                    intervals [2]:
-                        xmin = 0.140000
-                        xmax = 1.890000
-                        text = "hej verden"
-                    intervals [3]:
-                        xmin = 1.890000
-                        xmax = 2.010000
-                        text = ""
-                item [2]:
-                    class = "IntervalTier"
-                    name = "Word"
-                    xmin = 0.000000
-                    xmax = 2.01
-                    intervals: size = 4
-                    intervals [1]:
-                        xmin = 0.000000
-                        xmax = 0.140000
-                        text = ""
-                    intervals [2]:
-                        xmin = 0.140000
-                        xmax = 0.780000
-                        text = "hej"
-                    intervals [3]:
-                        xmin = 0.780000
-                        xmax = 1.890000
-                        text = "verden"
-                    intervals [4]:
-                        xmin = 1.890000
-                        xmax = 2.010000
-                        text = ""
-            """
-        )
+    file_contents: str = Field(
+        title="Full contents of the converted file in the format requested."
     )
 
 
-@v1.post("/convert_to_TextGrid", response_model=TextGridResponse)
-async def convert_to_TextGrid(input: ConvertRequest) -> TextGridResponse:
+@v1.post("/convert_alignment", response_model=ConvertResponse)
+async def convert_alignment(input: ConvertRequest) -> ConvertResponse:
+    """Convert an alignment to a different format.
+
+    Args (as dict items in the request body):
+     - audio_length: duration in seconds of the audio file used to create the alignment
+     - encoding: use utf-8, other encodings are not supported (yet)
+     - output_format: one of TextGrid (Praat), eaf (ELAN), ...
+     - xml: the XML file produced by /assemble
+     - smil: the SMIL file produced by SoundSwallower(.js)
+
+    Data privacy consideration: due to limitations of the libraries used to perform
+    some of these conversions, the output file may be temporarily stored on disk,
+    but it gets deleted immediately, before it is even returned by this endpoint.
+
+    Returns:
+     - file_contents: the contents of the file converted in the requested format
+    """
     try:
         parsed_xml = etree.fromstring(bytes(input.xml, encoding=input.encoding))
     except etree.XMLSyntaxError as e:
         raise HTTPException(status_code=422, detail="XML provided is not valid") from e
 
-    if input.encoding not in ["utf-8", "utf8", "UTF-8", "UTF8"]:
+    if input.encoding not in ["utf-8", "utf8", "UTF-8", "UTF8", ""]:
         raise HTTPException(
-            status_code=422, detail="The only encoding actually tested is utf-8..."
+            status_code=422,
+            detail="Please use utf-8 as your encoding, or contact us with a description of how and why you would like to use a different encoding",
         )
 
     try:
@@ -332,13 +307,30 @@ async def convert_to_TextGrid(input: ConvertRequest) -> TextGridResponse:
     except ValueError as e:
         raise HTTPException(status_code=422, detail="SMIL provided is not valid") from e
 
-    with TemporaryDirectory() as temp_dir_name:
-        prefix = os.path.join(temp_dir_name, "f")
-        save_label_files(words, parsed_xml, input.audio_length, prefix, "textgrid")
-        with open(prefix + ".TextGrid", mode="r", encoding="utf-8") as f:
-            textgrid_text = f.read()
+    output_format = input.output_format.lower()
+    if output_format == "textgrid":
+        with TemporaryDirectory() as temp_dir_name:
+            prefix = os.path.join(temp_dir_name, "f")
+            save_label_files(words, parsed_xml, input.audio_length, prefix, "textgrid")
+            with open(prefix + ".TextGrid", mode="r", encoding="utf-8") as f:
+                textgrid_text = f.read()
 
-    return TextGridResponse(textgrid=textgrid_text)
+        return ConvertResponse(file_contents=textgrid_text)
+
+    elif output_format == "eaf":
+        with TemporaryDirectory() as temp_dir_name:
+            prefix = os.path.join(temp_dir_name, "f")
+            save_label_files(words, parsed_xml, input.audio_length, prefix, "eaf")
+            with open(prefix + ".eaf", mode="r", encoding="utf-8") as f:
+                eaf_text = f.read()
+
+        return ConvertResponse(file_contents=eaf_text)
+
+    else:
+        raise HTTPException(
+            status_code=500,
+            detail="Invalid output_format should have been caught by fastAPI already...",
+        )
 
 
 # Mount the v1 version of the API to the root of the app
