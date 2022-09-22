@@ -92,7 +92,7 @@ class TestWebApi(BasicTestCase):
         request["text"] = data
         request["text_languages"] = ["test"]
         response = API_CLIENT.post("/api/v1/assemble", json=request)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 422)
 
     def test_langs(self):
         # Test the langs endpoint

@@ -187,7 +187,7 @@ async def assemble(
     g2ped, valid = convert_xml(ids_added)
     if not valid:
         raise HTTPException(
-            status_code=400, detail="g2p could not be performed"
+            status_code=422, detail="g2p could not be performed"
         )  # TODO: do we want to return a 400 here? better error message
     # create grammar
     dict_data, jsgf, text_input = create_grammar(g2ped)
