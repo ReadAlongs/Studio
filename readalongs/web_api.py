@@ -30,7 +30,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from lxml import etree
 from pydantic import BaseModel, Field
 
-from readalongs.align import create_tei_from_text, save_label_files
+from readalongs.align import create_tei_from_text, save_label_files, save_subtitles
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.make_dict import make_dict_object
@@ -234,8 +234,8 @@ class ConvertRequest(BaseModel):
 
     output_format: str = Field(
         example="TextGrid",
-        regex="^(?i)(eaf|TextGrid)$",
-        title="Format to convert to, one of TextGrid (Praat), eaf (ELAN).",
+        regex="^(?i)(eaf|TextGrid|srt|vtt)$",
+        title="Format to convert to, one of TextGrid (Praat), eaf (ELAN), srt (SRT subtitles), or vtt (VTT subtitles).",
     )
 
     xml: str = Field(
@@ -280,9 +280,27 @@ class ConvertRequest(BaseModel):
 class ConvertResponse(BaseModel):
     """Convert response has the requesed converted file's contents"""
 
+    file_name: str = Field(
+        title="A suggested name for this output file: aligned + the standard extension"
+    )
+
     file_contents: str = Field(
         title="Full contents of the converted file in the format requested."
     )
+
+    other_file_name: Union[None, str] = Field(
+        title="Suggested name for the second file, if the conversion generates two files"
+    )
+
+    other_file_contents: Union[None, str] = Field(
+        title="Full contents of the second file, if any"
+    )
+
+
+def slurp_file(filename):
+    """Slurp a file into one string"""
+    with open(filename, "r", encoding="utf-8") as f:
+        return f.read()
 
 
 @v1.post("/convert_alignment", response_model=ConvertResponse)
@@ -292,16 +310,26 @@ async def convert_alignment(input: ConvertRequest) -> ConvertResponse:
     Args (as dict items in the request body):
      - audio_length: duration in seconds of the audio file used to create the alignment
      - encoding: use utf-8, other encodings are not supported (yet)
-     - output_format: one of TextGrid (Praat), eaf (ELAN), ...
+     - output_format: one of TextGrid, eaf, srt, vtt
      - xml: the XML file produced by /assemble
      - smil: the SMIL file produced by SoundSwallower(.js)
 
+    Formats supported:
+     - TextGrid: Praat TextGrid file format
+     - eaf: ELAN eaf file format
+     - srt: SRT subtitle format, as two files, 1) for sentences, 2) for words
+     - vtt: WebVTT subtitle format, as two files, 1) for sentences, 2) for words
+
     Data privacy consideration: due to limitations of the libraries used to perform
-    some of these conversions, the output file may be temporarily stored on disk,
-    but it gets deleted immediately, before it is even returned by this endpoint.
+    some of these conversions, the output files will be temporarily stored on disk,
+    but they get deleted immediately, before they are even returned by this endpoint.
 
     Returns:
+     - file_name: a suggested name for the returned file
      - file_contents: the contents of the file converted in the requested format
+     for srt and vtt:
+     - other_file_name: a suggested name for the second file
+     - other_file_contents: the contents of the second file
     """
     try:
         parsed_xml = etree.fromstring(bytes(input.xml, encoding=input.encoding))
@@ -319,30 +347,51 @@ async def convert_alignment(input: ConvertRequest) -> ConvertResponse:
     except ValueError as e:
         raise HTTPException(status_code=422, detail="SMIL provided is not valid") from e
 
-    output_format = input.output_format.lower()
-    if output_format == "textgrid":
-        with TemporaryDirectory() as temp_dir_name:
-            prefix = os.path.join(temp_dir_name, "f")
+    # Data privacy consideration: creating the temporary directory with a context
+    # manager like this guarantees, as we promise in the API documentation, that the
+    # temporary directory and all temporary files we create in it will be deleted
+    # when this function exits, whether it is with an error or with success.
+    with TemporaryDirectory() as temp_dir_name:
+        prefix = os.path.join(temp_dir_name, "f")
+
+        output_format = input.output_format.lower()
+        if output_format == "textgrid":
             save_label_files(words, parsed_xml, input.audio_length, prefix, "textgrid")
-            with open(prefix + ".TextGrid", mode="r", encoding="utf-8") as f:
-                textgrid_text = f.read()
+            return ConvertResponse(
+                file_name="aligned.TextGrid",
+                file_contents=slurp_file(prefix + ".TextGrid"),
+            )
 
-        return ConvertResponse(file_contents=textgrid_text)
-
-    elif output_format == "eaf":
-        with TemporaryDirectory() as temp_dir_name:
-            prefix = os.path.join(temp_dir_name, "f")
+        elif output_format == "eaf":
             save_label_files(words, parsed_xml, input.audio_length, prefix, "eaf")
-            with open(prefix + ".eaf", mode="r", encoding="utf-8") as f:
-                eaf_text = f.read()
+            return ConvertResponse(
+                file_name="aligned.eaf",
+                file_contents=slurp_file(prefix + ".eaf"),
+            )
 
-        return ConvertResponse(file_contents=eaf_text)
+        elif output_format == "srt":
+            save_subtitles(words, parsed_xml, prefix, "srt")
+            return ConvertResponse(
+                file_name="aligned_sentences.srt",
+                file_contents=slurp_file(prefix + "_sentences.srt"),
+                other_file_name="aligned_words.srt",
+                other_file_contents=slurp_file(prefix + "_words.srt"),
+            )
 
-    else:
-        raise HTTPException(
-            status_code=500,
-            detail="Invalid output_format should have been caught by fastAPI already...",
-        )
+        elif output_format == "vtt":
+            save_subtitles(words, parsed_xml, prefix, "vtt")
+            return ConvertResponse(
+                file_name="aligned_sentences.vtt",
+                file_contents=slurp_file(prefix + "_sentences.vtt"),
+                other_file_name="aligned_words.vtt",
+                other_file_contents=slurp_file(prefix + "_words.vtt"),
+            )
+
+        else:
+            raise HTTPException(
+                status_code=500,
+                detail="Invalid output_format (should have been caught by regex validation!)",
+            )
 
 
 # Mount the v1 version of the API to the root of the app
