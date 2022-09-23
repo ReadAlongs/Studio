@@ -150,72 +150,6 @@ class TestWebApi(BasicTestCase):
         """
     )
 
-    hej_verden_textgrid = dedent(
-        """\
-        File type = "ooTextFile"
-        Object class = "TextGrid"
-
-        xmin = 0.000000
-        xmax = 83.100000
-        tiers? <exists>
-        size = 2
-        item []:
-            item [1]:
-                class = "IntervalTier"
-                name = "Sentence"
-                xmin = 0.000000
-                xmax = 83.100000
-                intervals: size = 3
-                intervals [1]:
-                    xmin = 0.000000
-                    xmax = 17.745000
-                    text = ""
-                intervals [2]:
-                    xmin = 17.745000
-                    xmax = 82.190000
-                    text = "hej é verden à"
-                intervals [3]:
-                    xmin = 82.190000
-                    xmax = 83.100000
-                    text = ""
-            item [2]:
-                class = "IntervalTier"
-                name = "Word"
-                xmin = 0.000000
-                xmax = 83.100000
-                intervals: size = 4
-                intervals [1]:
-                    xmin = 0.000000
-                    xmax = 17.745000
-                    text = ""
-                intervals [2]:
-                    xmin = 17.745000
-                    xmax = 58.600000
-                    text = "hej é"
-                intervals [3]:
-                    xmin = 58.600000
-                    xmax = 82.190000
-                    text = "verden à"
-                intervals [4]:
-                    xmin = 82.190000
-                    xmax = 83.100000
-                    text = ""
-        """
-    )
-
-    def test_convert_to_TextGrid(self):
-        request = {
-            "encoding": "utf-8",
-            "audio_length": 83.1,
-            "output_format": "TextGrid",
-            "xml": self.hej_verden_xml,
-            "smil": self.hej_verden_smil,
-        }
-        response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["file_contents"], self.hej_verden_textgrid)
-        self.assertTrue(response.json()["file_name"].endswith(".TextGrid"))
-
     def test_convert_to_TextGrid_errors(self):
         request = {
             "encoding": "utf-8",
@@ -255,13 +189,78 @@ class TestWebApi(BasicTestCase):
             "smil": self.hej_verden_smil,
         }
         response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
-        # Figure out how to exercise this case, but for now latin-1 is not even supported...
-        # print(response.status_code, response.json())
-        self.assertEqual(
-            response.status_code, 422, "only utf-8 is allowed at the moment."
-        )
+        # Figure out how to exercise this case, but for now only utf-8 is supported...
+        # print("latin-1", response.status_code, response.json())
+        self.assertEqual(response.status_code, 422, "only utf-8 is supported for now")
         # Or, once we do support latin-1:
         # self.assertEqual(response.status_code, 400)
+
+    def test_convert_to_TextGrid(self):
+        request = {
+            "encoding": "utf-8",
+            "audio_length": 83.1,
+            "output_format": "TextGrid",
+            "xml": self.hej_verden_xml,
+            "smil": self.hej_verden_smil,
+        }
+        response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["file_name"].endswith(".TextGrid"))
+        self.assertEqual(
+            response.json()["file_contents"],
+            dedent(
+                """\
+                File type = "ooTextFile"
+                Object class = "TextGrid"
+
+                xmin = 0.000000
+                xmax = 83.100000
+                tiers? <exists>
+                size = 2
+                item []:
+                    item [1]:
+                        class = "IntervalTier"
+                        name = "Sentence"
+                        xmin = 0.000000
+                        xmax = 83.100000
+                        intervals: size = 3
+                        intervals [1]:
+                            xmin = 0.000000
+                            xmax = 17.745000
+                            text = ""
+                        intervals [2]:
+                            xmin = 17.745000
+                            xmax = 82.190000
+                            text = "hej é verden à"
+                        intervals [3]:
+                            xmin = 82.190000
+                            xmax = 83.100000
+                            text = ""
+                    item [2]:
+                        class = "IntervalTier"
+                        name = "Word"
+                        xmin = 0.000000
+                        xmax = 83.100000
+                        intervals: size = 4
+                        intervals [1]:
+                            xmin = 0.000000
+                            xmax = 17.745000
+                            text = ""
+                        intervals [2]:
+                            xmin = 17.745000
+                            xmax = 58.600000
+                            text = "hej é"
+                        intervals [3]:
+                            xmin = 58.600000
+                            xmax = 82.190000
+                            text = "verden à"
+                        intervals [4]:
+                            xmin = 82.190000
+                            xmax = 83.100000
+                            text = ""
+                """
+            ),
+        )
 
     def test_convert_to_eaf(self):
         request = {
