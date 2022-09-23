@@ -190,8 +190,9 @@ async def assemble(
     g2ped, valid = convert_xml(ids_added)
     if not valid:
         raise HTTPException(
-            status_code=422, detail="g2p could not be performed"
-        )  # TODO: do we want to return a 400 here? better error message
+            status_code=422,
+            detail="g2p could not be performed, please check your text or your language code",
+        )
     # create grammar
     dict_data, jsgf, text_input = create_grammar(g2ped)
     response = {
@@ -322,7 +323,8 @@ async def convert_alignment(input: ConvertRequest) -> ConvertResponse:
 
     Data privacy consideration: due to limitations of the libraries used to perform
     some of these conversions, the output files will be temporarily stored on disk,
-    but they get deleted immediately, before they are even returned by this endpoint.
+    but they get deleted immediately as this endpoint returns its output or reports
+    any error.
 
     Returns:
      - file_name: a suggested name for the returned file
@@ -331,16 +333,16 @@ async def convert_alignment(input: ConvertRequest) -> ConvertResponse:
      - other_file_name: a suggested name for the second file
      - other_file_contents: the contents of the second file
     """
-    try:
-        parsed_xml = etree.fromstring(bytes(input.xml, encoding=input.encoding))
-    except etree.XMLSyntaxError as e:
-        raise HTTPException(status_code=422, detail="XML provided is not valid") from e
-
     if input.encoding not in ["utf-8", "utf8", "UTF-8", "UTF8", ""]:
         raise HTTPException(
             status_code=422,
             detail="Please use utf-8 as your encoding, or contact us with a description of how and why you would like to use a different encoding",
         )
+
+    try:
+        parsed_xml = etree.fromstring(bytes(input.xml, encoding="utf-8"))
+    except etree.XMLSyntaxError as e:
+        raise HTTPException(status_code=422, detail="XML provided is not valid") from e
 
     try:
         words = parse_smil(input.smil)

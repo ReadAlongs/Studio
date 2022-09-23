@@ -35,9 +35,9 @@ def make_smil(text_path: str, audio_path: str, words: List[dict]) -> str:
 
     words is a list of dicts with these elements:
     {
-        'id': word id (str),
-        'start': word start time in seconds (float),
-        'end': word_end_time_in_seconds (float),
+        "id": word id (str),
+        "start": word start time in seconds (float),
+        "end": word_end_time_in_seconds (float),
     }
 
     Args:
@@ -63,9 +63,9 @@ def parse_smil(formatted_smil: str) -> List[dict]:
     Returns:
         List[dict]: a list of dicts with these elements:
             {
-                'id': word id (str),
-                'start': word start time in seconds (float),
-                'end': word_end_time_in_seconds (float),
+                "id": word id (str),
+                "start": word start time in seconds (float),
+                "end": word_end_time_in_seconds (float),
             }
     Raises:
         ValueError if there is a problem parsing formatted_smil as valid SMIL
