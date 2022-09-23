@@ -214,6 +214,7 @@ class TestWebApi(BasicTestCase):
         response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["file_contents"], self.hej_verden_textgrid)
+        self.assertTrue(response.json()["file_name"].endswith(".TextGrid"))
 
     def test_convert_to_TextGrid_errors(self):
         request = {
@@ -273,6 +274,84 @@ class TestWebApi(BasicTestCase):
         response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
         self.assertEqual(response.status_code, 200)
         self.assertIn("<ANNOTATION_DOCUMENT", response.json()["file_contents"])
+        self.assertTrue(response.json()["file_name"].endswith(".eaf"))
+
+    def test_convert_to_srt(self):
+        request = {
+            "encoding": "utf-8",
+            "audio_length": 83.1,
+            "output_format": "srt",
+            "xml": self.hej_verden_xml,
+            "smil": self.hej_verden_smil,
+        }
+        response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["file_name"].endswith("_sentences.srt"))
+        self.assertTrue(response.json()["other_file_name"].endswith("_words.srt"))
+        self.assertEqual(
+            response.json()["file_contents"],
+            dedent(
+                """\
+                1
+                00:00:17,745 --> 00:01:22,190
+                hej é verden à
+
+                """
+            ),
+        )
+        self.assertEqual(
+            response.json()["other_file_contents"],
+            dedent(
+                """\
+                1
+                00:00:17,745 --> 00:00:58,600
+                hej é
+
+                2
+                00:00:58,600 --> 00:01:22,190
+                verden à
+
+                """
+            ),
+        )
+
+    def test_convert_to_vtt(self):
+        request = {
+            "encoding": "utf-8",
+            "audio_length": 83.1,
+            "output_format": "vtt",
+            "xml": self.hej_verden_xml,
+            "smil": self.hej_verden_smil,
+        }
+        response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["file_name"].endswith("_sentences.vtt"))
+        self.assertTrue(response.json()["other_file_name"].endswith("_words.vtt"))
+        self.assertEqual(
+            response.json()["file_contents"],
+            dedent(
+                """\
+                WEBVTT
+
+                00:00:17.745 --> 00:01:22.190
+                hej é verden à
+                """
+            ),
+        )
+        self.assertEqual(
+            response.json()["other_file_contents"],
+            dedent(
+                """\
+                WEBVTT
+
+                00:00:17.745 --> 00:00:58.600
+                hej é
+
+                00:00:58.600 --> 00:01:22.190
+                verden à
+                """
+            ),
+        )
 
     def test_convert_to_bad_format(self):
         request = {
