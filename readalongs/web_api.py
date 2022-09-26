@@ -106,7 +106,18 @@ def process_xml(func):
 
 @v1.get("/langs", response_model=Dict[str, str])
 async def langs() -> Dict[str, str]:
-    """Return the list of supported languages and their names as a dict."""
+    """Return the list of supported languages and their names as a dict.
+
+    Returns:
+        langs as dict with language codes as keys and the full language name as
+        values, e.g.:
+        `{
+            "alq", "Algonquin",
+            "atj": "Atikamekw",
+            "lc3", "Third Language Name",
+            ...
+        }`
+    """
 
     return LANGS[1]
 
