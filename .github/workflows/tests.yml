@@ -26,16 +26,18 @@ jobs:
                       -r requirements.dev.txt \
                       -r requirements.ci.txt \
                       -e .
-          # Legal check: make sure we don't have or introduce GPL dependencies
-          if pip-licenses | grep -v 'Artistic License' | grep -v LGPL | grep GNU; then echo 'Please avoid introducing *GPL dependencies'; false; fi
 
       - name: Run tests
         run: |
           gunicorn readalongs.app:app --bind 0.0.0.0:5000 --daemon
           cd test && coverage run run.py prod && coverage xml
 
-      - name: coding style nit-picking, we want black compliance
-        run: find . -name \*.py | xargs black --check
+      - name: Nitpicking
+        run: |
+          # coding style: we want black compliance
+          find . -name \*.py | xargs black --check
+          # Legal check: make sure we don't have or introduce GPL dependencies
+          if pip-licenses | grep -v 'Artistic License' | grep -v LGPL | grep GNU; then echo 'Please avoid introducing *GPL dependencies'; false; fi
 
       - uses: codecov/codecov-action@v2
         with:
