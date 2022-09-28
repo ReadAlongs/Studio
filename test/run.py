@@ -21,6 +21,7 @@ from test_align_cli import TestAlignCli
 from test_anchors import TestAnchors
 from test_api import TestAlignApi
 from test_audio import TestAudio
+from test_concat_ras import TestConcatRas
 from test_config import TestConfig
 from test_dna_text import TestDNAText
 from test_dna_utils import TestDNAUtils
@@ -52,6 +53,7 @@ other_tests = [
     loader.loadTestsFromTestCase(test)
     for test in [
         TestAnchors,
+        TestConcatRas,
         TestConfig,
         TestDNAText,
         TestDNAUtils,
