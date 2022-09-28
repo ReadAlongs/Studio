@@ -65,7 +65,6 @@ class RequestBase(BaseModel):
     """Base request for assemble"""
 
     text_languages: List[str]
-    encoding: str = "utf-8"
     debug: bool = False
 
 
@@ -90,18 +89,6 @@ class AssembleResponse(BaseModel):
     parsed: Optional[str]
     tokenized: Optional[str]
     g2ped: Optional[str]
-
-
-def process_xml(func):
-    # Wrapper for processing XML, reads the XML with proper encoding,
-    # then applies the given function to it,
-    # then converts the result back to utf-8 XML and returns it
-    def wrapper(xml, **kwargs):
-        parsed = etree.fromstring(bytes(xml.xml, encoding=xml.encoding))
-        processed = func(parsed, **kwargs)
-        return etree.tostring(processed, encoding="utf-8", xml_declaration=True)
-
-    return wrapper
 
 
 @v1.get("/langs", response_model=Dict[str, str])
@@ -131,7 +118,6 @@ async def assemble(
                 "value": {
                     "text": "hej verden",
                     "text_languages": ["dan", "und"],
-                    "encoding": "utf-8",
                     "debug": False,
                 },
             },
@@ -140,7 +126,6 @@ async def assemble(
                 "value": {
                     "xml": "<?xml version='1.0' encoding='utf-8'?><TEI><text><p><s>hej verden</s></p></text></TEI>",
                     "text_languages": ["dan", "und"],
-                    "encoding": "utf-8",
                     "debug": False,
                 },
             },
@@ -151,9 +136,10 @@ async def assemble(
     Also creates the required grammar, pronunciation dictionary,
     and text needed by the decoder.
 
+    Encoding: all input and output is in UTF-8.
+
     Args (as dict items in the request body):
      - text_languages: the list of languages for g2p processing
-     - encoding: encoding (default: "utf-8")
      - debug: set to true for debugging (default: False)
      - either text or xml:
         - text: the input text as plain text
@@ -168,7 +154,7 @@ async def assemble(
 
     if isinstance(input, XMLRequest):
         try:
-            parsed = etree.fromstring(bytes(input.xml, encoding=input.encoding))
+            parsed = etree.fromstring(bytes(input.xml, encoding="utf-8"))
         except etree.XMLSyntaxError as e:
             raise HTTPException(
                 status_code=422, detail="XML provided is not valid"
@@ -225,11 +211,6 @@ class ConvertRequest(BaseModel):
         example=2.01,
         gt=0.0,
         title="The length of the audio used to create the alignment, in seconds.",
-    )
-
-    encoding: str = Field(
-        example="utf-8",
-        title="Only utf-8 is supported now, but contact us if you might need support for a different enciding.",
     )
 
     output_format: str = Field(
@@ -307,9 +288,10 @@ def slurp_file(filename):
 async def convert_alignment(input: ConvertRequest) -> ConvertResponse:
     """Convert an alignment to a different format.
 
+    Encoding: all input and output is in UTF-8.
+
     Args (as dict items in the request body):
      - audio_length: duration in seconds of the audio file used to create the alignment
-     - encoding: use utf-8, other encodings are not supported (yet)
      - output_format: one of TextGrid, eaf, srt, vtt
      - xml: the XML file produced by /assemble
      - smil: the SMIL file produced by SoundSwallower(.js)
@@ -332,12 +314,6 @@ async def convert_alignment(input: ConvertRequest) -> ConvertResponse:
      - other_file_name: a suggested name for the second file
      - other_file_contents: the contents of the second file
     """
-    if input.encoding not in ["utf-8", "utf8", "UTF-8", "UTF8", ""]:
-        raise HTTPException(
-            status_code=422,
-            detail="Please use utf-8 as your encoding, or contact us with a description of how and why you would like to use a different encoding",
-        )
-
     try:
         parsed_xml = etree.fromstring(bytes(input.xml, encoding="utf-8"))
     except etree.XMLSyntaxError as e:
