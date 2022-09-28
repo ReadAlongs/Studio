@@ -152,7 +152,7 @@ class TestWebApi(BasicTestCase):
 
     def test_convert_to_TextGrid_errors(self):
         request = {
-            "audio_length": 83.1,
+            "audio_duration": 83.1,
             "output_format": "TextGrid",
             "xml": "this is not XML",
             "smil": self.hej_verden_smil,
@@ -161,7 +161,7 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(response.status_code, 422, "Invalid XML should fail.")
 
         request = {
-            "audio_length": 83.1,
+            "audio_duration": 83.1,
             "output_format": "TextGrid",
             "xml": self.hej_verden_xml,
             "smil": "This is not SMIL",
@@ -170,7 +170,7 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(response.status_code, 422, "Invalid SMIL should fail.")
 
         request = {
-            "audio_length": -10.0,
+            "audio_duration": -10.0,
             "output_format": "TextGrid",
             "xml": self.hej_verden_xml,
             "smil": self.hej_verden_smil,
@@ -180,7 +180,7 @@ class TestWebApi(BasicTestCase):
 
     def test_convert_to_TextGrid(self):
         request = {
-            "audio_length": 83.1,
+            "audio_duration": 83.1,
             "output_format": "TextGrid",
             "xml": self.hej_verden_xml,
             "smil": self.hej_verden_smil,
@@ -246,7 +246,7 @@ class TestWebApi(BasicTestCase):
 
     def test_convert_to_eaf(self):
         request = {
-            "audio_length": 83.1,
+            "audio_duration": 83.1,
             "output_format": "eaf",
             "xml": self.hej_verden_xml,
             "smil": self.hej_verden_smil,
@@ -258,7 +258,7 @@ class TestWebApi(BasicTestCase):
 
     def test_convert_to_srt(self):
         request = {
-            "audio_length": 83.1,
+            "audio_duration": 83.1,
             "output_format": "srt",
             "xml": self.hej_verden_xml,
             "smil": self.hej_verden_smil,
@@ -297,7 +297,7 @@ class TestWebApi(BasicTestCase):
     def test_convert_to_vtt(self):
         request = {
             "encoding": "utf-8",  # for bwd compat, make sure the encoding is allowed but ignored
-            "audio_length": 83.1,
+            "audio_duration": 83.1,
             "output_format": "vtt",
             "xml": self.hej_verden_xml,
             "smil": self.hej_verden_smil,
@@ -334,7 +334,7 @@ class TestWebApi(BasicTestCase):
 
     def test_convert_to_bad_format(self):
         request = {
-            "audio_length": 83.1,
+            "audio_duration": 83.1,
             "output_format": "not_a_known_format",
             "xml": self.hej_verden_xml,
             "smil": self.hej_verden_smil,
@@ -343,7 +343,7 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(response.status_code, 422)
 
         request = {
-            "audio_length": 83.1,
+            "audio_duration": 83.1,
             # "output_format" just missing
             "xml": self.hej_verden_xml,
             "smil": self.hej_verden_smil,

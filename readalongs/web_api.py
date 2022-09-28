@@ -207,10 +207,10 @@ def create_grammar(xml):
 class ConvertRequest(BaseModel):
     """Convert Request contains the RAS-processed XML and SMIL alignments"""
 
-    audio_length: float = Field(
+    audio_duration: float = Field(
         example=2.01,
         gt=0.0,
-        title="The length of the audio used to create the alignment, in seconds.",
+        title="The duration of the audio used to create the alignment, in seconds.",
     )
 
     output_format: str = Field(
@@ -291,7 +291,7 @@ async def convert_alignment(input: ConvertRequest) -> ConvertResponse:
     Encoding: all input and output is in UTF-8.
 
     Args (as dict items in the request body):
-     - audio_length: duration in seconds of the audio file used to create the alignment
+     - audio_duration: duration in seconds of the audio file used to create the alignment
      - output_format: one of TextGrid, eaf, srt, vtt
      - xml: the XML file produced by /assemble
      - smil: the SMIL file produced by SoundSwallower(.js)
@@ -333,14 +333,16 @@ async def convert_alignment(input: ConvertRequest) -> ConvertResponse:
 
         output_format = input.output_format.lower()
         if output_format == "textgrid":
-            save_label_files(words, parsed_xml, input.audio_length, prefix, "textgrid")
+            save_label_files(
+                words, parsed_xml, input.audio_duration, prefix, "textgrid"
+            )
             return ConvertResponse(
                 file_name="aligned.TextGrid",
                 file_contents=slurp_file(prefix + ".TextGrid"),
             )
 
         elif output_format == "eaf":
-            save_label_files(words, parsed_xml, input.audio_length, prefix, "eaf")
+            save_label_files(words, parsed_xml, input.audio_duration, prefix, "eaf")
             return ConvertResponse(
                 file_name="aligned.eaf",
                 file_contents=slurp_file(prefix + ".eaf"),
