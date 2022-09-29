@@ -39,6 +39,10 @@ class TestMisc(TestCase):
             ("2h", 7200000),
             ("2h3", 7203000),
             ("2h3ms", 7200003),
+            ("2:03:04", 7384000),
+            ("2:03:04.123", 7384123),
+            ("2:03:04.1232", 7384123),
+            ("2:03:04.1238", 7384124),
         ):
             self.assertEqual(
                 parse_time(time_str), time_in_ms, f'error parsing "{time_str}"'
@@ -46,7 +50,7 @@ class TestMisc(TestCase):
 
     def test_parse_time_errors(self):
         """Test readalongs.text.util.parse_time() with invalid inputs"""
-        for err_time_str in ("3.4.5 ms", ".", "", "asdf", " 0 h z ", "nm"):
+        for err_time_str in ("3.4.5 ms", ".", "", "asdf", " 0 h z ", "nm", "02:23"):
             with self.assertRaises(
                 ValueError,
                 msg=f'parsing "{err_time_str}" should have raised ValueError',

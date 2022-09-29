@@ -50,7 +50,7 @@ def get_attrib_recursive(element, *attribs):
         attribs: one or more attribute label(s) to search for
 
     Returns:
-        the value of the first attribute in attribes found in element or the
+        the value of the first attribute in attribs found in element or the
         closest ancestor that has any of the attributes in attribs, or None
     """
     for attrib in attribs:
@@ -253,8 +253,9 @@ def parse_time(time_string: str) -> int:
 
     Args:
         time_string (str): timestamp, e.g., "0.23s", "5.234" (implied s), "1234 ms",
-            "1h 10m 12.345s", "00h00m00.000". Supported units: h, m, s (default), ms
-            and any combination thereof.
+            "1h 10m 12.345s", "00h00m00.000", "HH:MM:SS.nnn" (two colons required to
+            avoid ambiguity).  Supported units: h, m, s (default), ms and any
+            combination thereof.
 
     Returns:
         int: time represented by time_string in milliseconds
@@ -265,6 +266,16 @@ def parse_time(time_string: str) -> int:
     try:
         if not time_string.strip():
             raise ValueError("empty time string")
+
+        # Check for and handle HH:MM:SS.nnn format
+        hms_parts = time_string.split(":")
+        if len(hms_parts) == 3:
+            return (
+                int(hms_parts[0]) * 3600000
+                + int(hms_parts[1]) * 60000
+                + int(round(float(hms_parts[2]) * 1000))
+            )
+
         prev_end = 0
         time_in_ms = 0
         for unit_match in re.finditer(r"ms|h|m|s", time_string):
@@ -282,10 +293,10 @@ def parse_time(time_string: str) -> int:
             prev_end = unit_match.end()
         last_part = time_string[prev_end:].strip()
         if last_part:
-            time_in_ms += int(float(last_part) * 1000)
+            time_in_ms += int(round(float(last_part) * 1000))
         return time_in_ms
     except ValueError as e:
-        # e might have been raised by any of the float() constructor
+        # e might have been raised by any of the int() or float() constructors
         raise ValueError(
-            f'cannot parse "{time_string}" as a valid time in h/m/s/ms'
+            f'cannot parse "{time_string}" as a valid time in h/m/s/ms or as HH:MM:SS.nnn'
         ) from e
