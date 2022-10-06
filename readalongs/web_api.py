@@ -223,11 +223,6 @@ class ConvertRequest(BaseModel):
         title="The duration of the audio used to create the alignment, in seconds.",
     )
 
-    output_format: FormatName = Field(
-        example=FormatName.textgrid,
-        title="Format to convert to, one of textgrid (Praat TextGrid), eaf (ELAN EAF), srt (SRT subtitles), or vtt (VTT subtitles).",
-    )
-
     xml: str = Field(
         title="The processed_xml returned by /assemble.",
         example=dedent(
@@ -293,15 +288,20 @@ def slurp_file(filename):
         return f.read()
 
 
-@v1.post("/convert_alignment", response_model=ConvertResponse)
-async def convert_alignment(input: ConvertRequest) -> ConvertResponse:
+@v1.post("/convert_alignment/{output_format}", response_model=ConvertResponse)
+async def convert_alignment(
+    input: ConvertRequest, output_format: FormatName
+) -> ConvertResponse:
     """Convert an alignment to a different format.
 
     Encoding: all input and output is in UTF-8.
 
+    Path Parameter:
+     - output_format: Format to convert to, one of textgrid (Praat TextGrid),
+       eaf (ELAN EAF), srt (SRT subtitles), or vtt (VTT subtitles).
+
     Args (as dict items in the request body):
      - audio_duration: duration in seconds of the audio file used to create the alignment
-     - output_format: one of textgrid, eaf, srt, vtt
      - xml: the XML file produced by /assemble
      - smil: the SMIL file produced by SoundSwallower(.js)
 
@@ -339,8 +339,6 @@ async def convert_alignment(input: ConvertRequest) -> ConvertResponse:
     # when this function exits, whether it is with an error or with success.
     with TemporaryDirectory() as temp_dir_name:
         prefix = os.path.join(temp_dir_name, "f")
-
-        output_format = input.output_format
 
         if output_format == FormatName.textgrid:
             save_label_files(

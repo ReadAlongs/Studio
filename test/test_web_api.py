@@ -153,39 +153,35 @@ class TestWebApi(BasicTestCase):
     def test_convert_to_TextGrid_errors(self):
         request = {
             "audio_duration": 83.1,
-            "output_format": "textgrid",
             "xml": "this is not XML",
             "smil": self.hej_verden_smil,
         }
-        response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
+        response = API_CLIENT.post("/api/v1/convert_alignment/textgrid", json=request)
         self.assertEqual(response.status_code, 422, "Invalid XML should fail.")
 
         request = {
             "audio_duration": 83.1,
-            "output_format": "textgrid",
             "xml": self.hej_verden_xml,
             "smil": "This is not SMIL",
         }
-        response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
+        response = API_CLIENT.post("/api/v1/convert_alignment/textgrid", json=request)
         self.assertEqual(response.status_code, 422, "Invalid SMIL should fail.")
 
         request = {
             "audio_duration": -10.0,
-            "output_format": "textgrid",
             "xml": self.hej_verden_xml,
             "smil": self.hej_verden_smil,
         }
-        response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
+        response = API_CLIENT.post("/api/v1/convert_alignment/textgrid", json=request)
         self.assertEqual(response.status_code, 422, "Negative duration should fail.")
 
     def test_convert_to_TextGrid(self):
         request = {
             "audio_duration": 83.1,
-            "output_format": "textgrid",
             "xml": self.hej_verden_xml,
             "smil": self.hej_verden_smil,
         }
-        response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
+        response = API_CLIENT.post("/api/v1/convert_alignment/textgrid", json=request)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()["file_name"].endswith(".TextGrid"))
         self.assertEqual(
@@ -247,11 +243,10 @@ class TestWebApi(BasicTestCase):
     def test_convert_to_eaf(self):
         request = {
             "audio_duration": 83.1,
-            "output_format": "eaf",
             "xml": self.hej_verden_xml,
             "smil": self.hej_verden_smil,
         }
-        response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
+        response = API_CLIENT.post("/api/v1/convert_alignment/eaf", json=request)
         self.assertEqual(response.status_code, 200)
         self.assertIn("<ANNOTATION_DOCUMENT", response.json()["file_contents"])
         self.assertTrue(response.json()["file_name"].endswith(".eaf"))
@@ -259,11 +254,10 @@ class TestWebApi(BasicTestCase):
     def test_convert_to_srt(self):
         request = {
             "audio_duration": 83.1,
-            "output_format": "srt",
             "xml": self.hej_verden_xml,
             "smil": self.hej_verden_smil,
         }
-        response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
+        response = API_CLIENT.post("/api/v1/convert_alignment/srt", json=request)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()["file_name"].endswith("_sentences.srt"))
         self.assertTrue(response.json()["other_file_name"].endswith("_words.srt"))
@@ -298,11 +292,10 @@ class TestWebApi(BasicTestCase):
         request = {
             "encoding": "utf-8",  # for bwd compat, make sure the encoding is allowed but ignored
             "audio_duration": 83.1,
-            "output_format": "vtt",
             "xml": self.hej_verden_xml,
             "smil": self.hej_verden_smil,
         }
-        response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
+        response = API_CLIENT.post("/api/v1/convert_alignment/vtt", json=request)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()["file_name"].endswith("_sentences.vtt"))
         self.assertTrue(response.json()["other_file_name"].endswith("_words.vtt"))
@@ -335,21 +328,19 @@ class TestWebApi(BasicTestCase):
     def test_convert_to_bad_format(self):
         request = {
             "audio_duration": 83.1,
-            "output_format": "not_a_known_format",
             "xml": self.hej_verden_xml,
             "smil": self.hej_verden_smil,
         }
-        response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
+        response = API_CLIENT.post("/api/v1/convert_alignment/badformat", json=request)
         self.assertEqual(response.status_code, 422)
 
         request = {
             "audio_duration": 83.1,
-            # "output_format" just missing
             "xml": self.hej_verden_xml,
             "smil": self.hej_verden_smil,
         }
         response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
-        self.assertEqual(response.status_code, 422)
+        self.assertEqual(response.status_code, 404)
 
 
 if __name__ == "__main__":
