@@ -21,6 +21,7 @@ http://localhost:8000/api/v1/docs
 
 import io
 import os
+from enum import Enum
 from tempfile import TemporaryDirectory
 from textwrap import dedent
 from typing import Dict, List, Optional, Union
@@ -204,6 +205,15 @@ def create_grammar(xml):
     return dict_data, fsg_data, text_data
 
 
+class FormatName(Enum):
+    """The different formats supported to represent readalong alignments"""
+
+    textgrid = "textgrid"  # Praat TextGrid format
+    eaf = "eaf"  # ELAN EAF format
+    srt = "srt"  # SRT subtitle format
+    vtt = "vtt"  # VTT subtitle format
+
+
 class ConvertRequest(BaseModel):
     """Convert Request contains the RAS-processed XML and SMIL alignments"""
 
@@ -213,10 +223,9 @@ class ConvertRequest(BaseModel):
         title="The duration of the audio used to create the alignment, in seconds.",
     )
 
-    output_format: str = Field(
-        example="TextGrid",
-        regex="^(?i)(eaf|TextGrid|srt|vtt)$",
-        title="Format to convert to, one of TextGrid (Praat), eaf (ELAN), srt (SRT subtitles), or vtt (VTT subtitles).",
+    output_format: FormatName = Field(
+        example=FormatName.textgrid,
+        title="Format to convert to, one of textgrid (Praat TextGrid), eaf (ELAN EAF), srt (SRT subtitles), or vtt (VTT subtitles).",
     )
 
     xml: str = Field(
@@ -292,7 +301,7 @@ async def convert_alignment(input: ConvertRequest) -> ConvertResponse:
 
     Args (as dict items in the request body):
      - audio_duration: duration in seconds of the audio file used to create the alignment
-     - output_format: one of TextGrid, eaf, srt, vtt
+     - output_format: one of textgrid, eaf, srt, vtt
      - xml: the XML file produced by /assemble
      - smil: the SMIL file produced by SoundSwallower(.js)
 
@@ -331,8 +340,9 @@ async def convert_alignment(input: ConvertRequest) -> ConvertResponse:
     with TemporaryDirectory() as temp_dir_name:
         prefix = os.path.join(temp_dir_name, "f")
 
-        output_format = input.output_format.lower()
-        if output_format == "textgrid":
+        output_format = input.output_format
+
+        if output_format == FormatName.textgrid:
             save_label_files(
                 words, parsed_xml, input.audio_duration, prefix, "textgrid"
             )
@@ -341,14 +351,14 @@ async def convert_alignment(input: ConvertRequest) -> ConvertResponse:
                 file_contents=slurp_file(prefix + ".TextGrid"),
             )
 
-        elif output_format == "eaf":
+        elif output_format == FormatName.eaf:
             save_label_files(words, parsed_xml, input.audio_duration, prefix, "eaf")
             return ConvertResponse(
                 file_name="aligned.eaf",
                 file_contents=slurp_file(prefix + ".eaf"),
             )
 
-        elif output_format == "srt":
+        elif output_format == FormatName.srt:
             save_subtitles(words, parsed_xml, prefix, "srt")
             return ConvertResponse(
                 file_name="aligned_sentences.srt",
@@ -357,7 +367,7 @@ async def convert_alignment(input: ConvertRequest) -> ConvertResponse:
                 other_file_contents=slurp_file(prefix + "_words.srt"),
             )
 
-        elif output_format == "vtt":
+        elif output_format == FormatName.vtt:
             save_subtitles(words, parsed_xml, prefix, "vtt")
             return ConvertResponse(
                 file_name="aligned_sentences.vtt",

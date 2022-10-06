@@ -153,7 +153,7 @@ class TestWebApi(BasicTestCase):
     def test_convert_to_TextGrid_errors(self):
         request = {
             "audio_duration": 83.1,
-            "output_format": "TextGrid",
+            "output_format": "textgrid",
             "xml": "this is not XML",
             "smil": self.hej_verden_smil,
         }
@@ -162,7 +162,7 @@ class TestWebApi(BasicTestCase):
 
         request = {
             "audio_duration": 83.1,
-            "output_format": "TextGrid",
+            "output_format": "textgrid",
             "xml": self.hej_verden_xml,
             "smil": "This is not SMIL",
         }
@@ -171,7 +171,7 @@ class TestWebApi(BasicTestCase):
 
         request = {
             "audio_duration": -10.0,
-            "output_format": "TextGrid",
+            "output_format": "textgrid",
             "xml": self.hej_verden_xml,
             "smil": self.hej_verden_smil,
         }
@@ -181,7 +181,7 @@ class TestWebApi(BasicTestCase):
     def test_convert_to_TextGrid(self):
         request = {
             "audio_duration": 83.1,
-            "output_format": "TextGrid",
+            "output_format": "textgrid",
             "xml": self.hej_verden_xml,
             "smil": self.hej_verden_smil,
         }
