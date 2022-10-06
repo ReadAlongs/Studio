@@ -43,7 +43,7 @@ def make_smil(text_path: str, audio_path: str, words: List[dict]) -> str:
     Args:
         text_path (str): path to text
         audio_path (str): path to audio
-        words (List[dict]): all alignements
+        words (List[dict]): all alignments
 
     Returns:
         str: formatted SMIL
