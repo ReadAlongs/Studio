@@ -183,9 +183,9 @@ class TestWebApi(BasicTestCase):
         }
         response = API_CLIENT.post("/api/v1/convert_alignment/textgrid", json=request)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.json()["file_name"].endswith(".TextGrid"))
+        self.assertIn("aligned.TextGrid", response.headers["content-disposition"])
         self.assertEqual(
-            response.json()["file_contents"],
+            response.text,
             dedent(
                 """\
                 File type = "ooTextFile"
@@ -248,8 +248,8 @@ class TestWebApi(BasicTestCase):
         }
         response = API_CLIENT.post("/api/v1/convert_alignment/eaf", json=request)
         self.assertEqual(response.status_code, 200)
-        self.assertIn("<ANNOTATION_DOCUMENT", response.json()["file_contents"])
-        self.assertTrue(response.json()["file_name"].endswith(".eaf"))
+        self.assertIn("<ANNOTATION_DOCUMENT", response.text)
+        self.assertIn("aligned.eaf", response.headers["content-disposition"])
 
     def test_convert_to_srt(self):
         request = {
@@ -259,10 +259,9 @@ class TestWebApi(BasicTestCase):
         }
         response = API_CLIENT.post("/api/v1/convert_alignment/srt", json=request)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.json()["file_name"].endswith("_sentences.srt"))
-        self.assertTrue(response.json()["other_file_name"].endswith("_words.srt"))
+        self.assertIn("aligned_sentences.srt", response.headers["content-disposition"])
         self.assertEqual(
-            response.json()["file_contents"],
+            response.text,
             dedent(
                 """\
                 1
@@ -272,8 +271,14 @@ class TestWebApi(BasicTestCase):
                 """
             ),
         )
+
+        response = API_CLIENT.post(
+            "/api/v1/convert_alignment/srt?tier=word", json=request
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("aligned_words.srt", response.headers["content-disposition"])
         self.assertEqual(
-            response.json()["other_file_contents"],
+            response.text,
             dedent(
                 """\
                 1
@@ -295,12 +300,13 @@ class TestWebApi(BasicTestCase):
             "xml": self.hej_verden_xml,
             "smil": self.hej_verden_smil,
         }
-        response = API_CLIENT.post("/api/v1/convert_alignment/vtt", json=request)
+        response = API_CLIENT.post(
+            "/api/v1/convert_alignment/vtt?tier=sentence", json=request
+        )
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.json()["file_name"].endswith("_sentences.vtt"))
-        self.assertTrue(response.json()["other_file_name"].endswith("_words.vtt"))
+        self.assertIn("aligned_sentences.vtt", response.headers["content-disposition"])
         self.assertEqual(
-            response.json()["file_contents"],
+            response.text,
             dedent(
                 """\
                 WEBVTT
@@ -310,8 +316,14 @@ class TestWebApi(BasicTestCase):
                 """
             ),
         )
+
+        response = API_CLIENT.post(
+            "/api/v1/convert_alignment/vtt?tier=word", json=request
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("aligned_words.vtt", response.headers["content-disposition"])
         self.assertEqual(
-            response.json()["other_file_contents"],
+            response.text,
             dedent(
                 """\
                 WEBVTT
@@ -341,6 +353,11 @@ class TestWebApi(BasicTestCase):
         }
         response = API_CLIENT.post("/api/v1/convert_alignment", json=request)
         self.assertEqual(response.status_code, 404)
+
+        response = API_CLIENT.post(
+            "/api/v1/convert_alignment/vtt?tier=badtier", json=request
+        )
+        self.assertEqual(response.status_code, 422)
 
 
 if __name__ == "__main__":

@@ -28,6 +28,7 @@ from typing import Dict, List, Optional, Union
 
 from fastapi import Body, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from lxml import etree
 from pydantic import BaseModel, Field
 
@@ -262,24 +263,11 @@ class ConvertRequest(BaseModel):
     )
 
 
-class ConvertResponse(BaseModel):
-    """Convert response has the requesed converted file's contents"""
+class SubtitleTier(Enum):
+    """Which tier of the alignment information is returned"""
 
-    file_name: str = Field(
-        title="A suggested name for this output file: aligned + the standard extension"
-    )
-
-    file_contents: str = Field(
-        title="Full contents of the converted file in the format requested."
-    )
-
-    other_file_name: Union[None, str] = Field(
-        title="Suggested name for the second file, if the conversion generates two files"
-    )
-
-    other_file_contents: Union[None, str] = Field(
-        title="Full contents of the second file, if any"
-    )
+    sentence = "sentence"
+    word = "word"
 
 
 def slurp_file(filename):
@@ -288,10 +276,12 @@ def slurp_file(filename):
         return f.read()
 
 
-@v1.post("/convert_alignment/{output_format}", response_model=ConvertResponse)
+@v1.post("/convert_alignment/{output_format}")
 async def convert_alignment(
-    input: ConvertRequest, output_format: FormatName
-) -> ConvertResponse:
+    input: ConvertRequest,
+    output_format: FormatName,
+    tier: Union[SubtitleTier, None] = None,
+) -> Response:
     """Convert an alignment to a different format.
 
     Encoding: all input and output is in UTF-8.
@@ -299,6 +289,10 @@ async def convert_alignment(
     Path Parameter:
      - output_format: Format to convert to, one of textgrid (Praat TextGrid),
        eaf (ELAN EAF), srt (SRT subtitles), or vtt (VTT subtitles).
+
+    Query Parameter:
+     - tier: for srt and vtt outputs, whether the subtitles should be at the
+       sentence (this is the default) or word level.
 
     Args (as dict items in the request body):
      - audio_duration: duration in seconds of the audio file used to create the alignment
@@ -308,20 +302,15 @@ async def convert_alignment(
     Formats supported:
      - TextGrid: Praat TextGrid file format
      - eaf: ELAN eaf file format
-     - srt: SRT subtitle format, as two files, 1) for sentences, 2) for words
-     - vtt: WebVTT subtitle format, as two files, 1) for sentences, 2) for words
+     - srt: SRT subtitle format (at the sentence or word level, based on tier)
+     - vtt: WebVTT subtitle format (at the sentence or word level, based on tier)
 
     Data privacy consideration: due to limitations of the libraries used to perform
     some of these conversions, the output files will be temporarily stored on disk,
     but they get deleted immediately as this endpoint returns its output or reports
     any error.
 
-    Returns:
-     - file_name: a suggested name for the returned file
-     - file_contents: the contents of the file converted in the requested format
-     for srt and vtt:
-     - other_file_name: a suggested name for the second file
-     - other_file_contents: the contents of the second file
+    Returns: a file in the format requested
     """
     try:
         parsed_xml = etree.fromstring(bytes(input.xml, encoding="utf-8"))
@@ -338,46 +327,63 @@ async def convert_alignment(
     # temporary directory and all temporary files we create in it will be deleted
     # when this function exits, whether it is with an error or with success.
     with TemporaryDirectory() as temp_dir_name:
-        prefix = os.path.join(temp_dir_name, "f")
+        prefix = os.path.join(temp_dir_name, "aligned")
 
         if output_format == FormatName.textgrid:
             save_label_files(
                 words, parsed_xml, input.audio_duration, prefix, "textgrid"
             )
-            return ConvertResponse(
-                file_name="aligned.TextGrid",
-                file_contents=slurp_file(prefix + ".TextGrid"),
+            return Response(
+                slurp_file(prefix + ".TextGrid"),
+                media_type="text/plain",
+                # With "attachment;", the result has to be downloaded
+                # headers={"Content-Disposition": "attachment; filename=aligned.TextGrid"},
+                # Without "attachment;", the result is right in the response body
+                headers={"Content-Disposition": "filename=aligned.TextGrid"},
             )
 
         elif output_format == FormatName.eaf:
             save_label_files(words, parsed_xml, input.audio_duration, prefix, "eaf")
-            return ConvertResponse(
-                file_name="aligned.eaf",
-                file_contents=slurp_file(prefix + ".eaf"),
+            return Response(
+                slurp_file(prefix + ".eaf"),
+                media_type="text/xml",
+                headers={"Content-Disposition": "filename=aligned.eaf"},
             )
 
         elif output_format == FormatName.srt:
             save_subtitles(words, parsed_xml, prefix, "srt")
-            return ConvertResponse(
-                file_name="aligned_sentences.srt",
-                file_contents=slurp_file(prefix + "_sentences.srt"),
-                other_file_name="aligned_words.srt",
-                other_file_contents=slurp_file(prefix + "_words.srt"),
-            )
+            if tier == SubtitleTier.word:
+                return Response(
+                    slurp_file(prefix + "_words.srt"),
+                    media_type="text/plain",
+                    headers={"Content-Disposition": "filename=aligned_words.srt"},
+                )
+            else:
+                return Response(
+                    slurp_file(prefix + "_sentences.srt"),
+                    media_type="text/plain",
+                    headers={"Content-Disposition": "filename=aligned_sentences.srt"},
+                )
 
         elif output_format == FormatName.vtt:
             save_subtitles(words, parsed_xml, prefix, "vtt")
-            return ConvertResponse(
-                file_name="aligned_sentences.vtt",
-                file_contents=slurp_file(prefix + "_sentences.vtt"),
-                other_file_name="aligned_words.vtt",
-                other_file_contents=slurp_file(prefix + "_words.vtt"),
-            )
+            if tier == SubtitleTier.word:
+                return Response(
+                    slurp_file(prefix + "_words.vtt"),
+                    media_type="text/plain",
+                    headers={"Content-Disposition": "filename=aligned_words.vtt"},
+                )
+            else:
+                return Response(
+                    slurp_file(prefix + "_sentences.vtt"),
+                    media_type="text/plain",
+                    headers={"Content-Disposition": "filename=aligned_sentences.vtt"},
+                )
 
         else:
             raise HTTPException(
                 status_code=500,
-                detail="Invalid output_format (should have been caught by regex validation!)",
+                detail="If this happens, FastAPI Enum validation didn't work so this is a bug!",
             )
 
 
