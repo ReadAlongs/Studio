@@ -738,8 +738,8 @@ def save_label_files(
         output_base (str): Base path for output files
         output_formats (Iterable[str]): List of output formats
     """
-    textual_words, sentences = get_textual_words_and_sentences(words, tokenized_xml)
-    textgrid = create_text_grid(textual_words, sentences, duration)
+    words_with_text, sentences = get_word_texts_and_sentences(words, tokenized_xml)
+    textgrid = create_text_grid(words_with_text, sentences, duration)
 
     if "textgrid" in output_formats:
         textgrid.to_file(output_base + ".TextGrid")
@@ -762,9 +762,9 @@ def save_subtitles(
         output_base (str): Base path for output files
         output_formats (Iterable[str]): List of output formats
     """
-    textual_words, sentences = get_textual_words_and_sentences(words, tokenized_xml)
+    words_with_text, sentences = get_word_texts_and_sentences(words, tokenized_xml)
     cc_sentences = write_to_subtitles(sentences)
-    cc_words = write_to_subtitles(textual_words)
+    cc_words = write_to_subtitles(words_with_text)
 
     if "srt" in output_formats:
         cc_sentences.save_as_srt(output_base + "_sentences.srt")
@@ -968,7 +968,7 @@ def get_ancestor_sent_el(word_el: etree.ElementTree) -> Union[None, etree.Elemen
     return word_el
 
 
-def get_textual_words_and_sentences(
+def get_word_texts_and_sentences(
     words: List[dict], tokenized_xml: etree.ElementTree
 ) -> Tuple[List[dict], List[List[dict]]]:
     """Parse xml into word and sentence 'tier' data with full textual words
@@ -999,13 +999,13 @@ def get_textual_words_and_sentences(
                 sentences.append(sent_words)
             sent_words = []
             prev_sent_el = sent_el
-        textual_word = {
+        word_with_text = {
             "text": get_word_text(word_el),
             "start": word["start"],
             "end": word["end"],
         }
-        sent_words.append(textual_word)
-        all_words.append(textual_word)
+        sent_words.append(word_with_text)
+        all_words.append(word_with_text)
     if sent_words:
         sentences.append(sent_words)
     return all_words, sentences

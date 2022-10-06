@@ -8,6 +8,7 @@ from basic_test_case import BasicTestCase
 from fastapi.testclient import TestClient
 from lxml import etree
 
+from readalongs.log import LOGGER
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.tokenize_xml import tokenize_xml
@@ -81,7 +82,8 @@ class TestWebApi(BasicTestCase):
             "text": "blah blah",
             "text_languages": ["test"],
         }
-        response = API_CLIENT.post("/api/v1/assemble", json=request)
+        with self.assertLogs(LOGGER, "ERROR"):
+            response = API_CLIENT.post("/api/v1/assemble", json=request)
         self.assertEqual(response.status_code, 422)
 
     def test_langs(self):
