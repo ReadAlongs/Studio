@@ -737,6 +737,10 @@ def save_label_files(
         duration: length of the audio in seconds
         output_base (str): Base path for output files
         output_formats (Iterable[str]): List of output formats
+
+    Raises:
+        IndexError: words and tokenized_xml have inconsistent IDs
+        Exception: TODO, not sure what else this can raise
     """
     words_with_text, sentences = get_word_texts_and_sentences(words, tokenized_xml)
     textgrid = create_text_grid(words_with_text, sentences, duration)
@@ -761,6 +765,10 @@ def save_subtitles(
         tokenized_xml: tokenized or g2p'd parsed XML object
         output_base (str): Base path for output files
         output_formats (Iterable[str]): List of output formats
+
+    Raises:
+        IndexError: words and tokenized_xml have inconsistent IDs
+        Exception: TODO, not sure what else this can raise
     """
     words_with_text, sentences = get_word_texts_and_sentences(words, tokenized_xml)
     cc_sentences = write_to_subtitles(sentences)

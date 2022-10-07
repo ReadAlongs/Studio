@@ -21,18 +21,20 @@ http://localhost:8000/api/v1/docs
 
 import io
 import os
+import tempfile
 from enum import Enum
-from tempfile import TemporaryDirectory
 from textwrap import dedent
 from typing import Dict, List, Optional, Union
 
 from fastapi import Body, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import FileResponse
 from lxml import etree
 from pydantic import BaseModel, Field
+from starlette.background import BackgroundTask
 
 from readalongs.align import create_tei_from_text, save_label_files, save_subtitles
+from readalongs.log import LOGGER
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.make_dict import make_dict_object
@@ -83,6 +85,8 @@ class XMLRequest(RequestBase):
 
 
 class AssembleResponse(BaseModel):
+    """Response from assemble with the XML prepared and the rest."""
+
     lexicon: Dict[str, str]  # A dictionary of the form {lang_id: lang_name }
     jsgf: str  # The JSGF-formatted grammar in plain text
     text_ids: str  # The text ID input for the decoder in plain text
@@ -277,11 +281,11 @@ def slurp_file(filename):
 
 
 @v1.post("/convert_alignment/{output_format}")
-async def convert_alignment(
+async def convert_alignment(  # noqa: C901
     input: ConvertRequest,
     output_format: FormatName,
     tier: Union[SubtitleTier, None] = None,
-) -> Response:
+) -> FileResponse:
     """Convert an alignment to a different format.
 
     Encoding: all input and output is in UTF-8.
@@ -322,60 +326,93 @@ async def convert_alignment(
     except ValueError as e:
         raise HTTPException(status_code=422, detail="SMIL provided is not valid") from e
 
-    # Data privacy consideration: creating the temporary directory with a context
-    # manager like this guarantees, as we promise in the API documentation, that the
-    # temporary directory and all temporary files we create in it will be deleted
-    # when this function exits, whether it is with an error or with success.
-    with TemporaryDirectory() as temp_dir_name:
-        prefix = os.path.join(temp_dir_name, "aligned")
+    # Data privacy consideration: we have to make sure this temporary directory gets
+    # deleted after the call returns, as we promise in the API documentation.
+    if True:
+        temp_dir_object = tempfile.TemporaryDirectory()
+        temp_dir_name = temp_dir_object.name
+        cleanup = BackgroundTask(temp_dir_object.cleanup)
+    else:
+        temp_dir_name = tempfile.mkdtemp()
+        cleanup = BackgroundTask(lambda: None)
+    prefix = os.path.join(temp_dir_name, "aligned")
+    LOGGER.info(f"Temporary directory: {temp_dir_name}")
 
+    try:
         if output_format == FormatName.textgrid:
-            save_label_files(
-                words, parsed_xml, input.audio_duration, prefix, "textgrid"
-            )
-            return Response(
-                slurp_file(prefix + ".TextGrid"),
+            try:
+                save_label_files(
+                    words, parsed_xml, input.audio_duration, prefix, "textgrid"
+                )
+            except Exception as e:
+                raise HTTPException(
+                    status_code=422,
+                    detail="XML+SMIL file pair provided cannot be converted",
+                ) from e
+            return FileResponse(
+                prefix + ".TextGrid",
+                background=cleanup,
                 media_type="text/plain",
-                # With "attachment;", the result has to be downloaded
-                # headers={"Content-Disposition": "attachment; filename=aligned.TextGrid"},
-                # Without "attachment;", the result is right in the response body
                 headers={"Content-Disposition": "filename=aligned.TextGrid"},
             )
 
         elif output_format == FormatName.eaf:
-            save_label_files(words, parsed_xml, input.audio_duration, prefix, "eaf")
-            return Response(
-                slurp_file(prefix + ".eaf"),
+            try:
+                save_label_files(words, parsed_xml, input.audio_duration, prefix, "eaf")
+            except Exception as e:
+                raise HTTPException(
+                    status_code=422,
+                    detail="XML+SMIL file pair provided cannot be converted",
+                ) from e
+            return FileResponse(
+                prefix + ".eaf",
+                background=cleanup,
                 media_type="text/xml",
                 headers={"Content-Disposition": "filename=aligned.eaf"},
             )
 
         elif output_format == FormatName.srt:
-            save_subtitles(words, parsed_xml, prefix, "srt")
+            try:
+                save_subtitles(words, parsed_xml, prefix, "srt")
+            except Exception as e:
+                raise HTTPException(
+                    status_code=422,
+                    detail="XML+SMIL file pair provided cannot be converted",
+                ) from e
             if tier == SubtitleTier.word:
-                return Response(
-                    slurp_file(prefix + "_words.srt"),
+                return FileResponse(
+                    prefix + "_words.srt",
+                    background=cleanup,
                     media_type="text/plain",
                     headers={"Content-Disposition": "filename=aligned_words.srt"},
                 )
             else:
-                return Response(
-                    slurp_file(prefix + "_sentences.srt"),
+                return FileResponse(
+                    prefix + "_sentences.srt",
+                    background=cleanup,
                     media_type="text/plain",
                     headers={"Content-Disposition": "filename=aligned_sentences.srt"},
                 )
 
         elif output_format == FormatName.vtt:
-            save_subtitles(words, parsed_xml, prefix, "vtt")
+            try:
+                save_subtitles(words, parsed_xml, prefix, "vtt")
+            except Exception as e:
+                raise HTTPException(
+                    status_code=422,
+                    detail="XML+SMIL file pair provided cannot be converted",
+                ) from e
             if tier == SubtitleTier.word:
-                return Response(
-                    slurp_file(prefix + "_words.vtt"),
+                return FileResponse(
+                    prefix + "_words.vtt",
+                    background=cleanup,
                     media_type="text/plain",
                     headers={"Content-Disposition": "filename=aligned_words.vtt"},
                 )
             else:
-                return Response(
-                    slurp_file(prefix + "_sentences.vtt"),
+                return FileResponse(
+                    prefix + "_sentences.vtt",
+                    background=cleanup,
                     media_type="text/plain",
                     headers={"Content-Disposition": "filename=aligned_sentences.vtt"},
                 )
@@ -385,6 +422,13 @@ async def convert_alignment(
                 status_code=500,
                 detail="If this happens, FastAPI Enum validation didn't work so this is a bug!",
             )
+
+    except Exception:
+        # We don't normally use such a global exception, but in this case we really
+        # need to make sure the temporary directory is cleaned up, so this except
+        # catches any and all problems and wipes the temporary data
+        temp_dir_object.cleanup()
+        raise
 
 
 # Mount the v1 version of the API to the root of the app

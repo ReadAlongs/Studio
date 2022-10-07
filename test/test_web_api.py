@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import re
 from textwrap import dedent
 from unittest import main
 
@@ -13,7 +14,7 @@ from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.util import get_langs
-from readalongs.web_api import create_grammar, web_api_app
+from readalongs.web_api import FormatName, create_grammar, web_api_app
 
 API_CLIENT = TestClient(web_api_app)
 
@@ -152,31 +153,6 @@ class TestWebApi(BasicTestCase):
         """
     )
 
-    def test_convert_to_TextGrid_errors(self):
-        request = {
-            "audio_duration": 83.1,
-            "xml": "this is not XML",
-            "smil": self.hej_verden_smil,
-        }
-        response = API_CLIENT.post("/api/v1/convert_alignment/textgrid", json=request)
-        self.assertEqual(response.status_code, 422, "Invalid XML should fail.")
-
-        request = {
-            "audio_duration": 83.1,
-            "xml": self.hej_verden_xml,
-            "smil": "This is not SMIL",
-        }
-        response = API_CLIENT.post("/api/v1/convert_alignment/textgrid", json=request)
-        self.assertEqual(response.status_code, 422, "Invalid SMIL should fail.")
-
-        request = {
-            "audio_duration": -10.0,
-            "xml": self.hej_verden_xml,
-            "smil": self.hej_verden_smil,
-        }
-        response = API_CLIENT.post("/api/v1/convert_alignment/textgrid", json=request)
-        self.assertEqual(response.status_code, 422, "Negative duration should fail.")
-
     def test_convert_to_TextGrid(self):
         request = {
             "audio_duration": 83.1,
@@ -263,7 +239,7 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("aligned_sentences.srt", response.headers["content-disposition"])
         self.assertEqual(
-            response.text,
+            response.text.replace("\r", ""),  # CRLF->LF, in case we're on Windows.
             dedent(
                 """\
                 1
@@ -280,7 +256,7 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("aligned_words.srt", response.headers["content-disposition"])
         self.assertEqual(
-            response.text,
+            response.text.replace("\r", ""),  # CRLF->LF, in case we're on Windows.
             dedent(
                 """\
                 1
@@ -308,7 +284,7 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("aligned_sentences.vtt", response.headers["content-disposition"])
         self.assertEqual(
-            response.text,
+            response.text.replace("\r", ""),  # CRLF->LF, in case we're on Windows.
             dedent(
                 """\
                 WEBVTT
@@ -325,7 +301,7 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("aligned_words.vtt", response.headers["content-disposition"])
         self.assertEqual(
-            response.text,
+            response.text.replace("\r", ""),  # CRLF->LF, in case we're on Windows.
             dedent(
                 """\
                 WEBVTT
@@ -338,6 +314,90 @@ class TestWebApi(BasicTestCase):
                 """
             ),
         )
+
+    def test_convert_to_TextGrid_errors(self):
+        request = {
+            "audio_duration": 83.1,
+            "xml": "this is not XML",
+            "smil": self.hej_verden_smil,
+        }
+        response = API_CLIENT.post("/api/v1/convert_alignment/textgrid", json=request)
+        self.assertEqual(response.status_code, 422, "Invalid XML should fail.")
+
+        request = {
+            "audio_duration": 83.1,
+            "xml": self.hej_verden_xml,
+            "smil": "This is not SMIL",
+        }
+        response = API_CLIENT.post("/api/v1/convert_alignment/textgrid", json=request)
+        self.assertEqual(response.status_code, 422, "Invalid SMIL should fail.")
+
+        request = {
+            "audio_duration": -10.0,
+            "xml": self.hej_verden_xml,
+            "smil": self.hej_verden_smil,
+        }
+        response = API_CLIENT.post("/api/v1/convert_alignment/textgrid", json=request)
+        self.assertEqual(response.status_code, 422, "Negative duration should fail.")
+
+    def test_cleanup_temp_dir(self):
+        """Make sure convert's temporary directory actually gets deleted."""
+        request = {
+            "audio_duration": 83.1,
+            "xml": self.hej_verden_xml,
+            "smil": self.hej_verden_smil,
+        }
+        with self.assertLogs(LOGGER, "INFO") as log_cm:
+            response = API_CLIENT.post(
+                "/api/v1/convert_alignment/textgrid", json=request
+            )
+        self.assertEqual(response.status_code, 200)
+        # print(log_cm.output)
+        match = re.search(
+            "Temporary directory: (.*)($|\r|\n)", "\n".join(log_cm.output)
+        )
+        self.assertIsNotNone(match)
+        self.assertFalse(os.path.isdir(match[1]))
+
+    def test_cleanup_even_if_error(self):
+        # This is seriously white-box testing... this XML has IDs that don't
+        # match those in the SMIL file, which will cause an exception deeper in
+        # the code after the temporary directory is created. We exercise here
+        # catching that exception in a sane way, with a 422 status code, while
+        # also making sure the temporary directory gets deleted.
+        mismatch_xml = dedent(
+            """\
+            <?xml version='1.0' encoding='utf-8'?>
+            <TEI>
+                <text xml:lang="dan" fallback-langs="und" id="t0">
+                    <body id="t0b0">
+                        <div type="page" id="t0b0d0">
+                            <p id="t0b0d0p0">
+                                <s id="t0b0d0p0s0"><w id="mismatch0" ARPABET="HH EH Y">hej é</w> <w id="mismatch1" ARPABET="V Y D EH N">verden à</w></s>
+                            </p>
+                        </div>
+                    </body>
+                </text>
+            </TEI>
+            """
+        )
+        request = {
+            "audio_duration": 83.1,
+            "xml": mismatch_xml,
+            "smil": self.hej_verden_smil,
+        }
+        for format_name in FormatName:
+            with self.assertLogs(LOGGER, "INFO") as log_cm:
+                response = API_CLIENT.post(
+                    f"/api/v1/convert_alignment/{format_name.value}", json=request
+                )
+            self.assertEqual(response.status_code, 422)
+            # print(log_cm.output)
+            match = re.search(
+                "Temporary directory: (.*)($|\r|\n)", "\n".join(log_cm.output)
+            )
+            self.assertIsNotNone(match)
+            self.assertFalse(os.path.isdir(match[1]))
 
     def test_convert_to_bad_format(self):
         request = {
