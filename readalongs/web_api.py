@@ -344,7 +344,7 @@ async def convert_alignment(  # noqa: C901
                 prefix + ".TextGrid",
                 background=cleanup,
                 media_type="text/plain",
-                headers={"Content-Disposition": "filename=aligned.TextGrid"},
+                filename="aligned.TextGrid",
             )
 
         elif output_format == FormatName.EAF:
@@ -361,7 +361,7 @@ async def convert_alignment(  # noqa: C901
                 prefix + ".eaf",
                 background=cleanup,
                 media_type="text/xml",
-                headers={"Content-Disposition": "filename=aligned.eaf"},
+                filename="aligned.eaf",
             )
 
         elif output_format == FormatName.SRT:
@@ -377,14 +377,14 @@ async def convert_alignment(  # noqa: C901
                     prefix + "_words.srt",
                     background=cleanup,
                     media_type="text/plain",
-                    headers={"Content-Disposition": "filename=aligned_words.srt"},
+                    filename="aligned_words.srt",
                 )
             else:
                 return FileResponse(
                     prefix + "_sentences.srt",
                     background=cleanup,
                     media_type="text/plain",
-                    headers={"Content-Disposition": "filename=aligned_sentences.srt"},
+                    filename="aligned_sentences.srt",
                 )
 
         elif output_format == FormatName.VTT:
@@ -400,14 +400,14 @@ async def convert_alignment(  # noqa: C901
                     prefix + "_words.vtt",
                     background=cleanup,
                     media_type="text/plain",
-                    headers={"Content-Disposition": "filename=aligned_words.vtt"},
+                    filename="aligned_words.vtt",
                 )
             else:
                 return FileResponse(
                     prefix + "_sentences.vtt",
                     background=cleanup,
                     media_type="text/plain",
-                    headers={"Content-Disposition": "filename=aligned_sentences.vtt"},
+                    filename="aligned_sentences.vtt",
                 )
 
         else:
