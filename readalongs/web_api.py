@@ -117,7 +117,7 @@ async def langs() -> Dict[str, str]:
 
 @v1.post("/assemble", response_model=AssembleResponse)
 async def assemble(
-    input: Union[XMLRequest, PlainTextRequest] = Body(
+    request: Union[XMLRequest, PlainTextRequest] = Body(
         examples={
             "text": {
                 "summary": "A basic example with plain text input",
@@ -158,18 +158,18 @@ async def assemble(
      - processed_xml: the XML with all the readalongs info in it
     """
 
-    if isinstance(input, XMLRequest):
+    if isinstance(request, XMLRequest):
         try:
-            parsed = etree.fromstring(bytes(input.xml, encoding="utf-8"))
+            parsed = etree.fromstring(bytes(request.xml, encoding="utf-8"))
         except etree.XMLSyntaxError as e:
             raise HTTPException(
                 status_code=422, detail="XML provided is not valid"
             ) from e
-    elif isinstance(input, PlainTextRequest):
-        parsed = io.StringIO(input.text).readlines()
+    elif isinstance(request, PlainTextRequest):
+        parsed = io.StringIO(request.text).readlines()
         parsed = etree.fromstring(
             bytes(
-                create_tei_from_text(parsed, text_languages=input.text_languages),
+                create_tei_from_text(parsed, text_languages=request.text_languages),
                 encoding="utf-8",
             )
         )
@@ -193,8 +193,8 @@ async def assemble(
         "processed_xml": etree.tostring(g2ped, encoding="utf8").decode(),
     }
 
-    if input.debug:
-        response["input"] = input.dict()
+    if request.debug:
+        response["input"] = request.dict()
         response["parsed"] = etree.tostring(parsed, encoding="utf8")
         response["tokenized"] = etree.tostring(tokenized, encoding="utf8")
         response["g2ped"] = etree.tostring(g2ped, encoding="utf8")
@@ -202,7 +202,8 @@ async def assemble(
 
 
 def create_grammar(xml):
-    # Create the grammar and dictionary data from w elements in the given XML
+    """Create the grammar and dictionary data from w elements in the given XML"""
+
     word_elements = xml.xpath("//w")
     dict_data = make_dict_object(word_elements)
     fsg_data = make_jsgf(word_elements, filename="test")
@@ -213,10 +214,10 @@ def create_grammar(xml):
 class FormatName(Enum):
     """The different formats supported to represent readalong alignments"""
 
-    textgrid = "textgrid"  # Praat TextGrid format
-    eaf = "eaf"  # ELAN EAF format
-    srt = "srt"  # SRT subtitle format
-    vtt = "vtt"  # VTT subtitle format
+    TEXTGRID = "textgrid"  # Praat TextGrid format
+    EAF = "eaf"  # ELAN EAF format
+    SRT = "srt"  # SRT subtitle format
+    VTT = "vtt"  # VTT subtitle format
 
 
 class ConvertRequest(BaseModel):
@@ -270,19 +271,13 @@ class ConvertRequest(BaseModel):
 class SubtitleTier(Enum):
     """Which tier of the alignment information is returned"""
 
-    sentence = "sentence"
-    word = "word"
-
-
-def slurp_file(filename):
-    """Slurp a file into one string"""
-    with open(filename, "r", encoding="utf-8") as f:
-        return f.read()
+    SENTENCE = "sentence"
+    WORD = "word"
 
 
 @v1.post("/convert_alignment/{output_format}")
 async def convert_alignment(  # noqa: C901
-    input: ConvertRequest,
+    request: ConvertRequest,
     output_format: FormatName,
     tier: Union[SubtitleTier, None] = None,
 ) -> FileResponse:
@@ -317,12 +312,12 @@ async def convert_alignment(  # noqa: C901
     Returns: a file in the format requested
     """
     try:
-        parsed_xml = etree.fromstring(bytes(input.xml, encoding="utf-8"))
+        parsed_xml = etree.fromstring(bytes(request.xml, encoding="utf-8"))
     except etree.XMLSyntaxError as e:
         raise HTTPException(status_code=422, detail="XML provided is not valid") from e
 
     try:
-        words = parse_smil(input.smil)
+        words = parse_smil(request.smil)
     except ValueError as e:
         raise HTTPException(status_code=422, detail="SMIL provided is not valid") from e
 
@@ -332,13 +327,13 @@ async def convert_alignment(  # noqa: C901
     temp_dir_name = temp_dir_object.name
     cleanup = BackgroundTask(temp_dir_object.cleanup)
     prefix = os.path.join(temp_dir_name, "aligned")
-    LOGGER.info(f"Temporary directory: {temp_dir_name}")
+    LOGGER.info("Temporary directory: %s", temp_dir_name)
 
     try:
-        if output_format == FormatName.textgrid:
+        if output_format == FormatName.TEXTGRID:
             try:
                 save_label_files(
-                    words, parsed_xml, input.audio_duration, prefix, "textgrid"
+                    words, parsed_xml, request.audio_duration, prefix, "textgrid"
                 )
             except Exception as e:
                 raise HTTPException(
@@ -352,9 +347,11 @@ async def convert_alignment(  # noqa: C901
                 headers={"Content-Disposition": "filename=aligned.TextGrid"},
             )
 
-        elif output_format == FormatName.eaf:
+        elif output_format == FormatName.EAF:
             try:
-                save_label_files(words, parsed_xml, input.audio_duration, prefix, "eaf")
+                save_label_files(
+                    words, parsed_xml, request.audio_duration, prefix, "eaf"
+                )
             except Exception as e:
                 raise HTTPException(
                     status_code=422,
@@ -367,7 +364,7 @@ async def convert_alignment(  # noqa: C901
                 headers={"Content-Disposition": "filename=aligned.eaf"},
             )
 
-        elif output_format == FormatName.srt:
+        elif output_format == FormatName.SRT:
             try:
                 save_subtitles(words, parsed_xml, prefix, "srt")
             except Exception as e:
@@ -375,7 +372,7 @@ async def convert_alignment(  # noqa: C901
                     status_code=422,
                     detail="XML+SMIL file pair provided cannot be converted",
                 ) from e
-            if tier == SubtitleTier.word:
+            if tier == SubtitleTier.WORD:
                 return FileResponse(
                     prefix + "_words.srt",
                     background=cleanup,
@@ -390,7 +387,7 @@ async def convert_alignment(  # noqa: C901
                     headers={"Content-Disposition": "filename=aligned_sentences.srt"},
                 )
 
-        elif output_format == FormatName.vtt:
+        elif output_format == FormatName.VTT:
             try:
                 save_subtitles(words, parsed_xml, prefix, "vtt")
             except Exception as e:
@@ -398,7 +395,7 @@ async def convert_alignment(  # noqa: C901
                     status_code=422,
                     detail="XML+SMIL file pair provided cannot be converted",
                 ) from e
-            if tier == SubtitleTier.word:
+            if tier == SubtitleTier.WORD:
                 return FileResponse(
                     prefix + "_words.vtt",
                     background=cleanup,
