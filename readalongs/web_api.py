@@ -328,13 +328,9 @@ async def convert_alignment(  # noqa: C901
 
     # Data privacy consideration: we have to make sure this temporary directory gets
     # deleted after the call returns, as we promise in the API documentation.
-    if True:
-        temp_dir_object = tempfile.TemporaryDirectory()
-        temp_dir_name = temp_dir_object.name
-        cleanup = BackgroundTask(temp_dir_object.cleanup)
-    else:
-        temp_dir_name = tempfile.mkdtemp()
-        cleanup = BackgroundTask(lambda: None)
+    temp_dir_object = tempfile.TemporaryDirectory()
+    temp_dir_name = temp_dir_object.name
+    cleanup = BackgroundTask(temp_dir_object.cleanup)
     prefix = os.path.join(temp_dir_name, "aligned")
     LOGGER.info(f"Temporary directory: {temp_dir_name}")
 
