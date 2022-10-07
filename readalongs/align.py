@@ -716,24 +716,34 @@ def align_audio(
     return results
 
 
+def get_audio_duration(audiofile: str) -> float:
+    """Return the duration of audiofile in seconds"""
+    audio = read_audio_from_file(audiofile)
+    return audio.frame_count() / audio.frame_rate
+
+
 def save_label_files(
-    align_results: Dict[str, List],
-    audiofile: str,
+    words: List[dict],
+    tokenized_xml: etree.ElementTree,
+    duration: float,
     output_base: str,
     output_formats: Iterable[str],
 ):
     """Save label (TextGrid and/or EAF) files.
 
     Args:
-        align_results (Dict[str, List]): results of alignment
-        audiofile (str): Path to input audio
+        words: list of words with "id", "start" and "end"
+        tokenized_xml: tokenized or g2p'd parsed XML object
+        duration: length of the audio in seconds
         output_base (str): Base path for output files
         output_formats (Iterable[str]): List of output formats
+
+    Raises:
+        IndexError: words and tokenized_xml have inconsistent IDs
+        Exception: TODO, not sure what else this can raise
     """
-    audio = read_audio_from_file(audiofile)
-    duration = audio.frame_count() / audio.frame_rate
-    words, sentences = get_words_and_sentences(align_results)
-    textgrid = write_to_text_grid(words, sentences, duration)
+    words_with_text, sentences = get_word_texts_and_sentences(words, tokenized_xml)
+    textgrid = create_text_grid(words_with_text, sentences, duration)
 
     if "textgrid" in output_formats:
         textgrid.to_file(output_base + ".TextGrid")
@@ -743,18 +753,26 @@ def save_label_files(
 
 
 def save_subtitles(
-    align_results: Dict[str, List], output_base: str, output_formats=Iterable[str]
+    words: List[dict],
+    tokenized_xml: etree.ElementTree,
+    output_base: str,
+    output_formats=Iterable[str],
 ):
     """Save subtitle (SRT and/or VTT) files.
 
     Args:
-        align_results (Dict[str, List]): results of alignment
+        words: list of words with "id", "start" and "end"
+        tokenized_xml: tokenized or g2p'd parsed XML object
         output_base (str): Base path for output files
         output_formats (Iterable[str]): List of output formats
+
+    Raises:
+        IndexError: words and tokenized_xml have inconsistent IDs
+        Exception: TODO, not sure what else this can raise
     """
-    words, sentences = get_words_and_sentences(align_results)
+    words_with_text, sentences = get_word_texts_and_sentences(words, tokenized_xml)
     cc_sentences = write_to_subtitles(sentences)
-    cc_words = write_to_subtitles(words)
+    cc_words = write_to_subtitles(words_with_text)
 
     if "srt" in output_formats:
         cc_sentences.save_as_srt(output_base + "_sentences.srt")
@@ -880,8 +898,9 @@ def save_readalong(
     # Create textgrid object if outputting to TextGrid or eaf
     if "textgrid" in output_formats or "eaf" in output_formats:
         save_label_files(
-            align_results=align_results,
-            audiofile=audiofile,
+            words=align_results["words"],
+            tokenized_xml=align_results["tokenized"],
+            duration=get_audio_duration(audiofile),
             output_base=output_base,
             output_formats=output_formats,
         )
@@ -889,7 +908,8 @@ def save_readalong(
     # Create webvtt object if outputting to vtt or srt
     if "srt" in output_formats or "vtt" in output_formats:
         save_subtitles(
-            align_results=align_results,
+            words=align_results["words"],
+            tokenized_xml=align_results["tokenized"],
             output_base=output_base,
             output_formats=output_formats,
         )
@@ -910,7 +930,7 @@ def save_readalong(
     smil = make_smil(
         os.path.basename(tokenized_xml_path),
         os.path.basename(audio_path),
-        align_results,
+        align_results["words"],
     )
     save_txt(smil_path, smil)
 
@@ -956,54 +976,61 @@ def get_ancestor_sent_el(word_el: etree.ElementTree) -> Union[None, etree.Elemen
     return word_el
 
 
-def get_words_and_sentences(results) -> Tuple[List[dict], List[List[dict]]]:
-    """Parse xml into word and sentence 'tier' data
+def get_word_texts_and_sentences(
+    words: List[dict], tokenized_xml: etree.ElementTree
+) -> Tuple[List[dict], List[List[dict]]]:
+    """Parse xml into word and sentence 'tier' data with full textual words
 
     Args:
-        results([TODO type]): the results object returned by align_audio
+        words: list of words with "id", "start" and "end"
+        tokenized_xml: tokenized or g2p'd parsed XML object
 
     Returns:
-        list of words, list of sentences
+        list of words, list of sentences (as a list of lists of words)
+        The returned words are dicts containing:
+           "text": the actual textual word from the XML (not the ID)
+           "start": start time
+           "end": end time
     """
-    all_els = results["words"]
-    xml = results["tokenized"]
     sentences = []
-    words: List[dict] = []
+    sent_words: List[dict] = []
     all_words = []
     prev_sent_el = None
-    for el in all_els:
+    for word in words:
         # The sentence is considered the set of words under the same <s> element.
         # A word that's not under any <s> element is bad input, but we consider
         # it a sentence by itself for software robustness.
-        word_el = get_word_element(xml, el["id"])
+        word_el = get_word_element(tokenized_xml, word["id"])
         sent_el = get_ancestor_sent_el(word_el)
         if prev_sent_el is None or sent_el is not prev_sent_el:
-            if words:
-                sentences.append(words)
-            words = []
+            if sent_words:
+                sentences.append(sent_words)
+            sent_words = []
             prev_sent_el = sent_el
-        word = {
+        word_with_text = {
             "text": get_word_text(word_el),
-            "start": el["start"],
-            "end": el["end"],
+            "start": word["start"],
+            "end": word["end"],
         }
-        words.append(word)
-        all_words.append(word)
-    if words:
-        sentences.append(words)
+        sent_words.append(word_with_text)
+        all_words.append(word_with_text)
+    if sent_words:
+        sentences.append(sent_words)
     return all_words, sentences
 
 
-def write_to_text_grid(words: List[dict], sentences: List[List[dict]], duration: float):
-    """Write results to Praat TextGrid. Because we are using pympi, we can also export to Elan EAF.
+def create_text_grid(
+    words: List[dict], sentences: List[List[dict]], duration: float
+) -> TextGrid:
+    """Create Praat TextGrid from results. Because we are using pympi, we can also export to Elan EAF.
 
     Args:
-        words (List[dict]): List of word times containing start, end, and value keys
-        sentences (List[dict]): List of sentence times containing start, end, and value keys
+        words (List[dict]): List of words containing "text", "start", "end"
+        sentences (List[dict]): List of sentences (as a list of lists of word dicts)
         duration (float): duration of entire audio
 
     Returns:
-        TextGrid: Praat TextGrid with word and sentence alignments
+        TextGrid: Praat TextGrid object with word and sentence alignments
     """
     text_grid = TextGrid(xmax=duration)
     sentence_tier = text_grid.add_tier(name="Sentence")

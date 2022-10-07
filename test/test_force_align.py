@@ -18,7 +18,7 @@ from readalongs.align import (
     align_audio,
     convert_to_xhtml,
     create_input_tei,
-    get_words_and_sentences,
+    get_word_texts_and_sentences,
 )
 from readalongs.log import LOGGER
 from readalongs.portable_tempfile import PortableNamedTemporaryFile
@@ -63,7 +63,9 @@ class TestForceAlignment(BasicTestCase):
 
         # White-box testing to make sure srt, TextGrid and vtt output will have the
         # sentences collected correctly.
-        words, sentences = get_words_and_sentences(results)
+        words, sentences = get_word_texts_and_sentences(
+            results["words"], results["tokenized"]
+        )
         self.assertEqual(len(sentences), 7)
         self.assertEqual(len(words), 99)
 
@@ -103,7 +105,9 @@ class TestForceAlignment(BasicTestCase):
                 word_el[0].append(make_element("subsyl", "sub;"))
                 word_el.append(make_element("syl", "another syl;"))
                 break
-        _, sentences = get_words_and_sentences(results)
+        _, sentences = get_word_texts_and_sentences(
+            results["words"], results["tokenized"]
+        )
         self.assertEqual(
             [w["text"] for w in sentences[1]],
             [
