@@ -446,7 +446,8 @@ class TestG2pCli(BasicTestCase):
             c_xml, valid = convert_xml(xml, verbose_warnings=True)
         self.assertFalse(valid)
         logger_output = "\n".join(cm.output)
-        self.assertIn('No language called: "foo"', logger_output)
+        self.assertIn("No lang", logger_output)
+        self.assertIn("foo", logger_output)
         self.assertIn('no path from "crx-syl"', logger_output)
 
 
