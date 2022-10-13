@@ -26,7 +26,6 @@ from test_dna_text import TestDNAText
 from test_dna_utils import TestDNAUtils
 from test_force_align import TestForceAlignment, TestXHTML
 from test_g2p_cli import TestG2pCli
-from test_indices import TestIndices
 from test_make_xml_cli import TestMakeXMLCli
 from test_misc import TestMisc
 from test_package_urls import TestPackageURLs
@@ -44,8 +43,6 @@ loader = TestLoader()
 e2e_tests = [
     loader.loadTestsFromTestCase(test) for test in (TestForceAlignment, TestXHTML)
 ]
-
-indices_tests = [loader.loadTestsFromTestCase(test) for test in [TestIndices]]
 
 api_tests = [
     loader.loadTestsFromTestCase(test) for test in [TestWebApi]
@@ -83,7 +80,7 @@ def run_tests(suite):
     elif suite == "api":
         suite = TestSuite(api_tests)
     elif suite == "dev":
-        suite = TestSuite(indices_tests + other_tests + e2e_tests)
+        suite = TestSuite(other_tests + e2e_tests)
     elif suite in ("prod", "all"):
         suite = loader.discover(os.path.dirname(__file__))
     elif suite == "other":
