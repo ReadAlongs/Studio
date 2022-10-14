@@ -14,6 +14,7 @@ where [suite] can be one of:
 """
 
 import os
+import re
 import sys
 from unittest import TestLoader, TestSuite, TextTestRunner
 
@@ -38,18 +39,18 @@ from test_smil import TestSmilUtilities
 
 from readalongs.log import LOGGER
 
-loader = TestLoader()
+LOADER = TestLoader()
 
 e2e_tests = [
-    loader.loadTestsFromTestCase(test) for test in (TestForceAlignment, TestXHTML)
+    LOADER.loadTestsFromTestCase(test) for test in (TestForceAlignment, TestXHTML)
 ]
 
 api_tests = [
-    loader.loadTestsFromTestCase(test) for test in [TestWebApi]
+    LOADER.loadTestsFromTestCase(test) for test in [TestWebApi]
 ]  # TODO: add some load testing with https://locust.io/
 
 other_tests = [
-    loader.loadTestsFromTestCase(test)
+    LOADER.loadTestsFromTestCase(test)
     for test in [
         TestAnchors,
         TestConfig,
@@ -72,34 +73,70 @@ other_tests = [
 ]
 
 
-def run_tests(suite):
-    """Run the specified test suite"""
+def list_tests(suite: TestSuite):
+    for subsuite in suite:
+        for match in re.finditer(r"tests=\[([^][]+)\]>", str(subsuite)):
+            yield from match[1].split(", ")
+
+
+def describe_suite(suite: TestSuite):
+    full_suite = LOADER.discover(os.path.dirname(__file__))
+    full_list = list(list_tests(full_suite))
+    requested_list = list(list_tests(suite))
+    requested_set = set(requested_list)
+    print("Test suite includes:", *sorted(requested_list), sep="\n"),
+    print(
+        "\nTest suite excludes:",
+        *sorted(test for test in full_list if test not in requested_set),
+        sep="\n"
+    )
+
+
+def run_tests(suite: str, describe: bool = False) -> bool:
+    """Run the specified test suite.
+
+    Args:
+        suite: one of "all", "dev", etc specifying which suite to run
+        describe: if True, list all the test cases instead of running them.
+
+    Returns: True iff success
+    """
 
     if suite == "e2e":
-        suite = TestSuite(e2e_tests)
+        test_suite = TestSuite(e2e_tests)
     elif suite == "api":
-        suite = TestSuite(api_tests)
+        test_suite = TestSuite(api_tests)
     elif suite == "dev":
-        suite = TestSuite(other_tests + e2e_tests)
+        test_suite = TestSuite(other_tests + e2e_tests)
     elif suite in ("prod", "all"):
-        suite = loader.discover(os.path.dirname(__file__))
+        test_suite = LOADER.discover(os.path.dirname(__file__))
     elif suite == "other":
-        suite = TestSuite(other_tests)
+        test_suite = TestSuite(other_tests)
     else:
         LOGGER.error(
             "Sorry, you need to select a Test Suite to run, one of: "
             "dev, all (or prod), e2e, other"
         )
-        sys.exit(1)
+        return False
 
-    runner = TextTestRunner(verbosity=3)
-    return runner.run(suite)
+    if describe:
+        describe_suite(test_suite)
+        return True
+    else:
+        runner = TextTestRunner(verbosity=3)
+        return runner.run(test_suite).wasSuccessful()
 
 
 if __name__ == "__main__":
+    describe = "--describe" in sys.argv
+    if describe:
+        sys.argv.remove("--describe")
+
     try:
-        result = run_tests(sys.argv[1])
-        if not result.wasSuccessful():
-            raise Exception("Some tests failed. Please see log above.")
+        result = run_tests(sys.argv[1], describe)
+        if not result:
+            LOGGER.error("Some tests failed. Please see log above.")
+            sys.exit(1)
     except IndexError:
-        print("Please specify a test suite to run: i.e. 'dev' or 'all'")
+        LOGGER.error("Please specify a test suite to run: i.e. 'dev' or 'all'")
+        sys.exit(1)
