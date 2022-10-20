@@ -14,7 +14,7 @@ jobs:
         id: setup-ffmpeg
 
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: "3.7"
           cache: "pip"
@@ -41,7 +41,7 @@ jobs:
           # Legal check: make sure we don't have or introduce GPL dependencies
           if pip-licenses | grep -v 'Artistic License' | grep -v LGPL | grep GNU; then echo 'Please avoid introducing *GPL dependencies'; false; fi
 
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
         with:
           directory: ./test
           fail_ci_if_error: true # optional (default = false)
@@ -56,7 +56,7 @@ jobs:
         id: setup-ffmpeg
 
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: "3.7"
           cache: "pip"
