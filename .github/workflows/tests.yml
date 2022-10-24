@@ -44,7 +44,7 @@ jobs:
       - uses: codecov/codecov-action@v3
         with:
           directory: ./test
-          fail_ci_if_error: true # optional (default = false)
+          fail_ci_if_error: false # too many upload errors to keep "true"
 
   test-on-windows:
     runs-on: windows-latest
