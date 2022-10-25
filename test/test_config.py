@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 """Test suite for loading the config.json configuration file for readalongs align"""
 

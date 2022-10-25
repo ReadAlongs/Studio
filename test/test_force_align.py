@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 """
 Test force-alignment with SoundsSwallower FSG search from Python API

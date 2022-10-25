@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # Original Copyright and License from https://github.com/alexestes/SonoriPy:
 #

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 """Unit testing for the anchors functionality in readalongs align"""
 

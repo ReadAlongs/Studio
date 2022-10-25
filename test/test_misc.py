@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 """Test suite for misc stuff that don't need their own stand-alone suite"""
 
