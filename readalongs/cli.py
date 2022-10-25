@@ -286,7 +286,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
     if config_file:
         if str(config_file).endswith("json"):
             try:
-                with open(config_file, encoding="utf8") as f:
+                with open(config_file, encoding="utf-8-sig") as f:
                     config = json.load(f)
             except json.decoder.JSONDecodeError as e:
                 raise click.BadParameter(
@@ -415,7 +415,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
     short_help="Renamed: use 'readalongs make-xml' instead.",
     deprecated=True,
 )
-@click.argument("plaintextfile", type=click.File("r", encoding="utf8", lazy=True))
+@click.argument("plaintextfile", type=click.File("r", encoding="utf-8-sig", lazy=True))
 @click.argument("xmlfile", type=click.Path(), required=False, default="")
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
 @click.option(
@@ -465,7 +465,7 @@ def prepare(**kwargs):
     context_settings=CONTEXT_SETTINGS,
     short_help="Convert a plain text file into the XML format for alignment.",
 )
-@click.argument("plaintextfile", type=click.File("r", encoding="utf8", lazy=True))
+@click.argument("plaintextfile", type=click.File("r", encoding="utf-8-sig", lazy=True))
 @click.argument("xmlfile", type=click.Path(), required=False, default="")
 @click.option("-d", "--debug", is_flag=True, help="Add debugging messages to logger")
 @click.option(
@@ -534,7 +534,7 @@ def make_xml(**kwargs):
             _, filename = create_input_tei(
                 input_file_handle=input_file, text_languages=languages
             )
-            with io.open(filename, encoding="utf8") as f:
+            with io.open(filename, encoding="utf-8-sig") as f:
                 sys.stdout.write(f.read())
         else:
             if not str(out_file).endswith(".xml"):
@@ -625,7 +625,7 @@ def tokenize(**kwargs):
     context_settings=CONTEXT_SETTINGS,
     short_help="Apply g2p to a tokenized file, in preparation for alignment.",
 )
-@click.argument("tokfile", type=click.File("rb", encoding="utf8", lazy=True))
+@click.argument("tokfile", type=click.File("rb", lazy=True))
 @click.argument("g2pfile", type=click.Path(), required=False, default="")
 @click.option(
     "--g2p-fallback",

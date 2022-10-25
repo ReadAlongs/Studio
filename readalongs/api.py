@@ -129,7 +129,7 @@ def make_xml(
 
         make_xml_args = {param.name: param.default for param in cli.make_xml.params}
         try:
-            with open(plaintextfile, "r", encoding="utf8") as plaintextfile_handle:
+            with open(plaintextfile, "r", encoding="utf-8-sig") as plaintextfile_handle:
                 make_xml_args.update(
                     plaintextfile=plaintextfile_handle,
                     xmlfile=xmlfile,

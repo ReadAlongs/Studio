@@ -5,6 +5,8 @@ Unit test suite for the readalongs align CLI command
 """
 
 import os
+import pathlib
+import tempfile
 from os.path import exists, join
 from unittest import main
 
@@ -45,7 +47,7 @@ class TestAlignCli(BasicTestCase):
                 "auto",
                 "--config",
                 join(self.data_dir, "sample-config.json"),
-                join(self.data_dir, "ej-fra.txt"),
+                self.add_bom(join(self.data_dir, "ej-fra.txt")),
                 join(self.data_dir, "ej-fra.m4a"),
                 output,
             ],
@@ -77,6 +79,10 @@ class TestAlignCli(BasicTestCase):
             exists(join(output, "tempfiles", "output.tokenized.xml")),
             "alignment with -s should have created tempfiles/output.tokenized.xml",
         )
+        with open(
+            join(output, "tempfiles", "output.tokenized.xml"), "r", encoding="utf-8"
+        ) as f:
+            self.assertNotIn("\ufeff", f.read())
         self.assertTrue(
             exists(join(output, "assets", "image-for-page1.jpg")),
             "alignment with image files should have copied image-for-page1.jpg to assets",
@@ -105,7 +111,7 @@ class TestAlignCli(BasicTestCase):
                 "-s",
                 "--config",
                 join(self.data_dir, "sample-config.json"),
-                join(self.data_dir, "ej-fra-dna.xml"),
+                self.add_bom(join(self.data_dir, "ej-fra-dna.xml")),
                 join(self.data_dir, "ej-fra.m4a"),
                 output,
             ],
@@ -183,7 +189,7 @@ class TestAlignCli(BasicTestCase):
                     "-o",
                     "html",
                     "--config",
-                    "data/sample-config.json",
+                    self.add_bom(self.data_dir / "sample-config.json"),
                 ],
             )
         # print(results_html.output)
@@ -411,9 +417,11 @@ class TestAlignCli(BasicTestCase):
         self.assertIn("No input language specified for plain text", results.output)
 
         # XML with guess by contents
-        infile3 = write_file(
-            join(self.tempdir, "infile3"),
-            "<?xml version='1.0' encoding='utf-8'?><text>blah blah</text>",
+        infile3 = self.add_bom(
+            write_file(
+                join(self.tempdir, "infile3"),
+                "<?xml version='1.0' encoding='utf-8'?><text>blah blah</text>",
+            )
         )
         with SoundSwallowerStub("word:0:1"):
             results = self.runner.invoke(
@@ -562,6 +570,50 @@ class TestAlignCli(BasicTestCase):
         self.assertNotEqual(results.exit_code, 0)
         self.assertIn("Could not g2p", results.output)
         self.assertIn('Cannot g2p "eng" to output orthography', results.output)
+
+    def add_bom(self, filename):
+        """Create a temporary copy of filename with the a BOM in it, in self.tempdir"""
+        # We pepper calls to add_bom() around the test suite, to make sure all
+        # different kinds of input files are accepted with and without a BOM
+        output_file = tempfile.NamedTemporaryFile(
+            mode="wb",
+            dir=self.tempdir,
+            delete=False,
+            prefix="bom_",
+            suffix=os.path.basename(filename),
+        )
+        output_file.write(b"\xef\xbb\xbf")
+        with open(filename, "rb") as file_binary:
+            output_file.write(file_binary.read())
+        output_file.close()
+        return output_file.name
+
+    def test_add_bom(self):
+        """Make sure add_bom does what we mean it to, i.e., test the test harness."""
+
+        def slurp_bin(filename):
+            with open(filename, "rb") as f:
+                return f.read()
+
+        def slurp_text(filename, encoding):
+            with open(filename, "r", encoding=encoding) as f:
+                return f.read()
+
+        base_file = write_file(self.tempdir / "add-bom-input.txt", "Random Text été")
+        bom_file = self.add_bom(base_file)
+        self.assertEqual(
+            slurp_text(base_file, "utf-8"), slurp_text(bom_file, "utf-8-sig")
+        )
+        self.assertEqual(
+            slurp_text(bom_file, "utf-8"), "\ufeff" + slurp_text(base_file, "utf-8")
+        )
+        self.assertNotEqual(slurp_bin(base_file), slurp_bin(bom_file))
+        self.assertEqual(b"\xef\xbb\xbf" + slurp_bin(base_file), slurp_bin(bom_file))
+
+        bom_file_pathlib = self.add_bom(pathlib.Path(base_file))
+        self.assertEqual(
+            slurp_text(base_file, "utf-8"), slurp_text(bom_file_pathlib, "utf-8-sig")
+        )
 
 
 if __name__ == "__main__":
