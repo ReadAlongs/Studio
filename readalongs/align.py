@@ -1221,7 +1221,7 @@ def create_input_tei(**kwargs):
     try:
         if kwargs.get("input_file_name", False):
             filename = kwargs["input_file_name"]
-            with io.open(kwargs["input_file_name"], encoding="utf8") as f:
+            with io.open(kwargs["input_file_name"], encoding="utf-8-sig") as f:
                 text = f.readlines()
         elif kwargs.get("input_file_handle", False):
             filename = kwargs["input_file_handle"].name

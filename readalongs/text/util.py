@@ -137,7 +137,7 @@ def save_xml_zip(zip_path, output_path, xml):
 
 
 def load_txt(input_path):
-    with open(input_path, "r", encoding="utf-8") as fin:
+    with open(input_path, "r", encoding="utf-8-sig") as fin:
         return fin.read()
 
 
@@ -161,7 +161,7 @@ def save_txt_zip(zip_path, output_path, txt):
 
 
 def load_json(input_path):
-    with open(input_path, "r", encoding="utf-8") as fin:
+    with open(input_path, "r", encoding="utf-8-sig") as fin:
         return json.load(fin, object_pairs_hook=OrderedDict)
 
 
