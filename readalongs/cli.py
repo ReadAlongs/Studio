@@ -455,7 +455,7 @@ def prepare(**kwargs):
 
     XMLFILE:       Path to the XML output file, or - for stdout [default: PLAINTEXTFILE.xml]
     """
-    LOGGER.warn(
+    LOGGER.warning(
         'WARNING: "readalongs prepare" is deprecated. Use "readalongs make-xml" instead.'
     )
     make_xml.callback(**kwargs)

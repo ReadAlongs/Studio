@@ -10,7 +10,7 @@ from unittest import main
 
 from basic_test_case import BasicTestCase
 
-from readalongs.align import create_input_tei
+from readalongs.align import create_input_tei, create_tei_from_text
 from readalongs.cli import align, make_xml
 from readalongs.log import LOGGER
 
@@ -237,6 +237,19 @@ class TestMakeXMLCli(BasicTestCase):
         )
         self.assertNotEqual(results.exit_code, 0)
         self.assertIn("provide a correctly encoded utf-8", results.output)
+
+    def test_blank_lines_stripped(self):
+        """Blank lines for paragraph and page breaks are allowed to have whitespace"""
+        input_text_with_spaces = "Ceci est un test\n \nParagraphe\n\t \n \nPage\n"
+        input_text_stripped = "Ceci est un test\n\nParagraphe\n\n\nPage\n"
+
+        def text2lines(text: str):
+            return io.StringIO(text).readlines()
+
+        self.assertEqual(
+            create_tei_from_text(text2lines(input_text_with_spaces), ["fra"]),
+            create_tei_from_text(text2lines(input_text_stripped), ["fra"]),
+        )
 
 
 if __name__ == "__main__":

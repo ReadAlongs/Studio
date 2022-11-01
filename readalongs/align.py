@@ -1163,7 +1163,8 @@ def create_tei_from_text(lines: Iterable[str], text_languages=Sequence[str]) -> 
     paragraphs: List[dict] = []
     sentences: List[str] = []
     for line in lines:
-        if line == "\n":
+        stripped_line = line.strip()
+        if stripped_line == "":
             if not sentences:
                 # consider this a page break (unless at the beginning)
                 pages.append({"paragraphs": paragraphs})
@@ -1174,7 +1175,7 @@ def create_tei_from_text(lines: Iterable[str], text_languages=Sequence[str]) -> 
                 sentences = []
         else:
             # Add text to sentence
-            sentences.append(line.strip())
+            sentences.append(stripped_line)
     # Add the last paragraph/sentence
     if sentences:
         paragraphs.append({"sentences": sentences})
