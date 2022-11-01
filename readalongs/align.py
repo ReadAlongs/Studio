@@ -8,7 +8,7 @@ import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple, Union
 
 import chevron
 import soundswallower
@@ -302,7 +302,9 @@ def read_noisedict(asr_config: soundswallower.Config) -> Set[str]:
     try:
         noisewords = set()
         acoustic_model = asr_config["hmm"]
-        with open(os.path.join(acoustic_model, "noisedict"), "rt") as dictfh:
+        with open(
+            os.path.join(acoustic_model, "noisedict"), "rt", encoding="utf-8"
+        ) as dictfh:
             for line in dictfh:
                 if line.startswith("##") or line.startswith(";;"):
                     continue
@@ -472,12 +474,10 @@ def process_segmentation(
 
 def insert_silence(
     results: Dict[str, Any],
-    word_sequences: List[WordSequence],
-    dna_segments: List[dict],
     audio: AudioSegment,
-    final_end: float,
     xml_path: Optional[str] = "XML Input",
 ):
+    """Insert the required silences in the audio stream."""
     words_dict = {
         x["id"]: {"start": x["start"], "end": x["end"]} for x in results["words"]
     }
@@ -702,10 +702,7 @@ def align_audio(
     # Insert silences if requested
     insert_silence(
         results=results,
-        word_sequences=word_sequences,
-        dna_segments=dna_segments,
         audio=audio,
-        final_end=final_end,
         xml_path=xml_path,
     )
     return results
@@ -940,7 +937,7 @@ def save_readalong(
             config.get("subheader", ""),
             config.get("theme", "light"),
         )
-        with open(html_out_path, "w") as f:
+        with open(html_out_path, "w", encoding="utf-8") as f:
             f.write(html_out)
 
     save_minimal_index_html(
@@ -1143,34 +1140,29 @@ TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 """
 
 
-def create_tei_from_text(text, **kwargs):
+def create_tei_from_text(lines: Iterable[str], text_languages=Sequence[str]) -> str:
     """Create input xml in TEI standard.
-        Uses readlines to infer paragraph and sentence structure from plain text.
-        TODO: Check if path, if it's just plain text, then render that instead of reading from the file
+        Uses the line sequence to infer paragraph and sentence structure from plain text:
         Assumes a double blank line marks a page break, and a single blank line
         marks a paragraph break.
-        Outputs to uft-8 XML using pymustache.
+        Creates the XML using chevron
 
     Args:
-        **kwargs: dict containing these arguments:
-            input_file_name (str, optional): input text file name
-            input_file_handle (file_handle, optional): opened file handle for input text
-                Only provide one of input_file_name or input_file_handle!
-            text_languages (List[str]): language(s) for the text, in the order
-                they should be attempted for g2p.
-            save_temps (str, optional): prefix for output file name,
-                which will be kept; or None to create a temporary file
-            output_file (str, optional): if specified, the output file
-                will have exactly this name
+        lines: lines from the input plain text, e.g., f.readlines() on file handle f
+        text_languages: non-empty list of languages for g2p conversion
+
+    Returns:
+        str: Formatted XML, ready to print
     """
-    text_langs = kwargs.get("text_languages", None)
-    assert text_langs and isinstance(text_langs, (list, tuple)), "need text_languages"
-    kwargs["main_lang"] = text_langs[0]
-    kwargs["fallback_langs"] = ",".join(text_langs[1:])
-    pages = []
-    paragraphs = []
-    sentences = []
-    for line in text:
+    assert text_languages, "The text_languages list may not be empty."
+    kwargs = {
+        "main_lang": text_languages[0],
+        "fallback_langs": ",".join(text_languages[1:]),
+    }
+    pages: List[dict] = []
+    paragraphs: List[dict] = []
+    sentences: List[str] = []
+    for line in lines:
         if line == "\n":
             if not sentences:
                 # consider this a page break (unless at the beginning)
@@ -1194,10 +1186,9 @@ def create_tei_from_text(text, **kwargs):
 def create_input_tei(**kwargs):
     """Create input xml in TEI standard.
         Uses readlines to infer paragraph and sentence structure from plain text.
-        TODO: Check if path, if it's just plain text, then render that instead of reading from the file
         Assumes a double blank line marks a page break, and a single blank line
         marks a paragraph break.
-        Outputs to uft-8 XML using pymustache.
+        Outputs to uft-8 XML using chevron.
 
     Args:
         **kwargs: dict containing these arguments:
@@ -1234,9 +1225,6 @@ def create_input_tei(**kwargs):
     text_langs = kwargs.get("text_languages", None)
     assert text_langs and isinstance(text_langs, (list, tuple)), "need text_languages"
 
-    kwargs["main_lang"] = text_langs[0]
-    kwargs["fallback_langs"] = ",".join(text_langs[1:])
-
     save_temps = kwargs.get("save_temps", None)
     if kwargs.get("output_file", False):
         filename = kwargs.get("output_file")
@@ -1249,7 +1237,7 @@ def create_input_tei(**kwargs):
             prefix="readalongs_xml_", suffix=".xml", delete=True
         )
         filename = outfile.name
-    xml = create_tei_from_text(text, **kwargs)
+    xml = create_tei_from_text(text, text_langs)
     outfile.write(xml.encode("utf-8"))
     outfile.flush()
     outfile.close()
