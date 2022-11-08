@@ -393,7 +393,7 @@ def align_sequence(
             or None to not save them.
 
     Returns:
-        Iterable[soundswallower.Segment]: Word (or other unit) alignments.
+        Iterable[soundswallower.Seg]: Word (or other unit) alignments.
 
     Raises:
         RuntimeError: If alignment fails (TODO: figure out why).
@@ -432,38 +432,41 @@ def align_sequence(
     ps.process_raw(audio_segment.raw_data, no_search=False, full_utt=True)
     ps.end_utt()
 
-    return ps.seg()
+    return ps.seg
 
 
 def process_segmentation(
-    segmentation: Iterable[soundswallower.Segment],
+    segmentation: Iterable[soundswallower.Seg],
     curr_removed_segments: List[dict],
     noisewords: Set[str],
     frame_size: float,
     debug_aligner: Optional[bool] = False,
 ) -> List[Dict[str, Any]]:
     """Correct output alignments based on do-not-align segments."""
-    aligned_words = []
+    aligned_words: List[Dict[str, Any]] = []
     for word_seg in segmentation:
-        if word_seg.word in noisewords:
+        if word_seg.text in noisewords:
             continue
-        start = word_seg.start_frame * frame_size
-        end = (word_seg.end_frame + 1) * frame_size
-        # change to ms
-        start_ms = int(start * 1000)
-        end_ms = int(end * 1000)
+        start = word_seg.start
+        end = word_seg.start + word_seg.duration
+        # round to milliseconds to avoid imprecisions
+        start_ms = round(start * 1000)
+        end_ms = round(end * 1000)
+        # possibly adjust for removed sections
         if curr_removed_segments:
             start_ms += calculate_adjustment(start_ms, curr_removed_segments)
             end_ms += calculate_adjustment(end_ms, curr_removed_segments)
             start_ms, end_ms = correct_adjustments(
                 start_ms, end_ms, curr_removed_segments
             )
-            # change back to seconds to write to smil
-            start = start_ms / 1000
-            end = end_ms / 1000
-        aligned_words.append({"id": word_seg.word, "start": start, "end": end})
+        # change back to seconds
+        start = start_ms / 1000
+        end = end_ms / 1000
+        if aligned_words:
+            assert start >= aligned_words[-1]["end"]
+        aligned_words.append({"id": word_seg.text, "start": start, "end": end})
         if debug_aligner:
-            LOGGER.info("Segment: %s (%.3f : %.3f)", word_seg.word, start, end)
+            LOGGER.info("Segment: %s (%.3f : %.3f)", word_seg.text, start, end)
     return aligned_words
 
 
@@ -634,19 +637,14 @@ def align_audio(
                 audio_length_in_ms,
                 removed_segments,
             )
-            try:
-                # Process raw segmentation, adjusting alignments for DNA
-                aligned_words = process_segmentation(
-                    segmentation=segmentation,
-                    curr_removed_segments=curr_removed_segments,
-                    noisewords=noisewords,
-                    frame_size=frame_size,
-                    debug_aligner=debug_aligner,
-                )
-            except RuntimeError:
-                # We need this here because soundswallower<=0.2.2 will
-                # raise an error rather than returning an empty list
-                aligned_words = []
+            # Process raw segmentation, adjusting alignments for DNA
+            aligned_words = process_segmentation(
+                segmentation=segmentation,
+                curr_removed_segments=curr_removed_segments,
+                noisewords=noisewords,
+                frame_size=frame_size,
+                debug_aligner=debug_aligner,
+            )
 
             if len(aligned_words) != len(word_sequence.words):
                 LOGGER.warning(f"Align mode {align_modes[j]} failed for sequence {i}.")
@@ -990,8 +988,8 @@ def get_word_texts_and_sentences(
            "end": end time
     """
     sentences = []
-    sent_words: List[dict] = []
-    all_words = []
+    sent_words: List[Dict[str, Any]] = []
+    all_words: List[Dict[str, Any]] = []
     prev_sent_el = None
     for word in words:
         # The sentence is considered the set of words under the same <s> element.
@@ -1009,6 +1007,8 @@ def get_word_texts_and_sentences(
             "start": word["start"],
             "end": word["end"],
         }
+        if all_words:
+            assert word_with_text["start"] >= all_words[-1]["end"]
         sent_words.append(word_with_text)
         all_words.append(word_with_text)
     if sent_words:
