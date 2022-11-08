@@ -236,30 +236,30 @@ def create_asr_config(
 
     Returns:
         soundswallower.Config: Basic configuration."""
-    asr_config = soundswallower.Decoder.default_config()
+    asr_config = soundswallower.Config()
     acoustic_model = config.get(
         "acoustic_model", os.path.join(MODEL_DIR, DEFAULT_ACOUSTIC_MODEL)
     )
-    asr_config.set_string("-hmm", acoustic_model)
+    asr_config["hmm"] = acoustic_model
     if alignment_mode == "strict":
-        asr_config.set_float("-beam", 1e-100)
-        asr_config.set_float("-pbeam", 1e-100)
-        asr_config.set_float("-wbeam", 1e-80)
+        asr_config["beam"] = 1e-100
+        asr_config["pbeam"] = 1e-100
+        asr_config["wbeam"] = 1e-80
     elif alignment_mode == "moderate":
-        asr_config.set_float("-beam", 1e-200)
-        asr_config.set_float("-pbeam", 1e-200)
-        asr_config.set_float("-wbeam", 1e-160)
+        asr_config["beam"] = 1e-200
+        asr_config["pbeam"] = 1e-200
+        asr_config["wbeam"] = 1e-160
     elif alignment_mode == "loose":
-        asr_config.set_float("-beam", 0)
-        asr_config.set_float("-pbeam", 0)
-        asr_config.set_float("-wbeam", 0)
+        asr_config["beam"] = 0
+        asr_config["pbeam"] = 0
+        asr_config["wbeam"] = 0
     else:
         assert False and "invalid alignment_mode value"
 
     if debug_aligner:
         # With --debug-aligner, we display the SoundSwallower logs on
         # screen and set them to maximum strength
-        asr_config.set_string("-loglevel", "DEBUG")
+        asr_config["loglevel"] = "DEBUG"
     else:
         # Otherwise, we enable logging and direct it to a file if
         # saving temporary files
@@ -268,27 +268,24 @@ def create_asr_config(
             # This is buggy on Windows, so we don't do it on Windows variants
             # (NOTE: should be fixed in SoundSwallower 0.3 though)
             ss_log = save_temps + ".soundswallower.log"
-            asr_config.set_string("-logfn", ss_log)
-            asr_config.set_string("-loglevel", "INFO")
+            asr_config["logfn"] = ss_log
+            asr_config["loglevel"] = "INFO"
         # And otherwise the default is fine (only error messages are printed)
 
     # Set sampling rate based on audio (FIXME: this may cause problems
     # later on if it is too low)
-    asr_config.set_float("-samprate", audio.frame_rate)
+    asr_config["samprate"] = audio.frame_rate
     # Set the minimum FFT size (no longer necessary since
     # SoundSwallower 0.2, but we keep this here for compatibility with
     # old versions in case we need to debug things)
-    frame_points = int(
-        asr_config.get_float("-samprate") * asr_config.get_float("-wlen")
-    )
+    frame_points = int(asr_config["samprate"] * asr_config["wlen"])
     fft_size = 1
     while fft_size < frame_points:
         fft_size = fft_size << 1
-    asr_config.set_int("-nfft", fft_size)
+    asr_config["nfft"] = fft_size
 
-    # Disable VAD (not necessary but here for PocketSphinx compatibility)
-    asr_config.set_int("-remove_noise", 0)
-    asr_config.set_int("-remove_silence", 0)
+    # Disable VAD
+    asr_config["remove_noise"] = False
 
     return asr_config
 
@@ -304,7 +301,7 @@ def read_noisedict(asr_config: soundswallower.Config) -> Set[str]:
     """
     try:
         noisewords = set()
-        acoustic_model = asr_config.get_string("-hmm")
+        acoustic_model = asr_config["hmm"]
         with open(os.path.join(acoustic_model, "noisedict"), "rt") as dictfh:
             for line in dictfh:
                 if line.startswith("##") or line.startswith(";;"):
@@ -426,8 +423,8 @@ def align_sequence(
         write_audio_to_file(audio_segment, save_temps + ".wav" + i_suffix)
 
     # Configure soundswallower for this sequence's dict and fsg
-    asr_config.set_string("-dict", dict_file.name)
-    asr_config.set_string("-fsg", fsg_file.name)
+    asr_config["dict"] = dict_file.name
+    asr_config["fsg"] = fsg_file.name
 
     ps = soundswallower.Decoder(asr_config)
     # Align this word sequence
@@ -609,7 +606,7 @@ def align_audio(
     # millisecond intervals. For audio segments, the ms slice assumption is hard-coded
     # all over, while frame_size is used to convert segment boundaries returned by
     # soundswallower, which are indexes in frames, into durations in seconds.
-    frame_size = 1.0 / asr_config.get_int("-frate")
+    frame_size = 1.0 / asr_config["frate"]
 
     # Get list of words to ignore in aligner output
     noisewords = read_noisedict(asr_config)
