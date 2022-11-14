@@ -9,7 +9,7 @@ build_no = dt.datetime.today().strftime("%Y%m%d")
 version_path = os.path.join(os.path.dirname(readalongs.__file__), "_version.py")
 VERSION = readalongs.VERSION + "." + build_no
 
-with open(version_path, "w") as f:
+with open(version_path, "w", newline="\n", encoding="utf-8") as f:
     print(f'__version__ = "{VERSION}"', file=f)
 
 with open("requirements.min.txt") as f:
