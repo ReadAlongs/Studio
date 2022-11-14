@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 # This script is copied and modified from
 # https://github.com/python/cpython/blob/3.7/Lib/http/server.py
@@ -93,7 +93,7 @@
 #   refresh will not fetch manually updated pages.
 #
 #   Running this script in a root web site folder is equivalent to running
-#       python3 -m http.server
+#       python -m http.server
 #   in that folder, except that pages won't get cached.
 #
 # - Eric Joanis, 2021:

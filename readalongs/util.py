@@ -1,6 +1,5 @@
 import re
 from collections.abc import Iterable
-from itertools import tee
 
 import click
 
@@ -8,16 +7,16 @@ LANGS = None
 LANG_NAMES = None
 
 
-def getLangsDeferred() -> Iterable:
+def get_langs_deferred() -> Iterable:
     """Lazilly get the list of language codes supported by g2p library
 
     Yields an Iterable in such a way that the g2p database is only loaded when
     the results are iterated over, rather than when this function is called.
     """
-    yield from getLangs()[0]
+    yield from get_langs()[0]
 
 
-def getLangs():
+def get_langs():
     """Get the list of language codes and names supported by the g2p library
 
     Returns:
@@ -39,23 +38,22 @@ def getLangs():
         import g2p.mappings.langs as g2p_langs
         from networkx import has_path
 
-        # LANGS_AVAILABLE in g2p lists langs inferred by the directory structure of
+        # langs_available in g2p lists langs inferred by the directory structure of
         # g2p/mappings/langs, but in ReadAlongs, we need all input languages to any mappings.
         # E.g., for Michif, we need to allow crg-dv and crg-tmd, but not crg, which is what
-        # LANGS_AVAILABLE contains. So we define our own list of languages here.
-        LANGS_AVAILABLE = []
+        # langs_available contains. So we define our own list of languages here.
+        langs_available = []
 
-        # Set up LANG_NAMES hash table for studio UI to
-        # properly name the dropdown options
-        LANG_NAMES = {"eng": "English"}
+        # this will be the set of all langs in g2p + "eng", which we need temporarily
+        full_lang_names = {"eng": "English"}
 
-        for k, v in g2p_langs.LANGS.items():
+        for _, v in g2p_langs.LANGS.items():
             for mapping in v["mappings"]:
                 # add mapping to names hash table
-                LANG_NAMES[mapping["in_lang"]] = mapping["language_name"]
+                full_lang_names[mapping["in_lang"]] = mapping["language_name"]
                 # add input id to all available langs list
-                if mapping["in_lang"] not in LANGS_AVAILABLE:
-                    LANGS_AVAILABLE.append(mapping["in_lang"])
+                if mapping["in_lang"] not in langs_available:
+                    langs_available.append(mapping["in_lang"])
 
         # get the key from all networks in g2p module that have a path to 'eng-arpabet',
         # which is needed for the readalongs
@@ -63,7 +61,7 @@ def getLangs():
         # Filter out *-norm and crk-no-symbols, these are just intermediate representations.
         LANGS = [
             x
-            for x in LANGS_AVAILABLE
+            for x in langs_available
             if not x.endswith("-ipa")
             and not x.endswith("-equiv")
             and not x.endswith("-no-symbols")
@@ -75,37 +73,60 @@ def getLangs():
         LANGS += ["eng"]
         # Sort LANGS so the -h messages list them alphabetically
         LANGS = sorted(LANGS)
+
+        # Set up LANG_NAMES hash table for studio UI to properly name the dropdown options
+        LANG_NAMES = {lang_code: full_lang_names[lang_code] for lang_code in LANGS}
+
         return LANGS, LANG_NAMES
 
 
-class JoinerCallback:
+# For backwards compatibility, we keep the old names getLangs and getLangsDeferred around.
+# For example, ReadAlongsDesktop
+# (https://github.com/tobyatgithub/ReadalongsDesktop) depended on the old name,
+# and even when it's updated, it'll be helpful to avoid breaking older versions.
+getLangs = get_langs
+getLangsDeferred = get_langs_deferred
+
+
+class JoinerCallbackForClick:
     """Command-line parameter validation for multiple-value options.
 
     The values can be repeated by giving the option multiple times on the
     command line, or by joining them with strings matching joiner_re (colon or
     comma, arbitrarily mixed, by default).
 
-    Matching is case insensitive.
+    Matching is case insensitive iff drop_case is True.
     """
 
-    def __init__(self, valid_values: Iterable, joiner_re=r"[,:]"):
-        self.valid_values = valid_values
+    def __init__(self, valid_values: Iterable, joiner_re=r"[,:]", drop_case=False):
+        """Get a joiner callback.
+
+        Args:
+            valid_values: list of valid values for the multi-value option
+            joiner_re: regex for how to user may join multiple values
+            drop_case: when true, processed results will be converted to lowercase
+        """
+        self.valid_values = valid_values  # ***do not convert this to a list here!***
         self.joiner_re = joiner_re
+        self.drop_case = drop_case
 
     # This signature meets the requirements of click.option's callback parameter:
-    def __call__(self, _ctx, _param, value_groups):
-        # Defer potentially expensive expansion of valid_values until we really need it.
-        self.valid_values, valid_values_iterator = tee(self.valid_values, 2)
-        lc_valid_values = [valid_value.lower() for valid_value in valid_values_iterator]
+    def __call__(self, _ctx=None, _param=None, value_groups=()):
+        # Potentially expensive expansion actually required here, so do it now.
+        self.valid_values = list(self.valid_values)
+        if self.drop_case:
+            self.valid_values = [value.lower() for value in self.valid_values]
         results = [
             value.strip()
             for value_group in value_groups
             for value in re.split(self.joiner_re, value_group)
         ]
+        if self.drop_case:
+            results = [value.lower() for value in results]
         for value in results:
-            if value.lower() not in lc_valid_values:
+            if value not in self.valid_values:
                 raise click.BadParameter(
-                    f"'{value}' is not one of {self.quoted_list(lc_valid_values)}."
+                    f"'{value}' is not one of {self.quoted_list(self.valid_values)}."
                 )
         return results
 
@@ -113,3 +134,20 @@ class JoinerCallback:
     def quoted_list(values):
         """Display a list of values quoted, for easy reading in error messages."""
         return ", ".join("'" + v + "'" for v in values)
+
+
+def get_obsolete_callback_for_click(message):
+    """Click callback for telling the user an option is obsolete in a helpful way.
+
+    Args:
+        message (str): message telling the user what the option is replaced by
+    """
+
+    def _callback(_ctx, param, value_groups):
+        if value_groups:
+            joiner = "' / '"
+            raise click.BadParameter(
+                f"The '{joiner.join(param.opts)}' option is obsolete.\n" + message
+            )
+
+    return _callback

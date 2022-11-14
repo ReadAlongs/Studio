@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 ###################################################
@@ -19,15 +19,12 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import argparse
 import os
 from collections import OrderedDict
-from io import open
 
 import chevron
 import librosa
-import numpy as np
 from audio_util import save_txt
 from lxml import etree
 
-from readalongs.log import LOGGER
 from readalongs.text.util import xpath_default
 
 FMIN = 80

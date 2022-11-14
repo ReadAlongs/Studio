@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 """Test suite for loading the config.json configuration file for readalongs align"""
 
@@ -55,7 +55,7 @@ class TestConfig(TestCase):
         # bad xml raises lxml.etree.XMLSyntaxError
         with self.assertRaises(etree.XMLSyntaxError):
             new_xml = add_supplementary_xml(
-                self.xml, {"xml": [{"xpath": "//div[1]", "value": "bloop"}]},
+                self.xml, {"xml": [{"xpath": "//div[1]", "value": "bloop"}]}
             )
 
         # if xpath isn't valid, log warning

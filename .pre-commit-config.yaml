@@ -12,6 +12,8 @@ repos:
     -   id: flake8
 -   repo: local
     # Using local repos because these won't work for me from remote repo -EJ
+    # They're also more convenient because we install them via requirements.dev.txt
+    # and they are then available on the command line as well as in pre-commit.
     hooks:
     -   id: isort
         name: isort
@@ -25,7 +27,9 @@ repos:
         language: system
         types: [python]
         stages: [commit]
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v0.782'  # Use the sha / tag you want to point at
-    hooks:
     -   id: mypy
+        name: mypy
+        entry: mypy
+        language: system
+        types: [python]
+        stages: [commit]

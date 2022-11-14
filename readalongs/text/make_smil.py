@@ -1,21 +1,16 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+"""
+make_smil.py
 
-###################################################################
-#
-# make_smil.py
-#
-#   Turns alignment into formatted SMIL for ReadAlongs WebComponent
-####################################################################
+Turns alignment into formatted SMIL for ReadAlongs WebComponent
+"""
 
-
-import argparse
+from typing import List
 
 import chevron
+from lxml import etree
 
-from readalongs.text.util import save_txt
-
-SMIL_TEMPLATE = """<smil xmlns="http://www.w3.org/ns/SMIL" version="3.0">
+SMIL_TEMPLATE = """\
+<smil xmlns="http://www.w3.org/ns/SMIL" version="3.0">
     <body>
         {{#words}}
         <par id="par-{{id}}">
@@ -35,59 +30,72 @@ WORD_SUBIDX = 2
 END_SUBIDX = 3
 
 
-def parse_hypseg(text):
-    """Parse hypseg alignments file and return alignements
-
-    Args:
-        text(str): hypseg text
-
-    Returns:
-        dict: a dictionary of all start and end points for each word in text
-    """
-    results = {"words": []}
-    tokens = text.strip().split()
-    # results["basename"] = tokens[BASENAME_IDX]
-    start = float(tokens[START_TIME_IDX]) * 0.01
-    i = WORDS_IDX
-    while i < len(tokens):
-        word = tokens[i + WORD_SUBIDX]
-        end = tokens[i + END_SUBIDX]
-        end = float(end) * 0.01
-        if word != "<sil>":
-            results["words"].append({"id": word, "start": start, "end": end})
-        start = end
-        i += WORD_SPAN
-    return results
-
-
-def make_smil(text_path: str, audio_path: str, results: dict) -> str:
+def make_smil(text_path: str, audio_path: str, words: List[dict]) -> str:
     """Actually render the SMIL
 
+    words is a list of dicts with these elements:
+    {
+        "id": word id (str),
+        "start": word start time in seconds (float),
+        "end": word_end_time_in_seconds (float),
+    }
+
     Args:
-        text_path(str): path to text
-        audio_path(str): path to audio
-        results(dict): all alignements
+        text_path (str): path to text
+        audio_path (str): path to audio
+        words (List[dict]): all alignments
 
     Returns:
         str: formatted SMIL
     """
-    results["text_path"] = text_path
-    results["audio_path"] = audio_path
-    return chevron.render(SMIL_TEMPLATE, results)
-
-
-def go(seg_path, text_path, audio_path, output_path):
-    results = make_smil(text_path, audio_path, parse_hypseg(seg_path))
-    save_txt(output_path, results)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Convert XML to another orthography while preserving tags"
+    return chevron.render(
+        SMIL_TEMPLATE,
+        {"text_path": text_path, "audio_path": audio_path, "words": words},
     )
-    parser.add_argument("input_seg", type=str, help="Input hypseg file")
-    parser.add_argument("text_path", type=str, help="Text filename")
-    parser.add_argument("audio_path", type=str, help="Audio filename")
-    parser.add_argument("output", type=str, help="Output SMIL file")
-    args = parser.parse_args()
-    go(args.input_seg, args.text_path, args.audio_path, args.output)
+
+
+def parse_smil(formatted_smil: str) -> List[dict]:
+    """Extract the list of words and their alignment from a SMIL file content.
+
+    Args:
+        formatted_smil (str): the raw, unparsed XML content of the .smil file
+
+    Returns:
+        List[dict]: a list of dicts with these elements:
+            {
+                "id": word id (str),
+                "start": word start time in seconds (float),
+                "end": word_end_time_in_seconds (float),
+            }
+    Raises:
+        ValueError if there is a problem parsing formatted_smil as valid SMIL
+    """
+
+    please_msg = "Please make sure your SMIL file is valid."
+
+    try:
+        xml = etree.fromstring(formatted_smil)
+    except etree.ParseError as e:
+        raise ValueError(f"Invalid SMIL file: {e}. {please_msg}")
+    ns = {"smil": "http://www.w3.org/ns/SMIL"}
+
+    words = []
+    for par_el in xml.xpath(".//smil:par", namespaces=ns):
+        text_src = par_el.find("smil:text", namespaces=ns).attrib["src"]
+        _, _, text_id = text_src.partition("#")
+        if not text_id:
+            raise ValueError(f"Missing word id. {please_msg}")
+        audio_el = par_el.find("smil:audio", namespaces=ns)
+        try:
+            clip_begin = float(audio_el.attrib["clipBegin"])
+            clip_end = float(audio_el.attrib["clipEnd"])
+        except KeyError as e:
+            raise ValueError(f"Missing 'clipBegin' or 'clipEnd'. {please_msg}") from e
+        except ValueError as e:
+            raise ValueError(
+                f"Invalid 'clipBegin' or 'clipEnd': {e}. {please_msg}."
+            ) from e
+
+        words.append({"id": text_id, "start": clip_begin, "end": clip_end})
+
+    return words

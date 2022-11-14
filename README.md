@@ -1,7 +1,7 @@
 # ReadAlong-Studio
 
 [![codecov](https://codecov.io/gh/ReadAlongs/Studio/branch/master/graph/badge.svg)](https://codecov.io/gh/ReadAlongs/Studio)
-[![Build Status](https://travis-ci.com/ReadAlongs/Studio.svg?branch=master)](https://travis-ci.com/github/ReadAlongs/Studio)
+[![Build Status](https://github.com/readalongs/Studio/actions/workflows/tests.yml/badge.svg?branch=master)](https://github.com/ReadAlongs/Studio/actions)
 [![PyPI package](https://img.shields.io/pypi/v/readalongs.svg)](https://pypi.org/project/readalongs/)
 [![GitHub license](https://img.shields.io/github/license/ReadAlongs/Studio)](https://github.com/ReadAlongs/Studio/blob/master/LICENSE)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/ReadAlongs/Studio)
@@ -22,7 +22,8 @@ This library is an end-to-end audio/text aligner. It is meant to be used togethe
     - [Validation](#Verifying-your-installation)
   - [Usage](#usage)
     - [CLI](#cli)
-    - [Studio](#Studio-web-application)
+    - [Web API](#web-api)
+    - [Studio](#studio-web-application)
     - [Docker](#docker)
   - [Maintainers](#maintainers)
   - [Contributing](#contributing)
@@ -154,9 +155,25 @@ Basic alignment is done with the following command.
 
 `readalongs align TEXTFILE WAVFILE OUTPUTNAME`
 
+### Web API
+
+This page lists only the most basic commands.
+
+For more information about how the command line interface works consult the interactive [API Documentation](https://readalong-studio.herokuapp.com/api/v1/docs).
+
+For information on spinning up your own dev Web API server locally, have a look at [web\_api.py](readalongs/web_api.py).
+
+#### /langs
+
+To query a list of available languages in the ReadAlong Studio API, send a GET request to https://readalongs-studio.herokuapp.com/api/v1/langs
+
+#### /assemble
+
+This endpoint is a remote procedural call that assembles the data needed to build a readalong using the JavaScript-based [SoundSwallower decoder](https://github.com/ReadAlongs/SoundSwallower). It is an endpoint that accepts POST requests with either plaintext or XML input. Please see the [documentation](https://readalong-studio.herokuapp.com/api/v1/docs) for more information.
+
 ### Studio web application
 
-ReadAlong-Studio has a web interface for creating interactive audiobooks. The web app can be served by first installing ReadAlong-Studio and then running `readalongs run`. A web app will then be available on port 5000.
+ReadAlong-Studio has a web interface for creating interactive audiobooks. The web app can be served by first installing ReadAlong-Studio and then running `python3 run.py`. A web app will then be available on port 5000.
 
 ### Docker
 
@@ -202,7 +219,17 @@ Feel free to dive in! [Open an issue](https://github.com/ReadAlongs/Studio/issue
 
 This repo follows the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.
 
-Have a look at [Contributing.md](Contributing.md) for help getting started.
+You can install our standard Git hooks by running these commands in your sandbox:
+
+```sh
+pip install -r requirements.dev.txt
+pre-commit install
+gitlint install-hook
+```
+
+Have a look at [Contributing.md](Contributing.md) for the full details on the
+Conventional Commit messages we prefer, our code formatting conventions, and
+our Git hooks.
 
 ### Contributors
 
@@ -218,6 +245,24 @@ Here is a partial list:
 
 Project web page: [ReadAlong Studio: Application for Indigenous audiobooks and videos project](https://nrc.canada.ca/en/research-development/research-collaboration/programs/readalong-studio-application-indigenous-audiobooks-videos-project)
 
+### Citation
+
+if you use this software in a project of yours and write about it, please cite
+us using the following:
+
+```
+@inproceedings{Littell_ReadAlong_Studio_Practical_2022,
+  author = {Littell, Patrick and Joanis, Eric and Pine, Aidan and Tessier, Marc and Huggins-Daines, David and Torkornoo, Delasie},
+  booktitle = {Proceedings of SIGUL2022 @LREC2022},
+  title = {{ReadAlong Studio: Practical Zero-Shot Text-Speech Alignment for Indigenous Language Audiobooks}},
+  year = {2022},
+  month = {6},
+  pages = {23--32},
+  publisher = {European Language Resources Assiciation (ELRA)},
+  url = {http://www.lrec-conf.org/proceedings/lrec2022/workshops/SIGUL/pdf/2022.sigul-1.4.pdf}
+}
+```
+
 ## License
 
-[MIT](LICENSE) © 2019-2021 David Huggins-Daines and National Research Council Canada
+[MIT](LICENSE) © 2019-2022 David Huggins-Daines and National Research Council Canada

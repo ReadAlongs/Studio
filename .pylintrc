@@ -1,7 +1,14 @@
 [MASTER]
 # A lot of test cases depend on etree, let's allow pylint to load it
 extension-pkg-allow-list=lxml.etree
-# We use isort for sorting our imports, so nevermind what pylint thinks
-disable=wrong-import-order
+
+disable=
+    # We use isort for sorting our imports, so nevermind what pylint thinks
+    wrong-import-order,
+    # I find the "unnecessary" else makes code more readable
+    no-else-return,
+    # We use single letter e for exception, f for file handles
+    invalid-name
+
 # Add . to the PYTHONPATH so pylint knows test cases can import basic_test_case
 init-hook="import sys; sys.path.append('.')"

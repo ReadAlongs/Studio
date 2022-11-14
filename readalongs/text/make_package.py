@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 ###################################################
 #
 # make_package.py
@@ -24,8 +21,8 @@ from lxml import etree
 
 from readalongs.log import LOGGER
 
-JS_BUNDLE_URL = "https://unpkg.com/@roedoejet/readalong/dist/bundle.js"
-FONTS_BUNDLE_URL = "https://unpkg.com/@roedoejet/readalong/dist/fonts.b64.css"
+JS_BUNDLE_URL = "https://unpkg.com/@roedoejet/readalong@^0.1.6/dist/bundle.js"
+FONTS_BUNDLE_URL = "https://unpkg.com/@roedoejet/readalong@^0.1.6/dist/fonts.b64.css"
 
 BASIC_HTML = """
 <!DOCTYPE html>
@@ -60,28 +57,34 @@ def encode_from_path(path: str) -> str:
 
     with open(path, "rb") as f:
         path_bytes = f.read()
-    if path.endswith("xml"):
+    if str(path).endswith("xml"):
         root = etree.fromstring(path_bytes)
         for img in root.xpath("//graphic"):
             url = img.get("url")
-            res = requests.get(url) if url.startswith("http") else None
+            if url.startswith("http"):
+                try:
+                    request_result = requests.get(url)
+                except requests.exceptions.RequestException:
+                    request_result = None
+            else:
+                request_result = None
             mime = guess_type(url)
             if os.path.exists(url):
                 with open(url, "rb") as f:
                     img_bytes = f.read()
                 img_b64 = str(b64encode(img_bytes), encoding="utf8")
-            elif res and res.status_code == 200:
-                img_b64 = str(b64encode(res.content), encoding="utf8")
+            elif request_result and request_result.status_code == 200:
+                img_b64 = str(b64encode(request_result.content), encoding="utf8")
             else:
-                LOGGER.warn(
-                    f"The image declared at {url} could not be found. Please check that it exists."
+                LOGGER.warning(
+                    f"The image declared at {url} could not be found. Please check that it exists or that the URL is valid."
                 )
                 continue
             img.attrib["url"] = f"data:{mime[0]};base64,{img_b64}"
         path_bytes = etree.tostring(root)
     b64 = str(b64encode(path_bytes), encoding="utf8")
     mime = guess_type(path)
-    if path.endswith(
+    if str(path).endswith(
         ".m4a"
     ):  # hack to get around guess_type choosing the wrong mime type for .m4a files
         # TODO: Check other popular audio formats, .wav, .mp3, .ogg, etc...
@@ -92,7 +95,7 @@ def encode_from_path(path: str) -> str:
         )  # Hack: until we properly extract audio from video files, force any video-based mime type to be read as audio
     else:
         mime_type = "application"
-        LOGGER.warn(
+        LOGGER.warning(
             f"We could not guess the mime type of file at {path}, we will try the generic mime type 'application', but this might not work with some files"
         )
     return f"data:{mime_type};base64,{b64}"
@@ -112,7 +115,7 @@ def create_web_component_html(
     js = requests.get(JS_BUNDLE_URL)
     fonts = requests.get(FONTS_BUNDLE_URL)
     if js.status_code != 200:
-        LOGGER.warn(
+        LOGGER.warning(
             f"Sorry, the JavaScript bundle that is supposed to be at {JS_BUNDLE_URL} returned a {js.status_code}. Your ReadAlong will be bundled using a version that may not be up-to-date. Please check your internet connection."
         )
         with open(
@@ -122,7 +125,7 @@ def create_web_component_html(
     else:
         js_raw = js.text
     if fonts.status_code != 200:
-        LOGGER.warn(
+        LOGGER.warning(
             f"Sorry, the fonts bundle that is supposed to be at {FONTS_BUNDLE_URL} returned a {fonts.status_code}. Your ReadAlong will be bundled using a version that may not be up-to-date. Please check your internet connection."
         )
         with open(

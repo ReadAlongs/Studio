@@ -4,7 +4,7 @@ Audio segments and files are manipulated using pydub.AudioSegment, which indexes
 in millisecond slices and lets us manipulate them as if they were simple lists.
 """
 
-from typing import List, Optional, Tuple, Union
+from typing import Union
 
 from pydub import AudioSegment
 
@@ -12,8 +12,7 @@ from readalongs.log import LOGGER
 
 
 def join_section(audio: AudioSegment, audio_to_insert: AudioSegment, start: int):
-    """ Given two AudioSegments, insert the second into the first at start (ms)
-    """
+    """Given two AudioSegments, insert the second into the first at start (ms)"""
     try:
         return audio[:start] + audio_to_insert + audio[start:]
     except IndexError:
@@ -25,8 +24,7 @@ def join_section(audio: AudioSegment, audio_to_insert: AudioSegment, start: int)
 
 
 def remove_section(audio: AudioSegment, start: int, end: int) -> AudioSegment:
-    """ Given an AudioSement, remove the section between start (ms) and end (ms)
-    """
+    """Given an AudioSement, remove the section between start (ms) and end (ms)"""
     try:
         return audio[:start] + audio[end:]
     except IndexError:
@@ -38,7 +36,7 @@ def remove_section(audio: AudioSegment, start: int, end: int) -> AudioSegment:
 
 
 def mute_section(audio: AudioSegment, start: int, end: int) -> AudioSegment:
-    """ Given an AudioSegment, reduce the gain between a given interval by 120db.
+    """Given an AudioSegment, reduce the gain between a given interval by 120db.
         Effectively, make it silent.
 
     Args:
@@ -62,7 +60,7 @@ def mute_section(audio: AudioSegment, start: int, end: int) -> AudioSegment:
 def extract_section(
     audio: AudioSegment, start: Union[None, int], end: Union[None, int]
 ) -> AudioSegment:
-    """ Given an AudioSegment, extract and keep only the [start, end) interval
+    """Given an AudioSegment, extract and keep only the [start, end) interval
 
     Args:
         audio (AudioSegment): audio segment to extract a section from
@@ -89,7 +87,7 @@ def extract_section(
 
 
 def write_audio_to_file(audio: AudioSegment, path: str) -> None:
-    """ Write AudioSegment to file
+    """Write AudioSegment to file
 
     Args:
         audio (AudioSegment): audio segment to write
@@ -105,7 +103,7 @@ def write_audio_to_file(audio: AudioSegment, path: str) -> None:
 
 
 def read_audio_from_file(path: str) -> AudioSegment:
-    """ Read in AudioSegment from file
+    """Read in AudioSegment from file
 
     Args:
         path (str): Path to audiofile

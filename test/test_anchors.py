@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 """Unit testing for the anchors functionality in readalongs align"""
 
@@ -8,6 +8,7 @@ from unittest import main
 from basic_test_case import BasicTestCase
 
 from readalongs.align import align_audio
+from readalongs.log import LOGGER
 
 
 class TestAnchors(BasicTestCase):
@@ -69,6 +70,30 @@ class TestAnchors(BasicTestCase):
                 0,
                 f"{partial_wav_file} should not be empty",
             )
+
+    def test_anchors_align_modes(self):
+        xml_with_anchors = """<doc xml:lang="fra"><body>
+            <s>Bonjour.</s>
+            <anchor time="1.62s"/>
+            <s>Ceci ne peut pas être aligné avec du bruit.</s>
+            <anchor time="5.62s"/>
+            </body></doc>
+        """
+        xml_file = os.path.join(self.tempdir, "text-with-anchors.xml")
+        with open(xml_file, "wt", encoding="utf8") as f:
+            print(xml_with_anchors, file=f)
+        with self.assertLogs(LOGGER, level="INFO") as cm:
+            results = align_audio(
+                xml_file,
+                os.path.join(self.data_dir, "noise.mp3"),
+            )
+        words = results["words"]
+        self.assertEqual(len(words), 10)
+        logger_output = "\n".join(cm.output)
+        self.assertIn("Align mode strict succeeded for sequence 0.", logger_output)
+        self.assertIn("Align mode strict failed for sequence 1.", logger_output)
+        self.assertIn("Align mode moderate failed for sequence 1.", logger_output)
+        self.assertIn("Align mode loose succeeded for sequence 1.", logger_output)
 
 
 if __name__ == "__main__":

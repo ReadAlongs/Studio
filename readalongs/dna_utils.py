@@ -11,7 +11,7 @@ from typing import List, Tuple
 
 
 def sort_and_join_dna_segments(do_not_align_segments: List[dict]) -> List[dict]:
-    """ Give a list of DNA segments, sort them and join any overlapping ones """
+    """Give a list of DNA segments, sort them and join any overlapping ones"""
     results: List[dict] = []
     for seg in sorted(do_not_align_segments, key=lambda x: x["begin"]):
         if results and results[-1]["end"] >= seg["begin"]:
@@ -24,9 +24,9 @@ def sort_and_join_dna_segments(do_not_align_segments: List[dict]) -> List[dict]:
 def correct_adjustments(
     start: int, end: int, do_not_align_segments: List[dict]
 ) -> Tuple[int, int]:
-    """ Given the start and end of a segment (in ms) and a list of do-not-align segments,
-        If one of the do-not-align segments occurs inside one of the start-end range,
-        align the start or end with the do-not-align segment, whichever requires minimal change
+    """Given the start and end of a segment (in ms) and a list of do-not-align segments,
+    If one of the do-not-align segments occurs inside one of the start-end range,
+    align the start or end with the do-not-align segment, whichever requires minimal change
     """
     for seg in do_not_align_segments:
         if start < seg["begin"] and end > seg["end"]:
@@ -38,7 +38,7 @@ def correct_adjustments(
 
 
 def calculate_adjustment(timestamp: int, do_not_align_segments: List[dict]) -> int:
-    """ Given a time (in ms) and a list of do-not-align segments,
+    """Given a time (in ms) and a list of do-not-align segments,
         return the sum (ms) of the lengths of the do-not-align segments
         that start before the timestamp
 
@@ -58,7 +58,7 @@ def calculate_adjustment(timestamp: int, do_not_align_segments: List[dict]) -> i
 
 
 def segment_intersection(segments1: List[dict], segments2: List[dict]) -> List[dict]:
-    """ Return the intersection of two lists of segments
+    """Return the intersection of two lists of segments
 
     Precondition:
         segments1 and segments2 contain sorted, non-overlapping ranges
@@ -89,9 +89,9 @@ def segment_intersection(segments1: List[dict], segments2: List[dict]) -> List[d
 
 
 def dna_union(
-    start, end, audio_length: int, do_not_align_segments: List[dict],
+    start, end, audio_length: int, do_not_align_segments: List[dict]
 ) -> List[dict]:
-    """ Return the DNA list to include [start,end] and exclude do_not_align_segments
+    """Return the DNA list to include [start,end] and exclude do_not_align_segments
 
     Given time range [start, end] to keep, and a list of do-not-align-segments to
     exclude, calculate the equivalent do-not-align-segment list to keeping only

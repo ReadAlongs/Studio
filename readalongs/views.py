@@ -1,30 +1,25 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+"""
+views.py: Views for ReadAlong Studio web application
 
-#######################################################################
-#
-# views.py
-#
-#   Views for ReadAlong Studio web application
-#   Interactions are described as websocket events and responses
-#   Corresponding JavaScript is found in readalongs/static/js/main.js
-#
-#######################################################################
+Interactions are described as websocket events and responses
+Corresponding JavaScript is found in readalongs/static/js/main.js
+"""
 
 import io
 import os
+import re
 from datetime import datetime
 from pathlib import Path
-from subprocess import run
 from tempfile import mkdtemp
 from zipfile import ZipFile
 
 from flask import abort, redirect, render_template, request, send_file, session, url_for
 from flask_socketio import emit
 
+from readalongs.api import align
 from readalongs.app import app, socketio
 from readalongs.log import LOGGER
-from readalongs.util import getLangs
+from readalongs.util import get_langs
 
 ALLOWED_TEXT = ["txt", "xml", "docx"]
 ALLOWED_AUDIO = ["wav", "mp3"]
@@ -42,6 +37,17 @@ def allowed_file(filename: str) -> bool:
         bool: True if allowed
     """
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def safe_decode(byte_seq: bytes) -> str:
+    """Convert byte_seq to str if it's valid utf8, otherwise return its str rep
+
+    Does not raise any exceptions: non-utf8 inputs will yield escaped specials.
+    """
+    try:
+        return byte_seq.decode()
+    except UnicodeDecodeError:
+        return str(byte_seq)
 
 
 def uploaded_files(dir_path: str) -> dict:
@@ -87,7 +93,7 @@ def update_session_config(**kwargs) -> dict:
 
 @app.route("/")
 def home():
-    """ Home View - go to Step 1 which is for uploading files """
+    """Home View - go to Step 1 which is for uploading files"""
     return redirect(url_for("steps", step=1))
 
 
@@ -133,14 +139,20 @@ def remove_file():
     return redirect(url_for("steps", step=1))
 
 
+def option_to_kwargs(option: str) -> str:
+    if option[0:2] == "--":
+        option = option[2:]
+    return option.replace("-", "_")
+
+
 @app.route("/step/<int:step>")
 def steps(step):
-    """ Go through steps """
+    """Go through steps"""
     if step == 1:
         session.clear()
         session["temp_dir"] = mkdtemp()
         temp_dir = session["temp_dir"]
-        langs, lang_names = getLangs()
+        langs, lang_names = get_langs()
         return render_template(
             "upload.html",
             uploaded=uploaded_files(temp_dir),
@@ -150,35 +162,47 @@ def steps(step):
         return render_template("preview.html")
     elif step == 3:
         if "audio" not in session or "text" not in session:
-            log = "Sorry, it looks like something is wrong with your audio or text. Please try again"
+            log = "Sorry, it looks like something is wrong with your audio or text. Please try again."
+            data = {"log": log}
+        elif session["text"].endswith("txt") and not session.get("config", {}).get(
+            "lang"
+        ):
+            log = "Sorry, the language setting is required for plain text files. Please try again."
+            data = {"log": log}
         else:
-            flags = ["--force-overwrite"]
-            for option in ["--closed-captioning", "--save-temps", "--text-grid"]:
-                if session["config"].get(option, False):
-                    flags.append(option)
+            kwargs = dict()
+            kwargs["force_overwrite"] = True
+            kwargs["save_temps"] = session["config"].get("--save-temps", False)
+            kwargs["output_formats"] = []
+            if session["config"].get("--closed-captioning", False):
+                kwargs["output_formats"].append("srt")
+            if session["config"].get("--text-grid", False):
+                kwargs["output_formats"].append("TextGrid")
             if session["text"].endswith("txt"):
-                flags.append("--text-input")
-                flags.append("--language")
-                flags.append(session["config"]["lang"])
+                kwargs["language"] = [session["config"]["lang"]]
+
             timestamp = str(int(datetime.now().timestamp()))
             output_base = "aligned" + timestamp
-            args = (
-                ["readalongs", "align"]
-                + flags
-                + [
-                    session["text"],
-                    session["audio"],
-                    os.path.join(session["temp_dir"], output_base),
-                ]
-            )
-            LOGGER.warning(args)
+
+            kwargs["textfile"] = session["text"]
+            kwargs["audiofile"] = session["audio"]
+            kwargs["output_base"] = os.path.join(session["temp_dir"], output_base)
+            LOGGER.info(kwargs)
+
             _, audio_ext = os.path.splitext(session["audio"])
             data = {"audio_ext": audio_ext, "base": output_base}
+            (status, exception, log_text) = align(**kwargs)
+            status_text = "OK" if status == 0 else "Error"
             if session["config"].get("show-log", False):
-                log = run(args, capture_output=True, check=False)
-                data["log"] = log
+                data["log"] = f"Status: {status_text}"
+                if exception:
+                    data["log"] += f"; Exception: {exception!r}"
+                data["log_lines"] = list(re.split(r"\r?\n", log_text))
             else:
-                run(args, check=False)
+                if status != 0 or exception:
+                    # Always display errors, even when logs are not requested
+                    data["log"] = f"Status: {status_text}; Exception: {exception!r}"
+
             data["audio_path"] = os.path.join(
                 session["temp_dir"], output_base, output_base + audio_ext
             )
@@ -213,7 +237,7 @@ def show_zip(base):
     with ZipFile(data, mode="w") as z:
         for fname in files_to_download:
             path = os.path.join(session["temp_dir"], base, fname)
-            if fname.startswith("aligned"):
+            if fname.startswith("aligned") or fname == "index.html":
                 z.write(path, fname)
     data.seek(0)
 
@@ -231,7 +255,7 @@ def show_zip(base):
 @app.route("/file/<string:fname>", methods=["GET"])
 def return_temp_file(fname):
     fn, _ = os.path.splitext(fname)
-    LOGGER.warning(session["temp_dir"])
+    LOGGER.info(session["temp_dir"])
     path = os.path.join(session["temp_dir"], fn, fname)
     if os.path.exists(path):
         return send_file(path)

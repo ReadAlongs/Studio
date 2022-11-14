@@ -6,10 +6,10 @@ Command line interface (CLI) user guide
 This page contains guidelines on using the ReadAlongs CLI. See also
 :ref:`cli-ref` for the full CLI reference.
 
-The ReadAlongs CLI has two main commands: ``readalongs prepare`` and
+The ReadAlongs CLI has two main commands: ``readalongs make-xml`` and
 ``readalongs align``.
 
-- If your data is a plain text file, you can run ``prepare`` to turn it into
+- If your data is a plain text file, you can run ``make-xml`` to turn it into
   XML, which you can then align with ``align``. Doing this in two steps allows
   you to modify the XML file before aligning it (e.g., to mark that some text is
   in a different language, to flag some do-not-align text, or to drop anchors
@@ -22,7 +22,7 @@ The ReadAlongs CLI has two main commands: ``readalongs prepare`` and
 Two additional commands are sometimes useful: ``readalongs tokenize`` and
 ``readalongs g2p``.
 
-- ``tokenize`` takes the output of ``prepare`` and tokenizes it, wrapping each
+- ``tokenize`` takes the output of ``make-xml`` and tokenizes it, wrapping each
   word in the text in a ``<w>`` element.
 
 - ``g2p`` takes the output of ``tokenize`` and mapping each word to its
@@ -33,12 +33,12 @@ Two additional commands are sometimes useful: ``readalongs tokenize`` and
 The result of ``tokenize`` or ``g2p`` can be fixed manually if necessary and
 then used as input to ``align``.
 
-Getting from TXT to XML with readalongs prepare
+Getting from TXT to XML with readalongs make-xml
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Run :ref:`cli-prepare` to prepare an XML file for ``align`` from a TXT file.
+Run :ref:`cli-make-xml` to make the XML file for ``align`` from a TXT file.
 
-``readalongs prepare [options] [story.txt] [story.xml]``
+``readalongs make-xml [options] [story.txt] [story.xml]``
 
 ``[story.txt]``: path to the plain text input file (TXT)
 
@@ -60,19 +60,19 @@ breaks are marked by two blank lines.
 |                                   | and will be aligning repeatedly)              |
 +-----------------------------------+-----------------------------------------------+
 | ``-h, --help``                    | Displays CLI guide for                        |
-|                                   | ``prepare``                                   |
+|                                   | ``make-xml``                                   |
 +-----------------------------------+-----------------------------------------------+
 
 The ``-l, --language`` argument requires a language’s 3 character `ISO
 code <https://en.wikipedia.org/wiki/ISO_639-3>`__ as an argument.
 
-The languages supported by RAS can be listed by running ``readalongs prepare -h``
-and they can also be found in the :ref:`cli-prepare` reference.
+The languages supported by RAS can be listed by running ``readalongs make-xml -h``
+and they can also be found in the :ref:`cli-make-xml` reference.
 
 So, a full command for a story in Algonquin, with an implicit g2p fallback to
 Undetermined, would be something like:
 
-``readalongs prepare -l alq Studio/story.txt Studio/story.xml``
+``readalongs make-xml -l alq Studio/story.txt Studio/story.xml``
 
 The generated XML will be parsed in to sentences. At this stage you can
 edit the XML to have any modifications, such as adding ``do-not-align``
@@ -92,7 +92,7 @@ element in the xml (word, sentence, paragraph, or page).
 
    <w do-not-align="true" id="t0b0d0p0s0w0">dog</w>
 
-If you have already run ``readalongs prepare``, there will be
+If you have already run ``readalongs make-xml``, there will be
 documentation for DNA text in comments at the beginning of the generated
 xml file.
 
@@ -155,7 +155,7 @@ created, as ``output_base*``
 |                                   | configuration file (in JSON                   |
 |                                   | format)                                       |
 +-----------------------------------+-----------------------------------------------+
-| ``--g2p-verbose``                 | Display verbose g2p error messages            |
+| ``--debug-g2p``                   | Display verbose g2p debugging messages        |
 +-----------------------------------+-----------------------------------------------+
 | ``-s, --save-temps``              | Save intermediate stages of                   |
 |                                   | processing and temporary files                |
@@ -184,13 +184,35 @@ A full command could be something like:
 - With other extensions, the beginning of the file is examined to
   automatically determine if it's XML or plain text.
 
-The config.json file
-~~~~~~~~~~~~~~~~~~~~
+Supported languages
+~~~~~~~~~~~~~~~~~~~
 
-Some additional parameters can be specified via a config file: create a JSON
-file called ``config.json``, possibly in the same folder as your other ReadAlong
-input files for convenience. The config file currently accepts two components:
-adding images to your ReadAlongs, and DNA audio (see :ref:`dna`).
+The ``readalongs langs`` command can be used to list all supported languages.
+
+Here is that list at the time of compiling this documentation:
+
+.. command-output:: readalongs langs
+
+See :ref:`adding-a-lang` for references on adding new languages to that list.
+
+
+Adding titles, images and do-not-align segments via the config.json file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some additional parameters can be specified via a config file: create
+a JSON file called ``config.json``, possibly in the same folder as
+your other ReadAlong input files for convenience. The config file
+currently accepts a few components: adding titles and headers, adding
+images to your ReadAlongs, and DNA audio (see :ref:`dna`).
+
+To add a title and headers to the output HTML, you can use the keys
+`"title"`, `"header"`, and `"subheader"`, for example::
+
+  {
+    "title": "My awesome read-along",
+    "header": "A story in my language",
+    "subheader": "Read by me"
+  }
 
 To add images, indicate the page number as the key, and the name of the image
 file as the value, as an entry in the ``"images"`` dictionary.
@@ -279,7 +301,7 @@ falling back to ``eng`` and then ``und`` (see below) when needed.
 
 .. code-block:: bash
 
-   readalongs prepare -l fra,eng myfile.txt myfile.xml
+   readalongs make-xml -l fra,eng myfile.txt myfile.xml
    readalongs align -l fra,eng myfile.txt myfile.wav output-dir
 
 The "Undetermined" language code: und
@@ -296,7 +318,7 @@ most text with a few foreign words without any manual intervention.
 
 Since we recommend systematically using ``und`` at the end of the cascade, it
 is now added by default after the languages specified with the ``-l``
-switch to both ``readalongs align`` and ``readalongs prepare``. Note that
+switch to both ``readalongs align`` and ``readalongs make-xml``. Note that
 adding other languages after ``und`` will have no effect, since the
 Undetermined mapping will map any string to valid ARPABET.
 
@@ -311,7 +333,7 @@ The warning messages issued by ``readalongs g2p`` and ``readalongs align``
 indicate which words are causing g2p problems and what fallbacks were tried.
 It can be worth inspecting to input text to fix any encoding or spelling
 errors highlighted by these warnings. More detailed messages can be
-produced by adding the ``--g2p-verbose`` switch, to obtain a lot more
+produced by adding the ``--debug-g2p`` switch, to obtain a lot more
 information about g2p'ing words in each language g2p was unsucessfully
 attempted.
 
@@ -325,7 +347,7 @@ The following series of commands:
 
 ::
 
-   readalongs prepare -l l1,l2 file.txt file.xml
+   readalongs make-xml -l l1,l2 file.txt file.xml
    readalongs tokenize file.xml file.tokenized.xml
    readalongs g2p file.tokenized.xml file.g2p.xml
    readalongs align file.g2p.xml file.wav output
@@ -354,7 +376,7 @@ Anchor syntax
 ^^^^^^^^^^^^^
 
 Anchors are inserted in the XML file (the output of
-``readalongs prepare``, ``readalongs tokenize`` or ``readalongs g2p``)
+``readalongs make-xml``, ``readalongs tokenize`` or ``readalongs g2p``)
 using the following syntax: ``<anchor time="3.42s"/>`` or
 ``<anchor time="3420ms"/>``. The time can be specified in seconds (this
 is the default) or milliseconds.

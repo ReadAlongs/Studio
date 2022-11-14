@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 ###################################################
@@ -17,15 +17,11 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import argparse
-import os
-from io import open
 from math import floor
 
 import chevron
 import librosa
-import numpy as np
 
-from readalongs.log import LOGGER
 from readalongs.waveform2svg.audio_util import (
     SAMPLE_RATE,
     load_wav_or_smil,

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 ###################################################
@@ -14,14 +14,11 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import argparse
-import os
-from io import open
 from math import ceil, floor
 
 import chevron
 import numpy as np
 
-from readalongs.log import LOGGER
 from readalongs.waveform2svg.audio_util import load_wav_or_smil, save_txt, smooth
 
 SVG_TEMPLATE = """<svg id='wave' preserveAspectRatio='none' viewBox="0 0 {{width}} {{height}}" xmlns="http://www.w3.org/2000/svg" height="{{height}}" width="{{width}}">

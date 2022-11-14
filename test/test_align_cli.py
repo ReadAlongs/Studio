@@ -1,10 +1,12 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 """
 Unit test suite for the readalongs align CLI command
 """
 
 import os
+import pathlib
+import tempfile
 from os.path import exists, join
 from unittest import main
 
@@ -41,9 +43,11 @@ class TestAlignCli(BasicTestCase):
                 "srt:TextGrid,eaf",  # tests that we can give -o multiple values, separated by : or ,
                 "-l",
                 "fra",
+                "--align-mode",
+                "auto",
                 "--config",
                 join(self.data_dir, "sample-config.json"),
-                join(self.data_dir, "ej-fra.txt"),
+                self.add_bom(join(self.data_dir, "ej-fra.txt")),
                 join(self.data_dir, "ej-fra.m4a"),
                 output,
             ],
@@ -75,6 +79,10 @@ class TestAlignCli(BasicTestCase):
             exists(join(output, "tempfiles", "output.tokenized.xml")),
             "alignment with -s should have created tempfiles/output.tokenized.xml",
         )
+        with open(
+            join(output, "tempfiles", "output.tokenized.xml"), "r", encoding="utf-8"
+        ) as f:
+            self.assertNotIn("\ufeff", f.read())
         self.assertTrue(
             exists(join(output, "assets", "image-for-page1.jpg")),
             "alignment with image files should have copied image-for-page1.jpg to assets",
@@ -82,6 +90,7 @@ class TestAlignCli(BasicTestCase):
         self.assertIn("image-for-page2.jpg is accessible ", results.stdout)
         os.unlink("image-for-page1.jpg")
         self.assertFalse(exists("image-for-page1.jpg"))
+        self.assertIn("Align mode strict succeeded for sequence 0.", results.stdout)
         # print(results.stdout)
 
         # Move the alignment output to compare with further down
@@ -97,10 +106,12 @@ class TestAlignCli(BasicTestCase):
             [
                 "-o",
                 "xhtml",
+                "--align-mode",
+                "moderate",
                 "-s",
                 "--config",
                 join(self.data_dir, "sample-config.json"),
-                join(self.data_dir, "ej-fra-dna.xml"),
+                self.add_bom(join(self.data_dir, "ej-fra-dna.xml")),
                 join(self.data_dir, "ej-fra.m4a"),
                 output,
             ],
@@ -119,6 +130,9 @@ class TestAlignCli(BasicTestCase):
         self.assertFalse(
             exists(join(output, "assets", "image-for-page1.jpg")),
             "image-for-page1.jpg was not on disk, cannot have been copied",
+        )
+        self.assertIn(
+            "Align mode moderate succeeded for sequence 0.", results_dna.stdout
         )
 
         # Functionally the same as self.assertTrue(filecmp.cmp(f1, f2)), but show where
@@ -174,6 +188,8 @@ class TestAlignCli(BasicTestCase):
                     output,
                     "-o",
                     "html",
+                    "--config",
+                    self.add_bom(self.data_dir / "sample-config.json"),
                 ],
             )
         # print(results_html.output)
@@ -401,9 +417,11 @@ class TestAlignCli(BasicTestCase):
         self.assertIn("No input language specified for plain text", results.output)
 
         # XML with guess by contents
-        infile3 = write_file(
-            join(self.tempdir, "infile3"),
-            "<?xml version='1.0' encoding='utf-8'?><text>blah blah</text>",
+        infile3 = self.add_bom(
+            write_file(
+                join(self.tempdir, "infile3"),
+                "<?xml version='1.0' encoding='utf-8'?><text>blah blah</text>",
+            )
         )
         with SoundSwallowerStub("word:0:1"):
             results = self.runner.invoke(
@@ -447,19 +465,155 @@ class TestAlignCli(BasicTestCase):
         self.assertNotEqual(results.exit_code, 0)
         self.assertIn("Error parsing XML", results.output)
 
+    def test_obsolete_switches(self):
         # Giving -i switch generates an obsolete-switch error message
         with SoundSwallowerStub("word:0:1"):
             results = self.runner.invoke(
                 align,
                 [
                     "-i",
-                    infile5,
+                    join(self.data_dir, "fra.txt"),
                     join(self.data_dir, "noise.mp3"),
                     join(self.tempdir, "outdir6"),
                 ],
             )
         self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("The -i option is obsolete.", results.output)
+        self.assertIn("is obsolete.", results.output)
+
+        # Giving --g2p-verbose switch generates an obsolete-switch error message
+        with SoundSwallowerStub("word:0:1"):
+            results = self.runner.invoke(
+                align,
+                [
+                    "--g2p-verbose",
+                    join(self.data_dir, "fra.txt"),
+                    join(self.data_dir, "noise.mp3"),
+                    join(self.tempdir, "outdir7"),
+                ],
+            )
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("is obsolete.", results.output)
+
+        # Giving --g2p-fallback switch generates an obsolete-switch error message
+        with SoundSwallowerStub("word:0:1"):
+            results = self.runner.invoke(
+                align,
+                [
+                    "--g2p-fallback",
+                    "fra:end:und",
+                    join(self.data_dir, "fra.txt"),
+                    join(self.data_dir, "noise.mp3"),
+                    join(self.tempdir, "outdir8"),
+                ],
+            )
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("is obsolete.", results.output)
+
+    def test_oo_option(self):
+        """Exercise the hidden -oo / --output-orth option"""
+        with SoundSwallowerStub("word:0:1"):
+            results = self.runner.invoke(
+                align,
+                [
+                    "-oo",
+                    "eng-arpabet",
+                    join(self.data_dir, "ej-fra.xml"),
+                    join(self.data_dir, "noise.mp3"),
+                    join(self.tempdir, "outdir9"),
+                ],
+            )
+        self.assertEqual(results.exit_code, 0)
+
+        with SoundSwallowerStub("word:0:1"):
+            results = self.runner.invoke(
+                align,
+                [
+                    "-oo",
+                    "not-an-alphabet",
+                    join(self.data_dir, "ej-fra.xml"),
+                    join(self.data_dir, "noise.mp3"),
+                    join(self.tempdir, "outdir10"),
+                ],
+            )
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("Could not g2p", results.output)
+        self.assertIn("not-an-alphabet", results.output)
+
+        with SoundSwallowerStub("word:0:1"):
+            results = self.runner.invoke(
+                align,
+                [
+                    "-oo",
+                    "dan-ipa",
+                    join(self.data_dir, "ej-fra.xml"),
+                    join(self.data_dir, "noise.mp3"),
+                    join(self.tempdir, "outdir11"),
+                ],
+            )
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("Could not g2p", results.output)
+        self.assertIn("no path", results.output)
+
+        with SoundSwallowerStub("word:0:1"):
+            results = self.runner.invoke(
+                align,
+                [
+                    "-oo",
+                    "dan-ipa",
+                    "-l",
+                    "eng",
+                    join(self.data_dir, "fra.txt"),
+                    join(self.data_dir, "noise.mp3"),
+                    join(self.tempdir, "outdir12"),
+                ],
+            )
+        self.assertNotEqual(results.exit_code, 0)
+        self.assertIn("Could not g2p", results.output)
+        self.assertIn('Cannot g2p "eng" to output orthography', results.output)
+
+    def add_bom(self, filename):
+        """Create a temporary copy of filename with the a BOM in it, in self.tempdir"""
+        # We pepper calls to add_bom() around the test suite, to make sure all
+        # different kinds of input files are accepted with and without a BOM
+        output_file = tempfile.NamedTemporaryFile(
+            mode="wb",
+            dir=self.tempdir,
+            delete=False,
+            prefix="bom_",
+            suffix=os.path.basename(filename),
+        )
+        output_file.write(b"\xef\xbb\xbf")
+        with open(filename, "rb") as file_binary:
+            output_file.write(file_binary.read())
+        output_file.close()
+        return output_file.name
+
+    def test_add_bom(self):
+        """Make sure add_bom does what we mean it to, i.e., test the test harness."""
+
+        def slurp_bin(filename):
+            with open(filename, "rb") as f:
+                return f.read()
+
+        def slurp_text(filename, encoding):
+            with open(filename, "r", encoding=encoding) as f:
+                return f.read()
+
+        base_file = write_file(self.tempdir / "add-bom-input.txt", "Random Text été")
+        bom_file = self.add_bom(base_file)
+        self.assertEqual(
+            slurp_text(base_file, "utf-8"), slurp_text(bom_file, "utf-8-sig")
+        )
+        self.assertEqual(
+            slurp_text(bom_file, "utf-8"), "\ufeff" + slurp_text(base_file, "utf-8")
+        )
+        self.assertNotEqual(slurp_bin(base_file), slurp_bin(bom_file))
+        self.assertEqual(b"\xef\xbb\xbf" + slurp_bin(base_file), slurp_bin(bom_file))
+
+        bom_file_pathlib = self.add_bom(pathlib.Path(base_file))
+        self.assertEqual(
+            slurp_text(base_file, "utf-8"), slurp_text(bom_file_pathlib, "utf-8-sig")
+        )
 
 
 if __name__ == "__main__":

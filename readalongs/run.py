@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 #####################################################################################
@@ -22,8 +22,7 @@ from readalongs.app import app, socketio
 
 
 def run():
-    """ Run app using SocketIO
-    """
+    """Run app using SocketIO"""
     socketio.run(app)
 
 

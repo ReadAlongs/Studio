@@ -44,46 +44,31 @@ def SoundSwallowerStub(*segments):
 class SoundSwallowerDecoderStub:
     """Stub class so we don't really call the SoundSwallower decoder"""
 
-    class Segment:
+    class Seg:
         def __init__(self, segment_desc):
             """Init self from "word_id:start:end" description, e.g. "p0s0w0:0:1"."""
-            self.word, s, e = segment_desc.split(":")
-            self.start_frame = int(s)
-            self.end_frame = int(e)
+            self.text, s, e = segment_desc.split(":")
+            self.start = float(s) / 100
+            self.duration = (float(e) - float(s)) / 100
 
         def __repr__(self):
-            return f'Segment(word="{self.word}", start_frame={self.start_frame}, end_frame={self.end_frame})'
+            return (
+                f'Seg(text="{self.text}", start={self.start}, duration={self.duration})'
+            )
 
     class Config:
         def __init__(self, *args):
             pass
 
-        def set_boolean(self, *args):
-            pass
-
-        def set_string(self, *args):
-            pass
-
-        def set_float(self, *args):
-            pass
-
-        def set_int(self, *args):
-            pass
-
-        def get_float(self, *args):
-            return 1.0
-
-        def get_int(self, name):
-            if name == "-frate":
+        def __getitem__(self, key):
+            if key == "frate":
                 # Pretend the framerate is always 1000, so the stub times are all in ms
                 return 1000
             else:
-                return 1
+                return "SPAM"
 
     def __init__(self, *outputs):
-        self._segments = [
-            SoundSwallowerDecoderStub.Segment(segment) for segment in outputs
-        ]
+        self._segments = [SoundSwallowerDecoderStub.Seg(segment) for segment in outputs]
 
     def __call__(self, *args):
         return self
@@ -97,6 +82,7 @@ class SoundSwallowerDecoderStub:
     def end_utt(self):
         pass
 
+    @property
     def seg(self):
         return self._segments
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 """Test suite for DNA segment manupulation methods"""
 
@@ -129,7 +129,7 @@ class TestDNAUtils(TestCase):
         )
         self.assertEqual(
             segment_intersection(
-                segments_from_pairs((10, 30)), segments_from_pairs((19, 19)),
+                segments_from_pairs((10, 30)), segments_from_pairs((19, 19))
             ),
             segments_from_pairs((19, 19)),
         )

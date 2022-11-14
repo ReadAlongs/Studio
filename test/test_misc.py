@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 """Test suite for misc stuff that don't need their own stand-alone suite"""
 
@@ -10,8 +10,13 @@ from lxml import etree
 from test_dna_utils import segments_from_pairs
 
 from readalongs.align import split_silences
-from readalongs.text.util import get_attrib_recursive, get_lang_attrib, parse_time
-from readalongs.util import JoinerCallback
+from readalongs.text.util import (
+    get_attrib_recursive,
+    get_lang_attrib,
+    get_word_text,
+    parse_time,
+)
+from readalongs.util import JoinerCallbackForClick
 
 
 class TestMisc(TestCase):
@@ -154,12 +159,34 @@ class TestMisc(TestCase):
         # get_attrib_recursive() --EJJ Nov 2021
 
     def test_joiner_callback(self):
-        cb = JoinerCallback(iter("qwer"))  # iterable over four characters
+        cb = JoinerCallbackForClick(iter("qwer"))  # iterable over four characters
         self.assertEqual(cb(None, None, ["e:r"]), ["e", "r"])
         self.assertEqual(cb(None, None, ["q,w"]), ["q", "w"])
         with self.assertRaises(click.BadParameter):
             cb(None, None, ["q:e", "a,w"])
         self.assertEqual(cb(None, None, ["r:q", "w"]), ["r", "q", "w"])
+
+    def test_get_word_text(self):
+        self.assertEqual(
+            get_word_text(etree.fromstring("<w>basicword</w>")),
+            "basicword",
+        )
+        self.assertEqual(
+            get_word_text(etree.fromstring("<w><subw>subwcase</subw></w>")),
+            "subwcase",
+        )
+        self.assertEqual(
+            get_word_text(etree.fromstring("<w><syl>syl1</syl><syl>syl2</syl></w>")),
+            "syl1syl2",
+        )
+        self.assertEqual(
+            get_word_text(etree.fromstring("<w>text<subw>sub</subw>tail</w>")),
+            "textsubtail",
+        )
+        self.assertEqual(
+            get_word_text(etree.fromstring("<w><a>a<b>b</b>c</a>d</w>")),
+            "abcd",
+        )
 
 
 if __name__ == "__main__":

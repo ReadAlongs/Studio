@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 """Test suite for readalongs tokenize"""
 
@@ -8,7 +8,7 @@ from unittest import main
 
 from basic_test_case import BasicTestCase
 
-from readalongs.cli import prepare, tokenize
+from readalongs.cli import make_xml, tokenize
 
 # from readalongs.log import LOGGER
 
@@ -17,12 +17,13 @@ class TestTokenizeCli(BasicTestCase):
     """Test suite for the readalongs tokenize CLI command"""
 
     def setUp(self):
-        """setUp() creates self.tempdir and prepares an XML file for use in other tests"""
+        """setUp() creates self.tempdir and makes an XML file for use in other tests"""
         super().setUp()
 
         self.xmlfile = os.path.join(self.tempdir, "fra.xml")
         _ = self.runner.invoke(
-            prepare, ["-l", "fra", os.path.join(self.data_dir, "fra.txt"), self.xmlfile]
+            make_xml,
+            ["-l", "fra", os.path.join(self.data_dir, "fra.txt"), self.xmlfile],
         )
 
     def test_invoke_tok(self):

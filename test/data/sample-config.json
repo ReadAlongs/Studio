@@ -1,4 +1,9 @@
 {
+    "title": "My awesome read-along",
+    "header": "A story in my language",
+    "subheader": "Read by me",
+    "theme": "light",
+
     "images":
         {
             "0": "image-for-page1.jpg",

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 """Test suite for various audio contents handling methods"""
 
@@ -48,9 +48,14 @@ class TestAudio(BasicTestCase):
 
     def test_mute_section(self):
         """Should mute section of audio"""
+        max_before = self.audio_segment[1000:2000].max
         muted_segment = mute_section(self.audio_segment, 1000, 2000)
         muted_section = muted_segment[1000:2000]
-        self.assertLessEqual(muted_section.max, 1)
+        # This worked with pydub 0.23.1, but it does not work with 0.25.1
+        # self.assertLessEqual(muted_section.max, 1)
+        # Muting applies a gain of -120, so the results is not necessarily 0,
+        # it's just much smaller.
+        self.assertLessEqual(muted_section.max, max_before / 1000)
 
     def test_remove_section(self):
         """Should remove section of audio"""
@@ -84,6 +89,8 @@ class TestAudio(BasicTestCase):
             "pip install --force-reinstall --upgrade might be required "
             "if dependencies changed.",
         )
+        # Make sure ss logs are disabled
+        self.assertNotIn("Current configuration", process.stderr)
 
     def test_align_removed(self):
         """Try aligning section with removed audio"""
@@ -95,7 +102,7 @@ class TestAudio(BasicTestCase):
         # Align
         input_text_path = os.path.join(self.data_dir, "audio_sample.txt")
         input_audio_path = audio_output_path
-        flags = ["-l", "eng"]
+        flags = ["-l", "eng", "--debug-aligner"]
         output_path = os.path.join(self.tempdir, "output_removed")
         process = self.align(input_text_path, input_audio_path, output_path, flags)
         if process.returncode != 0:
@@ -109,6 +116,8 @@ class TestAudio(BasicTestCase):
             "pip install --force-reinstall --upgrade might be required "
             "if dependencies changed.",
         )
+        # Make sure ss logs are enabled
+        self.assertIn("Current configuration", process.stderr)
 
     def test_align_muted(self):
         """Try aligning section with muted audio"""

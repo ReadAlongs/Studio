@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 ###########################################
 #
 # util.py
@@ -69,7 +66,27 @@ def get_attrib_recursive(element, *attribs):
         return None
 
 
-def get_lang_attrib(element):
+def iterate_over_text(element: etree.ElementTree):
+    """Iterate over all actual text contained with element and its sub-elements
+
+    Yields:
+        (language_code, text) pairs
+    """
+    lang = get_lang_attrib(element)
+    if element.text:
+        yield (lang, element.text)
+    for child in element:
+        yield from iterate_over_text(child)
+        if child.tail:
+            yield (lang, child.tail)
+
+
+def get_word_text(word_element: etree.ElementTree) -> str:
+    """Given a word element, extract all its text"""
+    return "".join(text for _, text in iterate_over_text(word_element))
+
+
+def get_lang_attrib(element: etree.ElementTree):
     """Return the xml:lang (in priority) or lang (fallback) attribute from element
     or its closest ancestor that has either, or None when neither is found.
     """
@@ -93,18 +110,18 @@ def load_xml_zip(zip_path, input_path):
 
 
 def load_xml_with_encoding(input_path):
-    """ etree.fromstring messes up on declared encodings """
+    """etree.fromstring messes up on declared encodings"""
     return etree.parse(input_path)
 
 
 def write_xml(output_filelike, xml):
-    """ Write XML to already opened file-like object """
+    """Write XML to already opened file-like object"""
     output_filelike.write(etree.tostring(xml, encoding="utf-8", xml_declaration=True))
     output_filelike.write("\n".encode("utf-8"))
 
 
 def save_xml(output_path, xml):
-    """ Save XML to specific PATH """
+    """Save XML to specific PATH"""
     ensure_dirs(output_path)
     with open(output_path, "wb") as fout:
         write_xml(fout, xml)
@@ -120,7 +137,7 @@ def save_xml_zip(zip_path, output_path, xml):
 
 
 def load_txt(input_path):
-    with open(input_path, "r", encoding="utf-8") as fin:
+    with open(input_path, "r", encoding="utf-8-sig") as fin:
         return fin.read()
 
 
@@ -144,7 +161,7 @@ def save_txt_zip(zip_path, output_path, txt):
 
 
 def load_json(input_path):
-    with open(input_path, "r", encoding="utf-8") as fin:
+    with open(input_path, "r", encoding="utf-8-sig") as fin:
         return json.load(fin, object_pairs_hook=OrderedDict)
 
 
@@ -178,32 +195,46 @@ MINIMAL_INDEX_HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Insert Title Here</title>
+        <title>{title}</title>
         <!-- Import fonts. Material Icons are needed by the web component -->
         <link href="https://fonts.googleapis.com/css?family=Lato%7CMaterial+Icons%7CMaterial+Icons+Outlined" rel="stylesheet">
     </head>
 
     <body>
         <!-- Here is how you declare the Web Component. Supported languages: en, fr -->
-        <read-along text="{}" alignment="{}" audio="{}" language="en">
-            <span slot="read-along-header">Insert Title Here Too</span>
+        <read-along text="{text}" alignment="{smil}" audio="{audio}" theme="{theme}" language="en">
+            <span slot='read-along-header'>{header}</span>
+            <span slot='read-along-subheader'>{subheader}</span>
         </read-along>
     </body>
 
     <!-- The last step needed is to import the package -->
-    <script type="module" src='https://unpkg.com/@roedoejet/readalong@latest/dist/read-along/read-along.esm.js'></script>
-    <script nomodule src='https://unpkg.com/@roedoejet/readalong@latest/dist/read-along/read-along.js'></script>
+    <script type="module" src='https://unpkg.com/@roedoejet/readalong@^0.1.6/dist/read-along/read-along.esm.js'></script>
+    <script nomodule src='https://unpkg.com/@roedoejet/readalong@^0.1.6/dist/read-along/read-along.js'></script>
 </html>
 """
 
 
 def save_minimal_index_html(
-    output_path, tokenized_xml_basename, smil_basename, audio_basename
+    output_path,
+    tokenized_xml_basename,
+    smil_basename,
+    audio_basename,
+    title,
+    header,
+    subheader,
+    theme,
 ):
     with open(output_path, "w", encoding="utf-8") as fout:
         fout.write(
             MINIMAL_INDEX_HTML_TEMPLATE.format(
-                tokenized_xml_basename, smil_basename, audio_basename
+                title=title,
+                text=tokenized_xml_basename,
+                smil=smil_basename,
+                audio=audio_basename,
+                theme=theme,
+                header=header,
+                subheader=subheader,
             )
         )
 
@@ -218,7 +249,7 @@ def unicode_normalize_xml(element):
 
 
 def parse_time(time_string: str) -> int:
-    """ Parse a time stamp in h/m/s(default)/ms or any combination of these units.
+    """Parse a time stamp in h/m/s(default)/ms or any combination of these units.
 
     Args:
         time_string (str): timestamp, e.g., "0.23s", "5.234" (implied s), "1234 ms",
