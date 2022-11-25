@@ -100,18 +100,20 @@ def is_do_not_align(element):
 
 def load_xml(input_path):
     with open(input_path, "rb") as fin:
-        return etree.fromstring(fin.read())
+        return etree.fromstring(
+            fin.read(), parser=etree.XMLParser(resolve_entities=False)
+        )
 
 
 def load_xml_zip(zip_path, input_path):
     with zipfile.ZipFile(zip_path, "r") as fin_zip:
         with fin_zip.open(input_path, "r") as fin:
-            return etree.fromstring(fin)
+            return etree.fromstring(fin, parser=etree.XMLParser(resolve_entities=False))
 
 
 def load_xml_with_encoding(input_path):
     """etree.fromstring messes up on declared encodings"""
-    return etree.parse(input_path)
+    return etree.parse(input_path, parser=etree.XMLParser(resolve_entities=False))
 
 
 def write_xml(output_filelike, xml):

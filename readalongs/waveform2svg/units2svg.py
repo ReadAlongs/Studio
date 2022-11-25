@@ -59,7 +59,9 @@ def render_svg(data, width=512, height=100, radius=4):
 
 def load_xml(input_path):
     with open(input_path, "r", encoding="utf-8") as fin:
-        return etree.fromstring(fin.read())
+        return etree.fromstring(
+            fin.read(), parser=etree.XMLParser(resolve_entities=False)
+        )
 
 
 def parse_smil(input_path):

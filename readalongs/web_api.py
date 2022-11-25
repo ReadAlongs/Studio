@@ -160,7 +160,10 @@ async def assemble(
 
     if isinstance(request, XMLRequest):
         try:
-            parsed = etree.fromstring(bytes(request.xml, encoding="utf-8"))
+            parsed = etree.fromstring(
+                bytes(request.xml, encoding="utf-8"),
+                parser=etree.XMLParser(resolve_entities=False),
+            )
         except etree.XMLSyntaxError as e:
             raise HTTPException(
                 status_code=422, detail="XML provided is not valid"
@@ -171,7 +174,8 @@ async def assemble(
             bytes(
                 create_tei_from_text(parsed, text_languages=request.text_languages),
                 encoding="utf-8",
-            )
+            ),
+            parser=etree.XMLParser(resolve_entities=False),
         )
     # tokenize
     tokenized = tokenize_xml(parsed)
@@ -312,7 +316,10 @@ async def convert_alignment(  # noqa: C901
     Returns: a file in the format requested
     """
     try:
-        parsed_xml = etree.fromstring(bytes(request.xml, encoding="utf-8"))
+        parsed_xml = etree.fromstring(
+            bytes(request.xml, encoding="utf-8"),
+            parser=etree.XMLParser(resolve_entities=False),
+        )
     except etree.XMLSyntaxError as e:
         raise HTTPException(status_code=422, detail="XML provided is not valid") from e
 

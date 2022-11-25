@@ -188,7 +188,9 @@ def parse_and_make_xml(
         RuntimeError: If XML failed to parse"""
     # First do G2P
     try:
-        xml = etree.parse(xml_path).getroot()
+        xml = etree.parse(
+            xml_path, parser=etree.XMLParser(resolve_entities=False)
+        ).getroot()
     except etree.XMLSyntaxError as e:
         raise RuntimeError(
             "Error parsing XML input file %s: %s." % (xml_path, e)

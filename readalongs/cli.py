@@ -352,7 +352,9 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
         # We could also use python-magic or filetype, but why introduce another
         # dependency when we can ask the library we're already using!?
         try:
-            _ = etree.parse(textfile_name)
+            _ = etree.parse(
+                textfile_name, parser=etree.XMLParser(resolve_entities=False)
+            )
             textfile_is_plaintext = False
         except etree.XMLSyntaxError as e:
             textfile_is_plaintext = e.position <= (1, 10)
@@ -604,7 +606,9 @@ def tokenize(**kwargs):
         )
 
     try:
-        xml = etree.parse(input_file).getroot()
+        xml = etree.parse(
+            input_file, parser=etree.XMLParser(resolve_entities=False)
+        ).getroot()
     except etree.XMLSyntaxError as e:
         raise click.BadParameter(
             "Error parsing input file %s as XML, please verify it. Parser error: %s"
@@ -710,7 +714,9 @@ def g2p(**kwargs):
         )
 
     try:
-        xml = etree.parse(input_file).getroot()
+        xml = etree.parse(
+            input_file, parser=etree.XMLParser(resolve_entities=False)
+        ).getroot()
     except etree.XMLSyntaxError as e:
         raise click.BadParameter(
             "Error parsing input file %s as XML, please verify it. Parser error: %s"

@@ -77,7 +77,9 @@ def ensure_dirs(path):
 
 def load_xml(input_path):
     with open(input_path, "r", encoding="utf-8") as fin:
-        return etree.fromstring(fin.read())
+        return etree.fromstring(
+            fin.read(), parser=etree.XMLParser(resolve_entities=False)
+        )
 
 
 def save_txt(output_path, txt):

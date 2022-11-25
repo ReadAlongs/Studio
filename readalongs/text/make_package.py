@@ -58,7 +58,9 @@ def encode_from_path(path: str) -> str:
     with open(path, "rb") as f:
         path_bytes = f.read()
     if str(path).endswith("xml"):
-        root = etree.fromstring(path_bytes)
+        root = etree.fromstring(
+            path_bytes, parser=etree.XMLParser(resolve_entities=False)
+        )
         for img in root.xpath("//graphic"):
             url = img.get("url")
             if url.startswith("http"):
