@@ -13,6 +13,7 @@ import re
 import zipfile
 from collections import OrderedDict
 from io import TextIOWrapper
+from typing import IO, Union
 from unicodedata import normalize
 
 from lxml import etree
@@ -98,10 +99,13 @@ def is_do_not_align(element):
     return dna in ("true", "True", "TRUE", "1")
 
 
-def load_xml(input_path) -> etree.ElementTree:
+def load_xml(input_path: Union[str, IO]) -> etree.ElementTree:
     """Safely load an XML file with etree.parse to respect encoding
 
     Return: the root of the XML etree
+
+    Args:
+        input_path: filename or open input IO handle
 
     Raises:
         etree.ParseError: if there is a problem parsing the XML contents
@@ -116,7 +120,7 @@ def load_xml(input_path) -> etree.ElementTree:
 def load_xml_zip(zip_path, input_path) -> etree.ElementTree:
     with zipfile.ZipFile(zip_path, "r") as fin_zip:
         with fin_zip.open(input_path, "r") as fin:
-            return etree.fromstring(fin, parser=etree.XMLParser(resolve_entities=False))
+            return load_xml(fin)
 
 
 def write_xml(output_filelike, xml):
