@@ -25,7 +25,7 @@ from readalongs.log import LOGGER
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.tokenize_xml import tokenize_xml
-from readalongs.text.util import save_xml, write_xml
+from readalongs.text.util import load_xml, save_xml, write_xml
 from readalongs.util import (
     JoinerCallbackForClick,
     get_langs,
@@ -352,12 +352,11 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
         # We could also use python-magic or filetype, but why introduce another
         # dependency when we can ask the library we're already using!?
         try:
-            _ = etree.parse(
-                textfile_name, parser=etree.XMLParser(resolve_entities=False)
-            )
-            textfile_is_plaintext = False
-        except etree.XMLSyntaxError as e:
+            _ = load_xml(textfile_name)
+        except etree.ParseError as e:
             textfile_is_plaintext = e.position <= (1, 10)
+        else:
+            textfile_is_plaintext = False
 
     if textfile_is_plaintext:
         if not kwargs["language"]:
@@ -606,10 +605,8 @@ def tokenize(**kwargs):
         )
 
     try:
-        xml = etree.parse(
-            input_file, parser=etree.XMLParser(resolve_entities=False)
-        ).getroot()
-    except etree.XMLSyntaxError as e:
+        xml = load_xml(input_file)
+    except etree.ParseError as e:
         raise click.BadParameter(
             "Error parsing input file %s as XML, please verify it. Parser error: %s"
             % (get_click_file_name(input_file), e)
@@ -714,10 +711,8 @@ def g2p(**kwargs):
         )
 
     try:
-        xml = etree.parse(
-            input_file, parser=etree.XMLParser(resolve_entities=False)
-        ).getroot()
-    except etree.XMLSyntaxError as e:
+        xml = load_xml(input_file)
+    except etree.ParseError as e:
         raise click.BadParameter(
             "Error parsing input file %s as XML, please verify it. Parser error: %s"
             % (get_click_file_name(input_file), e)

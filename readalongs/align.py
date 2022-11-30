@@ -44,6 +44,7 @@ from readalongs.text.make_smil import make_smil
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import (
     get_word_text,
+    load_xml,
     parse_time,
     save_minimal_index_html,
     save_txt,
@@ -188,10 +189,8 @@ def parse_and_make_xml(
         RuntimeError: If XML failed to parse"""
     # First do G2P
     try:
-        xml = etree.parse(
-            xml_path, parser=etree.XMLParser(resolve_entities=False)
-        ).getroot()
-    except etree.XMLSyntaxError as e:
+        xml = load_xml(xml_path)
+    except etree.ParseError as e:
         raise RuntimeError(
             "Error parsing XML input file %s: %s." % (xml_path, e)
         ) from e

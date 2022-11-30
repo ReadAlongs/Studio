@@ -164,7 +164,7 @@ async def assemble(
                 bytes(request.xml, encoding="utf-8"),
                 parser=etree.XMLParser(resolve_entities=False),
             )
-        except etree.XMLSyntaxError as e:
+        except etree.ParseError as e:
             raise HTTPException(
                 status_code=422, detail="XML provided is not valid"
             ) from e
@@ -279,7 +279,7 @@ class SubtitleTier(Enum):
     WORD = "word"
 
 
-@v1.post("/convert_alignment/{output_format}")
+@v1.post("/convert_alignment/{output_format}")  # noqa: C901
 async def convert_alignment(  # noqa: C901
     request: ConvertRequest,
     output_format: FormatName,
