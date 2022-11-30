@@ -290,7 +290,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
                     config = json.load(f)
             except json.decoder.JSONDecodeError as e:
                 raise click.BadParameter(
-                    f"Config file at {config_file} is not in valid JSON format."
+                    f"Config file at {config_file} is not in valid JSON format: {e}."
                 ) from e
         else:
             raise click.BadParameter(
