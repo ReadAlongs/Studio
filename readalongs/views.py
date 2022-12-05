@@ -257,7 +257,10 @@ def return_temp_file(fname):
     fn, _ = os.path.splitext(fname)
     LOGGER.info(session["temp_dir"])
     path = os.path.join(session["temp_dir"], fn, fname)
-    if os.path.exists(path):
+    # Protect against malicious path arguments
+    if not os.path.normpath(path).startswith(os.path.normpath(session["temp_dir"])):
+        abort(403, "Sorry, that path is forbidden.")
+    elif os.path.exists(path):
         return send_file(path)
     else:
         abort(404, "Sorry, we couldn't find that file.")
