@@ -65,6 +65,7 @@ def get_langs():
             if not x.endswith("-ipa")
             and not x.endswith("-equiv")
             and not x.endswith("-no-symbols")
+            and x not in ["und-ascii", "moh-festival"]
             and g2p_langs.LANGS_NETWORK.has_node(x)
             and has_path(g2p_langs.LANGS_NETWORK, x, "eng-arpabet")
         ]
