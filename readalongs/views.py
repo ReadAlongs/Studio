@@ -258,9 +258,9 @@ def return_temp_file(fname):
     LOGGER.info(session["temp_dir"])
     path = os.path.join(session["temp_dir"], fn, fname)
     # Protect against malicious path arguments
-    if not os.path.normpath(path).startswith(os.path.normpath(session["temp_dir"])):
+    normpath = os.path.normpath(path)
+    if not normpath.startswith(os.path.normpath(session["temp_dir"])):
         abort(403, "Sorry, that path is forbidden.")
-    elif os.path.exists(path):
-        return send_file(path)
-    else:
+    if not os.path.exists(normpath):
         abort(404, "Sorry, we couldn't find that file.")
+    return send_file(normpath)
