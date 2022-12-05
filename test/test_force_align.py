@@ -22,7 +22,7 @@ from readalongs.align import (
 )
 from readalongs.log import LOGGER
 from readalongs.portable_tempfile import PortableNamedTemporaryFile
-from readalongs.text.util import load_txt, save_xml
+from readalongs.text.util import load_txt, load_xml, save_xml
 
 
 class TestForceAlignment(BasicTestCase):
@@ -36,7 +36,7 @@ class TestForceAlignment(BasicTestCase):
 
         # Verify that the same IDs are in the output
         converted_path = os.path.join(self.data_dir, "ej-fra-converted.xml")
-        xml = etree.parse(converted_path).getroot()
+        xml = load_xml(converted_path)
         words = results["words"]
         xml_words = xml.xpath(".//w")
         self.assertEqual(len(words), len(xml_words))
@@ -54,7 +54,7 @@ class TestForceAlignment(BasicTestCase):
 
         # Verify that the same IDs are in the output
         converted_path = os.path.join(self.data_dir, "ej-fra-converted.xml")
-        xml = etree.parse(converted_path).getroot()
+        xml = load_xml(converted_path)
         words = results["words"]
         xml_words = xml.xpath(".//w")
         self.assertEqual(len(words), len(xml_words))
@@ -141,7 +141,7 @@ class TestForceAlignment(BasicTestCase):
             )
         # Verify that the same IDs are in the output
         converted_path = os.path.join(self.data_dir, "ej-fra-converted.xml")
-        xml = etree.parse(converted_path).getroot()
+        xml = load_xml(converted_path)
         words = results["words"]
         xml_words = xml.xpath(".//w")
         self.assertEqual(len(words), len(xml_words))
@@ -175,7 +175,7 @@ class TestXHTML(BasicTestCase):
     def test_convert(self):
         """Test converting the output to xhtml"""
         xml_path = os.path.join(self.data_dir, "ej-fra-converted.xml")
-        xml = etree.parse(xml_path).getroot()
+        xml = load_xml(xml_path)
         convert_to_xhtml(xml)
         with PortableNamedTemporaryFile(suffix=".xml") as tf:
             save_xml(tf.name, xml)

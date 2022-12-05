@@ -10,6 +10,7 @@ from unittest import TestCase, main
 from lxml import etree
 
 from readalongs.text.add_elements_to_xml import add_images, add_supplementary_xml
+from readalongs.text.util import load_xml
 
 
 class TestConfig(TestCase):
@@ -18,7 +19,7 @@ class TestConfig(TestCase):
     @classmethod
     def setUpClass(cls):
         data_dir = os.path.join(os.path.dirname(__file__), "data")
-        cls.xml = etree.parse(os.path.join(data_dir, "ej-fra.xml")).getroot()
+        cls.xml = load_xml(os.path.join(data_dir, "ej-fra.xml"))
 
     def test_image(self):
         """Test images are added correctly"""
