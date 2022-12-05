@@ -1,3 +1,5 @@
 # These are dependencies required by the production Web API
+# gunivorn is only available on *nix, but it's only required for production deployments
 gunicorn
+# uvicorn works on all platforms and is required for both dev and prod deployments
 uvicorn

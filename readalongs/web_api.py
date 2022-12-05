@@ -3,7 +3,8 @@ REST-ish Web API for ReadAlongs Studio text manipulation operations using FastAP
 
 See https://readalong-studio.herokuapp.com/api/v1/docs for the documentation.
 
-You can spin up this Web API for development purposes with:
+You can spin up this Web API for development purposes on any platform with:
+    pip install uvicorn
     cd readalongs/
     PRODUCTION= uvicorn readalongs.web_api:web_api_app --reload
 - The --reload switch will watch for changes under the directory where it's
@@ -13,6 +14,7 @@ You can spin up this Web API for development purposes with:
   response so you won't get CORS errors using this locally with Studio-Web.
 
 You can also spin up the API server grade (on Linux, not Windows) with gunicorn:
+    pip install -r requirements.api.txt
     gunicorn -w 4 -k uvicorn.workers.UvicornWorker readalongs.web_api:web_api_app
 
 Once spun up, the documentation and API playground will be visible at
