@@ -1167,8 +1167,10 @@ def create_tei_from_text(lines: Iterable[str], text_languages=Sequence[str]) -> 
         stripped_line = line.strip()
         if stripped_line == "":
             if not sentences:
-                # consider this a page break (unless at the beginning)
-                pages.append({"paragraphs": paragraphs})
+                # The previous line was also blank, so this is a page break
+                # (but don't insert empty pages)
+                if paragraphs:
+                    pages.append({"paragraphs": paragraphs})
                 paragraphs = []
             else:
                 # add sentences and begin new paragraph

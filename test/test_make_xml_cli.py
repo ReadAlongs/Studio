@@ -12,7 +12,8 @@ from basic_test_case import BasicTestCase
 
 from readalongs.align import create_input_tei, create_tei_from_text
 from readalongs.cli import align, make_xml
-from readalongs.log import LOGGER
+
+# from readalongs.log import LOGGER
 
 
 class TestMakeXMLCli(BasicTestCase):
@@ -109,8 +110,8 @@ class TestMakeXMLCli(BasicTestCase):
         input_file = os.path.join(self.tempdir, "someinput.txt")
         copyfile(os.path.join(self.data_dir, "fra.txt"), input_file)
         results = self.runner.invoke(make_xml, ["-l", "fra", input_file])
-        LOGGER.warning("Output: {}".format(results.output))
-        LOGGER.warning("Exception: {}".format(results.exception))
+        # LOGGER.warning("Output: {}".format(results.output))
+        # LOGGER.warning("Exception: {}".format(results.exception))
         self.assertEqual(results.exit_code, 0)
         self.assertRegex(results.stdout, "Wrote.*someinput[.]xml")
         self.assertTrue(os.path.exists(os.path.join(self.tempdir, "someinput.xml")))
@@ -243,13 +244,44 @@ class TestMakeXMLCli(BasicTestCase):
         input_text_with_spaces = "Ceci est un test\n \nParagraphe\n\t \n \nPage\n"
         input_text_stripped = "Ceci est un test\n\nParagraphe\n\n\nPage\n"
 
-        def text2lines(text: str):
-            return io.StringIO(text).readlines()
-
         self.assertEqual(
             create_tei_from_text(text2lines(input_text_with_spaces), ["fra"]),
             create_tei_from_text(text2lines(input_text_stripped), ["fra"]),
         )
+
+    def test_ignore_superfluous_blank_lines(self):
+        """Don't insert blank pages when there are more blank lines than required."""
+        input_text_with_extra_nls = (
+            " \nPage1\n \n  \n\nPage2\n\t\n \n\n\t\n\n\nPage3\n\n\t\n\t"
+        )
+        input_text_stripped = "Page1\n\n\nPage2\n\n\nPage3"
+
+        self.maxDiff = None
+        self.assertEqual(
+            create_tei_from_text(text2lines(input_text_with_extra_nls), ["eng"]),
+            create_tei_from_text(text2lines(input_text_stripped), ["eng"]),
+        )
+
+        for n in range(3, 10):
+            self.assertEqual(
+                create_tei_from_text(text2lines("Page1" + "\n" * n + "Page2"), ["eng"]),
+                create_tei_from_text(text2lines("Page1" + "\n" * 3 + "Page2"), ["eng"]),
+            )
+
+    def test_split_vs_readlines(self):
+        """Calling create_tei_from_text should work any way we split the lines"""
+        # string.split("\n") strips newlines and might not be identical to readlines(),
+        # but that should make no difference to create_tei_from_text
+        text = "Blah\nBlah\n\nFoo \n\n \nBar"
+        self.assertEqual(
+            create_tei_from_text(text.split("\n"), ["eng"]),
+            create_tei_from_text(text2lines(text), ["eng"]),
+        )
+
+
+def text2lines(text: str):
+    """Stub: readlines() from a string as if it was a file"""
+    return io.StringIO(text).readlines()
 
 
 if __name__ == "__main__":
