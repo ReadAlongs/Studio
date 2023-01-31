@@ -951,7 +951,6 @@ def save_readalong(
         html_out_path = output_base + ".html"
         html_out = create_web_component_html(
             ras_path,
-            smil_path,
             audio_path,
             config.get("title", "Title goes here"),
             config.get("header", "Header goes here"),
@@ -964,7 +963,6 @@ def save_readalong(
     save_minimal_index_html(
         os.path.join(output_dir, "index.html"),
         os.path.basename(ras_path),
-        os.path.basename(smil_path),
         os.path.basename(audio_path),
         config.get("title", "Title goes here"),
         config.get("header", "Header goes here"),

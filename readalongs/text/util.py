@@ -211,7 +211,7 @@ MINIMAL_INDEX_HTML_TEMPLATE = """<!DOCTYPE html>
 
     <body>
         <!-- Here is how you declare the Web Component. Supported languages: en, fr -->
-        <read-along text="{text}" alignment="{smil}" audio="{audio}" theme="{theme}" language="en">
+        <read-along readalong="{text}" audio="{audio}" theme="{theme}" language="en">
             <span slot='read-along-header'>{header}</span>
             <span slot='read-along-subheader'>{subheader}</span>
         </read-along>
@@ -227,7 +227,6 @@ MINIMAL_INDEX_HTML_TEMPLATE = """<!DOCTYPE html>
 def save_minimal_index_html(
     output_path,
     tokenized_xml_basename,
-    smil_basename,
     audio_basename,
     title,
     header,
@@ -239,7 +238,6 @@ def save_minimal_index_html(
             MINIMAL_INDEX_HTML_TEMPLATE.format(
                 title=title,
                 text=tokenized_xml_basename,
-                smil=smil_basename,
                 audio=audio_basename,
                 theme=theme,
                 header=header,
