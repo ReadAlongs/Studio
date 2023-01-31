@@ -927,8 +927,8 @@ def save_readalong(
             output_formats=output_formats,
         )
 
-    tokenized_xml_path = output_base + ".xml"
-    save_xml(tokenized_xml_path, align_results["tokenized"])
+    ras_path = output_base + ".ras"
+    save_xml(ras_path, align_results["tokenized"])
 
     if "xhtml" in output_formats:
         convert_to_xhtml(align_results["tokenized"])
@@ -941,7 +941,7 @@ def save_readalong(
 
     smil_path = output_base + ".smil"
     smil = make_smil(
-        os.path.basename(tokenized_xml_path),
+        os.path.basename(ras_path),
         os.path.basename(audio_path),
         align_results["words"],
     )
@@ -950,7 +950,7 @@ def save_readalong(
     if "html" in output_formats:
         html_out_path = output_base + ".html"
         html_out = create_web_component_html(
-            tokenized_xml_path,
+            ras_path,
             smil_path,
             audio_path,
             config.get("title", "Title goes here"),
@@ -963,7 +963,7 @@ def save_readalong(
 
     save_minimal_index_html(
         os.path.join(output_dir, "index.html"),
-        os.path.basename(tokenized_xml_path),
+        os.path.basename(ras_path),
         os.path.basename(smil_path),
         os.path.basename(audio_path),
         config.get("title", "Title goes here"),
