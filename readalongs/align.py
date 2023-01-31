@@ -927,7 +927,7 @@ def save_readalong(
             output_formats=output_formats,
         )
 
-    ras_path = output_base + ".ras"
+    ras_path = output_base + ".xml"
     save_xml(ras_path, align_results["tokenized"])
 
     if "xhtml" in output_formats:

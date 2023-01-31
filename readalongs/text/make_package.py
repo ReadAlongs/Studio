@@ -35,7 +35,7 @@ BASIC_HTML = """
   <style attribution="See https://fonts.google.com/attribution for copyrights and font attribution">{fonts}</style>
 </head>
 <body>
-    <read-along readalong="{text}" audio="{audio}" theme="{theme}" use-assets-folder="false">
+    <read-along readalong="{ras}" audio="{audio}" theme="{theme}" use-assets-folder="false">
         <span slot='read-along-header'>{header}</span>
         <span slot='read-along-subheader'>{subheader}</span>
     </read-along>
@@ -104,7 +104,7 @@ def encode_from_path(path: str) -> str:
 
 
 def create_web_component_html(
-    text_path: str,
+    ras_path: str,
     audio_path: str,
     title="Title goes here",
     header="Header goes here",
@@ -137,7 +137,7 @@ def create_web_component_html(
         fonts_raw = fonts.text
 
     return BASIC_HTML.format(
-        text=encode_from_path(text_path),
+        ras=encode_from_path(ras_path),
         audio=encode_from_path(audio_path),
         js=js_raw,
         fonts=fonts_raw,

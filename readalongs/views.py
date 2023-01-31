@@ -210,7 +210,7 @@ def steps(step):
             data["text_path"] = os.path.join(
                 session["temp_dir"], output_base, output_base + ".xml"
             )
-            data["text_fn"] = f"/file/{output_base}" + ".ras"
+            data["text_fn"] = f"/file/{output_base}" + ".xml"
         return render_template("export.html", data=data)
     else:
         abort(404)

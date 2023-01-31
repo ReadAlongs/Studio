@@ -72,7 +72,7 @@ class TestAlignCli(BasicTestCase):
             )
         with open(join(output, "index.html"), encoding="utf8") as f:
             self.assertIn(
-                '<read-along text="output.xml" alignment="output.smil" audio="output.m4a"',
+                '<read-along readalong="output.xml" audio="output.m4a"',
                 f.read(),
             )
         self.assertTrue(
