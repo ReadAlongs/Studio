@@ -1,0 +1,42 @@
+<!ELEMENT readalong (text)>
+<!ELEMENT text (body)>
+<!ATTLIST text xml:lang CDATA "und"
+ fallback-langs CDATA #IMPLIED
+ id CDATA #IMPLIED>
+
+<!ELEMENT body (div|anchor|graphic|p|s|w)*>
+<!ATTLIST body id CDATA #IMPLIED>
+
+<!ELEMENT anchor EMPTY>
+<!ATTLIST anchor time CDATA #REQUIRED>
+
+<!ELEMENT graphic EMPTY>
+<!ATTLIST graphic url CDATA #REQUIRED
+                  id CDATA #IMPLIED>
+
+<!ELEMENT div (#PCDATA|anchor|graphic|p|s|w)*>
+<!ATTLIST div id CDATA #IMPLIED
+          type CDATA #IMPLIED
+          do-not-align CDATA #IMPLIED
+          time CDATA #IMPLIED
+          duration CDATA #IMPLIED>
+
+<!ELEMENT p (#PCDATA|s|w)*>
+<!ATTLIST p id CDATA #IMPLIED
+ do-not-align CDATA #IMPLIED
+ time CDATA #IMPLIED
+ duration CDATA #IMPLIED>
+
+<!ELEMENT s (#PCDATA|w)*>
+<!ATTLIST s id CDATA #IMPLIED
+ class CDATA #IMPLIED
+ do-not-align CDATA #IMPLIED
+ time CDATA #IMPLIED
+ duration CDATA #IMPLIED>
+
+<!ELEMENT w (#PCDATA)>
+<!ATTLIST w id CDATA #IMPLIED
+ do-not-align CDATA #IMPLIED
+ ARPABET CDATA #IMPLIED
+ time CDATA #IMPLIED
+ duration CDATA #IMPLIED>
