@@ -204,10 +204,7 @@ class TestAlignCli(BasicTestCase):
         htmldoc = fromstring(path_bytes)
         b64_pattern = r"data:[\w\/\+]*;base64,\w*"
         self.assertRegex(
-            htmldoc.body.xpath("//read-along")[0].attrib["text"], b64_pattern
-        )
-        self.assertRegex(
-            htmldoc.body.xpath("//read-along")[0].attrib["alignment"], b64_pattern
+            htmldoc.body.xpath("//read-along")[0].attrib["readalong"], b64_pattern
         )
         self.assertRegex(
             htmldoc.body.xpath("//read-along")[0].attrib["audio"], b64_pattern
