@@ -1,11 +1,12 @@
 <!ELEMENT readalong (text)>
 <!ELEMENT text (body|anchor)*>
 <!ATTLIST text
- fallback-langs CDATA #IMPLIED
  xml:lang CDATA #IMPLIED
+ lang CDATA #IMPLIED
+ fallback-langs CDATA #IMPLIED
  id CDATA #IMPLIED>
 
-<!ELEMENT body (div|anchor|graphic|p|s|w)*>
+<!ELEMENT body (div|anchor|silence|graphic|p|s|w)*>
 <!ATTLIST body
  xml:lang CDATA #IMPLIED
  id CDATA #IMPLIED>
@@ -13,42 +14,54 @@
 <!ELEMENT anchor EMPTY>
 <!ATTLIST anchor time CDATA #REQUIRED>
 
+<!ELEMENT silence EMPTY>
+<!ATTLIST silence dur CDATA #REQUIRED>
+
 <!ELEMENT graphic EMPTY>
 <!ATTLIST graphic
  url CDATA #REQUIRED
  id CDATA #IMPLIED>
 
-<!ELEMENT div (#PCDATA|anchor|graphic|p|s|w)*>
+<!ELEMENT div (#PCDATA|anchor|silence|graphic|p|s|w)*>
 <!ATTLIST div
  xml:lang CDATA #IMPLIED
  id CDATA #IMPLIED
  type CDATA #IMPLIED
  do-not-align CDATA #IMPLIED
  time CDATA #IMPLIED
- duration CDATA #IMPLIED>
+ dur CDATA #IMPLIED>
 
-<!ELEMENT p (#PCDATA|anchor|s|w)*>
+<!ELEMENT p (#PCDATA|anchor|silence|s|w)*>
 <!ATTLIST p
  xml:lang CDATA #IMPLIED
  id CDATA #IMPLIED
  do-not-align CDATA #IMPLIED
  time CDATA #IMPLIED
- duration CDATA #IMPLIED>
+ dur CDATA #IMPLIED>
 
-<!ELEMENT s (#PCDATA|anchor|w)*>
+<!ELEMENT s (#PCDATA|anchor|silence|w)*>
 <!ATTLIST s
  xml:lang CDATA #IMPLIED
  id CDATA #IMPLIED
  class CDATA #IMPLIED
  do-not-align CDATA #IMPLIED
  time CDATA #IMPLIED
- duration CDATA #IMPLIED>
+ dur CDATA #IMPLIED>
 
-<!ELEMENT w (#PCDATA)>
+<!ELEMENT w (#PCDATA|syl)*>
 <!ATTLIST w
  xml:lang CDATA #IMPLIED
  id CDATA #IMPLIED
  do-not-align CDATA #IMPLIED
  ARPABET CDATA #IMPLIED
  time CDATA #IMPLIED
- duration CDATA #IMPLIED>
+ dur CDATA #IMPLIED>
+
+<!ELEMENT syl (#PCDATA)>
+<!ATTLIST syl
+ xml:lang CDATA #IMPLIED
+ id CDATA #IMPLIED
+ do-not-align CDATA #IMPLIED
+ ARPABET CDATA #IMPLIED
+ time CDATA #IMPLIED
+ dur CDATA #IMPLIED>
