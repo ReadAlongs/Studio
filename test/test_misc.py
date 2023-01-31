@@ -87,7 +87,7 @@ class TestMisc(BasicTestCase):
 
     def test_get_attrib_recursive(self):
         raw_xml = """<readalong>
-            <text xml:lang="text">
+            <text lang="text">
             <p lang="p1"><s>stuff</s><s lang="p1s2">nonsense</s></p>
             <p><s lang="p2s1">stuff</s><s>nonsense</s></p>
             </text>
