@@ -536,7 +536,9 @@ def add_alignments(
     }
     # FIXME: Should propagate durations to higher-level elements, ideally
     for el in results["tokenized"].xpath("//w"):
-        el.attrib["time"], el.attrib["dur"] = words_dict[el.attrib["id"]]
+        # It may not be aligned
+        if el.attrib["id"] in words_dict:
+            el.attrib["time"], el.attrib["dur"] = words_dict[el.attrib["id"]]
 
 
 def align_audio(
