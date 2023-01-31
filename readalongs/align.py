@@ -525,6 +525,20 @@ def insert_silence(
         results["audio"] = audio
 
 
+def add_alignments(
+    results: Dict[str, Any],
+):
+    """Add the computed alignments to the XML tags."""
+    # Round all times to three digits, as noted below
+    words_dict = {
+        x["id"]: (("%.3f" % x["start"]), ("%.3f" % (x["end"] - x["start"])))
+        for x in results["words"]
+    }
+    # FIXME: Should propagate durations to higher-level elements, ideally
+    for el in results["tokenized"].xpath("//w"):
+        el.attrib["time"], el.attrib["dur"] = words_dict[el.attrib["id"]]
+
+
 def align_audio(
     xml_path: str,
     audio_path: str,
@@ -706,6 +720,12 @@ def align_audio(
         audio=audio,
         xml_path=xml_path,
     )
+
+    # Add alignments to word tags
+    add_alignments(
+        results=results,
+    )
+
     return results
 
 
