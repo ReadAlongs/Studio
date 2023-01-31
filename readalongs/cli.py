@@ -20,7 +20,7 @@ import click
 from lxml import etree
 
 from readalongs._version import __version__
-from readalongs.align import align_audio, create_input_tei, save_readalong
+from readalongs.align import align_audio, create_input_ras, save_readalong
 from readalongs.log import LOGGER
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
@@ -369,7 +369,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
             languages.append("und")
         plain_textfile = kwargs["textfile"]
         try:
-            _, xml_textfile = create_input_tei(
+            _, xml_textfile = create_input_ras(
                 input_file_name=plain_textfile,
                 text_languages=languages,
                 save_temps=temp_base,
@@ -532,7 +532,7 @@ def make_xml(**kwargs):
 
     try:
         if out_file == "-":
-            _, filename = create_input_tei(
+            _, filename = create_input_ras(
                 input_file_handle=input_file, text_languages=languages
             )
             with io.open(filename, encoding="utf-8-sig") as f:
@@ -545,7 +545,7 @@ def make_xml(**kwargs):
                     "Output file %s exists already, use -f to overwrite." % out_file
                 )
 
-            _, filename = create_input_tei(
+            _, filename = create_input_ras(
                 input_file_handle=input_file,
                 text_languages=languages,
                 output_file=out_file,

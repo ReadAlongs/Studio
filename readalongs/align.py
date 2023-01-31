@@ -176,7 +176,7 @@ def parse_and_make_xml(
     """Parse XML input and run tokenization and G2P.
 
     Args:
-        xml_path (str): Path to XML input file in TEI-like format
+        xml_path (str): Path to XML input file in RAS format
         config (dict): Optional; ReadAlong-Studio configuration to use
         save_temps (str): Optional; Save temporary files, by default None
         verbose_g2p_warnings (boolean): Optional; display all g2p errors and warnings
@@ -541,7 +541,7 @@ def align_audio(
     """Align an XML input file to an audio file.
 
     Args:
-        xml_path (str): Path to XML input file in TEI-like format
+        xml_path (str): Path to XML input file in RAS format
         audio_path (str): Path to audio input. Must be in a format supported by ffmpeg
         unit (str): Optional; Element to create alignments for, by default 'w'
         bare (boolean): Optional;
@@ -1120,8 +1120,8 @@ def convert_to_xhtml(tokenized_xml, title="Book"):
     head.append(link_element)
 
 
-TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
-<TEI>
+RAS_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
+<readalong>
     <text xml:lang="{{main_lang}}" fallback-langs="{{fallback_langs}}">
         <body>
         {{#pages}}
@@ -1137,12 +1137,12 @@ TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
         {{/pages}}
         </body>
     </text>
-</TEI>
+</readalong>
 """
 
 
-def create_tei_from_text(lines: Iterable[str], text_languages=Sequence[str]) -> str:
-    """Create input xml in TEI standard.
+def create_ras_from_text(lines: Iterable[str], text_languages=Sequence[str]) -> str:
+    """Create input xml in RAS format.
         Uses the line sequence to infer paragraph and sentence structure from plain text:
         Assumes a double blank line marks a page break, and a single blank line
         marks a paragraph break.
@@ -1184,11 +1184,11 @@ def create_tei_from_text(lines: Iterable[str], text_languages=Sequence[str]) -> 
         paragraphs.append({"sentences": sentences})
     if paragraphs:
         pages.append({"paragraphs": paragraphs})
-    return chevron.render(TEI_TEMPLATE, {**kwargs, **{"pages": pages}})
+    return chevron.render(RAS_TEMPLATE, {**kwargs, **{"pages": pages}})
 
 
-def create_input_tei(**kwargs):
-    """Create input xml in TEI standard.
+def create_input_ras(**kwargs):
+    """Create input xml in RAS format.
         Uses readlines to infer paragraph and sentence structure from plain text.
         Assumes a double blank line marks a page break, and a single blank line
         marks a paragraph break.
@@ -1241,7 +1241,7 @@ def create_input_tei(**kwargs):
             prefix="readalongs_xml_", suffix=".xml", delete=True
         )
         filename = outfile.name
-    xml = create_tei_from_text(text, text_langs)
+    xml = create_ras_from_text(text, text_langs)
     outfile.write(xml.encode("utf-8"))
     outfile.flush()
     outfile.close()

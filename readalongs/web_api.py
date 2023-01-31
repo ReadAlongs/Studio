@@ -35,7 +35,7 @@ from lxml import etree
 from pydantic import BaseModel, Field
 from starlette.background import BackgroundTask
 
-from readalongs.align import create_tei_from_text, save_label_files, save_subtitles
+from readalongs.align import create_ras_from_text, save_label_files, save_subtitles
 from readalongs.log import LOGGER
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
@@ -132,7 +132,7 @@ async def assemble(
             "xml": {
                 "summary": "A basic example with xml input",
                 "value": {
-                    "xml": "<?xml version='1.0' encoding='utf-8'?><TEI><text><p><s>hej verden</s></p></text></TEI>",
+                    "xml": "<?xml version='1.0' encoding='utf-8'?><readalong><text><p><s>hej verden</s></p></text></readalong>",
                     "text_languages": ["dan", "und"],
                     "debug": False,
                 },
@@ -140,7 +140,7 @@ async def assemble(
         }
     )
 ):
-    """Create an input TEI from the given text (as plain text or XML).
+    """Create an input RAS from the given text (as plain text or XML).
     Also creates the required grammar, pronunciation dictionary,
     and text needed by the decoder.
 
@@ -174,7 +174,7 @@ async def assemble(
         parsed = io.StringIO(request.text).readlines()
         parsed = etree.fromstring(
             bytes(
-                create_tei_from_text(parsed, text_languages=request.text_languages),
+                create_ras_from_text(parsed, text_languages=request.text_languages),
                 encoding="utf-8",
             ),
             parser=etree.XMLParser(resolve_entities=False),
@@ -240,7 +240,8 @@ class ConvertRequest(BaseModel):
         example=dedent(
             """\
             <?xml version='1.0' encoding='utf-8'?>
-            <TEI>
+            <!DOCDTYPE readalong SYSTEM "readalong.dtd">
+            <readalong>
                 <text xml:lang="dan" fallback-langs="und" id="t0">
                     <body id="t0b0">
                         <div type="page" id="t0b0d0">
@@ -250,7 +251,7 @@ class ConvertRequest(BaseModel):
                         </div>
                     </body>
                 </text>
-            </TEI>"""
+            </readalong>"""
         ),
     )
 

@@ -9,7 +9,7 @@
 #
 # The auto-generated IDs have formats like "s0w2m1" meaning
 # "sentence 0, word 2, morpheme 1".  But it's flexible if some elements
-# already have ids, or if the markup uses different tags than a TEI document.
+# already have ids, or if the markup uses different tags than a RAS document.
 #
 ###################################################
 

@@ -5,7 +5,7 @@
 #
 # end_to_end.py
 #
-# Takes an XML file (preferrably using TEI conventions) and
+# Takes an XML file (preferrably using TEI conventions or RAS format) and
 # makes:
 #
 # 1. An XML file with added IDs for elements (if the elements didn't
