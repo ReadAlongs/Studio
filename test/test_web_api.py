@@ -122,7 +122,7 @@ class TestWebApi(BasicTestCase):
     hej_verden_xml = dedent(
         """\
         <?xml version='1.0' encoding='utf-8'?>
-        <TEI>
+        <readalong>
             <text xml:lang="dan" fallback-langs="und" id="t0">
                 <body id="t0b0">
                     <div type="page" id="t0b0d0">
@@ -132,7 +132,7 @@ class TestWebApi(BasicTestCase):
                     </div>
                 </body>
             </text>
-        </TEI>
+        </readalong>
         """
     )
 
@@ -368,7 +368,7 @@ class TestWebApi(BasicTestCase):
         mismatch_xml = dedent(
             """\
             <?xml version='1.0' encoding='utf-8'?>
-            <TEI>
+            <readalong>
                 <text xml:lang="dan" fallback-langs="und" id="t0">
                     <body id="t0b0">
                         <div type="page" id="t0b0d0">
@@ -378,7 +378,7 @@ class TestWebApi(BasicTestCase):
                         </div>
                     </body>
                 </text>
-            </TEI>
+            </readalong>
             """
         )
         request = {

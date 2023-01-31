@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<TEI>
+<readalong>
     <text xml:lang="fra">
         <anchor time=".5s"/>
         <body>
@@ -25,4 +25,4 @@
             </div>
         </body>
     </text>
-</TEI>
+</readalong>

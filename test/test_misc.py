@@ -86,8 +86,8 @@ class TestMisc(BasicTestCase):
         self.assertEqual(words, ref)
 
     def test_get_attrib_recursive(self):
-        raw_xml = """<TEI>
-            <text lang="text">
+        raw_xml = """<readalong>
+            <text xml:lang="text">
             <p lang="p1"><s>stuff</s><s lang="p1s2">nonsense</s></p>
             <p><s lang="p2s1">stuff</s><s>nonsense</s></p>
             </text>
@@ -97,7 +97,7 @@ class TestMisc(BasicTestCase):
             <text>
             <p><s xml:lang="p4s1" lang="not:xml:lang">stuff</s><s>nonsense<s xml:lang="p4p2c">!</s></s></p>
             </text>
-            </TEI>
+            </readalong>
         """
         xml = etree.fromstring(raw_xml)
         for i, s, lang in zip(

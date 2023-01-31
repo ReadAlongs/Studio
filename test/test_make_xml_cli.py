@@ -10,7 +10,7 @@ from unittest import main
 
 from basic_test_case import BasicTestCase
 
-from readalongs.align import create_input_tei, create_tei_from_text
+from readalongs.align import create_input_ras, create_ras_from_text
 from readalongs.cli import align, make_xml
 
 # from readalongs.log import LOGGER
@@ -170,18 +170,18 @@ class TestMakeXMLCli(BasicTestCase):
             "Using old Mac-style newlines should not affect make-xml",
         )
 
-    def test_create_input_tei_errors(self):
-        """create_input_tei should raise a AssertionError when parameters are missing."""
+    def test_create_input_ras_errors(self):
+        """create_input_ras should raise a AssertionError when parameters are missing."""
         # These used to be RuntimeError, but that was not right: *programmer*
         # errors can and should dump stack traces, unlike *user* errors, which
         # warrant nice friendly messages.
         with self.assertRaises(AssertionError):
             # missing input_file_name or input_file_handle
-            _, _ = create_input_tei()
+            _, _ = create_input_ras()
 
         with self.assertRaises(AssertionError):
             # missing text_languages
-            _, _ = create_input_tei(
+            _, _ = create_input_ras(
                 input_file_name=os.path.join(self.data_dir, "fra.txt")
             )
 
@@ -213,19 +213,19 @@ class TestMakeXMLCli(BasicTestCase):
     def test_make_xml_invalid_utf8_input(self):
         noise_file = os.path.join(self.data_dir, "noise.mp3")
 
-        # Read noise.mp3 as if it was utf8 text, via create_input_tei(input_file_handle)
+        # Read noise.mp3 as if it was utf8 text, via create_input_ras(input_file_handle)
         results = self.runner.invoke(make_xml, ["-l", "fra", noise_file, "-"])
         self.assertNotEqual(results.exit_code, 0)
         self.assertIn("provide a correctly encoded utf-8", results.output)
 
-        # Read noise.mp3 as if it was utf8 text, via create_input_tei(input_file_name)
+        # Read noise.mp3 as if it was utf8 text, via create_input_ras(input_file_name)
         results = self.runner.invoke(
             make_xml, ["-l", "fra", noise_file, os.path.join(self.tempdir, "noise.xml")]
         )
         self.assertNotEqual(results.exit_code, 0)
         self.assertIn("provide a correctly encoded utf-8", results.output)
 
-        # align also calls create_input_tei(input_file_name)
+        # align also calls create_input_ras(input_file_name)
         results = self.runner.invoke(
             align,
             [
@@ -245,8 +245,8 @@ class TestMakeXMLCli(BasicTestCase):
         input_text_stripped = "Ceci est un test\n\nParagraphe\n\n\nPage\n"
 
         self.assertEqual(
-            create_tei_from_text(text2lines(input_text_with_spaces), ["fra"]),
-            create_tei_from_text(text2lines(input_text_stripped), ["fra"]),
+            create_ras_from_text(text2lines(input_text_with_spaces), ["fra"]),
+            create_ras_from_text(text2lines(input_text_stripped), ["fra"]),
         )
 
     def test_ignore_superfluous_blank_lines(self):
@@ -258,24 +258,24 @@ class TestMakeXMLCli(BasicTestCase):
 
         self.maxDiff = None
         self.assertEqual(
-            create_tei_from_text(text2lines(input_text_with_extra_nls), ["eng"]),
-            create_tei_from_text(text2lines(input_text_stripped), ["eng"]),
+            create_ras_from_text(text2lines(input_text_with_extra_nls), ["eng"]),
+            create_ras_from_text(text2lines(input_text_stripped), ["eng"]),
         )
 
         for n in range(3, 10):
             self.assertEqual(
-                create_tei_from_text(text2lines("Page1" + "\n" * n + "Page2"), ["eng"]),
-                create_tei_from_text(text2lines("Page1" + "\n" * 3 + "Page2"), ["eng"]),
+                create_ras_from_text(text2lines("Page1" + "\n" * n + "Page2"), ["eng"]),
+                create_ras_from_text(text2lines("Page1" + "\n" * 3 + "Page2"), ["eng"]),
             )
 
     def test_split_vs_readlines(self):
-        """Calling create_tei_from_text should work any way we split the lines"""
+        """Calling create_ras_from_text should work any way we split the lines"""
         # string.split("\n") strips newlines and might not be identical to readlines(),
         # but that should make no difference to create_tei_from_text
         text = "Blah\nBlah\n\nFoo \n\n \nBar"
         self.assertEqual(
-            create_tei_from_text(text.split("\n"), ["eng"]),
-            create_tei_from_text(text2lines(text), ["eng"]),
+            create_ras_from_text(text.split("\n"), ["eng"]),
+            create_ras_from_text(text2lines(text), ["eng"]),
         )
 
 

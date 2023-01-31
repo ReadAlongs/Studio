@@ -28,7 +28,7 @@ class BasicTestCase(TestCase):
     # To keep temp dirs for just one subclass, add this line to its setUp() function:
     # function before the call to super().setUp():
     #     self.keep_temp_dir_after_running = True
-    keep_temp_dir_after_running = False
+    keep_temp_dir_after_running = True
 
     def setUp(self):
         """Create a temporary directory, self.tempdir, and a test runner, self.runner

@@ -17,7 +17,7 @@ from soundswallower import get_model_path
 from readalongs.align import (
     align_audio,
     convert_to_xhtml,
-    create_input_tei,
+    create_input_ras,
     get_word_texts_and_sentences,
 )
 from readalongs.log import LOGGER
@@ -47,7 +47,7 @@ class TestForceAlignment(BasicTestCase):
         """Basic alignment test case with plain text input"""
         txt_path = os.path.join(self.data_dir, "ej-fra.txt")
         wav_path = os.path.join(self.data_dir, "ej-fra.m4a")
-        _, temp_fn = create_input_tei(
+        _, temp_fn = create_input_ras(
             input_file_name=txt_path, text_languages=("fra",), save_temps=None
         )
         results = align_audio(temp_fn, wav_path, unit="w", save_temps=None)

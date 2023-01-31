@@ -316,9 +316,9 @@ class TestAlignCli(BasicTestCase):
         """Make sure invalid anchors yield appropriate errors"""
 
         xml_text = """<?xml version='1.0' encoding='utf-8'?>
-            <TEI><text xml:lang="fra"><body><p>
+            <readalong><text xml:lang="fra"><body><p>
             <anchor /><s>Bonjour.</s><anchor time="invalid"/>
-            </p></body></text></TEI>
+            </p></body></text></readalong>
         """
         xml_file = join(self.tempdir, "bad-anchor.xml")
         with open(xml_file, "w", encoding="utf8") as f:
