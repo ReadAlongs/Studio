@@ -240,7 +240,6 @@ class ConvertRequest(BaseModel):
         example=dedent(
             """\
             <?xml version='1.0' encoding='utf-8'?>
-            <!DOCDTYPE readalong SYSTEM "readalong.dtd">
             <readalong>
                 <text xml:lang="dan" fallback-langs="und" id="t0">
                     <body id="t0b0">
