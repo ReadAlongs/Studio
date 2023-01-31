@@ -304,7 +304,25 @@ class TestG2pCli(BasicTestCase):
         """readalongs align working on previously g2p'd text"""
         text_file = os.path.join(self.data_dir, "mixed-langs.tokenized.xml")
         audio_file = os.path.join(self.data_dir, "ej-fra.m4a")
-        with SoundSwallowerStub("t0b0d0p0s0w0:920:1620", "t0b0d0p0s1w0:1620:1690"):
+        # bogus alignments but they must all exist!!!
+        with SoundSwallowerStub(
+            "t0b0d0p0s0w0:1:2",
+            "t0b0d0p0s0w1:2:3",
+            "t0b0d0p0s0w2:3:4",
+            "t0b0d0p0s0w3:4:5",
+            "t0b0d0p0s1w0:5:6",
+            "t0b0d0p0s1w1:6:7",
+            "t0b0d0p0s1w2:7:8",
+            "t0b0d0p0s1w3:8:9",
+            "t0b0d0p0s2w0:9:10",
+            "t0b0d0p0s2w1:10:11",
+            "t0b0d0p0s2w2:11:12",
+            "t0b0d0p0s2w3:12:13",
+            "t0b0d0p0s3w0:13:14",
+            "t0b0d0p0s3w1:14:15",
+            "t0b0d0p0s3w2:15:16",
+            "t0b0d0p0s3w3:16:17",
+        ):
             _ = align_audio(
                 text_file, audio_file, save_temps=os.path.join(self.tempdir, "foo")
             )
