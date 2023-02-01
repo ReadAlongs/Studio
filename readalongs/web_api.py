@@ -29,6 +29,7 @@ from textwrap import dedent
 from typing import Dict, List, Optional, Union
 
 from fastapi import Body, FastAPI, HTTPException
+from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from lxml import etree
@@ -45,26 +46,27 @@ from readalongs.text.make_smil import parse_smil
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.util import get_langs
 
-# Create the app
-web_api_app = FastAPI()
-# Create the v1 version of the API
-v1 = FastAPI()
-# Call get_langs() when the server loads to load the languages into memory
-LANGS = get_langs()
-
 if os.getenv("PRODUCTION", True):
     origins = [
         "https://readalong-studio.mothertongues.org",
     ]  # Allow requests from mt app
 else:
     origins = ["*"]  # Allow requests from any origin
-web_api_app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST"],
-    allow_headers=["*"],
-)
+middleware = [
+    Middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["GET", "POST"],
+        allow_headers=["*"],
+    ),
+]
+# Create the app
+web_api_app = FastAPI(middleware=middleware)
+# Create the v1 version of the API
+v1 = FastAPI(middleware=middleware)
+# Call get_langs() when the server loads to load the languages into memory
+LANGS = get_langs()
 
 
 class RequestBase(BaseModel):
