@@ -47,24 +47,27 @@ from readalongs.util import get_langs
 
 # Create the app
 web_api_app = FastAPI()
+middleware_args: Dict[str, Union[str, List[str]]]
+if os.getenv("DEVELOPMENT", False):
+    # Allow requests from localhost dev servers
+    middleware_args = dict(
+        allow_origin_regex="http://localhost(:.*)?",
+    )
+else:
+    # Allow requests *only* from mt app (or otherwise configured site name)
+    middleware_args = dict(
+        allow_origins=[
+            os.getenv("ORIGIN", "https://readalong-studio.mothertongues.org"),
+        ],
+    )
+web_api_app.add_middleware(
+    CORSMiddleware, allow_methods=["GET", "POST", "OPTIONS"], **middleware_args
+)
+
 # Create the v1 version of the API
 v1 = FastAPI()
 # Call get_langs() when the server loads to load the languages into memory
 LANGS = get_langs()
-
-if os.getenv("PRODUCTION", True):
-    origins = [
-        "https://readalong-studio.mothertongues.org",
-    ]  # Allow requests from mt app
-else:
-    origins = ["*"]  # Allow requests from any origin
-web_api_app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST"],
-    allow_headers=["*"],
-)
 
 
 class RequestBase(BaseModel):
