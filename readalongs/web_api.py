@@ -56,6 +56,9 @@ from readalongs.util import get_langs
 web_api_app = FastAPI()
 middleware_args: Dict[str, Union[str, List[str]]]
 if os.getenv("DEVELOPMENT", False):
+    LOGGER.info(
+        "Running in development mode, will allow requests from http://localhost:*"
+    )
     # Allow requests from localhost dev servers
     middleware_args = dict(
         allow_origin_regex="http://localhost(:.*)?",
