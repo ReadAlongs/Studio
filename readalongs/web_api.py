@@ -1,17 +1,23 @@
-"""
-REST-ish Web API for ReadAlongs Studio text manipulation operations using FastAPI.
+"""REST-ish Web API for ReadAlongs Studio text manipulation operations using FastAPI.
 
 See https://readalong-studio.herokuapp.com/api/v1/docs for the documentation.
 
 You can spin up this Web API for development purposes on any platform with:
     pip install uvicorn
     cd readalongs/
-    PRODUCTION= uvicorn readalongs.web_api:web_api_app --reload
+    DEVELOPMENT=1 uvicorn readalongs.web_api:web_api_app --reload
 - The --reload switch will watch for changes under the directory where it's
   running and reload the code whenever it changes, so it's best run in readalongs/
-- PRODUCTION= tells uvicorn to run in non-production mode, i.e., in debug mode,
-  and automatically add the header "access-control-allow-origin: *" to each
-  response so you won't get CORS errors using this locally with Studio-Web.
+- DEVELOPMENT=1 tells the API to accept cross-origin requests (i.e. by sending the
+  appropriate CORS headers) from development servers running on localhost, e.g.
+  http://localhost:4200
+
+For deployment, you can use the ORIGIN environment variable to set the URL of your
+application in order to make it accept requests from that site.  For instance if
+you deployed an application that uses it (such as Studio-Web) at
+https://my.awesome.site you would set ORIGIN=https://my.awesome.site in your
+environment variables.  This is usually done through an environment variable file
+(or in a dashboard) and will depend on your hosting environment.
 
 You can also spin up the API server grade (on Linux, not Windows) with gunicorn:
     pip install -r requirements.api.txt
@@ -19,6 +25,7 @@ You can also spin up the API server grade (on Linux, not Windows) with gunicorn:
 
 Once spun up, the documentation and API playground will be visible at
 http://localhost:8000/api/v1/docs
+
 """
 
 import io
@@ -49,6 +56,9 @@ from readalongs.util import get_langs
 web_api_app = FastAPI()
 middleware_args: Dict[str, Union[str, List[str]]]
 if os.getenv("DEVELOPMENT", False):
+    LOGGER.info(
+        "Running in development mode, will allow requests from http://localhost:*"
+    )
     # Allow requests from localhost dev servers
     middleware_args = dict(
         allow_origin_regex="http://localhost(:.*)?",
