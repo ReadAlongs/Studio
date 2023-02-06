@@ -34,7 +34,7 @@ jobs:
       - name: Run tests
         run: |
           gunicorn readalongs.app:app --bind 0.0.0.0:5000 --daemon
-          cd test && coverage run run.py prod && coverage xml
+          cd test && coverage run run.py prod && DEVELOPMENT=1 coverage run test_web_api.py && coverage xml
 
       - name: Nitpicking
         run: |
