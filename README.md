@@ -161,7 +161,9 @@ This page lists only the most basic commands.
 
 For more information about how the command line interface works consult the interactive [API Documentation](https://readalong-studio.herokuapp.com/api/v1/docs).
 
-For information on spinning up your own dev Web API server locally, have a look at [web\_api.py](readalongs/web_api.py).
+For information on spinning up your own dev Web API server locally, have a look at [web\_api.py](readalongs/web_api.py), but briefly, if you are running it locally for development, use:
+
+    DEVELOPMENT=1 uvicorn readalongs.web_api:web_api_app --reload
 
 #### /langs
 
