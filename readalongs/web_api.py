@@ -29,7 +29,6 @@ from textwrap import dedent
 from typing import Dict, List, Optional, Union
 
 from fastapi import Body, FastAPI, HTTPException
-from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from lxml import etree
@@ -46,25 +45,27 @@ from readalongs.text.make_smil import parse_smil
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.util import get_langs
 
-if os.getenv("PRODUCTION", True):
-    origins = [
-        "https://readalong-studio.mothertongues.org",
-    ]  # Allow requests from mt app
-else:
-    origins = ["*"]  # Allow requests from any origin
-middleware = [
-    Middleware(
-        CORSMiddleware,
-        allow_origins=origins,
-        allow_credentials=True,
-        allow_methods=["GET", "POST"],
-        allow_headers=["*"],
-    ),
-]
 # Create the app
-web_api_app = FastAPI(middleware=middleware)
+web_api_app = FastAPI()
+middleware_args: Dict[str, Union[str, List[str]]]
+if os.getenv("DEVELOPMENT", False):
+    # Allow requests from localhost dev servers
+    middleware_args = dict(
+        allow_origin_regex="http://localhost(:.*)?",
+    )
+else:
+    # Allow requests *only* from mt app (or otherwise configured site name)
+    middleware_args = dict(
+        allow_origins=[
+            os.getenv("ORIGIN", "https://readalong-studio.mothertongues.org"),
+        ],
+    )
+web_api_app.add_middleware(
+    CORSMiddleware, allow_methods=["GET", "POST", "OPTIONS"], **middleware_args
+)
+
 # Create the v1 version of the API
-v1 = FastAPI(middleware=middleware)
+v1 = FastAPI()
 # Call get_langs() when the server loads to load the languages into memory
 LANGS = get_langs()
 
