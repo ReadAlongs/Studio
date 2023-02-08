@@ -57,7 +57,7 @@ def encode_from_path(path: str) -> str:
 
     with open(path, "rb") as f:
         path_bytes = f.read()
-    if str(path).endswith("xml"):
+    if str(path).endswith("xml") or str(path).endswith(".ras"):
         root = etree.fromstring(
             path_bytes, parser=etree.XMLParser(resolve_entities=False)
         )
@@ -91,6 +91,10 @@ def encode_from_path(path: str) -> str:
     ):  # hack to get around guess_type choosing the wrong mime type for .m4a files
         # TODO: Check other popular audio formats, .wav, .mp3, .ogg, etc...
         mime_type = "audio/mp4"
+    if str(path).endswith(
+        ".ras"
+    ):  # We declare it to be application/readalong+xml, not what mimetypes thinks
+        mime_type = "application/readalong+xml"
     elif mime[0]:
         mime_type = mime[0].replace(
             "video", "audio"

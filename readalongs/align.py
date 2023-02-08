@@ -174,7 +174,7 @@ def parse_and_make_xml(
     """Parse XML input and run tokenization and G2P.
 
     Args:
-        xml_path (str): Path to XML input file in RAS format
+        xml_path (str): Path to input in ReadAlong XML format (see static/read-along-0.1.dtd)
         config (dict): Optional; ReadAlong-Studio configuration to use
         save_temps (str): Optional; Save temporary files, by default None
         verbose_g2p_warnings (boolean): Optional; display all g2p errors and warnings
@@ -198,17 +198,17 @@ def parse_and_make_xml(
         xml = add_supplementary_xml(xml, config)
     xml = tokenize_xml(xml)
     if save_temps is not None:
-        save_xml(save_temps + ".tokenized.xml", xml)
+        save_xml(save_temps + ".tokenized.ras", xml)
     xml = add_ids(xml)
     if save_temps is not None:
-        save_xml(save_temps + ".ids.xml", xml)
+        save_xml(save_temps + ".ids.ras", xml)
     xml, valid = convert_xml(
         xml,
         verbose_warnings=verbose_g2p_warnings,
         output_orthography=output_orthography,
     )
     if save_temps is not None:
-        save_xml(save_temps + ".g2p.xml", xml)
+        save_xml(save_temps + ".g2p.ras", xml)
     if not valid:
         raise RuntimeError(
             "Some words could not be g2p'd correctly. Aborting. "
@@ -555,7 +555,7 @@ def align_audio(
     """Align an XML input file to an audio file.
 
     Args:
-        xml_path (str): Path to XML input file in RAS format
+        xml_path (str): Path to input file in ReadAlong XML format (see static/read-along-0.1.dtd)
         audio_path (str): Path to audio input. Must be in a format supported by ffmpeg
         unit (str): Optional; Element to create alignments for, by default 'w'
         bare (boolean): Optional;
@@ -927,7 +927,7 @@ def save_readalong(
             output_formats=output_formats,
         )
 
-    ras_path = output_base + ".xml"
+    ras_path = output_base + ".ras"
     save_xml(ras_path, align_results["tokenized"])
 
     if "xhtml" in output_formats:
@@ -1152,7 +1152,7 @@ RAS_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 
 
 def create_ras_from_text(lines: Iterable[str], text_languages=Sequence[str]) -> str:
-    """Create input xml in RAS format.
+    """Create input xml in ReadAlong XML format (see static/read-along-0.1.dtd)
         Uses the line sequence to infer paragraph and sentence structure from plain text:
         Assumes a double blank line marks a page break, and a single blank line
         marks a paragraph break.
@@ -1198,7 +1198,7 @@ def create_ras_from_text(lines: Iterable[str], text_languages=Sequence[str]) -> 
 
 
 def create_input_ras(**kwargs):
-    """Create input xml in RAS format.
+    """Create input xml in ReadAlong XML format (see static/read-along-0.1.dtd)
         Uses readlines to infer paragraph and sentence structure from plain text.
         Assumes a double blank line marks a page break, and a single blank line
         marks a paragraph break.
@@ -1244,11 +1244,11 @@ def create_input_ras(**kwargs):
         filename = kwargs.get("output_file")
         outfile = io.open(filename, "wb")
     elif save_temps is not None:
-        filename = save_temps + ".input.xml"
+        filename = save_temps + ".input.ras"
         outfile = io.open(filename, "wb")
     else:
         outfile = PortableNamedTemporaryFile(
-            prefix="readalongs_xml_", suffix=".xml", delete=True
+            prefix="readalongs_xml_", suffix=".ras", delete=True
         )
         filename = outfile.name
     xml = create_ras_from_text(text, text_langs)
