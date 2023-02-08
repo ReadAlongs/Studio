@@ -40,14 +40,12 @@ from readalongs.text.convert_xml import convert_xml
 from readalongs.text.make_dict import make_dict
 from readalongs.text.make_fsg import make_fsg
 from readalongs.text.make_package import create_web_component_html
-from readalongs.text.make_smil import make_smil
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import (
     get_word_text,
     load_xml,
     parse_time,
     save_minimal_index_html,
-    save_txt,
     save_xml,
 )
 
@@ -940,14 +938,6 @@ def save_readalong(
     audio_path = save_audio(
         audiofile=audiofile, output_base=output_base, audiosegment=audiosegment
     )
-
-    smil_path = output_base + ".smil"
-    smil = make_smil(
-        os.path.basename(ras_path),
-        os.path.basename(audio_path),
-        align_results["words"],
-    )
-    save_txt(smil_path, smil)
 
     if "html" in output_formats:
         html_out_path = output_base + ".html"
