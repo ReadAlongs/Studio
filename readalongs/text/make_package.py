@@ -35,7 +35,7 @@ BASIC_HTML = """
   <style attribution="See https://fonts.google.com/attribution for copyrights and font attribution">{fonts}</style>
 </head>
 <body>
-    <read-along readalong="{ras}" audio="{audio}" theme="{theme}" use-assets-folder="false">
+    <read-along href="{ras}" audio="{audio}" theme="{theme}" use-assets-folder="false">
         <span slot='read-along-header'>{header}</span>
         <span slot='read-along-subheader'>{subheader}</span>
     </read-along>

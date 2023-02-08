@@ -211,7 +211,7 @@ MINIMAL_INDEX_HTML_TEMPLATE = """<!DOCTYPE html>
 
     <body>
         <!-- Here is how you declare the Web Component. Supported languages: en, fr -->
-        <read-along readalong="{text}" audio="{audio}" theme="{theme}" language="en">
+        <read-along href="{text}" audio="{audio}" theme="{theme}" language="en">
             <span slot='read-along-header'>{header}</span>
             <span slot='read-along-subheader'>{subheader}</span>
         </read-along>
