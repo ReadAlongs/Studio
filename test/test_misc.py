@@ -20,6 +20,7 @@ from readalongs.text.util import (
     load_xml,
     load_xml_zip,
     parse_time,
+    save_txt,
     save_xml,
 )
 from readalongs.util import JoinerCallbackForClick
@@ -245,6 +246,13 @@ class TestMisc(BasicTestCase):
         xml = etree.fromstring(xml_text)
         filename = self.tempdir / "foo.ras"
         save_xml(filename, xml)
+        loaded_xml = load_xml(filename)
+        self.assertEqual(etree.tostring(loaded_xml), xml_text.encode(encoding="ascii"))
+
+    def test_save_txt(self):
+        xml_text = '<foo attrib="value">text</foo>'
+        filename = self.tempdir / "foo.txt"
+        save_txt(filename, xml_text)
         loaded_xml = load_xml(filename)
         self.assertEqual(etree.tostring(loaded_xml), xml_text.encode(encoding="ascii"))
 

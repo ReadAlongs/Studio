@@ -219,6 +219,14 @@ class TestWebApi(BasicTestCase):
                 """
             ),
         )
+        # Test default duration
+        request = {
+            "ras": self.hej_verden_xml,
+        }
+        response = API_CLIENT.post("/api/v2/convert_alignment/textgrid", json=request)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("aligned.TextGrid", response.headers["content-disposition"])
+        self.assertNotIn("xmax = 83.100000", response.text)
 
     def test_convert_to_eaf(self):
         request = {
