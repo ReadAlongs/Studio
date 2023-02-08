@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<TEI>
+<read-along>
     <text xml:lang="fra">
         <body>
             <div type="page">
@@ -21,4 +21,4 @@
             </div>
         </body>
     </text>
-</TEI>
+</read-along>

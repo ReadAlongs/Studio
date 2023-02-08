@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8'?>
+<read-along>
+    <text xml:lang="fra">
+        <body>
+            <div type="page">
+                <graphic url="data/diamond.png"/>
+                <p>
+                    <s>Bonjour.</s>
+                    <s>Je m'appelle Éric Joanis.</s>
+                    <s>Je suis programmeur au sein de l'équipe des technologies pour les langues autochtones au CNRC.</s>
+                </p>
+            </div>
+            <div type="page">
+                <graphic url="https://nrc.canada.ca/libraries/theme-gcweb/assets/sig-blk-en.svg"/>
+                <p>
+                    <s>J'ai fait une bonne partie de ma carrière en traduction automatique statistique, mais maintenant cette approche est déclassée par l'apprentissage profond.</s>
+                    <s>En ce moment je travaille à l'alignement du hansard du Nunavut pour produire un corpus bilingue anglais-inuktitut.</s>
+                    <s>Ce corpus permettra d'entraîner la TA, neuronale ou statistique, ainsi que d'autres applications de traitement du langage naturel.</s>
+                </p>
+                <p>
+                    <s>En parallèle, j'aide à écrire des tests pour rendre le ReadAlong-Studio plus robuste.</s>
+                </p>
+            </div>
+        </body>
+    </text>
+</read-along>

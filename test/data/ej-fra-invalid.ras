@@ -1,12 +1,13 @@
 <?xml version='1.0' encoding='utf-8'?>
-<TEI>
-    <text xml:lang="fra">
+<read-along>
+  <!-- Note the typo: this should fail validation -->
+    <txet xml:lang="fra">
         <body>
             <div type="page">
                 <p>
-                    <s><silence dur="1"/>Bonjour.</s>
+                    <s>Bonjour.</s>
                     <s>Je m'appelle Éric Joanis.</s>
-                    <s>Je suis <silence dur="1.382s"></silence> programmeur au sein <silence dur="500ms"></silence> de l'équipe des technologies pour les langues autochtones au CNRC.</s>
+                    <s>Je suis programmeur au sein de l'équipe des technologies pour les langues autochtones au CNRC.</s>
                 </p>
             </div>
             <div type="page">
@@ -20,5 +21,5 @@
                 </p>
             </div>
         </body>
-    </text>
-</TEI>
+    </txet>
+</read-along>

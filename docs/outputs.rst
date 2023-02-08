@@ -12,7 +12,7 @@ Elan/Praat files
 Web Component
 -------------
 
-When you have standard output from ReadAlong-Studio, consisting of 1) a text file (XML) 2) an audio file and 3) an alignment file (SMIL)
+When you have standard output from ReadAlong-Studio, consisting of 1) a ReadALong file (XML) and 2) an audio file
 you can mobilize these files to the web or hybrid mobile apps quickly and painlessly.
 
 This is done using the ReadAlong WebComponent. Web components are re-useable, custom-defined HTML elements that you can embed in any HTML, regardless of which
@@ -32,11 +32,11 @@ Below is an example of a minimal implementation in a basic standalone html page.
 
         <body>
             <!-- Here is how you declare the Web Component -->
-            <read-along text="assets/sample.xml" alignment="assets/sample.smil" audio="assets/sample.wav"></read-along>
+            <read-along href="assets/sample.ras" audio="assets/sample.wav"></read-along>
         </body>
         <!-- The last step needed is to import the package -->
-       <script type="module" src='https://unpkg.com/@roedoejet/readalong@^0.1.6/dist/read-along/read-along.esm.js'></script>
-       <script nomodule src='https://unpkg.com/@roedoejet/readalong@^0.1.6/dist/read-along/read-along.js'></script>
+       <script type="module" src='https://unpkg.com/@roedoejet/readalong@^0.2.0/dist/read-along/read-along.esm.js'></script>
+       <script nomodule src='https://unpkg.com/@roedoejet/readalong@^0.2.0/dist/read-along/read-along.js'></script>
     </html>
 
 
@@ -44,9 +44,8 @@ The above assumes the following structure:
 
 | web
 | ├── assets
-| │   ├── sample.smil
 | │   ├── sample.wav
-| │   ├── sample.xml
+| │   ├── sample.ras
 | ├── index.html
 |
 |

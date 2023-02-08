@@ -9,6 +9,8 @@
 #
 ##################################################
 
+from typing import List, Tuple
+
 import chevron
 
 from readalongs.log import LOGGER
@@ -35,11 +37,10 @@ def generate_dict_entries(word_elements, input_filename, unit):
         raise RuntimeError("No words in dictionary!")
 
 
-def make_dict_object(word_elements, input_filename="'in-memory'", unit="m"):
-    return {
-        word_id: text
-        for word_id, text in generate_dict_entries(word_elements, input_filename, unit)
-    }
+def make_dict_list(
+    word_elements, input_filename="'in-memory'", unit="m"
+) -> List[Tuple[str, str]]:
+    return list(generate_dict_entries(word_elements, input_filename, unit))
 
 
 def make_dict(word_elements, input_filename="'in-memory'", unit="m"):

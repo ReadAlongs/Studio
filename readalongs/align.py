@@ -40,14 +40,12 @@ from readalongs.text.convert_xml import convert_xml
 from readalongs.text.make_dict import make_dict
 from readalongs.text.make_fsg import make_fsg
 from readalongs.text.make_package import create_web_component_html
-from readalongs.text.make_smil import make_smil
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import (
     get_word_text,
     load_xml,
     parse_time,
     save_minimal_index_html,
-    save_txt,
     save_xml,
 )
 
@@ -176,7 +174,7 @@ def parse_and_make_xml(
     """Parse XML input and run tokenization and G2P.
 
     Args:
-        xml_path (str): Path to XML input file in TEI-like format
+        xml_path (str): Path to input in ReadAlong XML format (see static/read-along-0.1.dtd)
         config (dict): Optional; ReadAlong-Studio configuration to use
         save_temps (str): Optional; Save temporary files, by default None
         verbose_g2p_warnings (boolean): Optional; display all g2p errors and warnings
@@ -200,17 +198,17 @@ def parse_and_make_xml(
         xml = add_supplementary_xml(xml, config)
     xml = tokenize_xml(xml)
     if save_temps is not None:
-        save_xml(save_temps + ".tokenized.xml", xml)
+        save_xml(save_temps + ".tokenized.ras", xml)
     xml = add_ids(xml)
     if save_temps is not None:
-        save_xml(save_temps + ".ids.xml", xml)
+        save_xml(save_temps + ".ids.ras", xml)
     xml, valid = convert_xml(
         xml,
         verbose_warnings=verbose_g2p_warnings,
         output_orthography=output_orthography,
     )
     if save_temps is not None:
-        save_xml(save_temps + ".g2p.xml", xml)
+        save_xml(save_temps + ".g2p.ras", xml)
     if not valid:
         raise RuntimeError(
             "Some words could not be g2p'd correctly. Aborting. "
@@ -525,6 +523,22 @@ def insert_silence(
         results["audio"] = audio
 
 
+def add_alignments(
+    results: Dict[str, Any],
+):
+    """Add the computed alignments to the XML tags."""
+    # Round all times to three digits, as noted below
+    words_dict = {
+        x["id"]: (("%.3f" % x["start"]), ("%.3f" % (x["end"] - x["start"])))
+        for x in results["words"]
+    }
+    # FIXME: Should propagate durations to higher-level elements, ideally
+    for el in results["tokenized"].xpath("//w"):
+        # It may not be aligned
+        if el.attrib["id"] in words_dict:
+            el.attrib["time"], el.attrib["dur"] = words_dict[el.attrib["id"]]
+
+
 def align_audio(
     xml_path: str,
     audio_path: str,
@@ -541,7 +555,7 @@ def align_audio(
     """Align an XML input file to an audio file.
 
     Args:
-        xml_path (str): Path to XML input file in TEI-like format
+        xml_path (str): Path to input file in ReadAlong XML format (see static/read-along-0.1.dtd)
         audio_path (str): Path to audio input. Must be in a format supported by ffmpeg
         unit (str): Optional; Element to create alignments for, by default 'w'
         bare (boolean): Optional;
@@ -706,6 +720,12 @@ def align_audio(
         audio=audio,
         xml_path=xml_path,
     )
+
+    # Add alignments to word tags
+    add_alignments(
+        results=results,
+    )
+
     return results
 
 
@@ -907,8 +927,8 @@ def save_readalong(
             output_formats=output_formats,
         )
 
-    tokenized_xml_path = output_base + ".xml"
-    save_xml(tokenized_xml_path, align_results["tokenized"])
+    ras_path = output_base + ".ras"
+    save_xml(ras_path, align_results["tokenized"])
 
     if "xhtml" in output_formats:
         convert_to_xhtml(align_results["tokenized"])
@@ -919,19 +939,10 @@ def save_readalong(
         audiofile=audiofile, output_base=output_base, audiosegment=audiosegment
     )
 
-    smil_path = output_base + ".smil"
-    smil = make_smil(
-        os.path.basename(tokenized_xml_path),
-        os.path.basename(audio_path),
-        align_results["words"],
-    )
-    save_txt(smil_path, smil)
-
     if "html" in output_formats:
         html_out_path = output_base + ".html"
         html_out = create_web_component_html(
-            tokenized_xml_path,
-            smil_path,
+            ras_path,
             audio_path,
             config.get("title", "Title goes here"),
             config.get("header", "Header goes here"),
@@ -943,8 +954,7 @@ def save_readalong(
 
     save_minimal_index_html(
         os.path.join(output_dir, "index.html"),
-        os.path.basename(tokenized_xml_path),
-        os.path.basename(smil_path),
+        os.path.basename(ras_path),
         os.path.basename(audio_path),
         config.get("title", "Title goes here"),
         config.get("header", "Header goes here"),
@@ -1120,8 +1130,8 @@ def convert_to_xhtml(tokenized_xml, title="Book"):
     head.append(link_element)
 
 
-TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
-<TEI>
+RAS_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
+<read-along>
     <text xml:lang="{{main_lang}}" fallback-langs="{{fallback_langs}}">
         <body>
         {{#pages}}
@@ -1137,12 +1147,12 @@ TEI_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
         {{/pages}}
         </body>
     </text>
-</TEI>
+</read-along>
 """
 
 
-def create_tei_from_text(lines: Iterable[str], text_languages=Sequence[str]) -> str:
-    """Create input xml in TEI standard.
+def create_ras_from_text(lines: Iterable[str], text_languages=Sequence[str]) -> str:
+    """Create input xml in ReadAlong XML format (see static/read-along-0.1.dtd)
         Uses the line sequence to infer paragraph and sentence structure from plain text:
         Assumes a double blank line marks a page break, and a single blank line
         marks a paragraph break.
@@ -1184,11 +1194,11 @@ def create_tei_from_text(lines: Iterable[str], text_languages=Sequence[str]) -> 
         paragraphs.append({"sentences": sentences})
     if paragraphs:
         pages.append({"paragraphs": paragraphs})
-    return chevron.render(TEI_TEMPLATE, {**kwargs, **{"pages": pages}})
+    return chevron.render(RAS_TEMPLATE, {**kwargs, **{"pages": pages}})
 
 
-def create_input_tei(**kwargs):
-    """Create input xml in TEI standard.
+def create_input_ras(**kwargs):
+    """Create input xml in ReadAlong XML format (see static/read-along-0.1.dtd)
         Uses readlines to infer paragraph and sentence structure from plain text.
         Assumes a double blank line marks a page break, and a single blank line
         marks a paragraph break.
@@ -1234,14 +1244,14 @@ def create_input_tei(**kwargs):
         filename = kwargs.get("output_file")
         outfile = io.open(filename, "wb")
     elif save_temps is not None:
-        filename = save_temps + ".input.xml"
+        filename = save_temps + ".input.ras"
         outfile = io.open(filename, "wb")
     else:
         outfile = PortableNamedTemporaryFile(
-            prefix="readalongs_xml_", suffix=".xml", delete=True
+            prefix="readalongs_xml_", suffix=".ras", delete=True
         )
         filename = outfile.name
-    xml = create_tei_from_text(text, text_langs)
+    xml = create_ras_from_text(text, text_langs)
     outfile.write(xml.encode("utf-8"))
     outfile.flush()
     outfile.close()

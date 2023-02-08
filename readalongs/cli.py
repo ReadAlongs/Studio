@@ -20,7 +20,7 @@ import click
 from lxml import etree
 
 from readalongs._version import __version__
-from readalongs.align import align_audio, create_input_tei, save_readalong
+from readalongs.align import align_audio, create_input_ras, save_readalong
 from readalongs.log import LOGGER
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
@@ -173,7 +173,7 @@ def cli():
     default=None,
     help="OBSOLETE; the input format is now guessed by extension or contents",
     callback=get_obsolete_callback_for_click(
-        ".txt files are now read as plain text, .xml as XML, and other files based on\n"
+        ".txt files are now read as plain text, .xml or .ras as XML, and other files based on\n"
         "whether they start with <?xml or not."
     ),
 )
@@ -257,7 +257,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
     TEXTFILE:    Input text file path (in XML or plain text)
 
     \b
-    If TEXTFILE has a .xml extension or starts with an XML declaration line,
+    If TEXTFILE has a .xml or .ras extension or starts with an XML declaration line,
     it is parsed as XML and can be in one of three formats:
      - the output of 'readalongs make-xml',
      - the output of 'readalongs tokenize', or
@@ -337,6 +337,8 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
     textfile_name = kwargs["textfile"]
     if str(textfile_name).endswith(".xml"):
         textfile_is_plaintext = False  # .xml is XML
+    elif str(textfile_name).endswith(".ras"):
+        textfile_is_plaintext = False  # .ras is XML
     elif str(textfile_name).endswith(".txt"):
         textfile_is_plaintext = True  # .txt is plain text
     else:
@@ -369,7 +371,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
             languages.append("und")
         plain_textfile = kwargs["textfile"]
         try:
-            _, xml_textfile = create_input_tei(
+            _, xml_textfile = create_input_ras(
                 input_file_name=plain_textfile,
                 text_languages=languages,
                 save_temps=temp_base,
@@ -454,7 +456,7 @@ def prepare(**kwargs):
 
     PLAINTEXTFILE: Path to the plain text input file, or - for stdin
 
-    XMLFILE:       Path to the XML output file, or - for stdout [default: PLAINTEXTFILE.xml]
+    XMLFILE:       Path to the XML output file, or - for stdout [default: PLAINTEXTFILE.ras]
     """
     LOGGER.warning(
         'WARNING: "readalongs prepare" is deprecated. Use "readalongs make-xml" instead.'
@@ -502,7 +504,7 @@ def make_xml(**kwargs):
 
     PLAINTEXTFILE: Path to the plain text input file, or - for stdin
 
-    XMLFILE:       Path to the XML output file, or - for stdout [default: PLAINTEXTFILE.xml]
+    XMLFILE:       Path to the XML output file, or - for stdout [default: PLAINTEXTFILE.ras]
     """
 
     if kwargs["debug"]:
@@ -524,7 +526,7 @@ def make_xml(**kwargs):
         if out_file != "-":
             if str(out_file).endswith(".txt"):
                 out_file = out_file[:-4]
-            out_file += ".xml"
+            out_file += ".ras"
 
     languages = list(kwargs["language"])
     if not kwargs["lang_no_append_und"] and "und" not in languages:
@@ -532,20 +534,20 @@ def make_xml(**kwargs):
 
     try:
         if out_file == "-":
-            _, filename = create_input_tei(
+            _, filename = create_input_ras(
                 input_file_handle=input_file, text_languages=languages
             )
             with io.open(filename, encoding="utf-8-sig") as f:
                 sys.stdout.write(f.read())
         else:
-            if not str(out_file).endswith(".xml"):
-                out_file += ".xml"
+            if not str(out_file).endswith(".ras"):
+                out_file += ".ras"
             if os.path.exists(out_file) and not kwargs["force_overwrite"]:
                 raise click.BadParameter(
                     "Output file %s exists already, use -f to overwrite." % out_file
                 )
 
-            _, filename = create_input_tei(
+            _, filename = create_input_ras(
                 input_file_handle=input_file,
                 text_languages=languages,
                 output_file=out_file,
@@ -575,7 +577,7 @@ def tokenize(**kwargs):
 
     XMLFILE: Path to the XML file to tokenize, or - for stdin
 
-    TOKFILE: Output path for the tok'd XML, or - for stdout [default: XMLFILE.tokenized.xml]
+    TOKFILE: Output path for the tok'd XML, or - for stdout [default: XMLFILE.tokenized.ras]
     """
 
     if kwargs["debug"]:
@@ -591,13 +593,13 @@ def tokenize(**kwargs):
     if not kwargs["tokfile"]:
         output_path = get_click_file_name(input_file)
         if output_path != "-":
-            if str(output_path).endswith(".xml"):
+            if str(output_path).endswith(".ras"):
                 output_path = output_path[:-4]
-            output_path += ".tokenized.xml"
+            output_path += ".tokenized.ras"
     else:
         output_path = kwargs["tokfile"]
-        if not str(output_path).endswith(".xml") and not output_path == "-":
-            output_path += ".xml"
+        if not str(output_path).endswith(".ras") and not output_path == "-":
+            output_path += ".ras"
 
     if os.path.exists(output_path) and not kwargs["force_overwrite"]:
         raise click.BadParameter(
@@ -695,15 +697,15 @@ def g2p(**kwargs):
     if not kwargs["g2pfile"]:
         output_path = get_click_file_name(input_file)
         if output_path != "-":
-            if str(output_path).endswith(".xml"):
+            if str(output_path).endswith(".ras"):
                 output_path = output_path[:-4]
             if str(output_path).endswith(".tokenized"):
                 output_path = output_path[: -len(".tokenized")]
-            output_path += ".g2p.xml"
+            output_path += ".g2p.ras"
     else:
         output_path = kwargs["g2pfile"]
-        if not str(output_path).endswith(".xml") and not output_path == "-":
-            output_path += ".xml"
+        if not str(output_path).endswith(".ras") and not output_path == "-":
+            output_path += ".ras"
 
     if os.path.exists(output_path) and not kwargs["force_overwrite"]:
         raise click.BadParameter(

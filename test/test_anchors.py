@@ -19,7 +19,7 @@ class TestAnchors(BasicTestCase):
 
         # ej-fra-anchors has anchors between words/sentences only
         results = align_audio(
-            os.path.join(self.data_dir, "ej-fra-anchors.xml"),
+            os.path.join(self.data_dir, "ej-fra-anchors.ras"),
             os.path.join(self.data_dir, "ej-fra.m4a"),
         )
         words = results["words"]
@@ -40,7 +40,7 @@ class TestAnchors(BasicTestCase):
         # ej-fra-anchors2 also has anchors before the first word and after the last word
         save_temps_prefix = os.path.join(self.tempdir, "anchors2-temps")
         results = align_audio(
-            os.path.join(self.data_dir, "ej-fra-anchors2.xml"),
+            os.path.join(self.data_dir, "ej-fra-anchors2.ras"),
             os.path.join(self.data_dir, "ej-fra.m4a"),
             save_temps=save_temps_prefix,
         )
@@ -49,7 +49,7 @@ class TestAnchors(BasicTestCase):
         self.assertEqual(len(words), 99)
 
         # Make sure the aligned segments stay on the right side of their anchors,
-        # including the initial and final ones inserted into anchors2.xml
+        # including the initial and final ones inserted into anchors2.ras
         self.assertGreaterEqual(words[0]["start"], 0.5)
         self.assertLessEqual(words[0]["end"], 1.2)
         self.assertGreaterEqual(words[1]["start"], 1.2)
@@ -79,7 +79,7 @@ class TestAnchors(BasicTestCase):
             <anchor time="5.62s"/>
             </body></doc>
         """
-        xml_file = os.path.join(self.tempdir, "text-with-anchors.xml")
+        xml_file = os.path.join(self.tempdir, "text-with-anchors.ras")
         with open(xml_file, "wt", encoding="utf8") as f:
             print(xml_with_anchors, file=f)
         with self.assertLogs(LOGGER, level="INFO") as cm:

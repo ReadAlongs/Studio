@@ -35,7 +35,7 @@ BASIC_HTML = """
   <style attribution="See https://fonts.google.com/attribution for copyrights and font attribution">{fonts}</style>
 </head>
 <body>
-    <read-along text="{text}" alignment="{alignment}" audio="{audio}" theme="{theme}" use-assets-folder="false">
+    <read-along href="{ras}" audio="{audio}" theme="{theme}" use-assets-folder="false">
         <span slot='read-along-header'>{header}</span>
         <span slot='read-along-subheader'>{subheader}</span>
     </read-along>
@@ -57,7 +57,7 @@ def encode_from_path(path: str) -> str:
 
     with open(path, "rb") as f:
         path_bytes = f.read()
-    if str(path).endswith("xml"):
+    if str(path).endswith("xml") or str(path).endswith(".ras"):
         root = etree.fromstring(
             path_bytes, parser=etree.XMLParser(resolve_entities=False)
         )
@@ -91,6 +91,10 @@ def encode_from_path(path: str) -> str:
     ):  # hack to get around guess_type choosing the wrong mime type for .m4a files
         # TODO: Check other popular audio formats, .wav, .mp3, .ogg, etc...
         mime_type = "audio/mp4"
+    if str(path).endswith(
+        ".ras"
+    ):  # We declare it to be application/readalong+xml, not what mimetypes thinks
+        mime_type = "application/readalong+xml"
     elif mime[0]:
         mime_type = mime[0].replace(
             "video", "audio"
@@ -104,8 +108,7 @@ def encode_from_path(path: str) -> str:
 
 
 def create_web_component_html(
-    text_path: str,
-    alignment_path: str,
+    ras_path: str,
     audio_path: str,
     title="Title goes here",
     header="Header goes here",
@@ -138,8 +141,7 @@ def create_web_component_html(
         fonts_raw = fonts.text
 
     return BASIC_HTML.format(
-        text=encode_from_path(text_path),
-        alignment=encode_from_path(alignment_path),
+        ras=encode_from_path(ras_path),
         audio=encode_from_path(audio_path),
         js=js_raw,
         fonts=fonts_raw,

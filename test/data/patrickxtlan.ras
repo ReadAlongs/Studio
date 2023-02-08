@@ -1,8 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
-<TEI>
+<read-along>
+  <text>
+    <body>
     <p>
         <s><w xml:lang="eng">Patrick</w><w xml:lang="kwk-umista">xtła̱n</w></s>
         <s><w xml:lang="und">Patrickxtła̱n</w></s>
 	<s><w>foo<syl xml:lang="eng">Patrick</syl>bar<syl xml:lang="kwk-umista">xtła̱n</syl>baz</w></s>
     </p>
-</TEI>
+    </body>
+  </text>
+</read-along>

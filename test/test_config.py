@@ -19,29 +19,29 @@ class TestConfig(TestCase):
     @classmethod
     def setUpClass(cls):
         data_dir = os.path.join(os.path.dirname(__file__), "data")
-        cls.xml = load_xml(os.path.join(data_dir, "ej-fra.xml"))
+        cls.ras = load_xml(os.path.join(data_dir, "ej-fra.ras"))
 
     def test_image(self):
         """Test images are added correctly"""
         with self.assertRaises(KeyError):
-            new_xml = add_images(self.xml, {})
-        new_xml = add_images(self.xml, {"images": {"0": "test.jpg"}})
+            new_xml = add_images(self.ras, {})
+        new_xml = add_images(self.ras, {"images": {"0": "test.jpg"}})
         self.assertTrue(len(new_xml.xpath("//graphic")) == 1)
         with self.assertRaises(TypeError):
-            new_xml = add_images(self.xml, {"images": [{"0": "test.jpg"}]})
+            new_xml = add_images(self.ras, {"images": [{"0": "test.jpg"}]})
         with self.assertRaises(ValueError):
-            new_xml = add_images(self.xml, {"images": {"a": "test.jpg"}})
+            new_xml = add_images(self.ras, {"images": {"a": "test.jpg"}})
         with self.assertRaises(IndexError):
             new_xml = add_images(
-                self.xml, {"images": {"0": "test.jpg", "999": "out_of_range.jpg"}}
+                self.ras, {"images": {"0": "test.jpg", "999": "out_of_range.jpg"}}
             )
 
     def test_arbitrary_xml(self):
         """Test arbitrary xml is added correctly"""
         with self.assertRaises(KeyError):
-            new_xml = add_supplementary_xml(self.xml, {})
+            new_xml = add_supplementary_xml(self.ras, {})
         new_xml = add_supplementary_xml(
-            self.xml,
+            self.ras,
             {
                 "xml": [
                     {
@@ -56,14 +56,14 @@ class TestConfig(TestCase):
         # bad xml raises lxml.etree.XMLSyntaxError
         with self.assertRaises(etree.XMLSyntaxError):
             new_xml = add_supplementary_xml(
-                self.xml, {"xml": [{"xpath": "//div[1]", "value": "bloop"}]}
+                self.ras, {"xml": [{"xpath": "//div[1]", "value": "bloop"}]}
             )
 
         # if xpath isn't valid, log warning
         log_output = io.StringIO()
         with redirect_stderr(log_output):
             new_xml = add_supplementary_xml(
-                self.xml,
+                self.ras,
                 {
                     "xml": [
                         {

@@ -20,29 +20,29 @@ class TestTokenizeCli(BasicTestCase):
         """setUp() creates self.tempdir and makes an XML file for use in other tests"""
         super().setUp()
 
-        self.xmlfile = os.path.join(self.tempdir, "fra.xml")
+        self.rasfile = os.path.join(self.tempdir, "fra.ras")
         _ = self.runner.invoke(
             make_xml,
-            ["-l", "fra", os.path.join(self.data_dir, "fra.txt"), self.xmlfile],
+            ["-l", "fra", os.path.join(self.data_dir, "fra.txt"), self.rasfile],
         )
 
     def test_invoke_tok(self):
         """Test a simple invocation of readalongs tokenize"""
         results = self.runner.invoke(
-            tokenize, [self.xmlfile, os.path.join(self.tempdir, "delme")]
+            tokenize, [self.rasfile, os.path.join(self.tempdir, "delme")]
         )
         self.assertEqual(results.exit_code, 0)
-        self.assertTrue(os.path.exists(os.path.join(self.tempdir, "delme.xml")))
+        self.assertTrue(os.path.exists(os.path.join(self.tempdir, "delme.ras")))
 
     def test_generate_output_name(self):
         """Test letting readalongs tokenize generate the output filename"""
-        results = self.runner.invoke(tokenize, ["--debug", self.xmlfile])
+        results = self.runner.invoke(tokenize, ["--debug", self.rasfile])
         self.assertEqual(results.exit_code, 0)
-        self.assertTrue(os.path.exists(os.path.join(self.tempdir, "fra.tokenized.xml")))
+        self.assertTrue(os.path.exists(os.path.join(self.tempdir, "fra.tokenized.ras")))
 
     def test_with_stdin(self):
         """Test readalongs reading from stdin and writing to stdout"""
-        with io.open(self.xmlfile, encoding="utf8") as f:
+        with io.open(self.rasfile, encoding="utf8") as f:
             inputtext = f.read()
         results = self.runner.invoke(tokenize, "-", input=inputtext)
         self.assertEqual(results.exit_code, 0)
@@ -52,7 +52,7 @@ class TestTokenizeCli(BasicTestCase):
 
     def test_file_already_exists(self):
         """Test that readalongs tokenize does not overwrite existing files by default"""
-        results = self.runner.invoke(tokenize, [self.xmlfile, self.xmlfile])
+        results = self.runner.invoke(tokenize, [self.rasfile, self.rasfile])
         self.assertNotEqual(results.exit_code, 0)
         self.assertIn("use -f to overwrite", results.output)
 

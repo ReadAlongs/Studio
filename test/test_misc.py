@@ -20,6 +20,7 @@ from readalongs.text.util import (
     load_xml,
     load_xml_zip,
     parse_time,
+    save_txt,
     save_xml,
 )
 from readalongs.util import JoinerCallbackForClick
@@ -86,7 +87,7 @@ class TestMisc(BasicTestCase):
         self.assertEqual(words, ref)
 
     def test_get_attrib_recursive(self):
-        raw_xml = """<TEI>
+        raw_xml = """<read-along>
             <text lang="text">
             <p lang="p1"><s>stuff</s><s lang="p1s2">nonsense</s></p>
             <p><s lang="p2s1">stuff</s><s>nonsense</s></p>
@@ -97,7 +98,7 @@ class TestMisc(BasicTestCase):
             <text>
             <p><s xml:lang="p4s1" lang="not:xml:lang">stuff</s><s>nonsense<s xml:lang="p4p2c">!</s></s></p>
             </text>
-            </TEI>
+            </read-along>
         """
         xml = etree.fromstring(raw_xml)
         for i, s, lang in zip(
@@ -196,7 +197,7 @@ class TestMisc(BasicTestCase):
 
     def test_load_xml(self):
         xml_text = '<foo attrib="value">text</foo>'
-        foo_file = self.tempdir / "foo.xml"
+        foo_file = self.tempdir / "foo.ras"
         with open(foo_file, "w") as f:
             print(xml_text, file=f)
         self.assertEqual(
@@ -207,10 +208,10 @@ class TestMisc(BasicTestCase):
     def test_load_xml_errors(self):
         # non-existent file
         with self.assertRaises(OSError):
-            load_xml("file-does-not-exist.xml")
+            load_xml("file-does-not-exist.ras")
 
         # invalid XML file
-        bad_file = self.tempdir / "bad.xml"
+        bad_file = self.tempdir / "bad.ras"
         with open(bad_file, "w") as f:
             print("This is not XML", file=f)
         with self.assertRaises(etree.ParseError):
@@ -229,7 +230,7 @@ class TestMisc(BasicTestCase):
             ]>
             <explode>&c;&c;</explode>
         """
-        explode_file = self.tempdir / "explode.xml"
+        explode_file = self.tempdir / "explode.ras"
         with open(explode_file, "w") as f:
             f.write(xml_bomb)
         self.assertEqual(
@@ -243,17 +244,24 @@ class TestMisc(BasicTestCase):
     def test_save_xml(self):
         xml_text = '<foo attrib="value">text</foo>'
         xml = etree.fromstring(xml_text)
-        filename = self.tempdir / "foo.xml"
+        filename = self.tempdir / "foo.ras"
         save_xml(filename, xml)
+        loaded_xml = load_xml(filename)
+        self.assertEqual(etree.tostring(loaded_xml), xml_text.encode(encoding="ascii"))
+
+    def test_save_txt(self):
+        xml_text = '<foo attrib="value">text</foo>'
+        filename = self.tempdir / "foo.txt"
+        save_txt(filename, xml_text)
         loaded_xml = load_xml(filename)
         self.assertEqual(etree.tostring(loaded_xml), xml_text.encode(encoding="ascii"))
 
     def test_load_xml_zip(self):
         xml_text = '<foo attrib="value">text</foo>'
         with zipfile.ZipFile(self.tempdir / "file.zip", "w") as myzip:
-            myzip.writestr("file.xml", xml_text)
+            myzip.writestr("file.ras", xml_text)
         self.assertEqual(
-            etree.tostring(load_xml_zip(self.tempdir / "file.zip", "file.xml")),
+            etree.tostring(load_xml_zip(self.tempdir / "file.zip", "file.ras")),
             xml_text.encode(encoding="ascii"),
         )
 
