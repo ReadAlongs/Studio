@@ -55,8 +55,7 @@ class TestAlignCli(BasicTestCase):
         # print(results.output)
         self.assertEqual(results.exit_code, 0)
         expected_output_files = [
-            "output.smil",
-            "output.xml",
+            "output.ras",
             "output.m4a",
             "index.html",
             "output.TextGrid",
@@ -72,15 +71,15 @@ class TestAlignCli(BasicTestCase):
             )
         with open(join(output, "index.html"), encoding="utf8") as f:
             self.assertIn(
-                '<read-along readalong="output.xml" audio="output.m4a"',
+                '<read-along href="output.ras" audio="output.m4a"',
                 f.read(),
             )
         self.assertTrue(
-            exists(join(output, "tempfiles", "output.tokenized.xml")),
-            "alignment with -s should have created tempfiles/output.tokenized.xml",
+            exists(join(output, "tempfiles", "output.tokenized.ras")),
+            "alignment with -s should have created tempfiles/output.tokenized.ras",
         )
         with open(
-            join(output, "tempfiles", "output.tokenized.xml"), "r", encoding="utf-8"
+            join(output, "tempfiles", "output.tokenized.ras"), "r", encoding="utf-8"
         ) as f:
             self.assertNotIn("\ufeff", f.read())
         self.assertTrue(
@@ -111,7 +110,7 @@ class TestAlignCli(BasicTestCase):
                 "-s",
                 "--config",
                 join(self.data_dir, "sample-config.json"),
-                self.add_bom(join(self.data_dir, "ej-fra-dna.xml")),
+                self.add_bom(join(self.data_dir, "ej-fra-dna.ras")),
                 join(self.data_dir, "ej-fra.m4a"),
                 output,
             ],
@@ -119,8 +118,8 @@ class TestAlignCli(BasicTestCase):
         self.assertEqual(results_dna.exit_code, 0)
         # print(results_dna.stdout)
         self.assertTrue(
-            exists(join(output, "output.smil")),
-            "successful alignment with DNA should have created output.smil",
+            exists(join(output, "output.ras")),
+            "successful alignment with DNA should have created output.ras",
         )
         self.assertTrue(
             exists(join(output, "output.xhtml")),
@@ -135,22 +134,11 @@ class TestAlignCli(BasicTestCase):
             "Align mode moderate succeeded for sequence 0.", results_dna.stdout
         )
 
-        # Functionally the same as self.assertTrue(filecmp.cmp(f1, f2)), but show where
-        # the differences are if the files are not identical
-        # Since f2 was created using -o xhtml, we need to substitute .xhtml back to .xml during
-        # the comparison of the contents of the .smil files.
-        with open(join(output1, "output.smil"), encoding="utf8") as f1, open(
-            join(output, "output.smil"), encoding="utf8"
-        ) as f2:
-            self.assertListEqual(
-                list(f1), [line.replace(".xhtml", ".xml") for line in f2]
-            )
-
         # We test error situations in the same test case, since we reuse the same outputs
         results_output_exists = self.runner.invoke(
             align,
             [
-                join(self.data_dir, "ej-fra-dna.xml"),
+                join(self.data_dir, "ej-fra-dna.ras"),
                 join(self.data_dir, "ej-fra.m4a"),
                 output,
             ],
@@ -164,9 +152,9 @@ class TestAlignCli(BasicTestCase):
         results_output_is_regular_file = self.runner.invoke(
             align,
             [
-                join(self.data_dir, "ej-fra-dna.xml"),
+                join(self.data_dir, "ej-fra-dna.ras"),
                 join(self.data_dir, "ej-fra.m4a"),
-                join(output, "output.smil"),
+                join(output, "output.ras"),
             ],
         )
         self.assertNotEqual(results_output_is_regular_file, 0)
@@ -183,7 +171,7 @@ class TestAlignCli(BasicTestCase):
             results_html = self.runner.invoke(
                 align,
                 [
-                    join(self.data_dir, "ej-fra-package.xml"),
+                    join(self.data_dir, "ej-fra-package.ras"),
                     join(self.data_dir, "ej-fra.m4a"),
                     output,
                     "-o",
@@ -204,7 +192,7 @@ class TestAlignCli(BasicTestCase):
         htmldoc = fromstring(path_bytes)
         b64_pattern = r"data:[\w\/\+]*;base64,\w*"
         self.assertRegex(
-            htmldoc.body.xpath("//read-along")[0].attrib["readalong"], b64_pattern
+            htmldoc.body.xpath("//read-along")[0].attrib["href"], b64_pattern
         )
         self.assertRegex(
             htmldoc.body.xpath("//read-along")[0].attrib["audio"], b64_pattern
@@ -227,7 +215,7 @@ class TestAlignCli(BasicTestCase):
             align,
             [
                 "-f",
-                join(self.data_dir, "ej-fra-dna.xml"),
+                join(self.data_dir, "ej-fra-dna.ras"),
                 join(self.data_dir, "ej-fra.m4a"),
                 dirname,
             ],
@@ -270,7 +258,7 @@ class TestAlignCli(BasicTestCase):
         g2p_ref = '<s id="t0b0d0p0s0"><w id="t0b0d0p0s0w0" ARPABET="DH IH S">This</w> <w id="t0b0d0p0s0w1" ARPABET="IH Z">is</w> <w id="t0b0d0p0s0w2" ARPABET="S AH M">some</w> <w id="t0b0d0p0s0w3" ARPABET="T EH K S T">text</w> <w id="t0b0d0p0s0w4" ARPABET="DH AE T">that</w> <w id="t0b0d0p0s0w5" ARPABET="W IY">we</w> <w id="t0b0d0p0s0w6" ARPABET="W IH L">will</w> <w id="t0b0d0p0s0w7" ARPABET="R AH N">run</w> <w id="t0b0d0p0s0w8" ARPABET="TH R UW">through</w> <w id="t0b0d0p0s0w9" ARPABET="DH AH">the</w> <w id="t0b0d0p0s0w10" ARPABET="IH NG G L IH SH">English</w> <w id="t0b0d0p0s0w11" ARPABET="L EH K S IH K AA N">lexicon</w> <w id="t0b0d0p0s0w12" ARPABET="G R AE F IY M">grapheme</w> <w id="t0b0d0p0s0w13" ARPABET="T UW">to</w> <w id="t0b0d0p0s0w14" ARPABET="M AO R F IY M">morpheme</w> <w id="t0b0d0p0s0w15" ARPABET="AH P R OW CH">approach</w>.</s>'
 
         tokenized_file = join(
-            self.tempdir, "eng-output", "tempfiles", "eng-output.g2p.xml"
+            self.tempdir, "eng-output", "tempfiles", "eng-output.g2p.ras"
         )
         with open(tokenized_file, "r", encoding="utf8") as f:
             tok_output = f.read()
@@ -317,7 +305,7 @@ class TestAlignCli(BasicTestCase):
             <anchor /><s>Bonjour.</s><anchor time="invalid"/>
             </p></body></text></read-along>
         """
-        xml_file = join(self.tempdir, "bad-anchor.xml")
+        xml_file = join(self.tempdir, "bad-anchor.ras")
         with open(xml_file, "w", encoding="utf8") as f:
             print(xml_text, file=f)
         bad_anchors_result = self.runner.invoke(
@@ -353,7 +341,7 @@ class TestAlignCli(BasicTestCase):
             results = self.runner.invoke(
                 align,
                 [
-                    join(self.data_dir, "fra-prepared.xml"),
+                    join(self.data_dir, "fra-prepared.ras"),
                     join(self.data_dir, "noise.mp3"),
                     join(self.tempdir, "noise-only"),
                 ],
@@ -367,7 +355,7 @@ class TestAlignCli(BasicTestCase):
             results = self.runner.invoke(
                 align,
                 [
-                    join(self.data_dir, "ej-fra.xml"),
+                    join(self.data_dir, "ej-fra.ras"),
                     join(self.data_dir, "ej-fra.m4a"),
                     join(self.tempdir, "two-words"),
                 ],
@@ -449,7 +437,7 @@ class TestAlignCli(BasicTestCase):
         self.assertIn("Error parsing XML", results.output)
 
         # XML by file extension
-        infile5 = write_file(join(self.tempdir, "infile5.xml"), "Not XML!")
+        infile5 = write_file(join(self.tempdir, "infile5.ras"), "Not XML!")
         with SoundSwallowerStub("word:0:1"):
             results = self.runner.invoke(
                 align,
@@ -514,7 +502,7 @@ class TestAlignCli(BasicTestCase):
                 [
                     "-oo",
                     "eng-arpabet",
-                    join(self.data_dir, "ej-fra.xml"),
+                    join(self.data_dir, "ej-fra.ras"),
                     join(self.data_dir, "noise.mp3"),
                     join(self.tempdir, "outdir9"),
                 ],
@@ -527,7 +515,7 @@ class TestAlignCli(BasicTestCase):
                 [
                     "-oo",
                     "not-an-alphabet",
-                    join(self.data_dir, "ej-fra.xml"),
+                    join(self.data_dir, "ej-fra.ras"),
                     join(self.data_dir, "noise.mp3"),
                     join(self.tempdir, "outdir10"),
                 ],
@@ -542,7 +530,7 @@ class TestAlignCli(BasicTestCase):
                 [
                     "-oo",
                     "dan-ipa",
-                    join(self.data_dir, "ej-fra.xml"),
+                    join(self.data_dir, "ej-fra.ras"),
                     join(self.data_dir, "noise.mp3"),
                     join(self.tempdir, "outdir11"),
                 ],

@@ -35,12 +35,12 @@ class TestG2pCli(BasicTestCase):
 
     def test_invoke_g2p(self):
         """Basic invocation of readalongs g2p"""
-        input_file = os.path.join(self.data_dir, "fra-tokenized.xml")
-        g2p_file = os.path.join(self.tempdir, "fra-g2p.xml")
+        input_file = os.path.join(self.data_dir, "fra-tokenized.ras")
+        g2p_file = os.path.join(self.tempdir, "fra-g2p.ras")
         results = self.runner.invoke(g2p, [input_file, g2p_file])
         # print(f"g2p results.output='{results.output}'")
         self.assertEqual(results.exit_code, 0)
-        self.assertTrue(os.path.exists(os.path.join(self.tempdir, "fra-g2p.xml")))
+        self.assertTrue(os.path.exists(os.path.join(self.tempdir, "fra-g2p.ras")))
 
         # Testing that it fails when the file already exists has to be in the same test,
         # otherwise we have a different tempdir and the file won't already exist
@@ -63,14 +63,14 @@ class TestG2pCli(BasicTestCase):
 
     def test_mixed_langs(self):
         """readalongs g2p with an input containing multiple languages"""
-        input_file = os.path.join(self.data_dir, "mixed-langs.tokenized.xml")
-        g2p_file = os.path.join(self.tempdir, "mixed-langs.g2p.xml")
+        input_file = os.path.join(self.data_dir, "mixed-langs.tokenized.ras")
+        g2p_file = os.path.join(self.tempdir, "mixed-langs.g2p.ras")
         results = self.runner.invoke(g2p, [input_file, g2p_file])
         # print(f"g2p results.output='{results.output}'")
         self.assertEqual(results.exit_code, 0)
         self.assertTrue(os.path.exists(g2p_file))
 
-        ref_file = os.path.join(self.data_dir, "mixed-langs.g2p.xml")
+        ref_file = os.path.join(self.data_dir, "mixed-langs.g2p.ras")
         with open(g2p_file, encoding="utf8") as output_f, open(
             ref_file, encoding="utf8"
         ) as ref_f:
@@ -84,15 +84,15 @@ class TestG2pCli(BasicTestCase):
     def test_invoke_with_obsolete_switches(self):
         """Using obsolete options should yield a helpful error message"""
 
-        input_file = os.path.join(self.data_dir, "fra-tokenized.xml")
-        g2p_file = os.path.join(self.tempdir, "obsolete1.xml")
+        input_file = os.path.join(self.data_dir, "fra-tokenized.ras")
+        g2p_file = os.path.join(self.tempdir, "obsolete1.ras")
         results = self.runner.invoke(
             g2p, ["--g2p-fallback", "fra:und", input_file, g2p_file]
         )
         self.assertNotEqual(results.exit_code, 0)
         self.assertIn("is obsolete", results.output)
 
-        g2p_file = os.path.join(self.tempdir, "obsolete2.xml")
+        g2p_file = os.path.join(self.tempdir, "obsolete2.ras")
         results = self.runner.invoke(g2p, ["--g2p-verbose", input_file, g2p_file])
         self.assertNotEqual(results.exit_code, 0)
         self.assertIn("is obsolete", results.output)
@@ -111,14 +111,14 @@ class TestG2pCli(BasicTestCase):
                 lang,
                 "--lang-no-append-und",
                 filename + ".input.txt",
-                filename + ".prepared.xml",
+                filename + ".prepared.ras",
             ],
         )
-        self.runner.invoke(tokenize, [filename + ".prepared.xml", filename])
+        self.runner.invoke(tokenize, [filename + ".prepared.ras", filename])
 
     def test_english_oov(self):
         """readalongs g2p should handle English OOVs correctly"""
-        tok_file = os.path.join(self.tempdir, "tok.xml")
+        tok_file = os.path.join(self.tempdir, "tok.ras")
         self.write_make_xml_tokenize("This is a froobnelicious OOV.", "eng", tok_file)
         results = self.runner.invoke(g2p, [tok_file])
         if self.show_invoke_output:
@@ -132,7 +132,7 @@ class TestG2pCli(BasicTestCase):
         # self.assertTrue(isinstance(results.exception, KeyError))
 
         # with a fall back to und, it works
-        tok_file_with_fallback = os.path.join(self.tempdir, "fallback.xml")
+        tok_file_with_fallback = os.path.join(self.tempdir, "fallback.ras")
         self.write_make_xml_tokenize(
             "This is a froobnelicious OOV.", "eng:und", tok_file_with_fallback
         )
@@ -147,8 +147,8 @@ class TestG2pCli(BasicTestCase):
 
     def test_french_oov(self):
         """readalongs g2p should handle French OOVs correctly"""
-        tok_file = os.path.join(self.tempdir, "tok.xml")
-        g2p_file = os.path.join(self.tempdir, "g2p.xml")
+        tok_file = os.path.join(self.tempdir, "tok.ras")
+        g2p_file = os.path.join(self.tempdir, "g2p.ras")
         self.write_make_xml_tokenize(
             "Le ñ n'est pas dans l'alphabet français.", "fra", tok_file
         )
@@ -163,11 +163,11 @@ class TestG2pCli(BasicTestCase):
         self.assertIn("could not be g2p", results.output)
 
         # with a fall back to und, it works
-        tok_file2 = os.path.join(self.tempdir, "tok2.xml")
+        tok_file2 = os.path.join(self.tempdir, "tok2.ras")
         self.write_make_xml_tokenize(
             "Le ñ n'est pas dans l'alphabet français.", "fra:und", tok_file2
         )
-        g2p_file2 = os.path.join(self.tempdir, "g2p-fallback.xml")
+        g2p_file2 = os.path.join(self.tempdir, "g2p-fallback.ras")
         results = self.runner.invoke(g2p, [tok_file2, g2p_file2])
         if self.show_invoke_output:
             print(
@@ -179,8 +179,8 @@ class TestG2pCli(BasicTestCase):
 
     def test_three_way_fallback(self):
         """readalongs g2p --g2p-fallback with multi-step cascades"""
-        tok_file = os.path.join(self.tempdir, "text.tokenized.xml")
-        g2p_file = os.path.join(self.tempdir, "text.g2p.xml")
+        tok_file = os.path.join(self.tempdir, "text.tokenized.ras")
+        g2p_file = os.path.join(self.tempdir, "text.g2p.ras")
         self.write_make_xml_tokenize(
             "In French été works but Nunavut ᓄᓇᕗᑦ does not.", "eng:fra:iku", tok_file
         )
@@ -212,7 +212,7 @@ class TestG2pCli(BasicTestCase):
         self.assertIn("not fully valid eng-arpabet", results.output)
 
         # this text also works with "und", now that we use unidecode
-        tok_file2 = os.path.join(self.tempdir, "text.tokenized2.xml")
+        tok_file2 = os.path.join(self.tempdir, "text.tokenized2.ras")
         self.write_make_xml_tokenize(
             "In French été works but Nunavut ᓄᓇᕗᑦ does not.", "eng:und", tok_file2
         )
@@ -269,7 +269,7 @@ class TestG2pCli(BasicTestCase):
 
     def test_with_stdin(self):
         """readalongs g2p running with stdin as input"""
-        input_file = os.path.join(self.data_dir, "fra-tokenized.xml")
+        input_file = os.path.join(self.data_dir, "fra-tokenized.ras")
         with open(input_file, encoding="utf8") as f:
             inputtext = f.read()
         results = self.runner.invoke(g2p, "-", input=inputtext)
@@ -283,7 +283,7 @@ class TestG2pCli(BasicTestCase):
             <w ARPABET="G OW D">good</w>
             <w ARPABET="NOT ARPABET">error</w>
         </s></document>"""
-        input_file = os.path.join(self.tempdir, "pre-g2p.xml")
+        input_file = os.path.join(self.tempdir, "pre-g2p.ras")
         with open(input_file, "w", encoding="utf8") as f:
             print(txt, file=f)
 
@@ -302,7 +302,7 @@ class TestG2pCli(BasicTestCase):
 
     def test_align_with_preg2p(self):
         """readalongs align working on previously g2p'd text"""
-        text_file = os.path.join(self.data_dir, "mixed-langs.tokenized.xml")
+        text_file = os.path.join(self.data_dir, "mixed-langs.tokenized.ras")
         audio_file = os.path.join(self.data_dir, "ej-fra.m4a")
         # bogus alignments but they must all exist!!!
         with SoundSwallowerStub(

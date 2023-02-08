@@ -34,8 +34,7 @@ class TestAlignApi(BasicTestCase):
         self.assertTrue(exception is None)
         self.assertIn("Words (<w>) not present; tokenizing", log)
         expected_output_files = (
-            "output.smil",
-            "output.xml",
+            "output.ras",
             "output.m4a",
             "output.TextGrid",
             "output_sentences.srt",
@@ -60,25 +59,25 @@ class TestAlignApi(BasicTestCase):
 
     def test_call_make_xml(self):
         (status, exception, log) = api.make_xml(
-            self.data_dir / "ej-fra.txt", self.tempdir / "prepared.xml", ("fra", "eng")
+            self.data_dir / "ej-fra.txt", self.tempdir / "prepared.ras", ("fra", "eng")
         )
         self.assertEqual(status, 0)
         self.assertTrue(exception is None)
         self.assertIn("Wrote ", log)
-        with open(self.tempdir / "prepared.xml") as f:
+        with open(self.tempdir / "prepared.ras") as f:
             xml_text = f.read()
             self.assertIn('xml:lang="fra" fallback-langs="eng,und"', xml_text)
 
         (status, exception, log) = api.make_xml(
             self.data_dir / "ej-fra.txt",
-            self.tempdir / "bad.xml",
+            self.tempdir / "bad.ras",
             ("fra", "not-a-lang"),
         )
         self.assertNotEqual(status, 0)
         self.assertTrue(isinstance(exception, click.BadParameter))
 
         (status, exception, log) = api.make_xml(
-            self.data_dir / "file-not-found.txt", self.tempdir / "none.xml", ("fra",)
+            self.data_dir / "file-not-found.txt", self.tempdir / "none.ras", ("fra",)
         )
         self.assertNotEqual(status, 0)
         self.assertTrue(isinstance(exception, click.UsageError))
