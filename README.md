@@ -38,8 +38,7 @@ The concept is a web application with a series of stages of
 processing, which ultimately leads to a time-aligned audiobook -
 i.e. a package of:
 
-- SMIL file describing time alignments
-- TEI file describing text
+- ReadAlong XML file describing text
 - Audio file (WAV or MP3)
 
 Which can be loaded using the read-along [web component](https://github.com/roedoejet/ReadAlong-Web-Component). See also [Studio Output Realizations](https://readalong-studio.readthedocs.io/en/latest/outputs.html).
