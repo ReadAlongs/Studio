@@ -77,7 +77,7 @@ v2 = FastAPI()
 # Call get_langs() when the server loads to load the languages into memory
 LANGS = get_langs()
 # Get the DTD
-DTDPATH = os.path.join(os.path.dirname(__file__), "static", "read-along-0.1.dtd")
+DTDPATH = os.path.join(os.path.dirname(__file__), "static", "read-along-0.2.dtd")
 with open(DTDPATH) as dtdfh:
     DTD = etree.DTD(dtdfh)
 

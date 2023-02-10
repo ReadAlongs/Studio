@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
+<read-along>
+    <!-- To exclude any element from alignment, add the do-not-align="true" attribute to
+         it, e.g., <p do-not-align="true">...</p>, or
+         <s>Some text <foo do-not-align="true">do not align this</foo> more text</s> -->
+    <text xml:lang="fra" id="t0">
+        <body id="t0b0">
+            <div type="page" id="t0b0d0" class="two-column-layout-page">
+              <graphic url="avatar.png" id="t0b0d0graphic0"/>
+                <p id="t0b0d0p0">
+                    <s id="t0b0d0p0s0"><w id="t0b0d0p0s0w0" time="0.455" dur="1.165">Bonjour</w>.</s>
+                    <s do-not-align="true" xml:lang="eng" id="t0b0d0p0s0" class="sentence__translation">Hello.</s>
+                    <s id="t0b0d0p0s1"><w id="t0b0d0p0s1w0" time="1.620" dur="0.070">Je</w> <w id="t0b0d0p0s1w1" time="1.690" dur="0.070">m</w>'<w id="t0b0d0p0s1w2" time="1.760" dur="0.240">appelle</w> <w id="t0b0d0p0s1w3" time="2.000" dur="1.705">Éric</w> <w id="t0b0d0p0s1w4" time="3.705" dur="1.905">Joanis</w>.</s>
+                    <s do-not-align="true" xml:lang="eng" id="t0b0d0p0s1" class="sentence__translation">My name is Éric Joanis.</s>
+                </p>
+            </div>
+
+        </body>
+    </text>
+</read-along>

@@ -1,4 +1,4 @@
-<!-- VERSION: 0.1 -->
+<!-- VERSION: 0.2 -->
 <!ELEMENT read-along (text|body|div|span|anchor|silence|graphic|p|s|w)*>
 <!ATTLIST read-along
  use-assets-folder CDATA #IMPLIED
@@ -37,6 +37,7 @@
  xml:lang CDATA #IMPLIED
  lang CDATA #IMPLIED
  id CDATA #IMPLIED
+ class CDATA #IMPLIED
  type CDATA #IMPLIED
  do-not-align CDATA #IMPLIED
  time CDATA #IMPLIED
@@ -47,6 +48,7 @@
  xml:lang CDATA #IMPLIED
  lang CDATA #IMPLIED
  id CDATA #IMPLIED
+ class CDATA #IMPLIED
  type CDATA #IMPLIED
  do-not-align CDATA #IMPLIED
  time CDATA #IMPLIED
@@ -57,6 +59,7 @@
  xml:lang CDATA #IMPLIED
  lang CDATA #IMPLIED
  id CDATA #IMPLIED
+ class CDATA #IMPLIED
  do-not-align CDATA #IMPLIED
  time CDATA #IMPLIED
  dur CDATA #IMPLIED>
@@ -76,6 +79,7 @@
  xml:lang CDATA #IMPLIED
  lang CDATA #IMPLIED
  id CDATA #IMPLIED
+ class CDATA #IMPLIED
  do-not-align CDATA #IMPLIED
  ARPABET CDATA #IMPLIED
  time CDATA #IMPLIED
@@ -86,6 +90,7 @@
  xml:lang CDATA #IMPLIED
  lang CDATA #IMPLIED
  id CDATA #IMPLIED
+ class CDATA #IMPLIED
  do-not-align CDATA #IMPLIED
  ARPABET CDATA #IMPLIED
  time CDATA #IMPLIED
