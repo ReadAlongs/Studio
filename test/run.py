@@ -25,17 +25,18 @@ from test_audio import TestAudio
 from test_config import TestConfig
 from test_dna_text import TestDNAText
 from test_dna_utils import TestDNAUtils
+from test_dtd import TestDTD
 from test_force_align import TestForceAlignment, TestXHTML
 from test_g2p_cli import TestG2pCli
 from test_make_xml_cli import TestMakeXMLCli
 from test_misc import TestMisc
 from test_package_urls import TestPackageURLs
 from test_silence import TestSilence
+from test_smil import TestSmilUtilities
 from test_temp_file import TestTempFile
 from test_tokenize_cli import TestTokenizeCli
 from test_tokenize_xml import TestTokenizer
 from test_web_api import TestWebApi
-from test_smil import TestSmilUtilities
 
 from readalongs.log import LOGGER
 
@@ -69,6 +70,7 @@ other_tests = [
         TestSmilUtilities,
         TestPackageURLs,
         TestWebApi,
+        TestDTD,
     ]
 ]
 
