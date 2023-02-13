@@ -98,6 +98,7 @@ class TestWebApi(BasicTestCase):
         }
         with self.assertLogs(LOGGER, "ERROR"):
             response = API_CLIENT.post("/api/v2/assemble", json=request)
+        # print(response.content)
         self.assertEqual(response.status_code, 422)
 
     def test_langs(self):
@@ -107,6 +108,19 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(
             dict((x["code"], x["names"]["_"]) for x in response.json()), get_langs()[1]
         )
+
+    def test_logs(self):
+        # Test that we see the g2p warnings
+        request = {
+            "input": "Ceci mais pas ña",
+            "type": "text/plain",
+            "debug": True,
+            "text_languages": ["fra", "und"],
+        }
+        response = API_CLIENT.post("/api/v2/assemble", json=request)
+        content = response.json()
+        # print("Content", content)
+        self.assertIn('Could not g2p "ña" as fra', content["log"])
 
     def test_debug(self):
         # Test the assemble endpoint with debug mode on
