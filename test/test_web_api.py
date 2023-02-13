@@ -101,6 +101,18 @@ class TestWebApi(BasicTestCase):
         # print(response.content)
         self.assertEqual(response.status_code, 422)
 
+    def test_g2p_faiture(self):
+        # Test the assemble endpoint where g2p actually fails
+        request = {
+            "input": "ceci ña",
+            "type": "text/plain",
+            "text_languages": ["fra"],
+        }
+        response = API_CLIENT.post("/api/v2/assemble", json=request)
+        self.assertEqual(response.status_code, 422)
+        content = response.json()
+        self.assertIn("No valid g2p conversion", content["detail"])
+
     def test_langs(self):
         # Test the langs endpoint
         response = API_CLIENT.get("/api/v2/langs")

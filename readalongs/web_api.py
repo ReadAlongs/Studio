@@ -235,7 +235,8 @@ async def assemble(
         if not valid:
             raise HTTPException(
                 status_code=422,
-                detail="g2p could not be performed, please check your text or your language code",
+                detail="g2p could not be performed, please check your text or your language code. Logs: "
+                + captured_logs.getvalue(),
             )
         # create grammar
         dict_data, text_input = create_grammar(g2ped)
