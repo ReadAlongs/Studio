@@ -127,13 +127,12 @@ async def langs() -> List[SupportedLanguage]:
         default display name (usually, but not always, in English).
         For example:
 
-        ```[
+        [
             {"code": "alq", names: { "alq": "Anishinaabemowin", "_": "Algonquin" }},
             {"code": "atj", names: { "atj": "Nehiromowin", "_": "Atikamekw" }},
             {"code": "fra", names: { "fra": "Français", "_": "French" }},
             ...
-        }```
-
+        ]
     """
     langs, lang_names = LANGS
     return sorted(
