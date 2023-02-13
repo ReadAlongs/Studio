@@ -13,6 +13,7 @@ from lxml import etree
 from test_dna_utils import segments_from_pairs
 
 from readalongs.align import split_silences
+from readalongs.log import LOGGER, capture_logs
 from readalongs.text.util import (
     get_attrib_recursive,
     get_lang_attrib,
@@ -264,6 +265,26 @@ class TestMisc(BasicTestCase):
             etree.tostring(load_xml_zip(self.tempdir / "file.zip", "file.ras")),
             xml_text.encode(encoding="ascii"),
         )
+
+    def test_capture_logs(self):
+        with capture_logs() as captured_logs:
+            LOGGER.info("foo bar baz")
+        self.assertIn("foo bar baz", captured_logs.getvalue())
+
+    def test_capture_logs_some_more(self):
+        with self.assertLogs(LOGGER, level="INFO"):
+            with capture_logs() as captured_logs:
+                LOGGER.info("will this show?")
+            self.assertIn("will this show?", captured_logs.getvalue())
+        with self.assertLogs():
+            LOGGER.info("blah")
+        with self.assertLogs() as cm:
+            with capture_logs() as captured_logs:
+                LOGGER.info("This text does not propagate to root")
+            LOGGER.info("This text is included in root")
+            self.assertIn("propagate", captured_logs.getvalue())
+        self.assertIn("included", "".join(cm.output))
+        self.assertNotIn("propagate", "".join(cm.output))
 
 
 if __name__ == "__main__":

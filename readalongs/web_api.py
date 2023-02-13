@@ -43,7 +43,7 @@ from pydantic import BaseModel, Field
 from starlette.background import BackgroundTask
 
 from readalongs.align import create_ras_from_text, save_label_files, save_subtitles
-from readalongs.log import LOGGER
+from readalongs.log import LOGGER, capture_logs
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.make_dict import make_dict_list
@@ -108,6 +108,7 @@ class AssembleResponse(BaseModel):
     parsed: Optional[str]
     tokenized: Optional[str]
     g2ped: Optional[str]
+    log: Optional[str]
 
 
 class SupportedLanguage(BaseModel):
@@ -127,13 +128,12 @@ async def langs() -> List[SupportedLanguage]:
         default display name (usually, but not always, in English).
         For example:
 
-        ```[
+        [
             {"code": "alq", names: { "alq": "Anishinaabemowin", "_": "Algonquin" }},
             {"code": "atj", names: { "atj": "Nehiromowin", "_": "Atikamekw" }},
             {"code": "fra", names: { "fra": "Français", "_": "French" }},
             ...
-        }```
-
+        ]
     """
     langs, lang_names = LANGS
     return sorted(
@@ -188,58 +188,64 @@ async def assemble(
      - text_ids: the list of word_ids as a space-separated string
        for force-alignment
      - processed_xml: the XML with all the readalongs info in it
+     - log: collected warnings and error messages
     """
-    if request.mime_type == InputFormat.RAS:
-        try:
+    with capture_logs() as captured_logs:
+        if request.mime_type == InputFormat.RAS:
+            try:
+                parsed = etree.fromstring(
+                    bytes(request.input_text, encoding="utf-8"),
+                    parser=etree.XMLParser(resolve_entities=False),
+                )
+            except etree.ParseError as e:
+                raise HTTPException(
+                    status_code=422, detail="XML provided is not well-formed"
+                ) from e
+            if not DTD.validate(parsed):
+                raise HTTPException(
+                    status_code=422,
+                    detail=(
+                        "ReadAlong provided is not valid: %s"
+                        % DTD.error_log.filter_from_errors()[0]
+                    ),
+                )
+        elif request.mime_type == InputFormat.TEXT:
+            parsed = io.StringIO(request.input_text).readlines()
             parsed = etree.fromstring(
-                bytes(request.input_text, encoding="utf-8"),
+                bytes(
+                    create_ras_from_text(parsed, text_languages=request.text_languages),
+                    encoding="utf-8",
+                ),
                 parser=etree.XMLParser(resolve_entities=False),
             )
-        except etree.ParseError as e:
+
+        else:  # pragma: no cover
             raise HTTPException(
-                status_code=422, detail="XML provided is not well-formed"
-            ) from e
-        if not DTD.validate(parsed):
+                status_code=500,
+                detail="If this happens, FastAPI Enum validation didn't work so this is a bug!",
+            )
+
+        # tokenize
+        tokenized = tokenize_xml(parsed)
+        # add ids
+        ids_added = add_ids(tokenized)
+
+        # g2p
+        g2ped, valid = convert_xml(ids_added)
+        if not valid:
             raise HTTPException(
                 status_code=422,
-                detail=(
-                    "ReadAlong provided is not valid: %s"
-                    % DTD.error_log.filter_from_errors()[0]
-                ),
+                detail="g2p could not be performed, please check your text or your language code. Logs: "
+                + captured_logs.getvalue(),
             )
-    elif request.mime_type == InputFormat.TEXT:
-        parsed = io.StringIO(request.input_text).readlines()
-        parsed = etree.fromstring(
-            bytes(
-                create_ras_from_text(parsed, text_languages=request.text_languages),
-                encoding="utf-8",
-            ),
-            parser=etree.XMLParser(resolve_entities=False),
-        )
+        # create grammar
+        dict_data, text_input = create_grammar(g2ped)
 
-    else:  # pragma: no cover
-        raise HTTPException(
-            status_code=500,
-            detail="If this happens, FastAPI Enum validation didn't work so this is a bug!",
-        )
-
-    # tokenize
-    tokenized = tokenize_xml(parsed)
-    # add ids
-    ids_added = add_ids(tokenized)
-    # g2p
-    g2ped, valid = convert_xml(ids_added)
-    if not valid:
-        raise HTTPException(
-            status_code=422,
-            detail="g2p could not be performed, please check your text or your language code",
-        )
-    # create grammar
-    dict_data, text_input = create_grammar(g2ped)
     response = AssembleResponse(
         lexicon=dict_data,
         text_ids=text_input,
         processed_ras=etree.tostring(g2ped, encoding="utf8").decode(),
+        log=captured_logs.getvalue(),
     )
 
     if request.debug:
