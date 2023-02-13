@@ -29,7 +29,6 @@ http://localhost:8000/api/v1/docs
 """
 
 import io
-import logging
 import os
 import tempfile
 from enum import Enum
@@ -44,7 +43,7 @@ from pydantic import BaseModel, Field
 from starlette.background import BackgroundTask
 
 from readalongs.align import create_ras_from_text, save_label_files, save_subtitles
-from readalongs.log import LOGGER
+from readalongs.log import LOGGER, capture_logs
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.make_dict import make_dict_list
@@ -191,13 +190,7 @@ async def assemble(
      - processed_xml: the XML with all the readalongs info in it
      - log: collected warnings and error messages
     """
-    try:
-        log_capture_stream = io.StringIO()
-        stream_handler = logging.StreamHandler(log_capture_stream)
-        stream_handler.setLevel(logging.INFO)
-        LOGGER.addHandler(stream_handler)  # capture logging output
-        LOGGER.propagate = False  # suppresses logging output to console
-
+    with capture_logs() as captured_logs:
         if request.mime_type == InputFormat.RAS:
             try:
                 parsed = etree.fromstring(
@@ -247,16 +240,11 @@ async def assemble(
         # create grammar
         dict_data, text_input = create_grammar(g2ped)
 
-    finally:
-        g2p_log = log_capture_stream.getvalue()
-        LOGGER.removeHandler(stream_handler)
-        LOGGER.propagate = True
-
     response = AssembleResponse(
         lexicon=dict_data,
         text_ids=text_input,
         processed_ras=etree.tostring(g2ped, encoding="utf8").decode(),
-        log=g2p_log,
+        log=captured_logs.getvalue(),
     )
 
     if request.debug:
