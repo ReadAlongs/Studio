@@ -1,6 +1,6 @@
 """REST-ish Web API for ReadAlongs Studio text manipulation operations using FastAPI.
 
-See https://readalong-studio.herokuapp.com/api/v2/docs for the documentation.
+See https://readalong-studio.herokuapp.com/api/v1/docs for the documentation.
 
 You can spin up this Web API for development purposes on any platform with:
     pip install uvicorn
@@ -73,7 +73,7 @@ web_api_app.add_middleware(
 )
 
 # Create the v1 version of the API
-v2 = FastAPI()
+v1 = FastAPI()
 # Call get_langs() when the server loads to load the languages into memory
 LANGS = get_langs()
 # Get the DTD
@@ -118,7 +118,7 @@ class SupportedLanguage(BaseModel):
     ]  # Mapping from language to name of language in language (c'est-tu clair?)
 
 
-@v2.get("/langs", response_model=List[SupportedLanguage])
+@v1.get("/langs", response_model=List[SupportedLanguage])
 async def langs() -> List[SupportedLanguage]:
     """Return the list of supported languages and their names as a dict.
 
@@ -145,7 +145,7 @@ async def langs() -> List[SupportedLanguage]:
     )
 
 
-@v2.post("/assemble", response_model=AssembleResponse)
+@v1.post("/assemble", response_model=AssembleResponse)
 async def assemble(
     request: AssembleRequest = Body(
         examples={
@@ -346,7 +346,7 @@ class SubtitleTier(Enum):
     WORD = "word"
 
 
-@v2.post("/convert_alignment/{output_format}")  # noqa: C901
+@v1.post("/convert_alignment/{output_format}")  # noqa: C901
 async def convert_alignment(  # noqa: C901
     request: ConvertRequest,
     output_format: OutputFormat,
@@ -503,5 +503,5 @@ async def convert_alignment(  # noqa: C901
         raise
 
 
-# Mount the v2 version of the API to the root of the app
-web_api_app.mount("/api/v2", v2)
+# Mount the v1 version of the API to the root of the app
+web_api_app.mount("/api/v1", v1)
