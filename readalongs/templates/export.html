@@ -12,14 +12,14 @@
         <code>
             &lt;script type="module" src='https://unpkg.com/@roedoejet/readalong@^0.1.6/dist/read-along/read-along.esm.js'&gt;&lt;/script&gt;
             &lt;script nomodule src='https://unpkg.com/@roedoejet/readalong@^0.1.6/dist/read-along/read-along.js'&gt;&lt;/script&gt;
-            &lt;read-along text="aligned.ras" alignment="aligned.smil" audio="aligned{{data.audio_ext}}"&gt;&lt;/read-along&gt;
+            &lt;read-along text="aligned.readalong" alignment="aligned.smil" audio="aligned{{data.audio_ext}}"&gt;&lt;/read-along&gt;
         </code>
     </div>
     <div class="container readalong">
         <h1 class='title'>ReadAlong</h1>
         <p>Here's your interactive read along!</p>
         <read-along href='{{data.text_fn}}' audio='{{data.audio_fn}}'></read-along>
-        {# <read-along href="/file/aligned.ras" audio="/file/aligned{{data.audio_ext}}"></read-along> #}
+        {# <read-along href="/file/aligned.readalong" audio="/file/aligned{{data.audio_ext}}"></read-along> #}
     </div>
     <div class="columns is-mobile is-centered download">
         <div class="column is-half is-centered has-text-centered">

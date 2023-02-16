@@ -20,7 +20,7 @@ class TestTokenizeCli(BasicTestCase):
         """setUp() creates self.tempdir and makes an XML file for use in other tests"""
         super().setUp()
 
-        self.rasfile = os.path.join(self.tempdir, "fra.ras")
+        self.rasfile = os.path.join(self.tempdir, "fra.readalong")
         _ = self.runner.invoke(
             make_xml,
             ["-l", "fra", os.path.join(self.data_dir, "fra.txt"), self.rasfile],
@@ -32,13 +32,15 @@ class TestTokenizeCli(BasicTestCase):
             tokenize, [self.rasfile, os.path.join(self.tempdir, "delme")]
         )
         self.assertEqual(results.exit_code, 0)
-        self.assertTrue(os.path.exists(os.path.join(self.tempdir, "delme.ras")))
+        self.assertTrue(os.path.exists(os.path.join(self.tempdir, "delme.readalong")))
 
     def test_generate_output_name(self):
         """Test letting readalongs tokenize generate the output filename"""
         results = self.runner.invoke(tokenize, ["--debug", self.rasfile])
         self.assertEqual(results.exit_code, 0)
-        self.assertTrue(os.path.exists(os.path.join(self.tempdir, "fra.tokenized.ras")))
+        self.assertTrue(
+            os.path.exists(os.path.join(self.tempdir, "fra.tokenized.readalong"))
+        )
 
     def test_with_stdin(self):
         """Test readalongs reading from stdin and writing to stdout"""

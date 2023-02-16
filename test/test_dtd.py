@@ -13,24 +13,24 @@ DTDPATH = os.path.join(
 )
 
 VALID_RAS = """
-ej-fra-anchors2.ras
-ej-fra-anchors.ras
-ej-fra-converted.ras
-ej-fra-dna.ras
-ej-fra-package.ras
-ej-fra.ras
-ej-fra-silence.ras
-ej-fra-subword.ras
-ej-fra-translated.ras
-fra-prepared.ras
-fra-tokenized.ras
-mixed-langs.g2p.ras
-mixed-langs.ras
-mixed-langs.tokenized.ras
-patrickxtlan.ras
+ej-fra-anchors2.readalong
+ej-fra-anchors.readalong
+ej-fra-converted.readalong
+ej-fra-dna.readalong
+ej-fra-package.readalong
+ej-fra.readalong
+ej-fra-silence.readalong
+ej-fra-subword.readalong
+ej-fra-translated.readalong
+fra-prepared.readalong
+fra-tokenized.readalong
+mixed-langs.g2p.readalong
+mixed-langs.readalong
+mixed-langs.tokenized.readalong
+patrickxtlan.readalong
 """.strip().split()
 INVALID_RAS = """
-ej-fra-invalid.ras
+ej-fra-invalid.readalong
 """.strip().split()
 
 

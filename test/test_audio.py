@@ -82,10 +82,10 @@ class TestAudio(BasicTestCase):
             LOGGER.error("Subprocess readalongs align failed: %s", process.stderr)
         # Check Result
         raspath = Path(output_path)
-        ras_files = raspath.glob("*.ras")
+        ras_files = raspath.glob("*.readalong")
         self.assertTrue(
             next(ras_files, False),
-            "No *.ras files found; "
+            "No *.readalong files found; "
             "pip install --force-reinstall --upgrade might be required "
             "if dependencies changed.",
         )
@@ -109,10 +109,10 @@ class TestAudio(BasicTestCase):
             LOGGER.error("Subprocess readalongs align failed: %s", process.stderr)
         # Check Result
         raspath = Path(output_path)
-        ras_files = raspath.glob("*.ras")
+        ras_files = raspath.glob("*.readalong")
         self.assertTrue(
             next(ras_files, False),
-            "No *.ras files found; "
+            "No *.readalong files found; "
             "pip install --force-reinstall --upgrade might be required "
             "if dependencies changed.",
         )
@@ -136,10 +136,10 @@ class TestAudio(BasicTestCase):
             LOGGER.error("Subprocess readalongs align failed: %s", process.stderr)
         # Check Result
         raspath = Path(output_path)
-        ras_files = raspath.glob("*.ras")
+        ras_files = raspath.glob("*.readalong")
         self.assertTrue(
             next(ras_files, False),
-            "No *.ras files found; "
+            "No *.readalong files found; "
             "pip install --force-reinstall --upgrade might be required "
             "if dependencies changed.",
         )

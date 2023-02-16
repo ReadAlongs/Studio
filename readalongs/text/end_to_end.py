@@ -41,7 +41,7 @@ def end_to_end(xml, input_filename, unit, word_unit, out_orth):
     xml = tokenize_xml(xml)
     xml = add_ids(xml)
     converted_xml, valid = convert_xml(xml, word_unit, out_orth)
-    # save_xml("test.ras", converted_xml)
+    # save_xml("test.readalong", converted_xml)
     fsg = make_fsg(converted_xml, input_filename, unit)
     pronouncing_dictionary = make_dict(converted_xml, input_filename, unit)
     return xml, fsg, pronouncing_dictionary

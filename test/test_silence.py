@@ -33,7 +33,7 @@ class TestSilence(BasicTestCase):
                 "eaf",
                 "-l",
                 "fra",
-                os.path.join(self.data_dir, "ej-fra-silence.ras"),
+                os.path.join(self.data_dir, "ej-fra-silence.readalong"),
                 os.path.join(self.data_dir, "ej-fra.m4a"),
                 output,
             ],
@@ -41,7 +41,7 @@ class TestSilence(BasicTestCase):
         self.assertEqual(results.exit_code, 0)
         self.assertTrue(os.path.exists(os.path.join(output, "silence.m4a")))
         # test silence spans in output xml
-        with open(os.path.join(output, "silence.ras"), "rb") as f:
+        with open(os.path.join(output, "silence.readalong"), "rb") as f:
             xml_bytes = f.read()
         root = etree.fromstring(xml_bytes)
         silence_spans = root.xpath("//silence")
@@ -77,7 +77,7 @@ class TestSilence(BasicTestCase):
                 "eaf",
                 "-l",
                 "fra",
-                os.path.join(self.data_dir, "ej-fra-silence-bad.ras"),
+                os.path.join(self.data_dir, "ej-fra-silence-bad.readalong"),
                 os.path.join(self.data_dir, "ej-fra.m4a"),
                 output,
             ],

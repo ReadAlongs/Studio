@@ -38,11 +38,11 @@ Getting from TXT to XML with readalongs make-xml
 
 Run :ref:`cli-make-xml` to make the ReadAlongs XML file for ``align`` from a TXT file.
 
-``readalongs make-xml [options] [story.txt] [story.ras]``
+``readalongs make-xml [options] [story.txt] [story.readalong]``
 
 ``[story.txt]``: path to the plain text input file (TXT)
 
-``[story.ras]``: Path to the XML output file
+``[story.readalong]``: Path to the XML output file
 
 The plain text file must be plain text encoded in ``UTF-8`` with one
 sentence per line. Paragraph breaks are marked by a blank line, and page
@@ -72,7 +72,7 @@ and they can also be found in the :ref:`cli-make-xml` reference.
 So, a full command for a story in Algonquin, with an implicit g2p fallback to
 Undetermined, would be something like:
 
-``readalongs make-xml -l alq Studio/story.txt Studio/story.ras``
+``readalongs make-xml -l alq Studio/story.txt Studio/story.readalong``
 
 The generated XML will be parsed in to sentences. At this stage you can
 edit the XML to have any modifications, such as adding ``do-not-align``
@@ -179,14 +179,14 @@ See above for more information on the ``-l, --language`` argument.
 
 A full command could be something like:
 
-``readalongs align -f -c config.json story.ras story.mp3 story-aligned``
+``readalongs align -f -c config.json story.readalong story.mp3 story-aligned``
 
 **Is the text file plain text or XML?**
 
 ``readalongs align`` accepts its text input as a plain text file or a ReadAlongs XML file.
 
 - If the file name ends with ``.txt``, it will be read as plain text.
-- If the file name ends with ``.xml`` or ``.ras``, it will be read as ReadAlongs XML.
+- If the file name ends with ``.xml`` or ``.readalong``, it will be read as ReadAlongs XML.
 - With other extensions, the beginning of the file is examined to
   automatically determine if it's XML or plain text.
 
@@ -307,7 +307,7 @@ falling back to ``eng`` and then ``und`` (see below) when needed.
 
 .. code-block:: bash
 
-   readalongs make-xml -l fra,eng myfile.txt myfile.ras
+   readalongs make-xml -l fra,eng myfile.txt myfile.readalong
    readalongs align -l fra,eng myfile.txt myfile.wav output-dir
 
 The "Undetermined" language code: und
@@ -353,10 +353,10 @@ The following series of commands:
 
 ::
 
-   readalongs make-xml -l l1,l2 file.txt file.ras
-   readalongs tokenize file.ras file.tokenized.ras
-   readalongs g2p file.tokenized.ras file.g2p.ras
-   readalongs align file.g2p.ras file.wav output
+   readalongs make-xml -l l1,l2 file.txt file.readalong
+   readalongs tokenize file.readalong file.tokenized.readalong
+   readalongs g2p file.tokenized.readalong file.g2p.readalong
+   readalongs align file.g2p.readalong file.wav output
 
 is equivalent to the single command:
 

@@ -173,7 +173,7 @@ def cli():
     default=None,
     help="OBSOLETE; the input format is now guessed by extension or contents",
     callback=get_obsolete_callback_for_click(
-        ".txt files are now read as plain text, .xml or .ras as XML, and other files based on\n"
+        ".txt files are now read as plain text, .xml or .readalong as XML, and other files based on\n"
         "whether they start with <?xml or not."
     ),
 )
@@ -257,7 +257,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
     TEXTFILE:    Input text file path (in XML or plain text)
 
     \b
-    If TEXTFILE has a .xml or .ras extension or starts with an XML declaration line,
+    If TEXTFILE has a .xml or .readalong extension or starts with an XML declaration line,
     it is parsed as XML and can be in one of three formats:
      - the output of 'readalongs make-xml',
      - the output of 'readalongs tokenize', or
@@ -337,8 +337,8 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
     textfile_name = kwargs["textfile"]
     if str(textfile_name).endswith(".xml"):
         textfile_is_plaintext = False  # .xml is XML
-    elif str(textfile_name).endswith(".ras"):
-        textfile_is_plaintext = False  # .ras is XML
+    elif str(textfile_name).endswith(".readalong"):
+        textfile_is_plaintext = False  # .readalong is XML
     elif str(textfile_name).endswith(".txt"):
         textfile_is_plaintext = True  # .txt is plain text
     else:
@@ -456,7 +456,7 @@ def prepare(**kwargs):
 
     PLAINTEXTFILE: Path to the plain text input file, or - for stdin
 
-    XMLFILE:       Path to the XML output file, or - for stdout [default: PLAINTEXTFILE.ras]
+    XMLFILE:       Path to the XML output file, or - for stdout [default: PLAINTEXTFILE.readalong]
     """
     LOGGER.warning(
         'WARNING: "readalongs prepare" is deprecated. Use "readalongs make-xml" instead.'
@@ -504,7 +504,7 @@ def make_xml(**kwargs):
 
     PLAINTEXTFILE: Path to the plain text input file, or - for stdin
 
-    XMLFILE:       Path to the XML output file, or - for stdout [default: PLAINTEXTFILE.ras]
+    XMLFILE:       Path to the XML output file, or - for stdout [default: PLAINTEXTFILE.readalong]
     """
 
     if kwargs["debug"]:
@@ -524,9 +524,10 @@ def make_xml(**kwargs):
     if not out_file:
         out_file = get_click_file_name(input_file)
         if out_file != "-":
-            if str(out_file).endswith(".txt"):
-                out_file = out_file[:-4]
-            out_file += ".ras"
+            base, ext = os.path.splitext(out_file)
+            if ext == ".txt":
+                out_file = base
+            out_file += ".readalong"
 
     languages = list(kwargs["language"])
     if not kwargs["lang_no_append_und"] and "und" not in languages:
@@ -540,8 +541,8 @@ def make_xml(**kwargs):
             with io.open(filename, encoding="utf-8-sig") as f:
                 sys.stdout.write(f.read())
         else:
-            if not str(out_file).endswith(".ras"):
-                out_file += ".ras"
+            if not str(out_file).endswith(".readalong"):
+                out_file += ".readalong"
             if os.path.exists(out_file) and not kwargs["force_overwrite"]:
                 raise click.BadParameter(
                     "Output file %s exists already, use -f to overwrite." % out_file
@@ -577,7 +578,7 @@ def tokenize(**kwargs):
 
     XMLFILE: Path to the XML file to tokenize, or - for stdin
 
-    TOKFILE: Output path for the tok'd XML, or - for stdout [default: XMLFILE.tokenized.ras]
+    TOKFILE: Output path for the tok'd XML, or - for stdout [default: XMLFILE.tokenized.readalong]
     """
 
     if kwargs["debug"]:
@@ -593,13 +594,15 @@ def tokenize(**kwargs):
     if not kwargs["tokfile"]:
         output_path = get_click_file_name(input_file)
         if output_path != "-":
-            if str(output_path).endswith(".ras"):
-                output_path = output_path[:-4]
-            output_path += ".tokenized.ras"
+            base, ext = os.path.splitext(str(output_path))
+            if ext == ".readalong":
+                output_path = base
+            output_path += ".tokenized.readalong"
     else:
         output_path = kwargs["tokfile"]
-        if not str(output_path).endswith(".ras") and not output_path == "-":
-            output_path += ".ras"
+        base, ext = os.path.splitext(str(output_path))
+        if ext != ".readalong" and output_path != "-":
+            output_path += ".readalong"
 
     if os.path.exists(output_path) and not kwargs["force_overwrite"]:
         raise click.BadParameter(
@@ -697,15 +700,18 @@ def g2p(**kwargs):
     if not kwargs["g2pfile"]:
         output_path = get_click_file_name(input_file)
         if output_path != "-":
-            if str(output_path).endswith(".ras"):
-                output_path = output_path[:-4]
-            if str(output_path).endswith(".tokenized"):
-                output_path = output_path[: -len(".tokenized")]
-            output_path += ".g2p.ras"
+            base, ext = os.path.splitext(output_path)
+            if ext == ".readalong":
+                output_path = base
+            base, ext = os.path.splitext(output_path)
+            if ext == ".tokenized":
+                output_path = base
+            output_path += ".g2p.readalong"
     else:
         output_path = kwargs["g2pfile"]
-        if not str(output_path).endswith(".ras") and not output_path == "-":
-            output_path += ".ras"
+        base, ext = os.path.splitext(output_path)
+        if ext != ".readalong" and output_path != "-":
+            output_path += ".readalong"
 
     if os.path.exists(output_path) and not kwargs["force_overwrite"]:
         raise click.BadParameter(

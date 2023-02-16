@@ -32,7 +32,7 @@ Below is an example of a minimal implementation in a basic standalone html page.
 
         <body>
             <!-- Here is how you declare the Web Component -->
-            <read-along href="assets/sample.ras" audio="assets/sample.wav"></read-along>
+            <read-along href="assets/sample.readalong" audio="assets/sample.wav"></read-along>
         </body>
         <!-- The last step needed is to import the package -->
        <script type="module" src='https://unpkg.com/@roedoejet/readalong@^0.2.0/dist/read-along/read-along.esm.js'></script>
@@ -45,7 +45,7 @@ The above assumes the following structure:
 | web
 | ├── assets
 | │   ├── sample.wav
-| │   ├── sample.ras
+| │   ├── sample.readalong
 | ├── index.html
 |
 |

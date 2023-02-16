@@ -198,17 +198,17 @@ def parse_and_make_xml(
         xml = add_supplementary_xml(xml, config)
     xml = tokenize_xml(xml)
     if save_temps is not None:
-        save_xml(save_temps + ".tokenized.ras", xml)
+        save_xml(save_temps + ".tokenized.readalong", xml)
     xml = add_ids(xml)
     if save_temps is not None:
-        save_xml(save_temps + ".ids.ras", xml)
+        save_xml(save_temps + ".ids.readalong", xml)
     xml, valid = convert_xml(
         xml,
         verbose_warnings=verbose_g2p_warnings,
         output_orthography=output_orthography,
     )
     if save_temps is not None:
-        save_xml(save_temps + ".g2p.ras", xml)
+        save_xml(save_temps + ".g2p.readalong", xml)
     if not valid:
         raise RuntimeError(
             "Some words could not be g2p'd correctly. Aborting. "
@@ -927,7 +927,7 @@ def save_readalong(
             output_formats=output_formats,
         )
 
-    ras_path = output_base + ".ras"
+    ras_path = output_base + ".readalong"
     save_xml(ras_path, align_results["tokenized"])
 
     if "xhtml" in output_formats:
@@ -1244,11 +1244,11 @@ def create_input_ras(**kwargs):
         filename = kwargs.get("output_file")
         outfile = io.open(filename, "wb")
     elif save_temps is not None:
-        filename = save_temps + ".input.ras"
+        filename = save_temps + ".input.readalong"
         outfile = io.open(filename, "wb")
     else:
         outfile = PortableNamedTemporaryFile(
-            prefix="readalongs_xml_", suffix=".ras", delete=True
+            prefix="readalongs_xml_", suffix=".readalong", delete=True
         )
         filename = outfile.name
     xml = create_ras_from_text(text, text_langs)
