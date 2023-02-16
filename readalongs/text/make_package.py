@@ -119,11 +119,25 @@ def create_web_component_html(
 ) -> str:
     import requests  # Defer expensive import
 
-    js = requests.get(JS_BUNDLE_URL, timeout=10)
-    fonts = requests.get(FONTS_BUNDLE_URL, timeout=10)
-    if js.status_code != 200:
+    try:
+        js = requests.get(JS_BUNDLE_URL, timeout=100)
+        LOGGER.warning(repr(js))
+        js_status_code = js.status_code
+    except requests.exceptions.ReadTimeout as e:
+        js_status_code = "TIMEOUT"
+        LOGGER.warning(e)
+
+    try:
+        fonts = requests.get(FONTS_BUNDLE_URL, timeout=100)
+        LOGGER.warning(repr(fonts))
+        fonts_status_code = fonts.status_code
+    except requests.exceptions.ReadTimeout as e:
+        LOGGER.warning(e)
+        fonts_status_code = "TIMEOUT"
+
+    if js_status_code != 200:
         LOGGER.warning(
-            f"Sorry, the JavaScript bundle that is supposed to be at {JS_BUNDLE_URL} returned a {js.status_code}. Your ReadAlong will be bundled using a version that may not be up-to-date. Please check your internet connection."
+            f"Sorry, the JavaScript bundle that is supposed to be at {JS_BUNDLE_URL} returned a {js_status_code}. Your ReadAlong will be bundled using a version that may not be up-to-date. Please check your internet connection."
         )
         with open(
             os.path.join(os.path.dirname(__file__), "bundle.js"), encoding="utf8"
@@ -131,9 +145,14 @@ def create_web_component_html(
             js_raw = f.read()
     else:
         js_raw = js.text
-    if fonts.status_code != 200:
+        with open(
+            os.path.join(os.path.dirname(__file__), "bundle.js-new"), encoding="utf8", mode="w"
+        ) as f:
+            f.write(js_raw)
+
+    if fonts_status_code != 200:
         LOGGER.warning(
-            f"Sorry, the fonts bundle that is supposed to be at {FONTS_BUNDLE_URL} returned a {fonts.status_code}. Your ReadAlong will be bundled using a version that may not be up-to-date. Please check your internet connection."
+            f"Sorry, the fonts bundle that is supposed to be at {FONTS_BUNDLE_URL} returned a {fonts_status_code}. Your ReadAlong will be bundled using a version that may not be up-to-date. Please check your internet connection."
         )
         with open(
             os.path.join(os.path.dirname(__file__), "bundle.css"), encoding="utf8"
@@ -141,6 +160,10 @@ def create_web_component_html(
             fonts_raw = f.read()
     else:
         fonts_raw = fonts.text
+        with open(
+            os.path.join(os.path.dirname(__file__), "bundle.css-new"), encoding="utf8", mode="w"
+        ) as f:
+            f.write(fonts_raw)
 
     return BASIC_HTML.format(
         ras=encode_from_path(ras_path),
