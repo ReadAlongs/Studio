@@ -119,8 +119,8 @@ def create_web_component_html(
 ) -> str:
     import requests  # Defer expensive import
 
-    js = requests.get(JS_BUNDLE_URL)
-    fonts = requests.get(FONTS_BUNDLE_URL)
+    js = requests.get(JS_BUNDLE_URL, timeout=10)
+    fonts = requests.get(FONTS_BUNDLE_URL, timeout=10)
     if js.status_code != 200:
         LOGGER.warning(
             f"Sorry, the JavaScript bundle that is supposed to be at {JS_BUNDLE_URL} returned a {js.status_code}. Your ReadAlong will be bundled using a version that may not be up-to-date. Please check your internet connection."
