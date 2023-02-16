@@ -57,7 +57,7 @@ def encode_from_path(path: str) -> str:
 
     with open(path, "rb") as f:
         path_bytes = f.read()
-    if str(path).endswith("xml") or str(path).endswith(".ras"):
+    if str(path).endswith("xml") or str(path).endswith(".readalong"):
         root = etree.fromstring(
             path_bytes, parser=etree.XMLParser(resolve_entities=False)
         )
@@ -92,7 +92,7 @@ def encode_from_path(path: str) -> str:
         # TODO: Check other popular audio formats, .wav, .mp3, .ogg, etc...
         mime_type = "audio/mp4"
     if str(path).endswith(
-        ".ras"
+        ".readalong"
     ):  # We declare it to be application/readalong+xml, not what mimetypes thinks
         mime_type = "application/readalong+xml"
     elif mime[0]:

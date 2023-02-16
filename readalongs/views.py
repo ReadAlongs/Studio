@@ -66,7 +66,7 @@ def uploaded_files(dir_path: str) -> dict:
     audio = list(upload_dir.glob("*.wav")) + list(upload_dir.glob("*.mp3"))
     text = (
         list(upload_dir.glob("*.txt"))
-        + list(upload_dir.glob("*.ras"))
+        + list(upload_dir.glob("*.readalong"))
         + list(upload_dir.glob("*.docx"))
     )
     maps = list(upload_dir.glob("*.csv")) + list(upload_dir.glob("*.xlsx"))
@@ -208,9 +208,9 @@ def steps(step):
             )
             data["audio_fn"] = f"/file/{output_base}" + audio_ext
             data["text_path"] = os.path.join(
-                session["temp_dir"], output_base, output_base + ".ras"
+                session["temp_dir"], output_base, output_base + ".readalong"
             )
-            data["text_fn"] = f"/file/{output_base}" + ".ras"
+            data["text_fn"] = f"/file/{output_base}" + ".readalong"
         return render_template("export.html", data=data)
     else:
         abort(404)
