@@ -45,7 +45,7 @@ class TestMakeXMLCli(BasicTestCase):
     def test_no_lang(self):
         """Error case: readalongs make-xml without the mandatory -l switch"""
         results = self.runner.invoke(
-            make_xml, [self.empty_file, self.empty_file + ".ras"]
+            make_xml, [self.empty_file, self.empty_file + ".readalong"]
         )
         self.assertNotEqual(results.exit_code, 0)
         self.assertRegex(results.stdout, "Missing.*language")
@@ -71,7 +71,7 @@ class TestMakeXMLCli(BasicTestCase):
 
     def test_output_exists(self):
         """Make sure readalongs make-xml create the expected output file"""
-        xmlfile = os.path.join(self.tempdir, "fra.ras")
+        xmlfile = os.path.join(self.tempdir, "fra.readalong")
         results = self.runner.invoke(
             make_xml, ["-l", "fra", os.path.join(self.data_dir, "fra.txt"), xmlfile]
         )
@@ -81,11 +81,11 @@ class TestMakeXMLCli(BasicTestCase):
     def test_output_correct(self):
         """Make sure the contents of readalongs make-xml's output file is correct."""
         input_file = os.path.join(self.data_dir, "fra.txt")
-        xml_file = os.path.join(self.tempdir, "fra.ras")
+        xml_file = os.path.join(self.tempdir, "fra.readalong")
         results = self.runner.invoke(make_xml, ["-l", "fra", input_file, xml_file])
         self.assertEqual(results.exit_code, 0)
 
-        ref_file = os.path.join(self.data_dir, "fra-prepared.ras")
+        ref_file = os.path.join(self.data_dir, "fra-prepared.readalong")
         with open(xml_file, encoding="utf8") as output_f, open(
             ref_file, encoding="utf8"
         ) as ref_f:
@@ -113,8 +113,10 @@ class TestMakeXMLCli(BasicTestCase):
         # LOGGER.warning("Output: {}".format(results.output))
         # LOGGER.warning("Exception: {}".format(results.exception))
         self.assertEqual(results.exit_code, 0)
-        self.assertRegex(results.stdout, "Wrote.*someinput[.]ras")
-        self.assertTrue(os.path.exists(os.path.join(self.tempdir, "someinput.ras")))
+        self.assertRegex(results.stdout, "Wrote.*someinput[.]readalong")
+        self.assertTrue(
+            os.path.exists(os.path.join(self.tempdir, "someinput.readalong"))
+        )
 
     def test_make_xml_with_different_newlines(self):
         """readalongs make-xml handling single and double blank lines for paragraphs and pages"""
@@ -220,7 +222,8 @@ class TestMakeXMLCli(BasicTestCase):
 
         # Read noise.mp3 as if it was utf8 text, via create_input_ras(input_file_name)
         results = self.runner.invoke(
-            make_xml, ["-l", "fra", noise_file, os.path.join(self.tempdir, "noise.ras")]
+            make_xml,
+            ["-l", "fra", noise_file, os.path.join(self.tempdir, "noise.readalong")],
         )
         self.assertNotEqual(results.exit_code, 0)
         self.assertIn("provide a correctly encoded utf-8", results.output)

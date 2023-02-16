@@ -198,7 +198,7 @@ class TestMisc(BasicTestCase):
 
     def test_load_xml(self):
         xml_text = '<foo attrib="value">text</foo>'
-        foo_file = self.tempdir / "foo.ras"
+        foo_file = self.tempdir / "foo.readalong"
         with open(foo_file, "w") as f:
             print(xml_text, file=f)
         self.assertEqual(
@@ -209,10 +209,10 @@ class TestMisc(BasicTestCase):
     def test_load_xml_errors(self):
         # non-existent file
         with self.assertRaises(OSError):
-            load_xml("file-does-not-exist.ras")
+            load_xml("file-does-not-exist.readalong")
 
         # invalid XML file
-        bad_file = self.tempdir / "bad.ras"
+        bad_file = self.tempdir / "bad.readalong"
         with open(bad_file, "w") as f:
             print("This is not XML", file=f)
         with self.assertRaises(etree.ParseError):
@@ -231,7 +231,7 @@ class TestMisc(BasicTestCase):
             ]>
             <explode>&c;&c;</explode>
         """
-        explode_file = self.tempdir / "explode.ras"
+        explode_file = self.tempdir / "explode.readalong"
         with open(explode_file, "w") as f:
             f.write(xml_bomb)
         self.assertEqual(
@@ -245,7 +245,7 @@ class TestMisc(BasicTestCase):
     def test_save_xml(self):
         xml_text = '<foo attrib="value">text</foo>'
         xml = etree.fromstring(xml_text)
-        filename = self.tempdir / "foo.ras"
+        filename = self.tempdir / "foo.readalong"
         save_xml(filename, xml)
         loaded_xml = load_xml(filename)
         self.assertEqual(etree.tostring(loaded_xml), xml_text.encode(encoding="ascii"))
@@ -260,9 +260,9 @@ class TestMisc(BasicTestCase):
     def test_load_xml_zip(self):
         xml_text = '<foo attrib="value">text</foo>'
         with zipfile.ZipFile(self.tempdir / "file.zip", "w") as myzip:
-            myzip.writestr("file.ras", xml_text)
+            myzip.writestr("file.readalong", xml_text)
         self.assertEqual(
-            etree.tostring(load_xml_zip(self.tempdir / "file.zip", "file.ras")),
+            etree.tostring(load_xml_zip(self.tempdir / "file.zip", "file.readalong")),
             xml_text.encode(encoding="ascii"),
         )
 

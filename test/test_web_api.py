@@ -49,7 +49,7 @@ class TestWebApi(BasicTestCase):
         # Test the assemble endpoint with XML
         request = {
             "encoding": "utf-8",  # for bwd compat, make sure the encoding is allowed but ignored
-            "input": self.slurp_data_file("ej-fra.ras"),
+            "input": self.slurp_data_file("ej-fra.readalong"),
             "type": "application/readalong+xml",
             "text_languages": ["fra"],
         }
@@ -69,7 +69,7 @@ class TestWebApi(BasicTestCase):
     def test_invalid_ras(self):
         # Test the assemble endpoint with invalid RAS XML
         request = {
-            "input": self.slurp_data_file("ej-fra-invalid.ras"),
+            "input": self.slurp_data_file("ej-fra-invalid.readalong"),
             "type": "application/readalong+xml",
             "text_languages": ["fra"],
         }
@@ -79,7 +79,7 @@ class TestWebApi(BasicTestCase):
     def test_create_grammar(self):
         # Test the create grammar function
         parsed = etree.fromstring(
-            bytes(self.slurp_data_file("ej-fra.ras"), encoding="utf8")
+            bytes(self.slurp_data_file("ej-fra.readalong"), encoding="utf8")
         )
         tokenized = tokenize_xml(parsed)
         ids_added = add_ids(tokenized)
