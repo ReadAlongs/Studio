@@ -1,4 +1,4 @@
-<!-- VERSION: 0.2 -->
+<!-- VERSION: 0.3 -->
 <!ELEMENT read-along (text|body|div|span|anchor|silence|graphic|p|s|w)*>
 <!ATTLIST read-along
  use-assets-folder CDATA #IMPLIED
@@ -6,7 +6,8 @@
  audio CDATA #IMPLIED
  xml:lang CDATA #IMPLIED
  language CDATA #IMPLIED
- lang CDATA #IMPLIED>
+ lang CDATA #IMPLIED
+ version CDATA #IMPLIED>
 
 <!ELEMENT text (body|div|span|anchor|silence|graphic|p|s|w)*>
 <!ATTLIST text

@@ -1131,7 +1131,7 @@ def convert_to_xhtml(tokenized_xml, title="Book"):
 
 
 RAS_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
-<read-along>
+<read-along version=0.2>
     <text xml:lang="{{main_lang}}" fallback-langs="{{fallback_langs}}">
         <body>
         {{#pages}}
