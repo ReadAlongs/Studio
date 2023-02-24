@@ -77,7 +77,7 @@ v1 = FastAPI()
 # Call get_langs() when the server loads to load the languages into memory
 LANGS = get_langs()
 # Get the DTD
-DTDPATH = os.path.join(os.path.dirname(__file__), "static", "read-along-0.2.dtd")
+DTDPATH = os.path.join(os.path.dirname(__file__), "static", "read-along-1.0.dtd")
 with open(DTDPATH) as dtdfh:
     DTD = etree.DTD(dtdfh)
 
@@ -161,7 +161,7 @@ async def assemble(
             "xml": {
                 "summary": "A basic example with xml input",
                 "value": {
-                    "input": "<?xml version='1.0' encoding='utf-8'?><read-along><text><p><s>hej verden</s></p></text></read-along>",
+                    "input": "<?xml version='1.0' encoding='utf-8'?><read-along version=\"1.0\"><text><p><s>hej verden</s></p></text></read-along>",
                     "type": "application/readalong+xml",
                     "text_languages": ["dan", "und"],
                     "debug": False,
@@ -321,7 +321,7 @@ class ConvertRequest(BaseModel):
         example=dedent(
             """\
             <?xml version='1.0' encoding='utf-8'?>
-            <read-along>
+            <read-along version="1.0">
                 <text xml:lang="dan" fallback-langs="und" id="t0">
                     <body id="t0b0">
                         <div type="page" id="t0b0d0">
