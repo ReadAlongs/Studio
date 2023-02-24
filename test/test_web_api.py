@@ -165,7 +165,7 @@ class TestWebApi(BasicTestCase):
     hej_verden_xml = dedent(
         """\
         <?xml version='1.0' encoding='utf-8'?>
-        <read-along>
+        <read-along version="1.0">
             <text xml:lang="dan" fallback-langs="und" id="t0">
                 <body id="t0b0">
                     <div type="page" id="t0b0d0">
@@ -390,7 +390,7 @@ class TestWebApi(BasicTestCase):
         overlap_xml = dedent(
             """\
         <?xml version='1.0' encoding='utf-8'?>
-        <read-along>
+        <read-along version="1.0">
             <text xml:lang="dan" fallback-langs="und" id="t0">
                 <body id="t0b0">
                     <div type="page" id="t0b0d0">

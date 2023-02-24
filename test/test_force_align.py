@@ -185,6 +185,19 @@ class TestXHTML(BasicTestCase):
                 txt, load_txt(os.path.join(self.data_dir, "ej-fra-converted.xhtml"))
             )
 
+    def test_convert_no_version(self):
+        xml_path = os.path.join(self.data_dir, "ej-fra-converted.readalong")
+        xml = load_xml(xml_path)
+        del xml.attrib["version"]
+        convert_to_xhtml(xml)
+        with PortableNamedTemporaryFile(suffix=".readalong") as tf:
+            save_xml(tf.name, xml)
+            txt = load_txt(tf.name)
+            self.maxDiff = None
+            self.assertEqual(
+                txt, load_txt(os.path.join(self.data_dir, "ej-fra-converted.xhtml"))
+            )
+
 
 if __name__ == "__main__":
     LOGGER.setLevel("DEBUG")

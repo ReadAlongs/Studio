@@ -9,7 +9,7 @@ from unittest import TestCase, main
 from lxml import etree
 
 DTDPATH = os.path.join(
-    dirname(__file__), "..", "readalongs", "static", "read-along-0.2.dtd"
+    dirname(__file__), "..", "readalongs", "static", "read-along-1.0.dtd"
 )
 
 VALID_RAS = """

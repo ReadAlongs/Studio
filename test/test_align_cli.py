@@ -303,7 +303,7 @@ class TestAlignCli(BasicTestCase):
         """Make sure invalid anchors yield appropriate errors"""
 
         xml_text = """<?xml version='1.0' encoding='utf-8'?>
-            <read-along><text xml:lang="fra"><body><p>
+            <read-along version="1.0"><text xml:lang="fra"><body><p>
             <anchor /><s>Bonjour.</s><anchor time="invalid"/>
             </p></body></text></read-along>
         """

@@ -82,7 +82,7 @@ The format of the generated XML is based on [TEI
 Lite](https://tei-c.org/guidelines/customization/lite/) but is
 considerably simplified.  The DTD (document type definition) can be
 found in the ReadAlong Studio source code under
-`readalongs/static/read-along-0.2.dtd`.
+`readalongs/static/read-along-1.0.dtd`.
 
 .. _dna:
 
@@ -395,7 +395,7 @@ Example:
 .. code-block:: xml
 
    <?xml version='1.0' encoding='utf-8'?>
-   <read-along> <text xml:lang="eng"> <body>
+   <read-along version="1.0"> <text xml:lang="eng"> <body>
        <anchor time="143ms"/>
        <div type="page">
        <p>
@@ -479,7 +479,7 @@ Example:
 .. code-block:: xml
 
    <?xml version='1.0' encoding='utf-8'?>
-   <read-along> <text xml:lang="eng"> <body>
+   <read-along version="1.0"> <text xml:lang="eng"> <body>
        <silence dur="1s"/>
        <div type="page">
        <p>

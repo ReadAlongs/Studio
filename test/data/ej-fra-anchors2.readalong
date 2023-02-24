@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<read-along>
+<read-along version="1.0">
     <text xml:lang="fra">
         <anchor time=".5s"/>
         <body>
