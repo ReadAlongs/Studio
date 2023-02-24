@@ -6,7 +6,7 @@ fastapi==0.78.0
 Flask>=2.0.0
 Flask-Session==0.3.2
 flask-socketio==4.3.2
-g2p>=0.5.20221013
+g2p>=1.0.20221013
 lxml==4.9.1
 networkx==2.5
 numpy>=1.16.4
