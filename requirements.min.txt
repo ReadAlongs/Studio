@@ -3,9 +3,6 @@ chevron==0.14.0
 click==8.0.4
 coloredlogs==10.0
 fastapi==0.78.0
-Flask>=2.0.0
-Flask-Session==0.3.2
-flask-socketio==4.3.2
 g2p>=1.0.20230224
 lxml==4.9.1
 networkx==2.5
@@ -15,4 +12,3 @@ pympi-ling==1.69
 python-slugify==5.0.0
 soundswallower~=0.4.1
 webvtt-py==0.4.2
-werkzeug==2.0.3

@@ -218,8 +218,7 @@ MINIMAL_INDEX_HTML_TEMPLATE = """<!DOCTYPE html>
     </body>
 
     <!-- The last step needed is to import the package -->
-    <script type="module" src='https://unpkg.com/@roedoejet/readalong@^0.1.6/dist/read-along/read-along.esm.js'></script>
-    <script nomodule src='https://unpkg.com/@roedoejet/readalong@^0.1.6/dist/read-along/read-along.js'></script>
+    <script type="module" src='https://unpkg.com/@readalongs/web-component@^1.0.0/dist/web-component/web-component.esm.js'></script>
 </html>
 """
 

@@ -4,14 +4,13 @@ import tempfile
 from pathlib import Path
 from unittest import TestCase
 
-from readalongs.app import app
+from click.testing import CliRunner
 from readalongs.log import LOGGER
 
 
 class BasicTestCase(TestCase):
     """A Basic Unittest build block class that comes bundled with
-    a temporary directory (self.tempdir), the path to the test data (self.data_dir),
-    and access to an app runner (self.runner)
+    a temporary directory (self.tempdir), the path to the test data (self.data_dir)
 
     For convenience, self.tempdir and self.data_dir are pathlib.Path objects
     that can be used either with os.path functions or the shorter Path operators.
@@ -37,8 +36,7 @@ class BasicTestCase(TestCase):
             super().setUp()
         at the beginning of it.
         """
-        app.logger.setLevel("DEBUG")
-        self.runner = app.test_cli_runner()
+        self.runner = CliRunner()
         tempdir_prefix = f"tmpdir_{type(self).__name__}_"
         if not self.keep_temp_dir_after_running:
             self.tempdirobj = tempfile.TemporaryDirectory(

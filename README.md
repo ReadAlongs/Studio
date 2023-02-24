@@ -174,7 +174,7 @@ This endpoint is a remote procedural call that assembles the data needed to buil
 
 ### Studio web application
 
-ReadAlong-Studio has a web interface for creating interactive audiobooks. The web app can be served by first installing ReadAlong-Studio and then running `python3 run.py`. A web app will then be available on port 5000.
+The ReadAlong-Studio web interface is available at https://readalong-studio.mothertongues.org/ and the source code is available here: https://github.com/ReadAlongs/Web-Component
 
 ### Docker
 
