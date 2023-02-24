@@ -1,22 +1,31 @@
-"""
-REST-ish Web API for ReadAlongs Studio text manipulation operations using FastAPI.
+"""REST-ish Web API for ReadAlongs Studio text manipulation operations using FastAPI.
 
 See https://readalong-studio.herokuapp.com/api/v1/docs for the documentation.
 
-You can spin up this Web API for development purposes with:
+You can spin up this Web API for development purposes on any platform with:
+    pip install uvicorn
     cd readalongs/
-    PRODUCTION= uvicorn readalongs.web_api:web_api_app --reload
+    DEVELOPMENT=1 uvicorn readalongs.web_api:web_api_app --reload
 - The --reload switch will watch for changes under the directory where it's
   running and reload the code whenever it changes, so it's best run in readalongs/
-- PRODUCTION= tells uvicorn to run in non-production mode, i.e., in debug mode,
-  and automatically add the header "access-control-allow-origin: *" to each
-  response so you won't get CORS errors using this locally with Studio-Web.
+- DEVELOPMENT=1 tells the API to accept cross-origin requests (i.e. by sending the
+  appropriate CORS headers) from development servers running on localhost, e.g.
+  http://localhost:4200
+
+For deployment, you can use the ORIGIN environment variable to set the URL of your
+application in order to make it accept requests from that site.  For instance if
+you deployed an application that uses it (such as Studio-Web) at
+https://my.awesome.site you would set ORIGIN=https://my.awesome.site in your
+environment variables.  This is usually done through an environment variable file
+(or in a dashboard) and will depend on your hosting environment.
 
 You can also spin up the API server grade (on Linux, not Windows) with gunicorn:
+    pip install -r requirements.api.txt
     gunicorn -w 4 -k uvicorn.workers.UvicornWorker readalongs.web_api:web_api_app
 
 Once spun up, the documentation and API playground will be visible at
 http://localhost:8000/api/v1/docs
+
 """
 
 import io
@@ -24,7 +33,7 @@ import os
 import tempfile
 from enum import Enum
 from textwrap import dedent
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from fastapi import Body, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -33,96 +42,118 @@ from lxml import etree
 from pydantic import BaseModel, Field
 from starlette.background import BackgroundTask
 
-from readalongs.align import create_tei_from_text, save_label_files, save_subtitles
-from readalongs.log import LOGGER
+from readalongs.align import create_ras_from_text, save_label_files, save_subtitles
+from readalongs.log import LOGGER, capture_logs
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
-from readalongs.text.make_dict import make_dict_object
-from readalongs.text.make_fsg import make_jsgf
-from readalongs.text.make_smil import parse_smil
+from readalongs.text.make_dict import make_dict_list
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.util import get_langs
 
 # Create the app
 web_api_app = FastAPI()
+middleware_args: Dict[str, Union[str, List[str]]]
+if os.getenv("DEVELOPMENT", False):
+    LOGGER.info(
+        "Running in development mode, will allow requests from http://localhost:*"
+    )
+    # Allow requests from localhost dev servers
+    middleware_args = dict(
+        allow_origin_regex="http://localhost(:.*)?",
+    )
+else:
+    # Allow requests *only* from mt app (or otherwise configured site name)
+    middleware_args = dict(
+        allow_origins=[
+            os.getenv("ORIGIN", "https://readalong-studio.mothertongues.org"),
+        ],
+    )
+web_api_app.add_middleware(
+    CORSMiddleware, allow_methods=["GET", "POST", "OPTIONS"], **middleware_args
+)
+
 # Create the v1 version of the API
 v1 = FastAPI()
 # Call get_langs() when the server loads to load the languages into memory
 LANGS = get_langs()
-
-if os.getenv("PRODUCTION", True):
-    origins = [
-        "https://readalong-studio.mothertongues.org",
-    ]  # Allow requests from mt app
-else:
-    origins = ["*"]  # Allow requests from any origin
-web_api_app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST"],
-    allow_headers=["*"],
-)
+# Get the DTD
+DTDPATH = os.path.join(os.path.dirname(__file__), "static", "read-along-1.0.dtd")
+with open(DTDPATH) as dtdfh:
+    DTD = etree.DTD(dtdfh)
 
 
-class RequestBase(BaseModel):
+class InputFormat(Enum):
+    """The different formats supported for input to /assemble"""
+
+    TEXT = "text/plain"
+    RAS = "application/readalong+xml"
+
+
+class AssembleRequest(BaseModel):
     """Base request for assemble"""
 
+    input_text: str = Field(None, alias="input")
+    mime_type: InputFormat = Field(None, alias="type")
     text_languages: List[str]
     debug: bool = False
 
 
-class PlainTextRequest(RequestBase):
-    """Request to assemble with input as plain text"""
-
-    text: str
-
-
-class XMLRequest(RequestBase):
-    """Request to assemble with input as XML"""
-
-    xml: str
-
-
 class AssembleResponse(BaseModel):
-    """Response from assemble with the XML prepared and the rest."""
+    """Response from assemble with the ReadAlongs XML prepared and the rest."""
 
-    lexicon: Dict[str, str]  # A dictionary of the form {lang_id: lang_name }
-    jsgf: str  # The JSGF-formatted grammar in plain text
+    lexicon: List[Tuple[str, str]]
     text_ids: str  # The text ID input for the decoder in plain text
-    processed_xml: str  # The processed XML is returned as a string
-    input: Optional[Union[XMLRequest, PlainTextRequest]]
+    processed_ras: str  # The processed RAS XML is returned as a string
+    input_request: Optional[AssembleRequest] = Field(None, alias="input")
     parsed: Optional[str]
     tokenized: Optional[str]
     g2ped: Optional[str]
+    log: Optional[str]
 
 
-@v1.get("/langs", response_model=Dict[str, str])
-async def langs() -> Dict[str, str]:
+class SupportedLanguage(BaseModel):
+    code: str  # language code
+    names: Dict[
+        str, str
+    ]  # Mapping from language to name of language in language (c'est-tu clair?)
+
+
+@v1.get("/langs", response_model=List[SupportedLanguage])
+async def langs() -> List[SupportedLanguage]:
     """Return the list of supported languages and their names as a dict.
 
     Returns:
-        langs as dict with language codes as keys and the full language name as
-        values, e.g.:
-        `{
-            "alq", "Algonquin",
-            "atj": "Atikamekw",
-            "lc3", "Third Language Name",
-            ...
-        }`
-    """
+        Supported languages as list with language codes and mapping of
+        language code to name, including minimally the key "_" for the
+        default display name (usually, but not always, in English).
+        For example:
 
-    return LANGS[1]
+        [
+            {"code": "alq", names: { "alq": "Anishinaabemowin", "_": "Algonquin" }},
+            {"code": "atj", names: { "atj": "Nehiromowin", "_": "Atikamekw" }},
+            {"code": "fra", names: { "fra": "Français", "_": "French" }},
+            ...
+        ]
+    """
+    langs, lang_names = LANGS
+    return sorted(
+        (
+            SupportedLanguage(code=code, names=dict(_=lang_names[code]))
+            for code in langs
+        ),
+        key=lambda lang: lang.code,
+    )
 
 
 @v1.post("/assemble", response_model=AssembleResponse)
 async def assemble(
-    request: Union[XMLRequest, PlainTextRequest] = Body(
+    request: AssembleRequest = Body(
         examples={
             "text": {
                 "summary": "A basic example with plain text input",
                 "value": {
-                    "text": "hej verden",
+                    "input": "hej verden",
+                    "type": "text/plain",
                     "text_languages": ["dan", "und"],
                     "debug": False,
                 },
@@ -130,7 +161,8 @@ async def assemble(
             "xml": {
                 "summary": "A basic example with xml input",
                 "value": {
-                    "xml": "<?xml version='1.0' encoding='utf-8'?><TEI><text><p><s>hej verden</s></p></text></TEI>",
+                    "input": "<?xml version='1.0' encoding='utf-8'?><read-along version=\"1.0\"><text><p><s>hej verden</s></p></text></read-along>",
+                    "type": "application/readalong+xml",
                     "text_languages": ["dan", "und"],
                     "debug": False,
                 },
@@ -138,7 +170,7 @@ async def assemble(
         }
     )
 ):
-    """Create an input TEI from the given text (as plain text or XML).
+    """Create an input RAS from the given text (as plain text or XML).
     Also creates the required grammar, pronunciation dictionary,
     and text needed by the decoder.
 
@@ -147,57 +179,80 @@ async def assemble(
     Args (as dict items in the request body):
      - text_languages: the list of languages for g2p processing
      - debug: set to true for debugging (default: False)
-     - either text or xml:
-        - text: the input text as plain text
-        - xml: the input text as a readalongs-compatible XML structure
+     - type: type of input data, only `text/plain`
+       or `application/readalong+xml` are currently supported
+     - input: the input in the type specified
 
     Returns (as dict items in the response body):
-     - lexicon: maps word IDs to their pronunciation
-     - jsgf: grammar for the forced aligner
+     - lexicon: list of word IDs and their pronunciation
      - text_ids: the list of word_ids as a space-separated string
+       for force-alignment
      - processed_xml: the XML with all the readalongs info in it
+     - log: collected warnings and error messages
     """
-
-    if isinstance(request, XMLRequest):
-        try:
-            parsed = etree.fromstring(bytes(request.xml, encoding="utf-8"))
-        except etree.XMLSyntaxError as e:
-            raise HTTPException(
-                status_code=422, detail="XML provided is not valid"
-            ) from e
-    elif isinstance(request, PlainTextRequest):
-        parsed = io.StringIO(request.text).readlines()
-        parsed = etree.fromstring(
-            bytes(
-                create_tei_from_text(parsed, text_languages=request.text_languages),
-                encoding="utf-8",
+    with capture_logs() as captured_logs:
+        if request.mime_type == InputFormat.RAS:
+            try:
+                parsed = etree.fromstring(
+                    bytes(request.input_text, encoding="utf-8"),
+                    parser=etree.XMLParser(resolve_entities=False),
+                )
+            except etree.ParseError as e:
+                raise HTTPException(
+                    status_code=422, detail="XML provided is not well-formed"
+                ) from e
+            if not DTD.validate(parsed):
+                raise HTTPException(
+                    status_code=422,
+                    detail=(
+                        "ReadAlong provided is not valid: %s"
+                        % DTD.error_log.filter_from_errors()[0]
+                    ),
+                )
+        elif request.mime_type == InputFormat.TEXT:
+            parsed = io.StringIO(request.input_text).readlines()
+            parsed = etree.fromstring(
+                bytes(
+                    create_ras_from_text(parsed, text_languages=request.text_languages),
+                    encoding="utf-8",
+                ),
+                parser=etree.XMLParser(resolve_entities=False),
             )
-        )
-    # tokenize
-    tokenized = tokenize_xml(parsed)
-    # add ids
-    ids_added = add_ids(tokenized)
-    # g2p
-    g2ped, valid = convert_xml(ids_added)
-    if not valid:
-        raise HTTPException(
-            status_code=422,
-            detail="g2p could not be performed, please check your text or your language code",
-        )
-    # create grammar
-    dict_data, jsgf, text_input = create_grammar(g2ped)
-    response = {
-        "lexicon": dict_data,
-        "jsgf": jsgf,
-        "text_ids": text_input,
-        "processed_xml": etree.tostring(g2ped, encoding="utf8").decode(),
-    }
+
+        else:  # pragma: no cover
+            raise HTTPException(
+                status_code=500,
+                detail="If this happens, FastAPI Enum validation didn't work so this is a bug!",
+            )
+
+        # tokenize
+        tokenized = tokenize_xml(parsed)
+        # add ids
+        ids_added = add_ids(tokenized)
+
+        # g2p
+        g2ped, valid = convert_xml(ids_added)
+        if not valid:
+            raise HTTPException(
+                status_code=422,
+                detail="g2p could not be performed, please check your text or your language code. Logs: "
+                + captured_logs.getvalue(),
+            )
+        # create grammar
+        dict_data, text_input = create_grammar(g2ped)
+
+    response = AssembleResponse(
+        lexicon=dict_data,
+        text_ids=text_input,
+        processed_ras=etree.tostring(g2ped, encoding="utf8").decode(),
+        log=captured_logs.getvalue(),
+    )
 
     if request.debug:
-        response["input"] = request.dict()
-        response["parsed"] = etree.tostring(parsed, encoding="utf8")
-        response["tokenized"] = etree.tostring(tokenized, encoding="utf8")
-        response["g2ped"] = etree.tostring(g2ped, encoding="utf8")
+        response.input_request = request
+        response.parsed = etree.tostring(parsed, encoding="utf8")
+        response.tokenized = etree.tostring(tokenized, encoding="utf8")
+        response.g2ped = etree.tostring(g2ped, encoding="utf8")
     return response
 
 
@@ -205,13 +260,45 @@ def create_grammar(xml):
     """Create the grammar and dictionary data from w elements in the given XML"""
 
     word_elements = xml.xpath("//w")
-    dict_data = make_dict_object(word_elements)
-    fsg_data = make_jsgf(word_elements, filename="test")
+    dict_data = make_dict_list(word_elements)
     text_data = " ".join(xml.xpath("//w/@id"))
-    return dict_data, fsg_data, text_data
+    return dict_data, text_data
 
 
-class FormatName(Enum):
+class WordAlignment(BaseModel):
+    """Word alignment extracted from RAS"""
+
+    word_id: str = Field(None, alias="id")
+    start: float
+    end: float
+
+
+class Alignment(BaseModel):
+    """Alignment extracted from RAS"""
+
+    words: List[WordAlignment]
+
+
+def get_alignment(xml: etree.ElementTree) -> List[dict]:
+    """Get the word alignments from the given XML"""
+
+    word_elements = xml.xpath("//w")
+    alignment = []
+    for e in word_elements:
+        if "time" not in e.attrib or "dur" not in e.attrib:
+            continue
+        # round to millisecondes as elsewhere to avoid imprecisions
+        alignment.append(
+            {
+                "id": e.attrib["id"],
+                "start": round(float(e.attrib["time"]), 3),
+                "end": round(float(e.attrib["time"]) + float(e.attrib["dur"]), 3),
+            }
+        )
+    return alignment
+
+
+class OutputFormat(Enum):
     """The different formats supported to represent readalong alignments"""
 
     TEXTGRID = "textgrid"  # Praat TextGrid format
@@ -221,49 +308,33 @@ class FormatName(Enum):
 
 
 class ConvertRequest(BaseModel):
-    """Convert Request contains the RAS-processed XML and SMIL alignments"""
+    """Convert Request contains the RAS-processed XML"""
 
-    audio_duration: float = Field(
+    dur: Union[float, None] = Field(
         example=2.01,
         gt=0.0,
         title="The duration of the audio used to create the alignment, in seconds.",
     )
 
-    xml: str = Field(
-        title="The processed_xml returned by /assemble.",
+    ras: str = Field(
+        title="The time-aligned XML output produced by `readalongs align`.",
         example=dedent(
             """\
             <?xml version='1.0' encoding='utf-8'?>
-            <TEI>
+            <read-along version="1.0">
                 <text xml:lang="dan" fallback-langs="und" id="t0">
                     <body id="t0b0">
                         <div type="page" id="t0b0d0">
                             <p id="t0b0d0p0">
-                                <s id="t0b0d0p0s0"><w id="t0b0d0p0s0w0" ARPABET="HH EH Y">hej</w> <w id="t0b0d0p0s0w1" ARPABET="V Y D EH N">verden</w></s>
+                                <s id="t0b0d0p0s0">
+                                    <w id="t0b0d0p0s0w0" ARPABET="HH EH Y" time="0.14" dur="0.64">hej</w>
+                                    <w id="t0b0d0p0s0w1" ARPABET="V Y D EH N" time="0.78" dur="1.11">verden</w>
+                                </s>
                             </p>
                         </div>
                     </body>
                 </text>
-            </TEI>"""
-        ),
-    )
-
-    smil: str = Field(
-        title="The result of aligning xml to the audio with SoundSwallower(.js)",
-        example=dedent(
-            """\
-            <smil xmlns="http://www.w3.org/ns/SMIL" version="3.0">
-                <body>
-                    <par id="par-t0b0d0p0s0w0">
-                        <text src="hej-verden.xml#t0b0d0p0s0w0"/>
-                        <audio src="hej-verden.mp3" clipBegin="0.14" clipEnd="0.78"/>
-                    </par>
-                    <par id="par-t0b0d0p0s0w1">
-                        <text src="hej-verden.xml#t0b0d0p0s0w1"/>
-                        <audio src="hej-verden.mp3" clipBegin="0.78" clipEnd="1.89"/>
-                    </par>
-                </body>
-            </smil>"""
+            </read-along>"""
         ),
     )
 
@@ -275,10 +346,10 @@ class SubtitleTier(Enum):
     WORD = "word"
 
 
-@v1.post("/convert_alignment/{output_format}")
+@v1.post("/convert_alignment/{output_format}")  # noqa: C901
 async def convert_alignment(  # noqa: C901
     request: ConvertRequest,
-    output_format: FormatName,
+    output_format: OutputFormat,
     tier: Union[SubtitleTier, None] = None,
 ) -> FileResponse:
     """Convert an alignment to a different format.
@@ -294,9 +365,9 @@ async def convert_alignment(  # noqa: C901
        sentence (this is the default) or word level.
 
     Args (as dict items in the request body):
-     - audio_duration: duration in seconds of the audio file used to create the alignment
-     - xml: the XML file produced by /assemble
-     - smil: the SMIL file produced by SoundSwallower(.js)
+     - dur: duration in seconds of the audio file used to create the alignment,
+       will be inferred from the alignments if not present
+     - ras: the ReadAlongs file produced by `readalongs align`
 
     Formats supported:
      - TextGrid: Praat TextGrid file format
@@ -312,14 +383,26 @@ async def convert_alignment(  # noqa: C901
     Returns: a file in the format requested
     """
     try:
-        parsed_xml = etree.fromstring(bytes(request.xml, encoding="utf-8"))
+        parsed_xml = etree.fromstring(
+            bytes(request.ras, encoding="utf-8"),
+            parser=etree.XMLParser(resolve_entities=False),
+        )
     except etree.XMLSyntaxError as e:
-        raise HTTPException(status_code=422, detail="XML provided is not valid") from e
+        raise HTTPException(
+            status_code=422, detail="ReadAlong provided is not well formed"
+        ) from e
+    if not DTD.validate(parsed_xml):
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "ReadAlong provided is not valid: %s"
+                % DTD.error_log.filter_from_errors()[0]
+            ),
+        )
 
-    try:
-        words = parse_smil(request.smil)
-    except ValueError as e:
-        raise HTTPException(status_code=422, detail="SMIL provided is not valid") from e
+    words = get_alignment(parsed_xml)
+    if request.dur is None:
+        request.dur = words[-1]["end"]
 
     # Data privacy consideration: we have to make sure this temporary directory gets
     # deleted after the call returns, as we promise in the API documentation.
@@ -330,15 +413,13 @@ async def convert_alignment(  # noqa: C901
     LOGGER.info("Temporary directory: %s", temp_dir_name)
 
     try:
-        if output_format == FormatName.TEXTGRID:
+        if output_format == OutputFormat.TEXTGRID:
             try:
-                save_label_files(
-                    words, parsed_xml, request.audio_duration, prefix, "textgrid"
-                )
+                save_label_files(words, parsed_xml, request.dur, prefix, "textgrid")
             except Exception as e:
                 raise HTTPException(
                     status_code=422,
-                    detail="XML+SMIL file pair provided cannot be converted",
+                    detail="ReadAlong provided cannot be converted",
                 ) from e
             return FileResponse(
                 prefix + ".TextGrid",
@@ -347,15 +428,13 @@ async def convert_alignment(  # noqa: C901
                 filename="aligned.TextGrid",
             )
 
-        elif output_format == FormatName.EAF:
+        elif output_format == OutputFormat.EAF:
             try:
-                save_label_files(
-                    words, parsed_xml, request.audio_duration, prefix, "eaf"
-                )
+                save_label_files(words, parsed_xml, request.dur, prefix, "eaf")
             except Exception as e:
                 raise HTTPException(
                     status_code=422,
-                    detail="XML+SMIL file pair provided cannot be converted",
+                    detail="ReadAlong provided cannot be converted",
                 ) from e
             return FileResponse(
                 prefix + ".eaf",
@@ -364,13 +443,13 @@ async def convert_alignment(  # noqa: C901
                 filename="aligned.eaf",
             )
 
-        elif output_format == FormatName.SRT:
+        elif output_format == OutputFormat.SRT:
             try:
                 save_subtitles(words, parsed_xml, prefix, "srt")
             except Exception as e:
                 raise HTTPException(
                     status_code=422,
-                    detail="XML+SMIL file pair provided cannot be converted",
+                    detail="ReadAlong provided cannot be converted",
                 ) from e
             if tier == SubtitleTier.WORD:
                 return FileResponse(
@@ -387,13 +466,13 @@ async def convert_alignment(  # noqa: C901
                     filename="aligned_sentences.srt",
                 )
 
-        elif output_format == FormatName.VTT:
+        elif output_format == OutputFormat.VTT:
             try:
                 save_subtitles(words, parsed_xml, prefix, "vtt")
             except Exception as e:
                 raise HTTPException(
                     status_code=422,
-                    detail="XML+SMIL file pair provided cannot be converted",
+                    detail="ReadAlong provided cannot be converted",
                 ) from e
             if tier == SubtitleTier.WORD:
                 return FileResponse(
@@ -410,7 +489,7 @@ async def convert_alignment(  # noqa: C901
                     filename="aligned_sentences.vtt",
                 )
 
-        else:
+        else:  # pragma: no cover
             raise HTTPException(
                 status_code=500,
                 detail="If this happens, FastAPI Enum validation didn't work so this is a bug!",

@@ -35,14 +35,6 @@ RUN git clone https://github.com/roedoejet/g2p.git \
 # Install ReadAlong-Studio itself
 RUN python3 -m pip install -e .
 
-# Run the default gui (on localhost:5000, make sure you use -p 5000:5000 when
-# you docker run the image)
-CMD python3 ./run.py
-
-# For a production server, comment out the default gui CMD above, and run the
-# gui using gunicorn instead:
-# CMD gunicorn -k gevent -w 1 readalongs.app:app --bind 0.0.0.0:$PORT
-
 # For the web API, use this CMD instead, the same on our Heroku deployment, except
 # with binding to port 5000
 # CMD gunicorn -w 4 -k uvicorn.workers.UvicornWorker readalongs.web_api:web_api_app --bind 0.0.0.0:$PORT

@@ -1,9 +1,9 @@
 # ReadAlong-Studio
 
-[![codecov](https://codecov.io/gh/ReadAlongs/Studio/branch/master/graph/badge.svg)](https://codecov.io/gh/ReadAlongs/Studio)
-[![Build Status](https://github.com/readalongs/Studio/actions/workflows/tests.yml/badge.svg?branch=master)](https://github.com/ReadAlongs/Studio/actions)
+[![codecov](https://codecov.io/gh/ReadAlongs/Studio/branch/main/graph/badge.svg)](https://codecov.io/gh/ReadAlongs/Studio)
+[![Build Status](https://github.com/readalongs/Studio/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/ReadAlongs/Studio/actions)
 [![PyPI package](https://img.shields.io/pypi/v/readalongs.svg)](https://pypi.org/project/readalongs/)
-[![GitHub license](https://img.shields.io/github/license/ReadAlongs/Studio)](https://github.com/ReadAlongs/Studio/blob/master/LICENSE)
+[![GitHub license](https://img.shields.io/github/license/ReadAlongs/Studio)](https://github.com/ReadAlongs/Studio/blob/main/LICENSE)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/ReadAlongs/Studio)
 [![Documentation Status](https://readthedocs.org/projects/readalong-studio/badge/)](https://readalong-studio.readthedocs.io)
 
@@ -38,8 +38,7 @@ The concept is a web application with a series of stages of
 processing, which ultimately leads to a time-aligned audiobook -
 i.e. a package of:
 
-- SMIL file describing time alignments
-- TEI file describing text
+- ReadAlong XML file describing text
 - Audio file (WAV or MP3)
 
 Which can be loaded using the read-along [web component](https://github.com/roedoejet/ReadAlong-Web-Component). See also [Studio Output Realizations](https://readalong-studio.readthedocs.io/en/latest/outputs.html).
@@ -161,7 +160,9 @@ This page lists only the most basic commands.
 
 For more information about how the command line interface works consult the interactive [API Documentation](https://readalong-studio.herokuapp.com/api/v1/docs).
 
-For information on spinning up your own dev Web API server locally, have a look at [web\_api.py](readalongs/web_api.py).
+For information on spinning up your own dev Web API server locally, have a look at [web\_api.py](readalongs/web_api.py), but briefly, if you are running it locally for development, use:
+
+    DEVELOPMENT=1 uvicorn readalongs.web_api:web_api_app --reload
 
 #### /langs
 
@@ -173,7 +174,7 @@ This endpoint is a remote procedural call that assembles the data needed to buil
 
 ### Studio web application
 
-ReadAlong-Studio has a web interface for creating interactive audiobooks. The web app can be served by first installing ReadAlong-Studio and then running `python3 run.py`. A web app will then be available on port 5000.
+The ReadAlong-Studio web interface is available at https://readalong-studio.mothertongues.org/ and the source code is available here: https://github.com/ReadAlongs/Web-Component
 
 ### Docker
 

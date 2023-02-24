@@ -3,23 +3,31 @@
 """Test suite for misc stuff that don't need their own stand-alone suite"""
 
 import itertools
-from unittest import TestCase, main
+import os
+import zipfile
+from unittest import main
 
 import click
+from basic_test_case import BasicTestCase
 from lxml import etree
 from test_dna_utils import segments_from_pairs
 
 from readalongs.align import split_silences
+from readalongs.log import LOGGER, capture_logs
 from readalongs.text.util import (
     get_attrib_recursive,
     get_lang_attrib,
     get_word_text,
+    load_xml,
+    load_xml_zip,
     parse_time,
+    save_txt,
+    save_xml,
 )
 from readalongs.util import JoinerCallbackForClick
 
 
-class TestMisc(TestCase):
+class TestMisc(BasicTestCase):
     """Testing miscellaneous stuff"""
 
     def test_parse_time(self):
@@ -80,7 +88,7 @@ class TestMisc(TestCase):
         self.assertEqual(words, ref)
 
     def test_get_attrib_recursive(self):
-        raw_xml = """<TEI>
+        raw_xml = """<read-along version="1.0">
             <text lang="text">
             <p lang="p1"><s>stuff</s><s lang="p1s2">nonsense</s></p>
             <p><s lang="p2s1">stuff</s><s>nonsense</s></p>
@@ -91,7 +99,7 @@ class TestMisc(TestCase):
             <text>
             <p><s xml:lang="p4s1" lang="not:xml:lang">stuff</s><s>nonsense<s xml:lang="p4p2c">!</s></s></p>
             </text>
-            </TEI>
+            </read-along>
         """
         xml = etree.fromstring(raw_xml)
         for i, s, lang in zip(
@@ -187,6 +195,96 @@ class TestMisc(TestCase):
             get_word_text(etree.fromstring("<w><a>a<b>b</b>c</a>d</w>")),
             "abcd",
         )
+
+    def test_load_xml(self):
+        xml_text = '<foo attrib="value">text</foo>'
+        foo_file = self.tempdir / "foo.readalong"
+        with open(foo_file, "w") as f:
+            print(xml_text, file=f)
+        self.assertEqual(
+            xml_text.encode(encoding="ascii"),
+            etree.tostring(load_xml(foo_file)),
+        )
+
+    def test_load_xml_errors(self):
+        # non-existent file
+        with self.assertRaises(OSError):
+            load_xml("file-does-not-exist.readalong")
+
+        # invalid XML file
+        bad_file = self.tempdir / "bad.readalong"
+        with open(bad_file, "w") as f:
+            print("This is not XML", file=f)
+        with self.assertRaises(etree.ParseError):
+            load_xml(bad_file)
+
+        # empty file is also invalid
+        with self.assertRaises(etree.ParseError):
+            load_xml(os.devnull)
+
+        # make sure we're not vulnerable to XML bombs
+        xml_bomb = """<?xml version="1.0"?>
+            <!DOCTYPE explode [
+                <!ENTITY a "AA">
+                <!ENTITY b "&a;&a;">
+                <!ENTITY c "&b;&b;">
+            ]>
+            <explode>&c;&c;</explode>
+        """
+        explode_file = self.tempdir / "explode.readalong"
+        with open(explode_file, "w") as f:
+            f.write(xml_bomb)
+        self.assertEqual(
+            etree.tostring(load_xml(explode_file)),
+            b"<explode>&c;&c;</explode>",
+        )
+        # Would be this if we allowed entity expansion:
+        # b'<explode>AAAAAAAAAAAAAAAA</explode>'
+        # See https://en.wikipedia.org/wiki/Billion_laughs_attack
+
+    def test_save_xml(self):
+        xml_text = '<foo attrib="value">text</foo>'
+        xml = etree.fromstring(xml_text)
+        filename = self.tempdir / "foo.readalong"
+        save_xml(filename, xml)
+        loaded_xml = load_xml(filename)
+        self.assertEqual(etree.tostring(loaded_xml), xml_text.encode(encoding="ascii"))
+
+    def test_save_txt(self):
+        xml_text = '<foo attrib="value">text</foo>'
+        filename = self.tempdir / "foo.txt"
+        save_txt(filename, xml_text)
+        loaded_xml = load_xml(filename)
+        self.assertEqual(etree.tostring(loaded_xml), xml_text.encode(encoding="ascii"))
+
+    def test_load_xml_zip(self):
+        xml_text = '<foo attrib="value">text</foo>'
+        with zipfile.ZipFile(self.tempdir / "file.zip", "w") as myzip:
+            myzip.writestr("file.readalong", xml_text)
+        self.assertEqual(
+            etree.tostring(load_xml_zip(self.tempdir / "file.zip", "file.readalong")),
+            xml_text.encode(encoding="ascii"),
+        )
+
+    def test_capture_logs(self):
+        with capture_logs() as captured_logs:
+            LOGGER.info("foo bar baz")
+        self.assertIn("foo bar baz", captured_logs.getvalue())
+
+    def test_capture_logs_some_more(self):
+        with self.assertLogs(LOGGER, level="INFO"):
+            with capture_logs() as captured_logs:
+                LOGGER.info("will this show?")
+            self.assertIn("will this show?", captured_logs.getvalue())
+        with self.assertLogs():
+            LOGGER.info("blah")
+        with self.assertLogs() as cm:
+            with capture_logs() as captured_logs:
+                LOGGER.info("This text does not propagate to root")
+            LOGGER.info("This text is included in root")
+            self.assertIn("propagate", captured_logs.getvalue())
+        self.assertIn("included", "".join(cm.output))
+        self.assertNotIn("propagate", "".join(cm.output))
 
 
 if __name__ == "__main__":

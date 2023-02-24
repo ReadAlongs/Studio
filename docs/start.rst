@@ -13,8 +13,7 @@ Background
 The concept is a web application with a series of stages of processing,
 which ultimately leads to a time-aligned audiobook, i.e., a package of:
 
--  SMIL file describing time alignments
--  XML file describing text
+-  ReadAlong XML file describing text
 -  Audio file (WAV or MP3)
 -  HTML file describing the web component
 
@@ -37,7 +36,7 @@ What you need to make a ReadAlong
 
 In order to create a ReadAlong you will need two files:
 
-- A text file, either in plain text (``.txt``) or in XML (``.xml``)
+- A text file, either in plain text (``.txt``) or in ReadAlong XML (``.readalong``)
 - Clear audio in any format supported by `ffmpeg <https://ffmpeg.org/ffmpeg-formats.html>`__
 
 The content of the text file should be a transcription of the audio

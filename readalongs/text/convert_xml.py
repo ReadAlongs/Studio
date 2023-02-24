@@ -21,7 +21,7 @@
 # second part to the Kwak'wala pipeline.
 #
 # The only assumption made by this module about the structure of the XML
-# is that it has word tags (using <w>, the convention used by TEI formats.)
+# is that it has word tags (using <w>, the convention used by RAS and TEI formats.)
 # The reason for this is that the word is the domain over which phonological
 # rules apply, and we particularly need to know it to be able to perform
 # phonological rules at word boundaries.  We also only convert text that

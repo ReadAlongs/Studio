@@ -9,11 +9,11 @@ This page contains guidelines on using the ReadAlongs CLI. See also
 The ReadAlongs CLI has two main commands: ``readalongs make-xml`` and
 ``readalongs align``.
 
-- If your data is a plain text file, you can run ``make-xml`` to turn it into
-  XML, which you can then align with ``align``. Doing this in two steps allows
-  you to modify the XML file before aligning it (e.g., to mark that some text is
-  in a different language, to flag some do-not-align text, or to drop anchors
-  in).
+- If your data is a plain text file, you can run ``make-xml`` to turn
+  it into ReadAlongs XML, which you can then align with
+  ``align``. Doing this in two steps allows you to modify the XML file
+  before aligning it (e.g., to mark that some text is in a different
+  language, to flag some do-not-align text, or to drop anchors in).
 
 - Alternatively, if your plain text file does not need to be modified, you can
   run ``align`` directly on it, since it also accepts plain text input.  You'll
@@ -36,13 +36,13 @@ then used as input to ``align``.
 Getting from TXT to XML with readalongs make-xml
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Run :ref:`cli-make-xml` to make the XML file for ``align`` from a TXT file.
+Run :ref:`cli-make-xml` to make the ReadAlongs XML file for ``align`` from a TXT file.
 
-``readalongs make-xml [options] [story.txt] [story.xml]``
+``readalongs make-xml [options] [story.txt] [story.readalong]``
 
 ``[story.txt]``: path to the plain text input file (TXT)
 
-``[story.xml]``: Path to the XML output file
+``[story.readalong]``: Path to the XML output file
 
 The plain text file must be plain text encoded in ``UTF-8`` with one
 sentence per line. Paragraph breaks are marked by a blank line, and page
@@ -72,11 +72,17 @@ and they can also be found in the :ref:`cli-make-xml` reference.
 So, a full command for a story in Algonquin, with an implicit g2p fallback to
 Undetermined, would be something like:
 
-``readalongs make-xml -l alq Studio/story.txt Studio/story.xml``
+``readalongs make-xml -l alq Studio/story.txt Studio/story.readalong``
 
 The generated XML will be parsed in to sentences. At this stage you can
 edit the XML to have any modifications, such as adding ``do-not-align``
 as an attribute of any element in your XML.
+
+The format of the generated XML is based on [TEI
+Lite](https://tei-c.org/guidelines/customization/lite/) but is
+considerably simplified.  The DTD (document type definition) can be
+found in the ReadAlong Studio source code under
+`readalongs/static/read-along-1.0.dtd`.
 
 .. _dna:
 
@@ -130,12 +136,12 @@ Use cases for DNA
 Aligning your text and audio with readalongs align
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Run :ref:`cli-align` to align a text file (XML or TXT) and an audio file to
+Run :ref:`cli-align` to align a text file (RAS or TXT) and an audio file to
 create a time-aligned audiobook.
 
 ``readalongs align [options] [story.txt/xml] [story.mp3/wav] [output_base]``
 
-``[story.txt/xml]``: path to the text file (TXT or XML)
+``[story.txt/ras]``: path to the text file (TXT or RAS)
 
 ``[story.mp3/wav]``: path to the audio file (MP3, WAV or any format
 supported by ffmpeg)
@@ -173,14 +179,14 @@ See above for more information on the ``-l, --language`` argument.
 
 A full command could be something like:
 
-``readalongs align -f -c config.json story.xml story.mp3 story-aligned``
+``readalongs align -f -c config.json story.readalong story.mp3 story-aligned``
 
 **Is the text file plain text or XML?**
 
-``readalongs align`` accepts its text input as a plain text file or an XML file.
+``readalongs align`` accepts its text input as a plain text file or a ReadAlongs XML file.
 
 - If the file name ends with ``.txt``, it will be read as plain text.
-- If the file name ends wiht ``.xml``, it will be read as XML.
+- If the file name ends with ``.xml`` or ``.readalong``, it will be read as ReadAlongs XML.
 - With other extensions, the beginning of the file is examined to
   automatically determine if it's XML or plain text.
 
@@ -301,7 +307,7 @@ falling back to ``eng`` and then ``und`` (see below) when needed.
 
 .. code-block:: bash
 
-   readalongs make-xml -l fra,eng myfile.txt myfile.xml
+   readalongs make-xml -l fra,eng myfile.txt myfile.readalong
    readalongs align -l fra,eng myfile.txt myfile.wav output-dir
 
 The "Undetermined" language code: und
@@ -347,10 +353,10 @@ The following series of commands:
 
 ::
 
-   readalongs make-xml -l l1,l2 file.txt file.xml
-   readalongs tokenize file.xml file.tokenized.xml
-   readalongs g2p file.tokenized.xml file.g2p.xml
-   readalongs align file.g2p.xml file.wav output
+   readalongs make-xml -l l1,l2 file.txt file.readalong
+   readalongs tokenize file.readalong file.tokenized.readalong
+   readalongs g2p file.tokenized.readalong file.g2p.readalong
+   readalongs align file.g2p.readalong file.wav output
 
 is equivalent to the single command:
 
@@ -389,7 +395,7 @@ Example:
 .. code-block:: xml
 
    <?xml version='1.0' encoding='utf-8'?>
-   <TEI> <text xml:lang="eng"> <body>
+   <read-along version="1.0"> <text xml:lang="eng"> <body>
        <anchor time="143ms"/>
        <div type="page">
        <p>
@@ -400,7 +406,7 @@ Example:
        </p>
        </div>
        <anchor time="6.74s"/>
-   </body> </text> </TEI>
+   </body> </text> </read-along>
 
 Anchor semantics
 ^^^^^^^^^^^^^^^^
@@ -473,7 +479,7 @@ Example:
 .. code-block:: xml
 
    <?xml version='1.0' encoding='utf-8'?>
-   <TEI> <text xml:lang="eng"> <body>
+   <read-along version="1.0"> <text xml:lang="eng"> <body>
        <silence dur="1s"/>
        <div type="page">
        <p>
@@ -484,7 +490,7 @@ Example:
        </p>
        <silence dur="1s"/>
        </div>
-   </body> </text> </TEI>
+   </body> </text> </read-along>
 
 Silence use cases
 ^^^^^^^^^^^^^^^^^

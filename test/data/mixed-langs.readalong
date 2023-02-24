@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<read-along version="1.0">
+    <text>
+        <body>
+            <div type="page">
+                <p>
+                    <s xml:lang="fra">Ceci est un test.</s>
+                    <s xml:lang="eng">This is a test.</s>
+                    <s xml:lang="dan">Hej. Jeg hedder Per.</s>
+                    <s>A pre-g2p&#x27;d test.</s>
+                </p>
+            </div>
+        </body>
+    </text>
+</read-along>

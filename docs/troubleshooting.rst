@@ -36,7 +36,7 @@ Follow these steps to debug the issue **in g2p**.
       have isolated the right characters by ensuring every other
       character in your error message appears as an **output** in the
       `eng-ipa-to-arpabet
-      mapping <https://github.com/roedoejet/g2p/blob/master/g2p/mappings/langs/eng/eng_ipa_to_arpabet.json>`__.
+      mapping <https://github.com/roedoejet/g2p/blob/main/g2p/mappings/langs/eng/eng_ipa_to_arpabet.json>`__.
       These are the problematic characters we need to debug in the error
       message shown above: ``g`` and ``ʰ``.
 
@@ -54,7 +54,7 @@ Follow these steps to debug the issue **in g2p**.
         automatically in g2p. Refer //here_in_the_guide to see how to do
         this.)
    iv.  `eng-ipa-to-arpabet
-        mapping <https://github.com/roedoejet/g2p/blob/master/g2p/mappings/langs/eng/eng_ipa_to_arpabet.json>`__
+        mapping <https://github.com/roedoejet/g2p/blob/main/g2p/mappings/langs/eng/eng_ipa_to_arpabet.json>`__
         (The issue is rarely found here, but it doesn’t hurt to check.)
 
 4. Find a word in your text that uses the problematic character. For the
@@ -71,7 +71,7 @@ Follow these steps to debug the issue **in g2p**.
 
 6. From the result of the command run in 5, note the characters that do
    **not** appear as **inputs** in the `eng-ipa-to-arpabet
-   mapping <https://github.com/roedoejet/g2p/blob/master/g2p/mappings/langs/eng/eng_ipa_to_arpabet.json>`__.
+   mapping <https://github.com/roedoejet/g2p/blob/main/g2p/mappings/langs/eng/eng_ipa_to_arpabet.json>`__.
    These are the characters that have not been converted into characters
    that eng-ipa-to-arpabet can read. These should be the same characters
    you identified in step 2.

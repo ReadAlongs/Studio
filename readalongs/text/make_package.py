@@ -16,13 +16,16 @@
 import os
 from base64 import b64encode
 from mimetypes import guess_type
+from typing import Any
 
 from lxml import etree
 
 from readalongs.log import LOGGER
 
-JS_BUNDLE_URL = "https://unpkg.com/@roedoejet/readalong@^0.1.6/dist/bundle.js"
-FONTS_BUNDLE_URL = "https://unpkg.com/@roedoejet/readalong@^0.1.6/dist/fonts.b64.css"
+JS_BUNDLE_URL = "https://unpkg.com/@readalongs/web-component@^1.0.0/dist/bundle.js"
+FONTS_BUNDLE_URL = (
+    "https://unpkg.com/@readalongs/web-component@^1.0.0/dist/fonts.b64.css"
+)
 
 BASIC_HTML = """
 <!DOCTYPE html>
@@ -35,7 +38,7 @@ BASIC_HTML = """
   <style attribution="See https://fonts.google.com/attribution for copyrights and font attribution">{fonts}</style>
 </head>
 <body>
-    <read-along text="{text}" alignment="{alignment}" audio="{audio}" theme="{theme}" use-assets-folder="false">
+    <read-along href="{ras}" audio="{audio}" theme="{theme}" use-assets-folder="false">
         <span slot='read-along-header'>{header}</span>
         <span slot='read-along-subheader'>{subheader}</span>
     </read-along>
@@ -57,8 +60,10 @@ def encode_from_path(path: str) -> str:
 
     with open(path, "rb") as f:
         path_bytes = f.read()
-    if str(path).endswith("xml"):
-        root = etree.fromstring(path_bytes)
+    if str(path).endswith("xml") or str(path).endswith(".readalong"):
+        root = etree.fromstring(
+            path_bytes, parser=etree.XMLParser(resolve_entities=False)
+        )
         for img in root.xpath("//graphic"):
             url = img.get("url")
             if url.startswith("http"):
@@ -89,6 +94,10 @@ def encode_from_path(path: str) -> str:
     ):  # hack to get around guess_type choosing the wrong mime type for .m4a files
         # TODO: Check other popular audio formats, .wav, .mp3, .ogg, etc...
         mime_type = "audio/mp4"
+    if str(path).endswith(
+        ".readalong"
+    ):  # We declare it to be application/readalong+xml, not what mimetypes thinks
+        mime_type = "application/readalong+xml"
     elif mime[0]:
         mime_type = mime[0].replace(
             "video", "audio"
@@ -102,8 +111,7 @@ def encode_from_path(path: str) -> str:
 
 
 def create_web_component_html(
-    text_path: str,
-    alignment_path: str,
+    ras_path: str,
     audio_path: str,
     title="Title goes here",
     header="Header goes here",
@@ -112,11 +120,23 @@ def create_web_component_html(
 ) -> str:
     import requests  # Defer expensive import
 
-    js = requests.get(JS_BUNDLE_URL)
-    fonts = requests.get(FONTS_BUNDLE_URL)
-    if js.status_code != 200:
+    try:
+        js = requests.get(JS_BUNDLE_URL, timeout=10)
+        js_status_code: Any = js.status_code
+    except requests.exceptions.ReadTimeout as e:
+        js_status_code = "TIMEOUT"
+        LOGGER.warning(e)
+
+    try:
+        fonts = requests.get(FONTS_BUNDLE_URL, timeout=10)
+        fonts_status_code: Any = fonts.status_code
+    except requests.exceptions.ReadTimeout as e:
+        LOGGER.warning(e)
+        fonts_status_code = "TIMEOUT"
+
+    if js_status_code != 200:
         LOGGER.warning(
-            f"Sorry, the JavaScript bundle that is supposed to be at {JS_BUNDLE_URL} returned a {js.status_code}. Your ReadAlong will be bundled using a version that may not be up-to-date. Please check your internet connection."
+            f"Sorry, the JavaScript bundle that is supposed to be at {JS_BUNDLE_URL} returned a {js_status_code}. Your ReadAlong will be bundled using a version that may not be up-to-date. Please check your internet connection."
         )
         with open(
             os.path.join(os.path.dirname(__file__), "bundle.js"), encoding="utf8"
@@ -124,9 +144,10 @@ def create_web_component_html(
             js_raw = f.read()
     else:
         js_raw = js.text
-    if fonts.status_code != 200:
+
+    if fonts_status_code != 200:
         LOGGER.warning(
-            f"Sorry, the fonts bundle that is supposed to be at {FONTS_BUNDLE_URL} returned a {fonts.status_code}. Your ReadAlong will be bundled using a version that may not be up-to-date. Please check your internet connection."
+            f"Sorry, the fonts bundle that is supposed to be at {FONTS_BUNDLE_URL} returned a {fonts_status_code}. Your ReadAlong will be bundled using a version that may not be up-to-date. Please check your internet connection."
         )
         with open(
             os.path.join(os.path.dirname(__file__), "bundle.css"), encoding="utf8"
@@ -136,8 +157,7 @@ def create_web_component_html(
         fonts_raw = fonts.text
 
     return BASIC_HTML.format(
-        text=encode_from_path(text_path),
-        alignment=encode_from_path(alignment_path),
+        ras=encode_from_path(ras_path),
         audio=encode_from_path(audio_path),
         js=js_raw,
         fonts=fonts_raw,

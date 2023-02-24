@@ -2,7 +2,9 @@
 log.py: Setup a logger that has colours!
 """
 
+import io
 import logging
+from contextlib import contextmanager
 
 import coloredlogs
 
@@ -29,3 +31,25 @@ def setup_logger(name):
 
 
 LOGGER = setup_logger("root")
+
+
+@contextmanager
+def capture_logs():
+    """Context manager to capture the logs in a StringIO within the managed context
+
+    Usage:
+        with capture_logs() as captured_logs:
+            do stuff that logs
+        logging_output = captured_log.getvalue()
+    """
+    log_capture_stream = io.StringIO()
+    stream_handler = logging.StreamHandler(log_capture_stream)
+    stream_handler.setLevel(logging.INFO)
+    LOGGER.addHandler(stream_handler)  # capture logging output
+    LOGGER.propagate = False  # suppresses logging output to console
+
+    try:
+        yield log_capture_stream
+    finally:
+        LOGGER.removeHandler(stream_handler)
+        LOGGER.propagate = True

@@ -74,7 +74,9 @@ def parse_smil(formatted_smil: str) -> List[dict]:
     please_msg = "Please make sure your SMIL file is valid."
 
     try:
-        xml = etree.fromstring(formatted_smil)
+        xml = etree.fromstring(
+            formatted_smil, parser=etree.XMLParser(resolve_entities=False)
+        )
     except etree.ParseError as e:
         raise ValueError(f"Invalid SMIL file: {e}. {please_msg}")
     ns = {"smil": "http://www.w3.org/ns/SMIL"}

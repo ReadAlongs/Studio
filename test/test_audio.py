@@ -81,11 +81,11 @@ class TestAudio(BasicTestCase):
         if process.returncode != 0:
             LOGGER.error("Subprocess readalongs align failed: %s", process.stderr)
         # Check Result
-        smilpath = Path(output_path)
-        smil_files = smilpath.glob("*.smil")
+        raspath = Path(output_path)
+        ras_files = raspath.glob("*.readalong")
         self.assertTrue(
-            next(smil_files, False),
-            "No *.smil files found; "
+            next(ras_files, False),
+            "No *.readalong files found; "
             "pip install --force-reinstall --upgrade might be required "
             "if dependencies changed.",
         )
@@ -108,11 +108,11 @@ class TestAudio(BasicTestCase):
         if process.returncode != 0:
             LOGGER.error("Subprocess readalongs align failed: %s", process.stderr)
         # Check Result
-        smilpath = Path(output_path)
-        smil_files = smilpath.glob("*.smil")
+        raspath = Path(output_path)
+        ras_files = raspath.glob("*.readalong")
         self.assertTrue(
-            next(smil_files, False),
-            "No *.smil files found; "
+            next(ras_files, False),
+            "No *.readalong files found; "
             "pip install --force-reinstall --upgrade might be required "
             "if dependencies changed.",
         )
@@ -135,11 +135,11 @@ class TestAudio(BasicTestCase):
         if process.returncode != 0:
             LOGGER.error("Subprocess readalongs align failed: %s", process.stderr)
         # Check Result
-        smilpath = Path(output_path)
-        smil_files = smilpath.glob("*.smil")
+        raspath = Path(output_path)
+        ras_files = raspath.glob("*.readalong")
         self.assertTrue(
-            next(smil_files, False),
-            "No *.smil files found; "
+            next(ras_files, False),
+            "No *.readalong files found; "
             "pip install --force-reinstall --upgrade might be required "
             "if dependencies changed.",
         )

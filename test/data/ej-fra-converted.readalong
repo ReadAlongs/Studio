@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='utf-8'?>
+<read-along version="1.0">
+    <text xml:lang="fra" id="t0">
+        <body id="t0b0">
+            <div type="page" id="t0b0d0">
+                <p id="t0b0d0p0">
+                    <s id="t0b0d0p0s0"><w id="t0b0d0p0s0w0">Bonjour</w>.</s>
+                    <s id="t0b0d0p0s1"><w id="t0b0d0p0s1w0">Je</w> <w id="t0b0d0p0s1w1">m</w>'<w id="t0b0d0p0s1w2">appelle</w> <w id="t0b0d0p0s1w3">Éric</w> <w id="t0b0d0p0s1w4">Joanis</w>.</s>
+                    <s id="t0b0d0p0s2"><w id="t0b0d0p0s2w0">Je</w> <w id="t0b0d0p0s2w1">suis</w> <w id="t0b0d0p0s2w2">programmeur</w> <w id="t0b0d0p0s2w3">au</w> <w id="t0b0d0p0s2w4">sein</w> <w id="t0b0d0p0s2w5">de</w> <w id="t0b0d0p0s2w6">l</w>'<w id="t0b0d0p0s2w7">équipe</w> <w id="t0b0d0p0s2w8">des</w> <w id="t0b0d0p0s2w9">technologies</w> <w id="t0b0d0p0s2w10">pour</w> <w id="t0b0d0p0s2w11">les</w> <w id="t0b0d0p0s2w12">langues</w> <w id="t0b0d0p0s2w13">autochtones</w> <w id="t0b0d0p0s2w14">au</w> <w id="t0b0d0p0s2w15">CNRC</w>.</s>
+                </p>
+            </div>
+            <div type="page" id="t0b0d1">
+                <p id="t0b0d1p0">
+                    <s id="t0b0d1p0s0"><w id="t0b0d1p0s0w0">J</w>'<w id="t0b0d1p0s0w1">ai</w> <w id="t0b0d1p0s0w2">fait</w> <w id="t0b0d1p0s0w3">une</w> <w id="t0b0d1p0s0w4">bonne</w> <w id="t0b0d1p0s0w5">partie</w> <w id="t0b0d1p0s0w6">de</w> <w id="t0b0d1p0s0w7">ma</w> <w id="t0b0d1p0s0w8">carrière</w> <w id="t0b0d1p0s0w9">en</w> <w id="t0b0d1p0s0w10">traduction</w> <w id="t0b0d1p0s0w11">automatique</w> <w id="t0b0d1p0s0w12">statistique</w>, <w id="t0b0d1p0s0w13">mais</w> <w id="t0b0d1p0s0w14">maintenant</w> <w id="t0b0d1p0s0w15">cette</w> <w id="t0b0d1p0s0w16">approche</w> <w id="t0b0d1p0s0w17">est</w> <w id="t0b0d1p0s0w18">déclassée</w> <w id="t0b0d1p0s0w19">par</w> <w id="t0b0d1p0s0w20">l</w>'<w id="t0b0d1p0s0w21">apprentissage</w> <w id="t0b0d1p0s0w22">profond</w>.</s>
+                    <s id="t0b0d1p0s1"><w id="t0b0d1p0s1w0">En</w> <w id="t0b0d1p0s1w1">ce</w> <w id="t0b0d1p0s1w2">moment</w> <w id="t0b0d1p0s1w3">je</w> <w id="t0b0d1p0s1w4">travaille</w> <w id="t0b0d1p0s1w5">à</w> <w id="t0b0d1p0s1w6">l</w>'<w id="t0b0d1p0s1w7">alignement</w> <w id="t0b0d1p0s1w8">du</w> <w id="t0b0d1p0s1w9">hansard</w> <w id="t0b0d1p0s1w10">du</w> <w id="t0b0d1p0s1w11">Nunavut</w> <w id="t0b0d1p0s1w12">pour</w> <w id="t0b0d1p0s1w13">produire</w> <w id="t0b0d1p0s1w14">un</w> <w id="t0b0d1p0s1w15">corpus</w> <w id="t0b0d1p0s1w16">bilingue</w> <w id="t0b0d1p0s1w17">anglais</w>-<w id="t0b0d1p0s1w18">inuktitut</w>.</s>
+                    <s id="t0b0d1p0s2"><w id="t0b0d1p0s2w0">Ce</w> <w id="t0b0d1p0s2w1">corpus</w> <w id="t0b0d1p0s2w2">permettra</w> <w id="t0b0d1p0s2w3">d</w>'<w id="t0b0d1p0s2w4">entraîner</w> <w id="t0b0d1p0s2w5">la</w> <w id="t0b0d1p0s2w6">TA</w>, <w id="t0b0d1p0s2w7">neuronale</w> <w id="t0b0d1p0s2w8">ou</w> <w id="t0b0d1p0s2w9">statistique</w>, <w id="t0b0d1p0s2w10">ainsi</w> <w id="t0b0d1p0s2w11">que</w> <w id="t0b0d1p0s2w12">d</w>'<w id="t0b0d1p0s2w13">autres</w> <w id="t0b0d1p0s2w14">applications</w> <w id="t0b0d1p0s2w15">de</w> <w id="t0b0d1p0s2w16">traitement</w> <w id="t0b0d1p0s2w17">du</w> <w id="t0b0d1p0s2w18">langage</w> <w id="t0b0d1p0s2w19">naturel</w>.</s>
+                </p>
+                <p id="t0b0d1p1">
+                    <s id="t0b0d1p1s0"><w id="t0b0d1p1s0w0">En</w> <w id="t0b0d1p1s0w1">parallèle</w>, <w id="t0b0d1p1s0w2">j</w>'<w id="t0b0d1p1s0w3">aide</w> <w id="t0b0d1p1s0w4">à</w> <w id="t0b0d1p1s0w5">écrire</w> <w id="t0b0d1p1s0w6">des</w> <w id="t0b0d1p1s0w7">tests</w> <w id="t0b0d1p1s0w8">pour</w> <w id="t0b0d1p1s0w9">rendre</w> <w id="t0b0d1p1s0w10">le</w> <w id="t0b0d1p1s0w11">ReadAlong</w>-<w id="t0b0d1p1s0w12">Studio</w> <w id="t0b0d1p1s0w13">plus</w> <w id="t0b0d1p1s0w14">robuste</w>.</s>
+                </p>
+            </div>
+        </body>
+    </text>
+</read-along>

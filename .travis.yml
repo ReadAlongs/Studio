@@ -25,10 +25,6 @@ install:
   - pip3 install -r requirements.dev.txt
   - pip3 install coverage
   - pip3 install codecov
-  - pip3 install gunicorn
-
-before_script:
-  - gunicorn readalongs.app:app --bind 0.0.0.0:5000 --daemon
 
 # commands to run the testing suite. if any of these fail, travis lets us know
 script:

@@ -10,9 +10,10 @@ from unittest import main
 
 from basic_test_case import BasicTestCase
 
-from readalongs.align import create_input_tei, create_tei_from_text
+from readalongs.align import create_input_ras, create_ras_from_text
 from readalongs.cli import align, make_xml
-from readalongs.log import LOGGER
+
+# from readalongs.log import LOGGER
 
 
 class TestMakeXMLCli(BasicTestCase):
@@ -44,7 +45,7 @@ class TestMakeXMLCli(BasicTestCase):
     def test_no_lang(self):
         """Error case: readalongs make-xml without the mandatory -l switch"""
         results = self.runner.invoke(
-            make_xml, [self.empty_file, self.empty_file + ".xml"]
+            make_xml, [self.empty_file, self.empty_file + ".readalong"]
         )
         self.assertNotEqual(results.exit_code, 0)
         self.assertRegex(results.stdout, "Missing.*language")
@@ -70,7 +71,7 @@ class TestMakeXMLCli(BasicTestCase):
 
     def test_output_exists(self):
         """Make sure readalongs make-xml create the expected output file"""
-        xmlfile = os.path.join(self.tempdir, "fra.xml")
+        xmlfile = os.path.join(self.tempdir, "fra.readalong")
         results = self.runner.invoke(
             make_xml, ["-l", "fra", os.path.join(self.data_dir, "fra.txt"), xmlfile]
         )
@@ -80,11 +81,11 @@ class TestMakeXMLCli(BasicTestCase):
     def test_output_correct(self):
         """Make sure the contents of readalongs make-xml's output file is correct."""
         input_file = os.path.join(self.data_dir, "fra.txt")
-        xml_file = os.path.join(self.tempdir, "fra.xml")
+        xml_file = os.path.join(self.tempdir, "fra.readalong")
         results = self.runner.invoke(make_xml, ["-l", "fra", input_file, xml_file])
         self.assertEqual(results.exit_code, 0)
 
-        ref_file = os.path.join(self.data_dir, "fra-prepared.xml")
+        ref_file = os.path.join(self.data_dir, "fra-prepared.readalong")
         with open(xml_file, encoding="utf8") as output_f, open(
             ref_file, encoding="utf8"
         ) as ref_f:
@@ -109,11 +110,13 @@ class TestMakeXMLCli(BasicTestCase):
         input_file = os.path.join(self.tempdir, "someinput.txt")
         copyfile(os.path.join(self.data_dir, "fra.txt"), input_file)
         results = self.runner.invoke(make_xml, ["-l", "fra", input_file])
-        LOGGER.warning("Output: {}".format(results.output))
-        LOGGER.warning("Exception: {}".format(results.exception))
+        # LOGGER.warning("Output: {}".format(results.output))
+        # LOGGER.warning("Exception: {}".format(results.exception))
         self.assertEqual(results.exit_code, 0)
-        self.assertRegex(results.stdout, "Wrote.*someinput[.]xml")
-        self.assertTrue(os.path.exists(os.path.join(self.tempdir, "someinput.xml")))
+        self.assertRegex(results.stdout, "Wrote.*someinput[.]readalong")
+        self.assertTrue(
+            os.path.exists(os.path.join(self.tempdir, "someinput.readalong"))
+        )
 
     def test_make_xml_with_different_newlines(self):
         """readalongs make-xml handling single and double blank lines for paragraphs and pages"""
@@ -169,18 +172,18 @@ class TestMakeXMLCli(BasicTestCase):
             "Using old Mac-style newlines should not affect make-xml",
         )
 
-    def test_create_input_tei_errors(self):
-        """create_input_tei should raise a AssertionError when parameters are missing."""
+    def test_create_input_ras_errors(self):
+        """create_input_ras should raise a AssertionError when parameters are missing."""
         # These used to be RuntimeError, but that was not right: *programmer*
         # errors can and should dump stack traces, unlike *user* errors, which
         # warrant nice friendly messages.
         with self.assertRaises(AssertionError):
             # missing input_file_name or input_file_handle
-            _, _ = create_input_tei()
+            _, _ = create_input_ras()
 
         with self.assertRaises(AssertionError):
             # missing text_languages
-            _, _ = create_input_tei(
+            _, _ = create_input_ras(
                 input_file_name=os.path.join(self.data_dir, "fra.txt")
             )
 
@@ -212,19 +215,20 @@ class TestMakeXMLCli(BasicTestCase):
     def test_make_xml_invalid_utf8_input(self):
         noise_file = os.path.join(self.data_dir, "noise.mp3")
 
-        # Read noise.mp3 as if it was utf8 text, via create_input_tei(input_file_handle)
+        # Read noise.mp3 as if it was utf8 text, via create_input_ras(input_file_handle)
         results = self.runner.invoke(make_xml, ["-l", "fra", noise_file, "-"])
         self.assertNotEqual(results.exit_code, 0)
         self.assertIn("provide a correctly encoded utf-8", results.output)
 
-        # Read noise.mp3 as if it was utf8 text, via create_input_tei(input_file_name)
+        # Read noise.mp3 as if it was utf8 text, via create_input_ras(input_file_name)
         results = self.runner.invoke(
-            make_xml, ["-l", "fra", noise_file, os.path.join(self.tempdir, "noise.xml")]
+            make_xml,
+            ["-l", "fra", noise_file, os.path.join(self.tempdir, "noise.readalong")],
         )
         self.assertNotEqual(results.exit_code, 0)
         self.assertIn("provide a correctly encoded utf-8", results.output)
 
-        # align also calls create_input_tei(input_file_name)
+        # align also calls create_input_ras(input_file_name)
         results = self.runner.invoke(
             align,
             [
@@ -243,13 +247,44 @@ class TestMakeXMLCli(BasicTestCase):
         input_text_with_spaces = "Ceci est un test\n \nParagraphe\n\t \n \nPage\n"
         input_text_stripped = "Ceci est un test\n\nParagraphe\n\n\nPage\n"
 
-        def text2lines(text: str):
-            return io.StringIO(text).readlines()
-
         self.assertEqual(
-            create_tei_from_text(text2lines(input_text_with_spaces), ["fra"]),
-            create_tei_from_text(text2lines(input_text_stripped), ["fra"]),
+            create_ras_from_text(text2lines(input_text_with_spaces), ["fra"]),
+            create_ras_from_text(text2lines(input_text_stripped), ["fra"]),
         )
+
+    def test_ignore_superfluous_blank_lines(self):
+        """Don't insert blank pages when there are more blank lines than required."""
+        input_text_with_extra_nls = (
+            " \nPage1\n \n  \n\nPage2\n\t\n \n\n\t\n\n\nPage3\n\n\t\n\t"
+        )
+        input_text_stripped = "Page1\n\n\nPage2\n\n\nPage3"
+
+        self.maxDiff = None
+        self.assertEqual(
+            create_ras_from_text(text2lines(input_text_with_extra_nls), ["eng"]),
+            create_ras_from_text(text2lines(input_text_stripped), ["eng"]),
+        )
+
+        for n in range(3, 10):
+            self.assertEqual(
+                create_ras_from_text(text2lines("Page1" + "\n" * n + "Page2"), ["eng"]),
+                create_ras_from_text(text2lines("Page1" + "\n" * 3 + "Page2"), ["eng"]),
+            )
+
+    def test_split_vs_readlines(self):
+        """Calling create_ras_from_text should work any way we split the lines"""
+        # string.split("\n") strips newlines and might not be identical to readlines(),
+        # but that should make no difference to create_tei_from_text
+        text = "Blah\nBlah\n\nFoo \n\n \nBar"
+        self.assertEqual(
+            create_ras_from_text(text.split("\n"), ["eng"]),
+            create_ras_from_text(text2lines(text), ["eng"]),
+        )
+
+
+def text2lines(text: str):
+    """Stub: readlines() from a string as if it was a file"""
+    return io.StringIO(text).readlines()
 
 
 if __name__ == "__main__":

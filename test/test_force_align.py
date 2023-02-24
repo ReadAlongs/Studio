@@ -17,12 +17,12 @@ from soundswallower import get_model_path
 from readalongs.align import (
     align_audio,
     convert_to_xhtml,
-    create_input_tei,
+    create_input_ras,
     get_word_texts_and_sentences,
 )
 from readalongs.log import LOGGER
 from readalongs.portable_tempfile import PortableNamedTemporaryFile
-from readalongs.text.util import load_txt, save_xml
+from readalongs.text.util import load_txt, load_xml, save_xml
 
 
 class TestForceAlignment(BasicTestCase):
@@ -30,13 +30,13 @@ class TestForceAlignment(BasicTestCase):
 
     def test_align(self):
         """Basic alignment test case with XML input"""
-        xml_path = os.path.join(self.data_dir, "ej-fra.xml")
+        xml_path = os.path.join(self.data_dir, "ej-fra.readalong")
         wav_path = os.path.join(self.data_dir, "ej-fra.m4a")
         results = align_audio(xml_path, wav_path, unit="w", debug_aligner=True)
 
         # Verify that the same IDs are in the output
-        converted_path = os.path.join(self.data_dir, "ej-fra-converted.xml")
-        xml = etree.parse(converted_path).getroot()
+        converted_path = os.path.join(self.data_dir, "ej-fra-converted.readalong")
+        xml = load_xml(converted_path)
         words = results["words"]
         xml_words = xml.xpath(".//w")
         self.assertEqual(len(words), len(xml_words))
@@ -47,14 +47,14 @@ class TestForceAlignment(BasicTestCase):
         """Basic alignment test case with plain text input"""
         txt_path = os.path.join(self.data_dir, "ej-fra.txt")
         wav_path = os.path.join(self.data_dir, "ej-fra.m4a")
-        _, temp_fn = create_input_tei(
+        _, temp_fn = create_input_ras(
             input_file_name=txt_path, text_languages=("fra",), save_temps=None
         )
         results = align_audio(temp_fn, wav_path, unit="w", save_temps=None)
 
         # Verify that the same IDs are in the output
-        converted_path = os.path.join(self.data_dir, "ej-fra-converted.xml")
-        xml = etree.parse(converted_path).getroot()
+        converted_path = os.path.join(self.data_dir, "ej-fra-converted.readalong")
+        xml = load_xml(converted_path)
         words = results["words"]
         xml_words = xml.xpath(".//w")
         self.assertEqual(len(words), len(xml_words))
@@ -122,7 +122,7 @@ class TestForceAlignment(BasicTestCase):
     def test_align_switch_am(self):
         """Alignment test case with an alternate acoustic model and custom
         noise dictionary."""
-        xml_path = os.path.join(self.data_dir, "ej-fra.xml")
+        xml_path = os.path.join(self.data_dir, "ej-fra.readalong")
         wav_path = os.path.join(self.data_dir, "ej-fra.m4a")
         # Try with some extra stuff in the noisedict
         with TemporaryDirectory(prefix="readalongs_am_") as tempdir:
@@ -140,8 +140,8 @@ class TestForceAlignment(BasicTestCase):
                 xml_path, wav_path, unit="w", config={"acoustic_model": custom_am_path}
             )
         # Verify that the same IDs are in the output
-        converted_path = os.path.join(self.data_dir, "ej-fra-converted.xml")
-        xml = etree.parse(converted_path).getroot()
+        converted_path = os.path.join(self.data_dir, "ej-fra-converted.readalong")
+        xml = load_xml(converted_path)
         words = results["words"]
         xml_words = xml.xpath(".//w")
         self.assertEqual(len(words), len(xml_words))
@@ -150,7 +150,7 @@ class TestForceAlignment(BasicTestCase):
 
     def test_align_fail(self):
         """Alignment test case with bad audio that should fail."""
-        xml_path = os.path.join(self.data_dir, "ej-fra.xml")
+        xml_path = os.path.join(self.data_dir, "ej-fra.readalong")
         with PortableNamedTemporaryFile(suffix=".wav") as tf:
             with wave.open(tf, "wb") as writer:
                 writer.setnchannels(1)
@@ -163,7 +163,7 @@ class TestForceAlignment(BasicTestCase):
     def test_bad_align_mode(self):
         with self.assertRaises(AssertionError):
             _ = align_audio(
-                os.path.join(self.data_dir, "ej-fra.xml"),
+                os.path.join(self.data_dir, "ej-fra.readalong"),
                 os.path.join(self.data_dir, "noise.mp3"),
                 alignment_mode="invalid-mode",
             )
@@ -174,10 +174,23 @@ class TestXHTML(BasicTestCase):
 
     def test_convert(self):
         """Test converting the output to xhtml"""
-        xml_path = os.path.join(self.data_dir, "ej-fra-converted.xml")
-        xml = etree.parse(xml_path).getroot()
+        xml_path = os.path.join(self.data_dir, "ej-fra-converted.readalong")
+        xml = load_xml(xml_path)
         convert_to_xhtml(xml)
-        with PortableNamedTemporaryFile(suffix=".xml") as tf:
+        with PortableNamedTemporaryFile(suffix=".readalong") as tf:
+            save_xml(tf.name, xml)
+            txt = load_txt(tf.name)
+            self.maxDiff = None
+            self.assertEqual(
+                txt, load_txt(os.path.join(self.data_dir, "ej-fra-converted.xhtml"))
+            )
+
+    def test_convert_no_version(self):
+        xml_path = os.path.join(self.data_dir, "ej-fra-converted.readalong")
+        xml = load_xml(xml_path)
+        del xml.attrib["version"]
+        convert_to_xhtml(xml)
+        with PortableNamedTemporaryFile(suffix=".readalong") as tf:
             save_xml(tf.name, xml)
             txt = load_txt(tf.name)
             self.maxDiff = None

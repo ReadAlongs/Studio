@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<read-along version="1.0">
+    <text id="t0">
+        <body id="t0b0">
+            <div type="page" id="t0b0d0">
+                <p id="t0b0d0p0">
+                    <s xml:lang="fra" id="t0b0d0p0s0"><w id="t0b0d0p0s0w0" ARPABET="S AH S IY">Ceci</w> <w id="t0b0d0p0s0w1" ARPABET="EH">est</w> <w id="t0b0d0p0s0w2" ARPABET="AO N">un</w> <w id="t0b0d0p0s0w3" ARPABET="T EH">test</w>.</s>
+                    <s xml:lang="eng" id="t0b0d0p0s1"><w id="t0b0d0p0s1w0" ARPABET="DH IH S">This</w> <w id="t0b0d0p0s1w1" ARPABET="IH Z">is</w> <w id="t0b0d0p0s1w2" ARPABET="AH">a</w> <w id="t0b0d0p0s1w3" ARPABET="T EH S T">test</w>.</s>
+                    <s xml:lang="dan" id="t0b0d0p0s2"><w id="t0b0d0p0s2w0" ARPABET="HH EH Y">Hej</w>. <w id="t0b0d0p0s2w1" ARPABET="Y EH Y">Jeg</w> <w id="t0b0d0p0s2w2" ARPABET="HH EH DH Y">hedder</w> <w id="t0b0d0p0s2w3" ARPABET="P Y">Per</w>.</s>
+                    <s id="t0b0d0p0s3"><w id="t0b0d0p0s3w0" ARPABET="AA">A</w> <w id="t0b0d0p0s3w1" ARPABET="P D EY">pre</w>-<w ARPABET="D G IY T UW P IY D" id="t0b0d0p0s3w2">g2p'd</w> <w id="t0b0d0p0s3w3" ARPABET="T EY S T">test</w>.</s>
+                </p>
+            </div>
+        </body>
+    </text>
+</read-along>

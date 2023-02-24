@@ -12,9 +12,13 @@ class TestPackageURLs(BasicTestCase):
     def test_urls(self):
         """Test the links that our package functionality depends on"""
         for endpoint in [FONTS_BUNDLE_URL, JS_BUNDLE_URL]:
-            res = requests.get(endpoint)
-            self.assertEqual(res.status_code, 200)
+            try:
+                res = requests.get(endpoint, timeout=10)
+                self.assertEqual(res.status_code, 200)
+            except requests.exceptions.ReadTimeout:
+                # Don't fail on a timeout, sometimes unpkg can be slow
+                pass
 
 
-if __name__ == "__name__":
+if __name__ == "__main__":
     main()

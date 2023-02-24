@@ -20,7 +20,6 @@ from readalongs.text.util import (
     ensure_dirs,
     load_txt,
     load_xml,
-    load_xml_with_encoding,
     save_txt,
     save_txt_zip,
     xpath_default,
@@ -103,7 +102,7 @@ def extract_files_from_SMIL(input_path):
         if entry["ext"] not in SEARCHABLE_EXTENSIONS:
             continue
         origin_path = os.path.join(dirname, entry["origin_path"])
-        xhtml = load_xml_with_encoding(origin_path)
+        xhtml = load_xml(origin_path)
         for query in within_xhtml_queries:
             for src_text in xpath_default(xhtml, query["xpath"]):
                 entry = process_src_attrib(

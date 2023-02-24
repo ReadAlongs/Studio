@@ -13,6 +13,7 @@ import re
 import zipfile
 from collections import OrderedDict
 from io import TextIOWrapper
+from typing import IO, Union
 from unicodedata import normalize
 
 from lxml import etree
@@ -98,20 +99,28 @@ def is_do_not_align(element):
     return dna in ("true", "True", "TRUE", "1")
 
 
-def load_xml(input_path):
-    with open(input_path, "rb") as fin:
-        return etree.fromstring(fin.read())
+def load_xml(input_path: Union[str, IO]) -> etree.ElementTree:
+    """Safely load an XML file with etree.parse to respect encoding
+
+    Return: the root of the XML etree
+
+    Args:
+        input_path: filename or open input IO handle
+
+    Raises:
+        etree.ParseError: if there is a problem parsing the XML contents
+        OSError: if there is a problem opening the file
+    """
+    # resolve_entities=False is a safety issue, prevents XML bombs.
+    return etree.parse(
+        input_path, parser=etree.XMLParser(resolve_entities=False)
+    ).getroot()
 
 
-def load_xml_zip(zip_path, input_path):
+def load_xml_zip(zip_path, input_path) -> etree.ElementTree:
     with zipfile.ZipFile(zip_path, "r") as fin_zip:
         with fin_zip.open(input_path, "r") as fin:
-            return etree.fromstring(fin)
-
-
-def load_xml_with_encoding(input_path):
-    """etree.fromstring messes up on declared encodings"""
-    return etree.parse(input_path)
+            return load_xml(fin)
 
 
 def write_xml(output_filelike, xml):
@@ -202,15 +211,14 @@ MINIMAL_INDEX_HTML_TEMPLATE = """<!DOCTYPE html>
 
     <body>
         <!-- Here is how you declare the Web Component. Supported languages: en, fr -->
-        <read-along text="{text}" alignment="{smil}" audio="{audio}" theme="{theme}" language="en">
+        <read-along href="{text}" audio="{audio}" theme="{theme}" language="en">
             <span slot='read-along-header'>{header}</span>
             <span slot='read-along-subheader'>{subheader}</span>
         </read-along>
     </body>
 
     <!-- The last step needed is to import the package -->
-    <script type="module" src='https://unpkg.com/@roedoejet/readalong@^0.1.6/dist/read-along/read-along.esm.js'></script>
-    <script nomodule src='https://unpkg.com/@roedoejet/readalong@^0.1.6/dist/read-along/read-along.js'></script>
+    <script type="module" src='https://unpkg.com/@readalongs/web-component@^1.0.0/dist/web-component/web-component.esm.js'></script>
 </html>
 """
 
@@ -218,7 +226,6 @@ MINIMAL_INDEX_HTML_TEMPLATE = """<!DOCTYPE html>
 def save_minimal_index_html(
     output_path,
     tokenized_xml_basename,
-    smil_basename,
     audio_basename,
     title,
     header,
@@ -230,7 +237,6 @@ def save_minimal_index_html(
             MINIMAL_INDEX_HTML_TEMPLATE.format(
                 title=title,
                 text=tokenized_xml_basename,
-                smil=smil_basename,
                 audio=audio_basename,
                 theme=theme,
                 header=header,
