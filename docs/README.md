@@ -34,6 +34,6 @@ To build the documentation and review your own changes locally:
 
 ## Publish the changes
 
-Once your changes are pushed to GitHub and merged into `master` via a Pull
+Once your changes are pushed to GitHub and merged into `main` via a Pull
 Request, the documentation will automatically get built and published to
 https://readalong-studio.readthedocs.io/en/latest/

@@ -48,5 +48,5 @@ jobs:
         with:
           commit-message: "chore: commit version"
           delete-branch: true
-          base: master
+          base: main
           add-paths: readalongs/_version.py
