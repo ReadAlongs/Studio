@@ -47,14 +47,6 @@ SUPPORTED_OUTPUT_FORMATS_DESC = ", ".join(
 )
 
 
-def create_app():
-    """Returns the app"""
-    # defer expensive import to do it only if and when it's actually needed
-    from readalongs.app import app
-
-    return app
-
-
 def get_click_file_name(click_file):
     """Wrapper around click_file.name with consistent handling for stdin
 

@@ -192,7 +192,7 @@ class TestAlignCli(BasicTestCase):
         with open(join(output, "html.html"), "rb") as fhtml:
             path_bytes = fhtml.read()
         htmldoc = fromstring(path_bytes)
-        b64_pattern = r"data:[\w\/\+]*;base64,\w*"
+        b64_pattern = r"data:[\w\/\-\+]*;base64,\w*"
         self.assertRegex(
             htmldoc.body.xpath("//read-along")[0].attrib["href"], b64_pattern
         )
