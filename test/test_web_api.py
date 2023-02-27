@@ -112,6 +112,18 @@ class TestWebApi(BasicTestCase):
         content = response.json()
         self.assertIn("No valid g2p conversion", content["detail"])
 
+    def test_no_words(self):
+        # Test the assemble endpoint with no actual words in the text
+        request = {
+            "input": ".!",
+            "type": "text/plain",
+            "text_languages": ["eng"],
+        }
+        response = API_CLIENT.post("/api/v1/assemble", json=request)
+        self.assertEqual(response.status_code, 422)
+        content = response.json()
+        self.assertIn("Could not find any words", content["detail"])
+
     def test_langs(self):
         # Test the langs endpoint
         response = API_CLIENT.get("/api/v1/langs")

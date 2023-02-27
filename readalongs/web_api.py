@@ -227,6 +227,13 @@ async def assemble(
 
         # tokenize
         tokenized = tokenize_xml(parsed)
+
+        if not tokenized.xpath(".//w"):
+            raise HTTPException(
+                status_code=422,
+                detail="Could not find any words to align in the text.",
+            )
+
         # add ids
         ids_added = add_ids(tokenized)
 
