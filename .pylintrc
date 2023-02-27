@@ -1,4 +1,4 @@
-[MASTER]
+[MAIN]
 # A lot of test cases depend on etree, let's allow pylint to load it
 extension-pkg-allow-list=lxml.etree
 

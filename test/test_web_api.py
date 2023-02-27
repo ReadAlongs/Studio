@@ -96,9 +96,8 @@ class TestWebApi(BasicTestCase):
             "type": "text/plain",
             "text_languages": ["test"],
         }
-        with self.assertLogs(LOGGER, "ERROR"):
-            response = API_CLIENT.post("/api/v1/assemble", json=request)
-        # print(response.content)
+        response = API_CLIENT.post("/api/v1/assemble", json=request)
+        self.assertIn("No language called", response.json()["detail"])
         self.assertEqual(response.status_code, 422)
 
     def test_g2p_faiture(self):
