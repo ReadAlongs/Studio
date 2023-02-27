@@ -13,7 +13,6 @@ FIELD_STYLES = dict(levelname=dict(color="green", bold=coloredlogs.CAN_USE_BOLD_
 
 def setup_logger(name):
     """Create logger and configure with cool colors!"""
-    logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(name)
 
     # Use level='NOTSET' (most permissive) here so whatever level the user later selects
@@ -45,11 +44,15 @@ def capture_logs():
     log_capture_stream = io.StringIO()
     stream_handler = logging.StreamHandler(log_capture_stream)
     stream_handler.setLevel(logging.INFO)
-    LOGGER.addHandler(stream_handler)  # capture logging output
-    LOGGER.propagate = False  # suppresses logging output to console
-
+    old_handlers = list(LOGGER.handlers)
+    for x in old_handlers:
+        LOGGER.removeHandler(x)  # suppress all existing handlers
     try:
+        LOGGER.addHandler(stream_handler)  # capture logging output
+        LOGGER.propagate = False  # suppresses logging output to console
         yield log_capture_stream
     finally:
         LOGGER.removeHandler(stream_handler)
         LOGGER.propagate = True
+        for x in old_handlers:
+            LOGGER.addHandler(x)

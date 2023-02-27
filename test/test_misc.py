@@ -272,10 +272,9 @@ class TestMisc(BasicTestCase):
         self.assertIn("foo bar baz", captured_logs.getvalue())
 
     def test_capture_logs_some_more(self):
-        with self.assertLogs(LOGGER, level="INFO"):
-            with capture_logs() as captured_logs:
-                LOGGER.info("will this show?")
-            self.assertIn("will this show?", captured_logs.getvalue())
+        with capture_logs() as captured_logs:
+            LOGGER.info("this will be captured")
+        self.assertIn("this will be captured", captured_logs.getvalue())
         with self.assertLogs():
             LOGGER.info("blah")
         with self.assertLogs() as cm:
