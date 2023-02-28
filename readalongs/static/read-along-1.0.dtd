@@ -78,6 +78,7 @@
 <!ELEMENT w (#PCDATA|span|syl)*>
 <!ATTLIST w
  xml:lang CDATA #IMPLIED
+ effective-g2p-lang CDATA #IMPLIED
  lang CDATA #IMPLIED
  id CDATA #IMPLIED
  class CDATA #IMPLIED
