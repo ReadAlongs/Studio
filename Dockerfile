@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim
+FROM ubuntu:22.04
 
 ENV APPHOME /opt/readalong-studio
 ENV PORT 5000
