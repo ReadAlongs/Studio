@@ -139,6 +139,8 @@ def convert_words(  # noqa: C901
                 ) from e
             tg = converter(word)
             text = tg.output_string
+            if not text:
+                LOGGER.warning(f'The g2p output for "{word}" is empty.')
             valid = converter.check(tg, shallow=True)
             if not valid and verbose_warnings:
                 converter.check(tg, shallow=False, display_warnings=verbose_warnings)
