@@ -41,6 +41,7 @@ from readalongs.log import LOGGER
 from readalongs.text.lexicon_g2p import getLexiconG2P
 from readalongs.text.lexicon_g2p_mappings import __file__ as LEXICON_PATH
 from readalongs.text.util import get_attrib_recursive, get_word_text, iterate_over_text
+from readalongs.util import get_langs
 
 
 def get_same_language_units(element):
@@ -85,6 +86,11 @@ def convert_words(  # noqa: C901
         from g2p import make_g2p
 
         InvalidLanguageCode = FileNotFoundError
+
+    # Warning counts so we don't flood the logs (unless verbose_warnings is set)
+    g2p_fallback_warning_count = 0
+    g2p_fail_warning_count = 0
+    g2p_empty_warning_count = 0
 
     # Tuck this function inside convert_words(), to share common arguments and imports
     def convert_word(word: str, lang: str):
@@ -140,7 +146,12 @@ def convert_words(  # noqa: C901
             tg = converter(word)
             text = tg.output_string
             if not text:
-                LOGGER.warning(f'The g2p output for "{word}" is empty.')
+                nonlocal g2p_empty_warning_count
+                if g2p_empty_warning_count < 2 or verbose_warnings:
+                    g2p_empty_warning_count += 1
+                    LOGGER.warning(
+                        f'The output of the g2p process for "{word}" is empty.'
+                    )
             valid = converter.check(tg, shallow=True)
             if not valid and verbose_warnings:
                 converter.check(tg, shallow=False, display_warnings=verbose_warnings)
@@ -173,10 +184,13 @@ def convert_words(  # noqa: C901
                     for lang in (
                         re.split(r"[,:]", g2p_fallbacks) if g2p_fallbacks else []
                     ):
-                        LOGGER.warning(
-                            f'Could not g2p "{text_to_g2p}" as {g2p_lang}. '
-                            f"Trying fallback: {lang}."
-                        )
+                        _, langs = get_langs()
+                        if g2p_fallback_warning_count < 2 or verbose_warnings:
+                            g2p_fallback_warning_count += 1
+                            LOGGER.warning(
+                                f'Could not g2p "{text_to_g2p}" as {langs[g2p_lang]} ({g2p_lang}). '
+                                f"Trying fallback: {langs[lang]} ({lang})."
+                            )
                         g2p_lang = lang.strip()
                         g2p_text, valid = convert_word(text_to_g2p, g2p_lang)
                         if valid:
@@ -184,11 +198,13 @@ def convert_words(  # noqa: C901
                             break
                     else:
                         all_g2p_valid = False
-                        LOGGER.warning(
-                            f'No valid g2p conversion found for "{text_to_g2p}". '
-                            f"Check its orthography and language code, "
-                            f"or pick suitable g2p fallback languages."
-                        )
+                        if g2p_fail_warning_count < 2 or verbose_warnings:
+                            g2p_fail_warning_count += 1
+                            LOGGER.warning(
+                                f'No valid g2p conversion found for "{text_to_g2p}". '
+                                f"Check its orthography and language code, "
+                                f"or pick suitable g2p fallback languages."
+                            )
 
                 # Save the g2p_text from the last conversion attemps, even when
                 # it's not valid, so it's in the g2p output if the user wants to
