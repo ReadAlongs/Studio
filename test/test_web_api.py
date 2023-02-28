@@ -135,14 +135,7 @@ class TestWebApi(BasicTestCase):
         response = API_CLIENT.post("/api/v1/assemble", json=request)
         self.assertEqual(response.status_code, 200)
         content_log = response.json()["log"]
-        for message_part in [
-            "The g2p output for",
-            "24",
-            "23",
-            "99",
-            "1234",
-            "is empty",
-        ]:
+        for message_part in ["The output of the g2p process", "24", "23", "is empty"]:
             self.assertIn(message_part, content_log)
 
     def test_langs(self):
@@ -164,7 +157,7 @@ class TestWebApi(BasicTestCase):
         response = API_CLIENT.post("/api/v1/assemble", json=request)
         content = response.json()
         # print("Content", content)
-        self.assertIn('Could not g2p "ña" as fra', content["log"])
+        self.assertIn('Could not g2p "ña" as French', content["log"])
 
     def test_debug(self):
         # Test the assemble endpoint with debug mode on
