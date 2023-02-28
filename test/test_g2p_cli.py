@@ -218,7 +218,7 @@ class TestG2pCli(BasicTestCase):
         )
         results = self.runner.invoke(g2p, [tok_file2, "-"])
         self.assertEqual(results.exit_code, 0)
-        self.assertIn("Trying fallback: und", results.output)
+        self.assertIn("Trying fallback: Und", results.output)
 
     def test_align_with_error(self):
         """handling g2p errors in readalongs align with --g2p-fallback"""
@@ -251,6 +251,7 @@ class TestG2pCli(BasicTestCase):
                     "eng",  # lang 1 is eng
                     "-f",
                     "--language=fra:iku",  # fallback langs are fra and iku
+                    "--debug-g2p",
                     text_file,
                     os.path.join(self.data_dir, "noise.mp3"),
                     output_dir,
@@ -262,8 +263,8 @@ class TestG2pCli(BasicTestCase):
                 f"results.output='{results.output}' "
                 f"results.exception={results.exception!r}"
             )
-        self.assertIn("Trying fallback: fra", results.output)
-        self.assertIn("Trying fallback: iku", results.output)
+        self.assertIn("Trying fallback: French", results.output)
+        self.assertIn("Trying fallback: Inuktitut", results.output)
         self.assertNotIn("could not be g2p", results.output)
         self.assertIn("Number of aligned segments", results.output)
 

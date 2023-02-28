@@ -179,8 +179,8 @@ def convert_words(  # noqa: C901
                         if g2p_fallback_warning_count < 2 or verbose_warnings:
                             g2p_fallback_warning_count += 1
                             LOGGER.warning(
-                                f'Could not g2p "{text_to_g2p}" as {langs[g2p_lang]} ({g2p_lang}). '
-                                f"Trying fallback: {langs[lang]} ({lang})."
+                                f'Could not g2p "{text_to_g2p}" as {langs.get(g2p_lang, "")} ({g2p_lang}). '
+                                f"Trying fallback: {langs.get(lang, '')} ({lang})."
                             )
                         g2p_lang = lang.strip()
                         g2p_text, valid = convert_word(text_to_g2p, g2p_lang)
