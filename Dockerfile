@@ -1,7 +1,6 @@
 FROM alpine:3.17.2 as runtime
 
 ENV APPHOME /opt/readalong-studio
-ENV PORT 5000
 
 # Lean, optimized installation of system dependencies
 RUN apk add python3 py3-numpy py3-yaml git ffmpeg
@@ -28,7 +27,12 @@ WORKDIR $APPHOME
 ENV VIRTUAL_ENV $APPHOME/venv
 ENV PATH $VIRTUAL_ENV/bin:$PATH
 
-# For the web API, use this CMD, the same on our Heroku deployment, except
-# with binding to port 5000.  Set ORIGIN to the base URL of your Studio-Web.
-# ENV ORIGIN https://localhost:4200/
-# CMD gunicorn -w 4 -k uvicorn.workers.UvicornWorker readalongs.web_api:web_api_app --bind 0.0.0.0:$PORT
+# Run this container with `docker run -d -p 8000:8000` for local
+# testing, or use `-p` to map whichever host port you want to 8000 on
+# the container. Set ORIGIN to the base URL of your Studio-Web for
+# production deployments.
+
+ENV PORT 8000
+ENV ORIGIN http://localhost:4200
+EXPOSE $PORT
+CMD gunicorn -w 4 -k uvicorn.workers.UvicornWorker readalongs.web_api:web_api_app --bind 0.0.0.0:$PORT
