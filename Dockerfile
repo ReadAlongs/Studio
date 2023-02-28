@@ -1,40 +1,38 @@
-FROM debian:bullseye-slim
+FROM alpine:3.17.2 as runtime
 
 ENV APPHOME /opt/readalong-studio
-ENV PORT 5000
 
 # Lean, optimized installation of system dependencies
-RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --yes \
-        python3 \
-        python3-pip \
-        git \
-        ffmpeg \
-        vim-nox \
-	less \
-    && apt-get clean \
-    && apt-get autoremove \
-    && rm -fr /var/lib/apt/lists/*
+RUN apk add python3 py3-numpy py3-yaml git ffmpeg
 
-# Install 3rd party dependencies in their own layer, for faster rebuilds when we
-# change ReadAlong-Studio source code
-ADD requirements.* $APPHOME/
-RUN python3 -m pip install --upgrade pip \
-    && python3 -m pip install -r $APPHOME/requirements.txt \
-    && python3 -m pip install gevent
-
-# We don't want Docker to cache the installation of g2p or Studio, so place them
-# after COPY . $APPHOME, which almost invariable invalidates the cache.
-COPY . $APPHOME
+FROM runtime as build
 WORKDIR $APPHOME
-# Get and install the latest g2p
-RUN git clone https://github.com/roedoejet/g2p.git \
-    && cd g2p \
+RUN apk add python3-dev py3-pip gcc g++ musl-dev ninja
+RUN python3 -m venv --system-site-packages $APPHOME/venv
+RUN git clone https://github.com/roedoejet/g2p.git
+COPY requirements*.txt $APPHOME/
+RUN . $APPHOME/venv/bin/activate \
+    && python3 -m pip install -r $APPHOME/requirements.txt
+RUN cd $APPHOME/g2p \
+    && . $APPHOME/venv/bin/activate python3 -m pip install -e .
+# Do this after all the above so we don't needlessly rebuild
+COPY . $APPHOME/Studio
+RUN cd $APPHOME/Studio \
+    && . $APPHOME/venv/bin/activate \
     && python3 -m pip install -e .
 
-# Install ReadAlong-Studio itself
-RUN python3 -m pip install -e .
+FROM runtime
+COPY --from=build $APPHOME $APPHOME
+WORKDIR $APPHOME
+ENV VIRTUAL_ENV $APPHOME/venv
+ENV PATH $VIRTUAL_ENV/bin:$PATH
 
-# For the web API, use this CMD instead, the same on our Heroku deployment, except
-# with binding to port 5000
-# CMD gunicorn -w 4 -k uvicorn.workers.UvicornWorker readalongs.web_api:web_api_app --bind 0.0.0.0:$PORT
+# Run this container with `docker run -d -p 8000:8000` for local
+# testing, or use `-p` to map whichever host port you want to 8000 on
+# the container. Set ORIGIN to the base URL of your Studio-Web for
+# production deployments.
+
+ENV PORT 8000
+ENV ORIGIN http://localhost:4200
+EXPOSE $PORT
+CMD gunicorn -w 4 -k uvicorn.workers.UvicornWorker readalongs.web_api:web_api_app --bind 0.0.0.0:$PORT
