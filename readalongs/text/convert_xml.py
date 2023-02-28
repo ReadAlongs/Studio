@@ -76,16 +76,7 @@ def convert_words(  # noqa: C901
 
     # Defer expensive import of g2p to do them only if and when they are needed
     from g2p.mappings.langs.utils import is_arpabet
-
-    try:
-        # g2p > 0.5.20211029 uses its own exceptions for make_g2p errors
-        from g2p import InvalidLanguageCode, NoPath, make_g2p
-    except ImportError:
-        # g2p <= 0.5.20211029 used NetworkXNoPath and FileNotFoundError
-        from g2p import NetworkXNoPath as NoPath
-        from g2p import make_g2p
-
-        InvalidLanguageCode = FileNotFoundError
+    from g2p import InvalidLanguageCode, NoPath, make_g2p
 
     # Warning counts so we don't flood the logs (unless verbose_warnings is set)
     g2p_fallback_warning_count = 0
