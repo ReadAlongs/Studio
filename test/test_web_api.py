@@ -124,6 +124,27 @@ class TestWebApi(BasicTestCase):
         content = response.json()
         self.assertIn("Could not find any words", content["detail"])
 
+    def test_empty_g2p(self):
+        # When the input has numbers of non-g2p-able stuff, let's give the user
+        # a 422 with a list of words we can't process
+        request = {
+            "input": "this 24 is 23:99 a no g2p 1234 test.",
+            "type": "text/plain",
+            "text_languages": ["eng", "und"],
+        }
+        response = API_CLIENT.post("/api/v1/assemble", json=request)
+        self.assertEqual(response.status_code, 200)
+        content_log = response.json()["log"]
+        for message_part in [
+            "The g2p output for",
+            "24",
+            "23",
+            "99",
+            "1234",
+            "is empty",
+        ]:
+            self.assertIn(message_part, content_log)
+
     def test_langs(self):
         # Test the langs endpoint
         response = API_CLIENT.get("/api/v1/langs")
