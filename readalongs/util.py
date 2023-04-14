@@ -21,9 +21,13 @@ def get_langs():
             LANGS is the list of valid language codes supported
             LANG_NAMES maps each code to its full language name
     """
-    import g2p  # Defer expensive import, which loads the whole g2p database
+    # Defer expensive import, which loads the whole g2p database
+    try:
+        from g2p import get_langs as g2p_get_langs
+    except ImportError:
+        from readalongs.deprecated import get_langs as g2p_get_langs
 
-    return g2p.get_langs()
+    return g2p_get_langs()
 
 
 class JoinerCallbackForClick:
