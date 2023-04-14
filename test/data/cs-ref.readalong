@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<read-along version="1.0">
+    <text xml:lang="fra" fallback-langs="und">
+        <body>
+            <div type="page">
+                <p>
+                    <s>ćś</s>
+                </p>
+            </div>
+        </body>
+    </text>
+</read-along>

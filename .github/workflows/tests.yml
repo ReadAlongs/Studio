@@ -78,3 +78,12 @@ jobs:
 
       - name: Run tests on Windows
         run: cd test && python run.py prod
+
+      - name: Make sure the CLI outputs utf8 on Windows
+        # Note: we're checking something CLI specific, from a prompt, so we don't want to run
+        # in from a testing harness or framework, we want direct CLI.
+        # This test will fail if the output encoding is cp1252
+        # Warning: the diff line below is PowerShell syntax, not bash!
+        run: |
+          echo ćś | readalongs make-xml -l fra - - > cs.readalong
+          if (diff (cat cs.readalong) (cat test/data/cs-ref.readalong)) { throw "Output did not match reference" }

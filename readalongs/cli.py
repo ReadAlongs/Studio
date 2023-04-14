@@ -47,6 +47,13 @@ SUPPORTED_OUTPUT_FORMATS_DESC = ", ".join(
 )
 
 
+if "pytest" not in sys.modules:  # pragma: no cover
+    if sys.stdout.encoding != "utf8" and hasattr(sys.stdout, "buffer"):
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf8")
+    if sys.stderr.encoding != "utf8" and hasattr(sys.stderr, "buffer"):
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf8")
+
+
 def get_click_file_name(click_file):
     """Wrapper around click_file.name with consistent handling for stdin
 
