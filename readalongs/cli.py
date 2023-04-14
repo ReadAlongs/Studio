@@ -47,7 +47,7 @@ SUPPORTED_OUTPUT_FORMATS_DESC = ", ".join(
 )
 
 
-if "pytest" not in sys.modules:
+if "pytest" not in sys.modules:  # pragma: no cover
     if sys.stdout.encoding != "utf8" and hasattr(sys.stdout, "buffer"):
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf8")
     if sys.stderr.encoding != "utf8" and hasattr(sys.stderr, "buffer"):
