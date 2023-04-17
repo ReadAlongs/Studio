@@ -22,12 +22,9 @@ def get_langs():
             LANG_NAMES maps each code to its full language name
     """
     # Defer expensive import, which loads the whole g2p database
-    try:
-        from g2p import get_langs as g2p_get_langs
-    except ImportError:
-        from readalongs.deprecated import get_langs as g2p_get_langs
+    from g2p import get_arpabet_langs
 
-    return g2p_get_langs()
+    return get_arpabet_langs()
 
 
 class JoinerCallbackForClick:
