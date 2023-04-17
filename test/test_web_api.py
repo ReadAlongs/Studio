@@ -141,7 +141,9 @@ class TestWebApi(BasicTestCase):
     def test_langs(self):
         # Test the langs endpoint
         response = API_CLIENT.get("/api/v1/langs")
-        self.assertEqual(set(x["code"] for x in response.json()), set(get_langs()[0]))
+        codes = [x["code"] for x in response.json()]
+        self.assertEqual(set(codes), set(get_langs()[0]))
+        self.assertEqual(codes, list(sorted(codes)))
         self.assertEqual(
             dict((x["code"], x["names"]["_"]) for x in response.json()), get_langs()[1]
         )

@@ -136,13 +136,9 @@ async def langs() -> List[SupportedLanguage]:
         ]
     """
     langs, lang_names = LANGS
-    return sorted(
-        (
-            SupportedLanguage(code=code, names=dict(_=lang_names[code]))
-            for code in langs
-        ),
-        key=lambda lang: lang.code,
-    )
+    return [
+        SupportedLanguage(code=code, names=dict(_=lang_names[code])) for code in langs
+    ]
 
 
 @v1.post("/assemble", response_model=AssembleResponse)
