@@ -3,7 +3,7 @@ chevron==0.14.0
 click==8.0.4
 coloredlogs==10.0
 fastapi==0.78.0
-g2p>=1.0.20230417, ==1.*
+g2p>=1.1.20230511, ==1.*
 lxml==4.9.1
 networkx>=2.5,<=2.8.4
 numpy>=1.16.4

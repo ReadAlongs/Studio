@@ -123,7 +123,7 @@ def convert_words(  # noqa: C901
             return eng_text, eng_valid
         else:
             try:
-                converter = make_g2p(lang, output_orthography)
+                converter = make_g2p(lang, output_orthography, tokenize=False)
             except InvalidLanguageCode as e:
                 raise ValueError(
                     f'Could not g2p "{word}" from "{lang}" to "{output_orthography}": {e} '
