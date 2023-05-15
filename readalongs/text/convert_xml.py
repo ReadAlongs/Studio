@@ -34,12 +34,9 @@
 ############################################################################
 
 import copy
-import os
 import re
 
 from readalongs.log import LOGGER
-from readalongs.text.lexicon_g2p import getLexiconG2P
-from readalongs.text.lexicon_g2p_mappings import __file__ as LEXICON_PATH
 from readalongs.text.util import get_attrib_recursive, get_word_text, iterate_over_text
 from readalongs.util import get_langs
 
@@ -75,8 +72,8 @@ def convert_words(  # noqa: C901
         LOGGER.info(f"output_orthography={output_orthography}")
 
     # Defer expensive import of g2p to do them only if and when they are needed
-    from g2p.mappings.langs.utils import is_arpabet
     from g2p import InvalidLanguageCode, NoPath, make_g2p
+    from g2p.mappings.langs.utils import is_arpabet
 
     # Warning counts so we don't flood the logs (unless verbose_warnings is set)
     g2p_fallback_warning_count = 0
@@ -100,53 +97,37 @@ def convert_words(  # noqa: C901
                 well as in the final output.
         """
 
-        if lang == "eng":
-            # Hack to use old English LexiconG2P
-            # Note: adding eng_ prefix to vars that are used in both blocks to make mypy
-            # happy. Since the two sides of the if and in the same scope, it complains about
-            # type checking otherwise.
-            if "eng-arpabet" not in output_orthography:
-                raise ValueError(
-                    f'Cannot g2p "eng" to output orthography "{output_orthography}".'
-                )
-            eng_converter = getLexiconG2P(
-                os.path.join(os.path.dirname(LEXICON_PATH), "cmu_sphinx.metadata.json")
-            )
-            try:
-                eng_text, _ = eng_converter.convert(word)
-                eng_valid = is_arpabet(eng_text)
-            except KeyError as e:
+        try:
+            converter = make_g2p(lang, output_orthography, tokenize=False)
+        except InvalidLanguageCode as e:
+            raise ValueError(
+                f'Could not g2p "{word}" from "{lang}" to "{output_orthography}": {e} '
+                f'\nRun "readalongs langs" to list languages supported by ReadAlongs Studio.'
+            ) from e
+        except NoPath as e:
+            raise ValueError(
+                f'Could not g2p "{word}": no path from "{lang}" to "{output_orthography}".'
+                f'\nRun "readalongs langs" to list languages supported by ReadAlongs Studio.'
+            ) from e
+        tg = converter(word)
+        text = tg.output_string
+        if not text:
+            # TODO Convert this to a check of the kind "is the mapping a lexicon-based one".
+            if lang == "eng":
                 if verbose_warnings:
-                    LOGGER.warning(f'Could not g2p "{word}" as English: {e.args[0]}')
-                eng_text = word
-                eng_valid = False
-            return eng_text, eng_valid
-        else:
-            try:
-                converter = make_g2p(lang, output_orthography, tokenize=False)
-            except InvalidLanguageCode as e:
-                raise ValueError(
-                    f'Could not g2p "{word}" from "{lang}" to "{output_orthography}": {e} '
-                    f'\nRun "readalongs langs" to list languages supported by ReadAlongs Studio.'
-                ) from e
-            except NoPath as e:
-                raise ValueError(
-                    f'Could not g2p "{word}": no path from "{lang}" to "{output_orthography}".'
-                    f'\nRun "readalongs langs" to list languages supported by ReadAlongs Studio.'
-                ) from e
-            tg = converter(word)
-            text = tg.output_string
-            if not text:
+                    LOGGER.warning(f'Could not g2p "{word}" as English')
+                return "", False
+            else:
                 nonlocal g2p_empty_warning_count
                 if g2p_empty_warning_count < 2 or verbose_warnings:
                     g2p_empty_warning_count += 1
                     LOGGER.warning(
-                        f'The output of the g2p process for "{word}" is empty.'
+                        f'The output of the g2p process for "{word}" with lang "{lang}" is empty.'
                     )
-            valid = converter.check(tg, shallow=True)
-            if not valid and verbose_warnings:
-                converter.check(tg, shallow=False, display_warnings=verbose_warnings)
-            return text, valid
+        valid = converter.check(tg, shallow=True)
+        if not valid and verbose_warnings:
+            converter.check(tg, shallow=False, display_warnings=verbose_warnings)
+        return text, valid
 
     all_g2p_valid = True
     for word in xml.xpath(".//" + word_unit):
