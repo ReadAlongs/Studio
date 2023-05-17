@@ -235,7 +235,7 @@ class TestAlignCli(BasicTestCase):
         self.assertNotIn("fn-unicode", results.stdout)
 
     def test_align_english(self):
-        """Validates that LexiconG2P works for English language alignment"""
+        """Validates that the lexicon-based g2p works for English language alignment"""
 
         input_filename = write_file(
             join(self.tempdir, "input"),
