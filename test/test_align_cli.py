@@ -257,7 +257,28 @@ class TestAlignCli(BasicTestCase):
                 ],
             )
 
-        g2p_ref = '<s id="t0b0d0p0s0"><w id="t0b0d0p0s0w0" ARPABET="DH IH S">This</w> <w id="t0b0d0p0s0w1" ARPABET="IH Z">is</w> <w id="t0b0d0p0s0w2" ARPABET="S AH M">some</w> <w id="t0b0d0p0s0w3" ARPABET="T EH K S T">text</w> <w id="t0b0d0p0s0w4" ARPABET="DH AE T">that</w> <w id="t0b0d0p0s0w5" ARPABET="W IY">we</w> <w id="t0b0d0p0s0w6" ARPABET="W IH L">will</w> <w id="t0b0d0p0s0w7" ARPABET="R AH N">run</w> <w id="t0b0d0p0s0w8" ARPABET="TH R UW">through</w> <w id="t0b0d0p0s0w9" ARPABET="DH AH">the</w> <w id="t0b0d0p0s0w10" ARPABET="IH NG G L IH SH">English</w> <w id="t0b0d0p0s0w11" ARPABET="L EH K S IH K AA N">lexicon</w> <w id="t0b0d0p0s0w12" ARPABET="G R AE F IY M">grapheme</w> <w id="t0b0d0p0s0w13" ARPABET="T UW">to</w> <w id="t0b0d0p0s0w14" ARPABET="M AO R F IY M">morpheme</w> <w id="t0b0d0p0s0w15" ARPABET="AH P R OW CH">approach</w>.</s>'
+        g2p_ref = "".join(
+            (
+                '<s id="t0b0d0p0s0">',
+                '<w id="t0b0d0p0s0w0" ARPABET="DH IH S">This</w> ',
+                '<w id="t0b0d0p0s0w1" ARPABET="IH Z">is</w> ',
+                '<w id="t0b0d0p0s0w2" ARPABET="S AH M">some</w> ',
+                '<w id="t0b0d0p0s0w3" ARPABET="T EH K S T">text</w> ',
+                '<w id="t0b0d0p0s0w4" ARPABET="DH AE T">that</w> ',
+                '<w id="t0b0d0p0s0w5" ARPABET="W IY">we</w> ',
+                '<w id="t0b0d0p0s0w6" ARPABET="W IH L">will</w> ',
+                '<w id="t0b0d0p0s0w7" ARPABET="R AH N">run</w> ',
+                '<w id="t0b0d0p0s0w8" ARPABET="TH R UW">through</w> ',
+                '<w id="t0b0d0p0s0w9" ARPABET="DH AH">the</w> ',
+                '<w id="t0b0d0p0s0w10" ARPABET="IH NG G L IH SH">English</w> ',
+                '<w id="t0b0d0p0s0w11" ARPABET="L EH K S IH K AA N">lexicon</w> ',
+                '<w id="t0b0d0p0s0w12" effective-g2p-lang="und" ARPABET="G D AA P HH EY M EY">grapheme</w> ',
+                '<w id="t0b0d0p0s0w13" ARPABET="T UW">to</w> ',
+                '<w id="t0b0d0p0s0w14" effective-g2p-lang="und" ARPABET="M OW D P HH EY M EY">morpheme</w> ',
+                '<w id="t0b0d0p0s0w15" ARPABET="AH P R OW CH">approach</w>',
+                ".</s>",
+            )
+        )
 
         tokenized_file = join(
             self.tempdir, "eng-output", "tempfiles", "eng-output.g2p.readalong"
@@ -556,7 +577,7 @@ class TestAlignCli(BasicTestCase):
             )
         self.assertNotEqual(results.exit_code, 0)
         self.assertIn("Could not g2p", results.output)
-        self.assertIn('Cannot g2p "eng" to output orthography', results.output)
+        self.assertIn('no path from "eng" to ', results.output)
 
     def add_bom(self, filename):
         """Create a temporary copy of filename with the a BOM in it, in self.tempdir"""
