@@ -113,9 +113,13 @@ def convert_words(  # noqa: C901
         text = tg.output_string
         if not text:
             # TODO Convert this to a check of the kind "is the mapping a lexicon-based one".
-            if lang == "eng":
+            if "lexicon" in (
+                t.mapping.kwargs.get("type") for t in converter.transducers
+            ):
                 if verbose_warnings:
-                    LOGGER.warning(f'Could not g2p "{word}" as English')
+                    LOGGER.warning(
+                        f'Could not g2p "{word}" as "{lang}" using the lexicon.'
+                    )
                 return "", False
             else:
                 nonlocal g2p_empty_warning_count
