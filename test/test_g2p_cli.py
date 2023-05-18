@@ -425,12 +425,12 @@ class TestG2pCli(BasicTestCase):
         _ = run_convert_xml(moh_example_input_full)
 
         example_with_fallback_lang = """
-            <document xml:lang="fra" fallback-langs="eng"><s>
+            <document xml:lang="fra" fallback-langs="dan"><s>
               <w><part lang="fra">ceci</part><part lang="iku">not_really_iku</part></w>
             </s></document>"""
         with self.assertLogs(LOGGER, level="WARNING") as cm:
             result = run_convert_xml(example_with_fallback_lang)
-        self.assertIn("S AH S IY not_really_iku", result)
+        self.assertIn("S AH S IY N AO T _ZH EH AE L L UW _IY K UW", result)
         logger_output = "\n".join(cm.output)
         self.assertIn(
             'No valid g2p conversion found for "not_really_iku"', logger_output
