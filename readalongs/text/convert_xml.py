@@ -112,23 +112,13 @@ def convert_words(  # noqa: C901
         tg = converter(word)
         text = tg.output_string
         if not text:
-            # TODO Convert this to a check of the kind "is the mapping a lexicon-based one".
-            if "lexicon" in (
-                t.mapping.kwargs.get("type") for t in converter.transducers
-            ):
-                if verbose_warnings:
-                    LOGGER.warning(
-                        f'Could not g2p "{word}" as "{lang}" using the lexicon.'
-                    )
-                return "", False
-            else:
-                nonlocal g2p_empty_warning_count
-                if g2p_empty_warning_count < 2 or verbose_warnings:
-                    g2p_empty_warning_count += 1
-                    LOGGER.warning(
-                        f'The output of the g2p process for "{word}" with lang "{lang}" is empty.'
-                    )
-        valid = converter.check(tg, shallow=True)
+            nonlocal g2p_empty_warning_count
+            if g2p_empty_warning_count < 2 or verbose_warnings:
+                g2p_empty_warning_count += 1
+                LOGGER.warning(
+                    f'The output of the g2p process for "{word}" with lang "{lang}" is empty.'
+                )
+        valid = converter.check(tg, shallow=True) and text
         if not valid and verbose_warnings:
             converter.check(tg, shallow=False, display_warnings=verbose_warnings)
         return text, valid

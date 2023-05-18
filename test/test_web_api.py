@@ -133,8 +133,8 @@ class TestWebApi(BasicTestCase):
             "text_languages": ["eng", "und"],
         }
         response = API_CLIENT.post("/api/v1/assemble", json=request)
-        self.assertEqual(response.status_code, 200)
-        content_log = response.json()["log"]
+        self.assertEqual(response.status_code, 422)
+        content_log = response.json()["detail"]
         for message_part in ["The output of the g2p process", "24", "23", "is empty"]:
             self.assertIn(message_part, content_log)
 
