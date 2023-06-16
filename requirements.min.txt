@@ -1,6 +1,6 @@
 # This is the minimal set of dependencies required for the readalongs package
 chevron==0.14.0
-click==8.0.4
+click>=8.0.4
 coloredlogs==10.0
 fastapi==0.78.0
 g2p>=1.1.20230511, ==1.*
