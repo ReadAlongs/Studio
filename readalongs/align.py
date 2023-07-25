@@ -277,7 +277,7 @@ def create_asr_config(
     # Set the minimum FFT size (no longer necessary since
     # SoundSwallower 0.2, but we keep this here for compatibility with
     # old versions in case we need to debug things)
-    frame_points = int(asr_config["samprate"] * asr_config["wlen"])
+    frame_points = int(asr_config["samprate"] * asr_config["wlen"])  # type: ignore
     fft_size = 1
     while fft_size < frame_points:
         fft_size = fft_size << 1
@@ -298,19 +298,31 @@ def read_noisedict(asr_config: soundswallower.Config) -> Set[str]:
         Set[str]: Set of noise words from noisedict, or a default set
             if it could not be found.
     """
-    try:
-        noisewords = set()
-        acoustic_model = asr_config["hmm"]
-        with open(
-            os.path.join(acoustic_model, "noisedict"), "rt", encoding="utf-8"
-        ) as dictfh:
-            for line in dictfh:
-                if line.startswith("##") or line.startswith(";;"):
-                    continue
-                noisewords.add(line.strip().split()[0])
-    except FileNotFoundError:
+
+    def load_noisedict(fdict):
+        try:
+            with open(fdict, "rt", encoding="utf-8") as dictfh:
+                noisewords = set()
+                for line in dictfh:
+                    if line.startswith("##") or line.startswith(";;"):
+                        continue
+                    noisewords.add(line.strip().split()[0])
+                return noisewords
+        except FileNotFoundError:
+            return None
+
+    fdict: str = asr_config["fdict"]  # type: ignore
+    acoustic_model: str = asr_config["hmm"]  # type: ignore
+    noisewords = None
+    if fdict is not None:  # pragma: no cover
+        noisewords = load_noisedict(fdict)
+    if noisewords is None:
+        noisewords = load_noisedict(os.path.join(acoustic_model, "noisedict.txt"))
+    if noisewords is None:  # pragma: no cover
+        noisewords = load_noisedict(os.path.join(acoustic_model, "noisedict"))
+    if noisewords is None:  # pragma: no cover
         LOGGER.warning("Could not find noisedict, using defaults")
-        noisewords = {"<sil>", "[NOISE]"}
+        noisewords = {"<sil>", "<s>", "</s>", "[NOISE]"}
 
     return noisewords
 
@@ -624,7 +636,7 @@ def align_audio(
     # millisecond intervals. For audio segments, the ms slice assumption is hard-coded
     # all over, while frame_size is used to convert segment boundaries returned by
     # soundswallower, which are indexes in frames, into durations in seconds.
-    frame_size = 1.0 / asr_config["frate"]
+    frame_size = 1.0 / asr_config["frate"]  # type: ignore
 
     # Get list of words to ignore in aligner output
     noisewords = read_noisedict(asr_config)
