@@ -3,5 +3,3 @@
 gunicorn
 # uvicorn works on all platforms and is required for both dev and prod deployments
 uvicorn
-# For deployment on Heroku, we want the latest g2p off GitHub
-g2p @ git+https://github.com/roedoejet/g2p.git@main
