@@ -1,7 +1,9 @@
 name: Run Tests
 on:
-  - push
-  - pull_request
+  pull_request:
+    types: [review_requested]
+  push:
+
 jobs:
   test:
     runs-on: ubuntu-latest
