@@ -92,8 +92,8 @@ class InputFormat(Enum):
 class AssembleRequest(BaseModel):
     """Base request for assemble"""
 
-    input_text: str = Field(None, alias="input")
-    mime_type: InputFormat = Field(None, alias="type")
+    input_text: Optional[str] = Field(None, alias="input")
+    mime_type: Optional[InputFormat] = Field(None, alias="type")
     text_languages: List[str]
     debug: bool = False
 
@@ -105,10 +105,10 @@ class AssembleResponse(BaseModel):
     text_ids: str  # The text ID input for the decoder in plain text
     processed_ras: str  # The processed RAS XML is returned as a string
     input_request: Optional[AssembleRequest] = Field(None, alias="input")
-    parsed: Optional[str]
-    tokenized: Optional[str]
-    g2ped: Optional[str]
-    log: Optional[str]
+    parsed: Optional[str] = None
+    tokenized: Optional[str] = None
+    g2ped: Optional[str] = None
+    log: Optional[str] = None
 
 
 class SupportedLanguage(BaseModel):
@@ -144,26 +144,28 @@ async def langs() -> List[SupportedLanguage]:
 @v1.post("/assemble", response_model=AssembleResponse)
 async def assemble(
     request: AssembleRequest = Body(
-        examples={
-            "text": {
-                "summary": "A basic example with plain text input",
-                "value": {
-                    "input": "hej verden",
-                    "type": "text/plain",
-                    "text_languages": ["dan", "und"],
-                    "debug": False,
+        examples=[
+            {
+                "text": {
+                    "summary": "A basic example with plain text input",
+                    "value": {
+                        "input": "hej verden",
+                        "type": "text/plain",
+                        "text_languages": ["dan", "und"],
+                        "debug": False,
+                    },
                 },
-            },
-            "xml": {
-                "summary": "A basic example with xml input",
-                "value": {
-                    "input": "<?xml version='1.0' encoding='utf-8'?><read-along version=\"1.0\"><text><p><s>hej verden</s></p></text></read-along>",
-                    "type": "application/readalong+xml",
-                    "text_languages": ["dan", "und"],
-                    "debug": False,
+                "xml": {
+                    "summary": "A basic example with xml input",
+                    "value": {
+                        "input": "<?xml version='1.0' encoding='utf-8'?><read-along version=\"1.0\"><text><p><s>hej verden</s></p></text></read-along>",
+                        "type": "application/readalong+xml",
+                        "text_languages": ["dan", "und"],
+                        "debug": False,
+                    },
                 },
-            },
-        }
+            }
+        ]
     )
 ):
     """Create an input RAS from the given text (as plain text or XML).
@@ -190,7 +192,7 @@ async def assemble(
         if request.mime_type == InputFormat.RAS:
             try:
                 parsed = etree.fromstring(
-                    bytes(request.input_text, encoding="utf-8"),
+                    bytes(request.input_text or "", encoding="utf-8"),
                     parser=etree.XMLParser(resolve_entities=False),
                 )
             except etree.ParseError as e:
@@ -271,7 +273,7 @@ def create_grammar(xml):
 class WordAlignment(BaseModel):
     """Word alignment extracted from RAS"""
 
-    word_id: str = Field(None, alias="id")
+    word_id: Optional[str] = Field(None, alias="id")
     start: float
     end: float
 
@@ -317,6 +319,7 @@ class ConvertRequest(BaseModel):
         example=2.01,
         gt=0.0,
         title="The duration of the audio used to create the alignment, in seconds.",
+        default=None,
     )
 
     ras: str = Field(
