@@ -86,11 +86,11 @@ def describe_suite(suite: TestSuite):
     full_list = list(list_tests(full_suite))
     requested_list = list(list_tests(suite))
     requested_set = set(requested_list)
-    print("Test suite includes:", *sorted(requested_list), sep="\n"),
+    print("Test suite includes:", *sorted(requested_list), sep="\n")
     print(
         "\nTest suite excludes:",
         *sorted(test for test in full_list if test not in requested_set),
-        sep="\n"
+        sep="\n",
     )
 
 

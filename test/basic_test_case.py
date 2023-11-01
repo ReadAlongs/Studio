@@ -5,6 +5,7 @@ from pathlib import Path
 from unittest import TestCase
 
 from click.testing import CliRunner
+
 from readalongs.log import LOGGER
 
 

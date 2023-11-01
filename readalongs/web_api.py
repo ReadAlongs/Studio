@@ -166,7 +166,7 @@ async def assemble(
                 },
             }
         ]
-    )
+    ),
 ):
     """Create an input RAS from the given text (as plain text or XML).
     Also creates the required grammar, pronunciation dictionary,

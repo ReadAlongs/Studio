@@ -99,9 +99,8 @@ def encode_from_path(path: str) -> str:
     ):  # We declare it to be application/readalong+xml, not what mimetypes thinks
         mime_type = "application/readalong+xml"
     elif mime[0]:
-        mime_type = mime[0].replace(
-            "video", "audio"
-        )  # Hack: until we properly extract audio from video files, force any video-based mime type to be read as audio
+        # Hack: until we properly extract audio from video files, force any video-based mime type to be read as audio
+        mime_type = mime[0].replace("video", "audio")
     else:
         mime_type = "application"
         LOGGER.warning(
