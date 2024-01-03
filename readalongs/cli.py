@@ -20,7 +20,6 @@ import click
 from lxml import etree
 
 from readalongs._version import __version__
-from readalongs.align import align_audio, create_input_ras, save_readalong
 from readalongs.log import LOGGER
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
@@ -280,6 +279,9 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
 
     OUTPUT_BASE: Output files will be saved as OUTPUT_BASE/OUTPUT_BASE.*
     """
+    # deferred expensive imports
+    from readalongs.align import align_audio, create_input_ras, save_readalong
+
     config_file = kwargs.get("config", None)
     config = None
     if config_file:
@@ -505,6 +507,8 @@ def make_xml(**kwargs):
 
     XMLFILE:       Path to the XML output file, or - for stdout [default: PLAINTEXTFILE.readalong]
     """
+    # deferred expensive import
+    from readalongs.align import create_input_ras
 
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
