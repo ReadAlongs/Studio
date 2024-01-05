@@ -11,20 +11,12 @@ CLI commands implemented in this file:
 """
 
 import io
-import json
 import os
 import sys
-from tempfile import TemporaryFile
 
 import click
-from lxml import etree
 
 from readalongs._version import __version__
-from readalongs.log import LOGGER
-from readalongs.text.add_ids_to_xml import add_ids
-from readalongs.text.convert_xml import convert_xml
-from readalongs.text.tokenize_xml import tokenize_xml
-from readalongs.text.util import load_xml, save_xml, write_xml
 from readalongs.util import (
     JoinerCallbackForClick,
     get_langs,
@@ -280,7 +272,14 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
     OUTPUT_BASE: Output files will be saved as OUTPUT_BASE/OUTPUT_BASE.*
     """
     # deferred expensive imports
+    import json
+    from tempfile import TemporaryFile
+
+    from lxml import etree
+
     from readalongs.align import align_audio, create_input_ras, save_readalong
+    from readalongs.log import LOGGER
+    from readalongs.text.util import load_xml
 
     config_file = kwargs.get("config", None)
     config = None
@@ -459,6 +458,8 @@ def prepare(**kwargs):
 
     XMLFILE:       Path to the XML output file, or - for stdout [default: PLAINTEXTFILE.readalong]
     """
+    from readalongs.log import LOGGER
+
     LOGGER.warning(
         'WARNING: "readalongs prepare" is deprecated. Use "readalongs make-xml" instead.'
     )
@@ -509,6 +510,7 @@ def make_xml(**kwargs):
     """
     # deferred expensive import
     from readalongs.align import create_input_ras
+    from readalongs.log import LOGGER
 
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
@@ -583,6 +585,11 @@ def tokenize(**kwargs):
 
     TOKFILE: Output path for the tok'd XML, or - for stdout [default: XMLFILE.tokenized.readalong]
     """
+    from lxml import etree
+
+    from readalongs.log import LOGGER
+    from readalongs.text.tokenize_xml import tokenize_xml
+    from readalongs.text.util import load_xml, save_xml, write_xml
 
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
@@ -690,6 +697,14 @@ def g2p(**kwargs):
     G2PFILE: Output path for the g2p'd XML, or - for stdout [default: TOKFILE
     with .g2p. inserted]
     """
+    # Defer expensive imports
+    from lxml import etree
+
+    from readalongs.log import LOGGER
+    from readalongs.text.add_ids_to_xml import add_ids
+    from readalongs.text.convert_xml import convert_xml
+    from readalongs.text.util import load_xml, save_xml, write_xml
+
     if kwargs["debug"]:
         LOGGER.setLevel("DEBUG")
         LOGGER.info(
