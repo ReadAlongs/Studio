@@ -57,9 +57,9 @@ jobs:
         run: |
           PYTHONPROFILEIMPORTTIME=1 readalongs -h 2> importtime.txt > /dev/null
           CLI_LOAD_TIME="$((/usr/bin/time --format=%E readalongs -h > /dev/null) 2>&1)"
-          echo "CLI load time: $CLI_LOAD_TIME"
           echo "CLI load time: $CLI_LOAD_TIME" > import-message.txt
-          echo "PR head ${{ github.event.pull_request.head.sha }}" >> import-message.txt
+          PR_HEAD="${{ github.event.pull_request.head.sha }}"
+          [[ $PR_HEAD ]] && echo "Pull Request HEAD: $PR_HEAD" >> import-message.txt
           echo "Imports that take more than 0.1 s:" >> import-message.txt
           grep -E 'cumulative|[0-9]{6} ' importtime.txt >> import-message.txt
           cat import-message.txt
