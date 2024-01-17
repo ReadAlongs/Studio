@@ -252,16 +252,53 @@ Project web page: [ReadAlong Studio: Application for Indigenous audiobooks and v
 if you use this software in a project of yours and write about it, please cite
 us using the following:
 
+Littell, P., Joanis, E., Pine, A., Tessier, M., Huggins-Daines, D., & Torkornoo, D. (2022). ReadAlong Studio: Practical Zero-Shot Text-Speech Alignment for Indigenous Language Audiobooks. Proceedings of SIGUL2022 @LREC2022, 23–32.
+
 ```
 @inproceedings{Littell_ReadAlong_Studio_Practical_2022,
-  author = {Littell, Patrick and Joanis, Eric and Pine, Aidan and Tessier, Marc and Huggins-Daines, David and Torkornoo, Delasie},
-  booktitle = {Proceedings of SIGUL2022 @LREC2022},
-  title = {{ReadAlong Studio: Practical Zero-Shot Text-Speech Alignment for Indigenous Language Audiobooks}},
-  year = {2022},
-  month = {6},
-  pages = {23--32},
-  publisher = {European Language Resources Assiciation (ELRA)},
-  url = {http://www.lrec-conf.org/proceedings/lrec2022/workshops/SIGUL/pdf/2022.sigul-1.4.pdf}
+author = {Littell, Patrick and Joanis, Eric and Pine, Aidan and Tessier, Marc and Huggins-Daines, David and Torkornoo, Delasie},
+booktitle = {Proceedings of SIGUL2022 @LREC2022},
+title = {{ReadAlong Studio: Practical Zero-Shot Text-Speech Alignment for Indigenous Language Audiobooks}},
+year = {2022},
+month = {6},
+pages = {23--32},
+publisher = {European Language Resources Assiciation (ELRA)},
+url = {http://www.lrec-conf.org/proceedings/lrec2022/workshops/SIGUL/pdf/2022.sigul-1.4.pdf}
+}
+```
+
+Aidan Pine, David Huggins-Daines, Eric Joanis, Patrick Littell, Marc Tessier, Delasie Torkornoo, Rebecca Knowles, Roland Kuhn, and Delaney Lothian. 2023. ReadAlong Studio Web Interface for Digital Interactive Storytelling. In Proceedings of the 18th Workshop on Innovative Use of NLP for Building Educational Applications (BEA 2023), pages 163–172, Toronto, Canada. Association for Computational Linguistics.
+
+```
+@inproceedings{pine-etal-2023-readalong,
+    title = "{R}ead{A}long Studio Web Interface for Digital Interactive Storytelling",
+    author = "Pine, Aidan  and
+      Huggins-Daines, David  and
+      Joanis, Eric  and
+      Littell, Patrick  and
+      Tessier, Marc  and
+      Torkornoo, Delasie  and
+      Knowles, Rebecca  and
+      Kuhn, Roland  and
+      Lothian, Delaney",
+    editor = {Kochmar, Ekaterina  and
+      Burstein, Jill  and
+      Horbach, Andrea  and
+      Laarmann-Quante, Ronja  and
+      Madnani, Nitin  and
+      Tack, Ana{\"\i}s  and
+      Yaneva, Victoria  and
+      Yuan, Zheng  and
+      Zesch, Torsten},
+    booktitle = "Proceedings of the 18th Workshop on Innovative Use of NLP for Building Educational Applications (BEA 2023)",
+    month = jul,
+    year = "2023",
+    address = "Toronto, Canada",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2023.bea-1.14",
+    doi = "10.18653/v1/2023.bea-1.14",
+    pages = "163--172",
+    abstract = "We develop an interactive web-based user interface for performing textspeech alignment and creating digital interactive read-along audio books that highlight words as they are spoken and allow users to replay individual words when clicked. We build on an existing Python library for zero-shot multilingual textspeech alignment (Littell et al., 2022), extend it by exposing its functionality through a RESTful API, and rewrite the underlying speech recognition engine to run in the browser. The ReadAlong Studio Web App is open-source, user-friendly, prioritizes privacy and data sovereignty, allows for a variety of standard export formats, and is designed to work for the majority of the world{'}s languages.",
 }
 ```
 
