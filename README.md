@@ -272,24 +272,8 @@ Aidan Pine, David Huggins-Daines, Eric Joanis, Patrick Littell, Marc Tessier, De
 ```
 @inproceedings{pine-etal-2023-readalong,
     title = "{R}ead{A}long Studio Web Interface for Digital Interactive Storytelling",
-    author = "Pine, Aidan  and
-      Huggins-Daines, David  and
-      Joanis, Eric  and
-      Littell, Patrick  and
-      Tessier, Marc  and
-      Torkornoo, Delasie  and
-      Knowles, Rebecca  and
-      Kuhn, Roland  and
-      Lothian, Delaney",
-    editor = {Kochmar, Ekaterina  and
-      Burstein, Jill  and
-      Horbach, Andrea  and
-      Laarmann-Quante, Ronja  and
-      Madnani, Nitin  and
-      Tack, Ana{\"\i}s  and
-      Yaneva, Victoria  and
-      Yuan, Zheng  and
-      Zesch, Torsten},
+    author = "Pine, Aidan  and  Huggins-Daines, David  and  Joanis, Eric  and  Littell, Patrick  and  Tessier, Marc  and  Torkornoo, Delasie  and  Knowles, Rebecca  and  Kuhn, Roland  and  Lothian, Delaney",
+    editor = {Kochmar, Ekaterina  and  Burstein, Jill  and  Horbach, Andrea  and  Laarmann-Quante, Ronja  and  Madnani, Nitin  and  Tack, Ana{\"\i}s  and  Yaneva, Victoria  and  Yuan, Zheng  and  Zesch, Torsten},
     booktitle = "Proceedings of the 18th Workshop on Innovative Use of NLP for Building Educational Applications (BEA 2023)",
     month = jul,
     year = "2023",
