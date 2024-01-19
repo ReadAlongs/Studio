@@ -8,7 +8,7 @@ from contextlib import contextmanager
 
 import coloredlogs
 
-FIELD_STYLES = dict(levelname=dict(color="green", bold=coloredlogs.CAN_USE_BOLD_FONT))
+FIELD_STYLES = dict(levelname=dict(color="green"))
 
 
 def setup_logger(name):
