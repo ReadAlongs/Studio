@@ -94,15 +94,22 @@ def describe_suite(suite: TestSuite):
     )
 
 
+SUITES = ["all", "dev", "e2e", "prod", "api", "other"]
+
+
 def run_tests(suite: str, describe: bool = False) -> bool:
     """Run the specified test suite.
 
     Args:
-        suite: one of "all", "dev", etc specifying which suite to run
+        suite: one of SUITES, "dev" if the empty string
         describe: if True, list all the test cases instead of running them.
 
     Returns: True iff success
     """
+
+    if not suite:
+        LOGGER.info("No test suite specified, defaulting to dev.")
+        suite = "dev"
 
     if suite == "e2e":
         test_suite = TestSuite(e2e_tests)
@@ -116,8 +123,7 @@ def run_tests(suite: str, describe: bool = False) -> bool:
         test_suite = TestSuite(other_tests)
     else:
         LOGGER.error(
-            "Sorry, you need to select a Test Suite to run, one of: "
-            "dev, all (or prod), e2e, other"
+            "Sorry, you need to select a Test Suite to run, one of: " + " ".join(SUITES)
         )
         return False
 
@@ -126,7 +132,10 @@ def run_tests(suite: str, describe: bool = False) -> bool:
         return True
     else:
         runner = TextTestRunner(verbosity=3)
-        return runner.run(test_suite).wasSuccessful()
+        success = runner.run(test_suite).wasSuccessful()
+        if not success:
+            LOGGER.error("Some tests failed. Please see log above.")
+        return success
 
 
 if __name__ == "__main__":
@@ -134,11 +143,6 @@ if __name__ == "__main__":
     if describe:
         sys.argv.remove("--describe")
 
-    try:
-        result = run_tests(sys.argv[1], describe)
-        if not result:
-            LOGGER.error("Some tests failed. Please see log above.")
-            sys.exit(1)
-    except IndexError:
-        LOGGER.error("Please specify a test suite to run: i.e. 'dev' or 'all'")
+    result = run_tests("" if len(sys.argv) <= 1 else sys.argv[1], describe)
+    if not result:
         sys.exit(1)
