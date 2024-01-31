@@ -7,7 +7,7 @@ fastapi>=0.78.0
 # Note: when we move g2p to >=2, we will need fastapi>=0.100.0 which requires httpx
 g2p>=1.1.20230822, <2.1
 httpx>=0.24.1
-lxml==4.9.1
+lxml==4.9.4
 networkx>=2.6
 numpy>=1.20.2,<2
 pydub==0.23.1
