@@ -5,8 +5,7 @@ click>=8.0.4
 coloredlogs>=10.0
 # Need to install this specifically from git as the sdist is broken
 editdistance @ git+https://github.com/roy-ht/editdistance.git@v0.6.2 ; python_version == '3.12'
-fastapi>=0.78.0
-# Note: when we move g2p to >=2, we will need fastapi>=0.100.0 which requires httpx
+fastapi>=0.100.0
 g2p>=1.1.20230822, <2.1
 httpx>=0.24.1
 lxml==4.9.4
