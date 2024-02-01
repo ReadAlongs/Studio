@@ -9,12 +9,12 @@ jobs:
     # #no-ci in the commit log flags commit we don't want CI-validated
     if: ${{ !contains(github.event.head_commit.message, '#no-ci') }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: FedericoCarboni/setup-ffmpeg@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.7"
           cache: "pip"
@@ -46,7 +46,7 @@ jobs:
           # Legal check: make sure we don't have or introduce GPL dependencies
           if pip-licenses | grep -v 'Artistic License' | grep -v LGPL | grep GNU; then echo 'Please avoid introducing *GPL dependencies'; false; fi
 
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
           directory: ./test
           token: ${{ secrets.CODECOV_TOKEN }}  # optional but apparently makes upload more reliable
@@ -82,12 +82,12 @@ jobs:
     runs-on: windows-latest
     if: ${{ !contains(github.event.head_commit.message, '#no-ci') }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: FedericoCarboni/setup-ffmpeg@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.7"
           cache: "pip"
