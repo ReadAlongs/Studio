@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Test force-alignment with SoundsSwallower FSG search from Python API
+Test force-alignment with SoundSwallower FSG search from Python API
 """
 
 import os
@@ -26,7 +26,7 @@ from readalongs.text.util import load_txt, load_xml, save_xml
 
 
 class TestForceAlignment(BasicTestCase):
-    """Unit testing suite for forced-alignment with SoundsSwallower"""
+    """Unit testing suite for forced-alignment with SoundSwallower"""
 
     def test_align(self):
         """Basic alignment test case with XML input"""

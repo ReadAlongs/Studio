@@ -1,5 +1,6 @@
 """Common base class for the ReadAlongs test suites"""
 
+import logging
 import tempfile
 from pathlib import Path
 from unittest import TestCase
@@ -20,7 +21,6 @@ class BasicTestCase(TestCase):
         text_file = self.data_dir / "ej-fra.txt"
     """
 
-    LOGGER.setLevel("DEBUG")
     data_dir = Path(__file__).parent / "data"
 
     # Set this to True to keep the temp dirs after running, for manual inspection
@@ -59,3 +59,9 @@ class BasicTestCase(TestCase):
         """
         if not self.keep_temp_dir_after_running:
             self.tempdirobj.cleanup()
+
+        if LOGGER.level == logging.DEBUG:
+            # LOGGER.error("Logging level is DEBUG")
+            # Some test cases can set the logging level to DEBUG when they pass
+            # --debug to a CLI command, but don't let that affect subsequent tests.
+            LOGGER.setLevel(logging.INFO)

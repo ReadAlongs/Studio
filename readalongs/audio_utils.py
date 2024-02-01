@@ -4,11 +4,15 @@ Audio segments and files are manipulated using pydub.AudioSegment, which indexes
 in millisecond slices and lets us manipulate them as if they were simple lists.
 """
 
+import logging
 from typing import Union
 
 from pydub import AudioSegment
 
 from readalongs.log import LOGGER
+
+# quiet pydub's logging
+logging.getLogger("pydub.converter").setLevel(logging.WARNING)
 
 
 def join_section(audio: AudioSegment, audio_to_insert: AudioSegment, start: int):
