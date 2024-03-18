@@ -623,6 +623,9 @@ class TestAlignCli(BasicTestCase):
             slurp_text(base_file, "utf-8"), slurp_text(bom_file_pathlib, "utf-8-sig")
         )
 
+    def test_tokens_with_empty_g2p(self):
+        text = "Kanien'kéha ' :"
+
 
 if __name__ == "__main__":
     main()
