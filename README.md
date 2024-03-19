@@ -263,7 +263,7 @@ year = {2022},
 month = {6},
 pages = {23--32},
 publisher = {European Language Resources Assiciation (ELRA)},
-url = {http://www.lrec-conf.org/proceedings/lrec2022/workshops/SIGUL/pdf/2022.sigul-1.4.pdf}
+url = {https://aclanthology.org/2022.sigul-1.4}
 }
 ```
 
