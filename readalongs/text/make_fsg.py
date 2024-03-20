@@ -6,7 +6,6 @@ morpheme) and ids and converted to IPA, and outputs an FSG or a JSGF
 file for processing by PocketSphinx, SoundSwallower or SoundSwallower.js
 """
 
-
 import datetime
 import os
 
