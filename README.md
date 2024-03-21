@@ -62,7 +62,7 @@ Optionally a book can be generated as a standalone HTML page, XHTML, Praat TextG
 
 Before you can install the ReadAlong Studio, you will need to install these dependencies:
 
- - Python, version 3.7 or higher,
+ - Python, version 3.8 or higher,
  - [FFmpeg](https://ffmpeg.org/),
  - a C compiler,
  - Git (optional, needed to get the current development version).
