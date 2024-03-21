@@ -23,7 +23,7 @@ with open(os.path.join(this_directory, "README.md"), encoding="utf8") as f:
 setup(
     name="readalongs",
     license="MIT",
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     version=VERSION,
     description="ReadAlong Studio",
     url="https://github.com/ReadAlongs/Studio",
