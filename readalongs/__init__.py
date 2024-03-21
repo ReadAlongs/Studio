@@ -12,8 +12,8 @@ import sys
 
 VERSION = "1.0"
 
-if sys.version_info < (3, 7, 0):  # pragma: no cover
+if sys.version_info < (3, 8, 0):  # pragma: no cover
     sys.exit(
-        f"Python 3.7 or more recent is required. You are using {sys.version}. "
+        f"Python 3.8 or more recent is required. You are using {sys.version}. "
         "Please use a newer version of Python."
     )

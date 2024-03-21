@@ -1,5 +1,5 @@
 # This matrix testing is for versions not already exercised by tests.yml
-# For regular pushes, we just test the baseline Python version, but when pushing
+# For regular pushes, we just test the minimum Python version, but when pushing
 # to main or release, we want to exercise the full matrix.
 name: Run Matrix Tests
 on:
@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
