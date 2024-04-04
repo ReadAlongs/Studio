@@ -21,6 +21,8 @@ from lxml import etree
 # removed "try: unicode() except" block (was for Python 2), but this file uses unicode()
 # too many times, so define it anyway.
 unicode = str
+# todo: sync with web component major and minor releases
+CURRENT_WEB_APP_VERSION = "1.2.x"
 
 
 def ensure_dirs(path):
@@ -218,7 +220,7 @@ MINIMAL_INDEX_HTML_TEMPLATE = """<!DOCTYPE html>
     </body>
 
     <!-- The last step needed is to import the package -->
-    <script type="module" src='https://unpkg.com/@readalongs/web-component@^1.0.0/dist/web-component/web-component.esm.js'></script>
+    <script type="module" src='https://unpkg.com/@readalongs/web-component@{version}/dist/web-component/web-component.esm.js'></script>
 </html>
 """
 
@@ -241,6 +243,7 @@ def save_minimal_index_html(
                 theme=theme,
                 header=header,
                 subheader=subheader,
+                version=CURRENT_WEB_APP_VERSION,
             )
         )
 
@@ -295,3 +298,71 @@ def parse_time(time_string: str) -> int:
         raise ValueError(
             f'cannot parse "{time_string}" as a valid time in h/m/s/ms'
         ) from e
+
+
+# todo: synchronize with web-component readme
+# https://github.com/ReadAlongs/Web-Component/blob/main/packages/studio-web/src/app/demo/demo.component.ts#L49
+# https://github.com/ReadAlongs/Web-Component/blob/main/packages/studio-web/src/app/demo/demo.component.ts#L328
+TEMPLATE_README_TXT = """
+Web Deployment Guide
+
+This folder has everything you need to host your ReadAlong on your own server.
+
+Your audio ({audio}), (optional) image(s) asset(s), and alignment ({text}) are stored in this folder.
+
+Your index.html file demonstrates the snippet and imports needed to host the ReadAlong on your server.
+
+Please host all assets on your server, include the font and package imports defined in the index.html in your website's imports, and include the corresponding <read-along> snippet everywhere you would like your ReadAlong to be displayed.
+
+        `
+
+WordPress Deployment Guide
+
+
+Setup the plugin (do this once)
+
+Install and activate our plugin 'wp-read-along-web-app-loader' on your WordPress site.
+
+
+Deploy the read-along
+
+Upload the {text} and {audio} to your Media Library of your WordPress site.
+
+Use the text editor to paste the snippet below in your WordPress page
+
+Replace assets/ with the path from your Media Library
+
+        ---- WP Deployment SNIPPET ----
+
+<!-- Here is how you declare the Web Component. Supported languages: en, fr -->
+[wp_read_along_web_app_loader version="{version}"]
+    <read-along href="{text}" audio="{audio}" theme="{theme}" language="en">
+        <span slot='read-along-header'>{header}</span>
+        <span slot='read-along-subheader'>{subheader}</span>
+    </read-along>
+[/wp_read_along_web_app_loader]
+
+        ----- END OF SNIPPET----
+
+"""
+
+
+def save_readme_txt(
+    output_path,
+    tokenized_xml_basename,
+    audio_basename,
+    header,
+    subheader,
+    theme,
+):
+    with open(output_path, "w", encoding="utf-8") as fout:
+        fout.write(
+            TEMPLATE_README_TXT.format(
+                version=CURRENT_WEB_APP_VERSION,
+                text=tokenized_xml_basename,
+                audio=audio_basename,
+                theme=theme,
+                header=header,
+                subheader=subheader,
+            )
+        )

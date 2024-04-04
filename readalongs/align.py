@@ -46,6 +46,7 @@ from readalongs.text.util import (
     load_xml,
     parse_time,
     save_minimal_index_html,
+    save_readme_txt,
     save_xml,
 )
 
@@ -977,6 +978,14 @@ def save_readalong(
     # Copy the image files to the output's asset directory, if any are found
     if "images" in config:
         save_images(config=config, output_dir=output_dir)
+    save_readme_txt(
+        os.path.join(output_dir, "README.txt"),
+        os.path.basename(ras_path),
+        os.path.basename(audio_path),
+        config.get("header", "Header goes here"),
+        config.get("subheader", ""),
+        config.get("theme", "light"),
+    )
 
 
 def get_word_element(xml: etree.ElementTree, el_id: str) -> etree.ElementTree:
