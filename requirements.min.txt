@@ -12,5 +12,6 @@ numpy>=1.20.2,<2
 pydub==0.23.1
 pympi-ling>=1.69,<2.0
 python-slugify==5.0.0
+requests>=2.31.0
 soundswallower~=0.6.0
 webvtt-py==0.4.2
