@@ -316,7 +316,7 @@ class ConvertRequest(BaseModel):
     """Convert Request contains the RAS-processed XML"""
 
     dur: Union[float, None] = Field(
-        example=2.01,
+        examples=[2.01],
         gt=0.0,
         title="The duration of the audio used to create the alignment, in seconds.",
         default=None,
@@ -324,24 +324,26 @@ class ConvertRequest(BaseModel):
 
     ras: str = Field(
         title="The time-aligned XML output produced by `readalongs align`.",
-        example=dedent(
-            """\
-            <?xml version='1.0' encoding='utf-8'?>
-            <read-along version="1.0">
-                <text xml:lang="dan" fallback-langs="und" id="t0">
-                    <body id="t0b0">
-                        <div type="page" id="t0b0d0">
-                            <p id="t0b0d0p0">
-                                <s id="t0b0d0p0s0">
-                                    <w id="t0b0d0p0s0w0" ARPABET="HH EH Y" time="0.14" dur="0.64">hej</w>
-                                    <w id="t0b0d0p0s0w1" ARPABET="V Y D EH N" time="0.78" dur="1.11">verden</w>
-                                </s>
-                            </p>
-                        </div>
-                    </body>
-                </text>
-            </read-along>"""
-        ),
+        examples=[
+            dedent(
+                """\
+                <?xml version='1.0' encoding='utf-8'?>
+                <read-along version="1.0">
+                    <text xml:lang="dan" fallback-langs="und" id="t0">
+                        <body id="t0b0">
+                            <div type="page" id="t0b0d0">
+                                <p id="t0b0d0p0">
+                                    <s id="t0b0d0p0s0">
+                                        <w id="t0b0d0p0s0w0" ARPABET="HH EH Y" time="0.14" dur="0.64">hej</w>
+                                        <w id="t0b0d0p0s0w1" ARPABET="V Y D EH N" time="0.78" dur="1.11">verden</w>
+                                    </s>
+                                </p>
+                            </div>
+                        </body>
+                    </text>
+                </read-along>"""
+            )
+        ],
     )
 
 
