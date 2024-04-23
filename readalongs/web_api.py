@@ -28,7 +28,6 @@ http://localhost:8000/api/v1/docs
 
 """
 
-import io
 import os
 import tempfile
 from enum import Enum
@@ -48,6 +47,7 @@ from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.make_dict import make_dict_list
 from readalongs.text.tokenize_xml import tokenize_xml
+from readalongs.text.util import parse_xml
 from readalongs.util import get_langs
 
 # Create the app
@@ -191,10 +191,7 @@ async def assemble(
     with capture_logs() as captured_logs:
         if request.mime_type == InputFormat.RAS:
             try:
-                parsed = etree.fromstring(
-                    bytes(request.input_text or "", encoding="utf-8"),
-                    parser=etree.XMLParser(resolve_entities=False),
-                )
+                parsed = parse_xml(request.input_text or "")
             except etree.ParseError as e:
                 raise HTTPException(
                     status_code=422, detail="XML provided is not well-formed"
@@ -208,13 +205,11 @@ async def assemble(
                     ),
                 )
         elif request.mime_type == InputFormat.TEXT:
-            parsed = io.StringIO(request.input_text).readlines()
-            parsed = etree.fromstring(
-                bytes(
-                    create_ras_from_text(parsed, text_languages=request.text_languages),
-                    encoding="utf-8",
-                ),
-                parser=etree.XMLParser(resolve_entities=False),
+            parsed = parse_xml(
+                create_ras_from_text(
+                    (request.input_text or "").splitlines(keepends=True),
+                    text_languages=request.text_languages,
+                )
             )
 
         else:  # pragma: no cover
@@ -391,10 +386,7 @@ async def convert_alignment(  # noqa: C901
     Returns: a file in the format requested
     """
     try:
-        parsed_xml = etree.fromstring(
-            bytes(request.ras, encoding="utf-8"),
-            parser=etree.XMLParser(resolve_entities=False),
-        )
+        parsed_xml = parse_xml(request.ras)
     except etree.XMLSyntaxError as e:
         raise HTTPException(
             status_code=422, detail="ReadAlong provided is not well formed"
