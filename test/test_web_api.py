@@ -6,12 +6,12 @@ from textwrap import dedent
 from unittest import main
 
 from basic_test_case import BasicTestCase
-from lxml import etree
 
 from readalongs.log import LOGGER
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.tokenize_xml import tokenize_xml
+from readalongs.text.util import parse_xml
 from readalongs.util import get_langs
 
 
@@ -86,9 +86,7 @@ class TestWebApi(BasicTestCase):
 
     def test_create_grammar(self):
         # Test the create grammar function
-        parsed = etree.fromstring(
-            bytes(self.slurp_data_file("ej-fra.readalong"), encoding="utf8")
-        )
+        parsed = parse_xml(self.slurp_data_file("ej-fra.readalong"))
         tokenized = tokenize_xml(parsed)
         ids_added = add_ids(tokenized)
         g2ped, valid = convert_xml(ids_added)

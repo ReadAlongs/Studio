@@ -19,11 +19,10 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import os
 from io import open
 
-import librosa
+import librosa  # type: ignore
 import numpy as np
-from lxml import etree
 
-from readalongs.text.util import xpath_default
+from readalongs.text.util import load_xml, xpath_default
 
 SAMPLE_RATE = 16000
 
@@ -73,13 +72,6 @@ def ensure_dirs(path):
     dirname = os.path.dirname(path)
     if dirname and not os.path.exists(dirname):
         os.makedirs(dirname)
-
-
-def load_xml(input_path):
-    with open(input_path, "r", encoding="utf-8") as fin:
-        return etree.fromstring(
-            fin.read(), parser=etree.XMLParser(resolve_entities=False)
-        )
 
 
 def save_txt(output_path, txt):

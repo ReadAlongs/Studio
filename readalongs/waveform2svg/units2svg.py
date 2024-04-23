@@ -21,11 +21,10 @@ import os
 from collections import OrderedDict
 
 import chevron
-import librosa
+import librosa  # type: ignore
 from audio_util import save_txt
-from lxml import etree
 
-from readalongs.text.util import xpath_default
+from readalongs.text.util import load_xml, xpath_default
 
 FMIN = 80
 FMAX = 1000
@@ -55,13 +54,6 @@ def render_svg(data, width=512, height=100, radius=4):
             w = "%.2f" % w
             result["rects"].append({"x": x, "width": w})
     return chevron.render(SVG_TEMPLATE, result)
-
-
-def load_xml(input_path):
-    with open(input_path, "r", encoding="utf-8") as fin:
-        return etree.fromstring(
-            fin.read(), parser=etree.XMLParser(resolve_entities=False)
-        )
 
 
 def parse_smil(input_path):

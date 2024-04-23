@@ -21,6 +21,7 @@ from readalongs.text.util import (
     load_xml,
     load_xml_zip,
     parse_time,
+    parse_xml,
     save_txt,
     save_xml,
 )
@@ -101,7 +102,7 @@ class TestMisc(BasicTestCase):
             </text>
             </read-along>
         """
-        xml = etree.fromstring(raw_xml)
+        xml = parse_xml(raw_xml)
         for i, s, lang in zip(
             itertools.count(),
             xml.xpath(".//s"),
@@ -176,23 +177,23 @@ class TestMisc(BasicTestCase):
 
     def test_get_word_text(self):
         self.assertEqual(
-            get_word_text(etree.fromstring("<w>basicword</w>")),
+            get_word_text(parse_xml("<w>basicword</w>")),
             "basicword",
         )
         self.assertEqual(
-            get_word_text(etree.fromstring("<w><subw>subwcase</subw></w>")),
+            get_word_text(parse_xml("<w><subw>subwcase</subw></w>")),
             "subwcase",
         )
         self.assertEqual(
-            get_word_text(etree.fromstring("<w><syl>syl1</syl><syl>syl2</syl></w>")),
+            get_word_text(parse_xml("<w><syl>syl1</syl><syl>syl2</syl></w>")),
             "syl1syl2",
         )
         self.assertEqual(
-            get_word_text(etree.fromstring("<w>text<subw>sub</subw>tail</w>")),
+            get_word_text(parse_xml("<w>text<subw>sub</subw>tail</w>")),
             "textsubtail",
         )
         self.assertEqual(
-            get_word_text(etree.fromstring("<w><a>a<b>b</b>c</a>d</w>")),
+            get_word_text(parse_xml("<w><a>a<b>b</b>c</a>d</w>")),
             "abcd",
         )
 
@@ -242,9 +243,19 @@ class TestMisc(BasicTestCase):
         # b'<explode>AAAAAAAAAAAAAAAA</explode>'
         # See https://en.wikipedia.org/wiki/Billion_laughs_attack
 
+    def test_parse_xml(self):
+        xml_text = '<foo attrib="value">text</foo>'
+        xml = parse_xml(xml_text)
+        xml2 = parse_xml(bytes(xml_text, encoding="latin1"))
+        self.assertEqual(etree.tostring(xml), etree.tostring(xml2))
+
+        malformed_xml_text = "<foo attrib="
+        with self.assertRaises(etree.ParseError):
+            xml = parse_xml(malformed_xml_text)
+
     def test_save_xml(self):
         xml_text = '<foo attrib="value">text</foo>'
-        xml = etree.fromstring(xml_text)
+        xml = parse_xml(xml_text)
         filename = self.tempdir / "foo.readalong"
         save_xml(filename, xml)
         loaded_xml = load_xml(filename)

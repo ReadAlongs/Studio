@@ -9,6 +9,7 @@ from lxml import etree
 
 from readalongs.text import tokenize_xml
 from readalongs.text.add_ids_to_xml import add_ids
+from readalongs.text.util import parse_xml
 
 
 class TestDNAText(BasicTestCase):
@@ -21,7 +22,7 @@ class TestDNAText(BasicTestCase):
 <s>Bonjour! Comment ça va?</s>
 <s>Voici une deuxième phrase.</s>
 </document>"""
-        xml = etree.fromstring(txt)
+        xml = parse_xml(txt)
         tokenized = tokenize_xml.tokenize_xml(xml)
         as_txt = etree.tounicode(tokenized)
         # print(etree.tounicode(tokenized))
@@ -52,7 +53,7 @@ class TestDNAText(BasicTestCase):
 <s do-not-align="TRUE">Voici une deuxième phrase.</s>
 <s>Un <foo do-not-align="1">mot ou deux</foo> à exclure.</s>
 </document>"""
-        xml = etree.fromstring(txt)
+        xml = parse_xml(txt)
         tokenized = tokenize_xml.tokenize_xml(xml)
         as_txt = etree.tounicode(tokenized)
         # print('as_txt="' + as_txt +'"')
@@ -94,7 +95,7 @@ class TestDNAText(BasicTestCase):
 <p> <s>Trois phrases.</s> </p>
 </div>
 </document>"""
-        xml = etree.fromstring(txt)
+        xml = parse_xml(txt)
         tokenized = tokenize_xml.tokenize_xml(xml)
         as_txt = etree.tounicode(tokenized)
         # print('as_txt="' + as_txt +'"')
@@ -141,7 +142,7 @@ class TestDNAText(BasicTestCase):
         """You can't have a DNA <w> element, that's reserved for tokens to align"""
 
         txt = """<s xml:lang="fra">Une <w do-not-align="true">exclude</w> phrase.</s>"""
-        xml = etree.fromstring(txt)
+        xml = parse_xml(txt)
         tokenized = tokenize_xml.tokenize_xml(xml)
         self.assertRaises(RuntimeError, add_ids, tokenized)
 
@@ -149,7 +150,7 @@ class TestDNAText(BasicTestCase):
         """You also can't have a <w> element inside a DNA element"""
 
         txt = """<s xml:lang="fra">Une <foo do-not-align="true"><bar><w>exclude</w></bar></foo> phrase.</s>"""
-        xml = etree.fromstring(txt)
+        xml = parse_xml(txt)
         tokenized = tokenize_xml.tokenize_xml(xml)
         self.assertRaises(RuntimeError, add_ids, tokenized)
 

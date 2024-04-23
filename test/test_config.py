@@ -60,8 +60,7 @@ class TestConfig(TestCase):
             )
 
         # if xpath isn't valid, log warning
-        log_output = io.StringIO()
-        with redirect_stderr(log_output):
+        with redirect_stderr(io.StringIO()) as log_output:
             new_xml = add_supplementary_xml(
                 self.readalong,
                 {

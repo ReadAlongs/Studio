@@ -118,8 +118,27 @@ def load_xml(input_path: Union[str, IO]) -> etree.ElementTree:
     """
     # resolve_entities=False is a safety issue, prevents XML bombs.
     return etree.parse(
-        input_path, parser=etree.XMLParser(resolve_entities=False)
+        input_path,
+        parser=etree.XMLParser(resolve_entities=False),
     ).getroot()
+
+
+def parse_xml(xml_text: Union[str, bytes]) -> etree.ElementTree:
+    """Safely parse an XML as input text
+
+    Return: the root of the XML etree
+
+    Args:
+        xml_text: the XML text contents to parse
+
+    Raises:
+        etree.ParseError: if there is a problem parsing the XML contents
+    """
+    return etree.fromstring(
+        xml_text if isinstance(xml_text, bytes) else bytes(xml_text, encoding="utf8"),
+        # resolve_entities=False is a safety issue, prevents XML bombs.
+        parser=etree.XMLParser(resolve_entities=False),
+    )
 
 
 def load_xml_zip(zip_path, input_path) -> etree.ElementTree:

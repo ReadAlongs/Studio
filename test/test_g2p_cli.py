@@ -14,11 +14,12 @@ from readalongs.align import align_audio
 from readalongs.cli import align, g2p, make_xml, tokenize
 from readalongs.log import LOGGER
 from readalongs.text.convert_xml import convert_xml
+from readalongs.text.util import parse_xml
 
 
 def run_convert_xml(input_string):
     """wrap convert_xml to make unit testing easier"""
-    return etree.tounicode(convert_xml(etree.fromstring(input_string))[0])
+    return etree.tounicode(convert_xml(parse_xml(input_string))[0])
 
 
 def two_xml_elements(xml_text):
@@ -362,7 +363,7 @@ class TestG2pCli(BasicTestCase):
         """Newlines inside words are weird, but they should not cause errors"""
 
         def compact_arpabet(xml_string: str) -> str:
-            etree_root = etree.fromstring(xml_string)
+            etree_root = parse_xml(xml_string)
             arpabet = etree_root[0].attrib["ARPABET"]
             return re.sub(r"\s+", " ", arpabet)
 
@@ -438,14 +439,14 @@ class TestG2pCli(BasicTestCase):
 
     def test_convert_xml_invalid(self):
         """test readalongs.text.convert_xml.convert_xml() with invalid input"""
-        xml = etree.fromstring('<s><w ARPABET="V AA L IY D">valid</w></s>')
+        xml = parse_xml('<s><w ARPABET="V AA L IY D">valid</w></s>')
         c_xml, valid = convert_xml(xml)
         self.assertEqual(
             etree.tounicode(c_xml), '<s><w ARPABET="V AA L IY D">valid</w></s>'
         )
         self.assertTrue(valid, "convert_xml with valid pre-g2p'd text")
 
-        xml = etree.fromstring('<s><w ARPABET="invalid">invalid</w></s>')
+        xml = parse_xml('<s><w ARPABET="invalid">invalid</w></s>')
         c_xml, valid = convert_xml(xml)
         self.assertEqual(
             etree.tounicode(c_xml), '<s><w ARPABET="invalid">invalid</w></s>'
@@ -453,7 +454,7 @@ class TestG2pCli(BasicTestCase):
         self.assertFalse(valid, "convert_xml with invalid pre-g2p'd text")
 
     def test_invalid_langs_in_xml(self):
-        xml = etree.fromstring(
+        xml = parse_xml(
             """
             <s>
             <w lang="eng" fallback-langs="foo">français falls back to invalid foo</w>

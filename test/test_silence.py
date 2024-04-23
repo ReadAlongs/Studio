@@ -6,10 +6,10 @@ import os
 from unittest import main
 
 from basic_test_case import BasicTestCase
-from lxml import etree
 from pydub import AudioSegment
 
 from readalongs.cli import align
+from readalongs.text.util import load_xml
 
 
 class TestSilence(BasicTestCase):
@@ -41,9 +41,7 @@ class TestSilence(BasicTestCase):
         self.assertEqual(results.exit_code, 0)
         self.assertTrue(os.path.exists(os.path.join(output, "silence.m4a")))
         # test silence spans in output xml
-        with open(os.path.join(output, "silence.readalong"), "rb") as f:
-            xml_bytes = f.read()
-        root = etree.fromstring(xml_bytes)
+        root = load_xml(os.path.join(output, "silence.readalong"))
         silence_spans = root.xpath("//silence")
         self.assertEqual(len(silence_spans), 3)
         # test audio has correct amount of silence added

@@ -9,6 +9,8 @@ from typing import List
 import chevron
 from lxml import etree
 
+from readalongs.text.util import parse_xml
+
 SMIL_TEMPLATE = """\
 <smil xmlns="http://www.w3.org/ns/SMIL" version="3.0">
     <body>
@@ -74,9 +76,7 @@ def parse_smil(formatted_smil: str) -> List[dict]:
     please_msg = "Please make sure your SMIL file is valid."
 
     try:
-        xml = etree.fromstring(
-            formatted_smil, parser=etree.XMLParser(resolve_entities=False)
-        )
+        xml = parse_xml(formatted_smil)
     except etree.ParseError as e:
         raise ValueError(f"Invalid SMIL file: {e}. {please_msg}")
     ns = {"smil": "http://www.w3.org/ns/SMIL"}
