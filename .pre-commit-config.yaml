@@ -32,6 +32,6 @@ repos:
         stages: [commit]
 -   repo: https://github.com/pycqa/flake8
     # do flake8 last to avoid duplicate reports
-    rev: 3.8.3
+    rev: 7.0.0
     hooks:
     -   id: flake8
