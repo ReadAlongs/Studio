@@ -9,6 +9,7 @@ httpx>=0.24.1
 lxml==4.9.4
 networkx>=2.6
 numpy>=1.20.2,<2
+pydantic>=1.8.2,<3
 pydub==0.23.1
 pympi-ling>=1.69,<2.0
 python-slugify==5.0.0
