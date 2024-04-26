@@ -64,6 +64,7 @@ class TestAlignCli(BasicTestCase):
             "output_sentences.vtt",
             "output_words.srt",
             "output_words.vtt",
+            "readme.txt",
         ]
         for f in expected_output_files:
             self.assertTrue(

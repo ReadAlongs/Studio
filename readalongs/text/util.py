@@ -12,6 +12,7 @@ import os
 import re
 import zipfile
 from collections import OrderedDict
+from datetime import datetime
 from io import TextIOWrapper
 from typing import IO, Union
 from unicodedata import normalize
@@ -212,8 +213,8 @@ MINIMAL_INDEX_HTML_TEMPLATE = """<!DOCTYPE html>
     </head>
 
     <body>
-        <!-- Here is how you declare the Web Component. Supported languages: en, fr -->
-        <read-along href="{text}" audio="{audio}" theme="{theme}" language="en">
+        <!-- Here is how you declare the Web Component. Supported languages: eng, fra, spa -->
+        <read-along href="{text}" audio="{audio}" theme="{theme}" language="eng">
             <span slot='read-along-header'>{header}</span>
             <span slot='read-along-subheader'>{subheader}</span>
         </read-along>
@@ -321,27 +322,28 @@ WordPress Deployment Guide
 
 Setup the plugin (do this once)
 
-Install and activate our plugin 'wp-read-along-web-app-loader' on your WordPress site.
+Install and activate our plugin 'read-along-web-app-loader' on your WordPress site.
+
+See https://github.com/ReadAlongs/Studio-Web/tree/main/packages/web-component/wordpress-plugin for more information
 
 
 Deploy the read-along
 
-Upload the {text} and {audio} to your Media Library of your WordPress site.
+Upload the images and {text} and {audio} to your Media Library of your WordPress site.
 
 Use the text editor to paste the snippet below in your WordPress page
 
-Replace assets/ with the path from your Media Library
+
 
         ---- WP Deployment SNIPPET ----
-
-<!-- Here is how you declare the Web Component. Supported languages: en, fr -->
-[wp_read_along_web_app_loader version="{version}"]
-    <read-along href="{text}" audio="{audio}" theme="{theme}" language="en">
+<!-- wp:html -->
+[read_along_web_app_loader version="{version}"]
+    <read-along href="{wp_upload_folder}{text}" audio="{wp_upload_folder}{audio}" image-assets-folder="{wp_upload_folder}" theme="{theme}" language="eng">
         <span slot='read-along-header'>{header}</span>
         <span slot='read-along-subheader'>{subheader}</span>
     </read-along>
-[/wp_read_along_web_app_loader]
-
+[/read_along_web_app_loader]
+<!-- /wp:html -->
         ----- END OF SNIPPET----
 
 """
@@ -355,6 +357,9 @@ def save_readme_txt(
     subheader,
     theme,
 ):
+    # setup path for default WordPress upload directory
+    today = datetime.now()
+    wp_upload_folder = "/wp-content/uploads/{:%Y/%m}/".format(today)
     with open(output_path, "w", encoding="utf-8") as fout:
         fout.write(
             TEMPLATE_README_TXT.format(
@@ -364,5 +369,6 @@ def save_readme_txt(
                 theme=theme,
                 header=header,
                 subheader=subheader,
+                wp_upload_folder=wp_upload_folder,
             )
         )

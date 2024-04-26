@@ -685,7 +685,7 @@ def align_audio(
             final_end = aligned_words[-1]["end"]
         if len(aligned_words) != len(word_sequence.words):
             LOGGER.warning(
-                f"Word sequence {i+1} had {len(word_sequence.words)} tokens "
+                f"Word sequence {i + 1} had {len(word_sequence.words)} tokens "
                 f"but produced {len(aligned_words)} segments. "
                 "Check that the anchors are well positioned or "
                 "that the audio corresponds to the text."
@@ -979,7 +979,7 @@ def save_readalong(
     if "images" in config:
         save_images(config=config, output_dir=output_dir)
     save_readme_txt(
-        os.path.join(output_dir, "README.txt"),
+        os.path.join(output_dir, "readme.txt"),
         os.path.basename(ras_path),
         os.path.basename(audio_path),
         config.get("header", "Header goes here"),
@@ -1154,6 +1154,7 @@ def convert_to_xhtml(tokenized_xml, title="Book"):
     head.append(link_element)
 
 
+# TODO: add this <!-- DO NOT USE THIS DATA WITHOUT EXPLICIT PERMISSION --> to template
 RAS_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 <read-along version="1.0">
     <text xml:lang="{{main_lang}}" fallback-langs="{{fallback_langs}}">
