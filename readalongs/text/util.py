@@ -22,7 +22,7 @@ from lxml import etree
 # too many times, so define it anyway.
 unicode = str
 # todo: sync with web component major and minor releases
-CURRENT_WEB_APP_VERSION = "1.2.x"
+CURRENT_WEB_APP_VERSION = "1.4.x"
 
 
 def ensure_dirs(path):
