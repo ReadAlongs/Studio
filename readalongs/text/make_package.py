@@ -22,9 +22,9 @@ from lxml import etree
 
 from readalongs.log import LOGGER
 
-JS_BUNDLE_URL = "https://unpkg.com/@readalongs/web-component@^1.0.0/dist/bundle.js"
+JS_BUNDLE_URL = "https://unpkg.com/@readalongs/web-component@^1.4.0/dist/bundle.js"
 FONTS_BUNDLE_URL = (
-    "https://unpkg.com/@readalongs/web-component@^1.0.0/dist/fonts.b64.css"
+    "https://unpkg.com/@readalongs/web-component@^1.4.0/dist/fonts.b64.css"
 )
 
 BASIC_HTML = """

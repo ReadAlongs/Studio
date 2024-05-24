@@ -35,7 +35,7 @@ Below is an example of a minimal implementation in a basic standalone html page.
             <read-along href="assets/sample.readalong" audio="assets/sample.wav"></read-along>
         </body>
         <!-- The last step needed is to import the package -->
-       <script type="module" src='https://unpkg.com/@readalongs/web-component@^1.0.0/dist/web-component/web-component.esm.js'></script>
+       <script type="module" src='https://unpkg.com/@readalongs/web-component@^1.4.0/dist/web-component/web-component.esm.js'></script>
     </html>
 
 
