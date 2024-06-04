@@ -304,8 +304,9 @@ def parse_time(time_string: str) -> int:
 # todo: synchronize with web-component readme
 # https://github.com/ReadAlongs/Web-Component/blob/main/packages/studio-web/src/app/demo/demo.component.ts#L49
 # https://github.com/ReadAlongs/Web-Component/blob/main/packages/studio-web/src/app/demo/demo.component.ts#L328
-TEMPLATE_README_TXT = """
+TEMPLATE_README_TXT = """\
 Web Deployment Guide
+====================
 
 This folder has everything you need to host your ReadAlong on your own server.
 
@@ -315,12 +316,13 @@ Your index.html file demonstrates the snippet and imports needed to host the Rea
 
 Please host all assets on your server, include the font and package imports defined in the index.html in your website's imports, and include the corresponding <read-along> snippet everywhere you would like your ReadAlong to be displayed.
 
-        `
+
 
 WordPress Deployment Guide
-
+==========================
 
 Setup the plugin (do this once)
+-------------------------------
 
 Install and activate our plugin 'read-along-web-app-loader' on your WordPress site.
 
@@ -328,12 +330,11 @@ See https://github.com/ReadAlongs/Studio-Web/tree/main/packages/web-component/wo
 
 
 Deploy the read-along
+---------------------
 
 Upload the images and {text} and {audio} to your Media Library of your WordPress site.
 
-Use the text editor to paste the snippet below in your WordPress page
-
-
+Use the text editor to paste the snippet below in your WordPress page:
 
         ---- WP Deployment SNIPPET ----
 <!-- wp:html -->
@@ -345,7 +346,6 @@ Use the text editor to paste the snippet below in your WordPress page
 [/read_along_web_app_loader]
 <!-- /wp:html -->
         ----- END OF SNIPPET----
-
 """
 
 
