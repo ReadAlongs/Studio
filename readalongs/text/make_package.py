@@ -20,6 +20,7 @@ from typing import Any
 
 from lxml import etree
 
+from readalongs._version import __version__
 from readalongs.log import LOGGER
 
 JS_BUNDLE_URL = "https://unpkg.com/@readalongs/web-component@^1.4.0/dist/bundle.js"
@@ -33,6 +34,9 @@ BASIC_HTML = """
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
+  <meta name="application-name" content="read along">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
+  <meta name="generator" content="@readalongs/studio-cli {studio_version}">
   <title>{title}</title>
   <script>{js}</script>
   <style attribution="See https://fonts.google.com/attribution for copyrights and font attribution">{fonts}</style>
@@ -164,4 +168,5 @@ def create_web_component_html(
         header=header,
         subheader=subheader,
         theme=theme,
+        studio_version=__version__,
     )

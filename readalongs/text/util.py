@@ -19,6 +19,8 @@ from unicodedata import normalize
 
 from lxml import etree
 
+from readalongs._version import __version__
+
 # removed "try: unicode() except" block (was for Python 2), but this file uses unicode()
 # too many times, so define it anyway.
 unicode = str
@@ -207,6 +209,9 @@ MINIMAL_INDEX_HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
+        <meta name="application-name" content="read along">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
+        <meta name="generator" content="@readalongs/studio-cli {studio_version}">
         <title>{title}</title>
         <!-- Import fonts. Material Icons are needed by the web component -->
         <link href="https://fonts.googleapis.com/css?family=Lato%7CMaterial+Icons%7CMaterial+Icons+Outlined" rel="stylesheet">
@@ -245,6 +250,7 @@ def save_minimal_index_html(
                 header=header,
                 subheader=subheader,
                 version=CURRENT_WEB_APP_VERSION,
+                studio_version=__version__,
             )
         )
 
