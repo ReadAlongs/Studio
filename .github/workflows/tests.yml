@@ -39,6 +39,15 @@ jobs:
           coverage combine
           coverage xml
 
+      - name: Exercise the Heroku Procfile
+        run: |
+          cmd=$(grep web: Procfile | cut -d' ' -f2-)
+          echo "Running $cmd"
+          $cmd &
+          curl --retry 20 --retry-delay 1 --retry-all-errors http://127.0.0.1:8000/api/v1/docs | grep SwaggerUIBundle
+          curl http://127.0.0.1:8000/api/v1/langs | grep Cree
+          kill %1
+
       - name: Nitpicking
         run: |
           # coding style: we want black compliance
