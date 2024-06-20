@@ -34,7 +34,7 @@ The result of ``tokenize`` or ``g2p`` can be fixed manually if necessary and
 then used as input to ``align``.
 
 Getting from TXT to XML with readalongs make-xml
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Run :ref:`cli-make-xml` to make the ReadAlongs XML file for ``align`` from a TXT file.
 
@@ -60,7 +60,7 @@ breaks are marked by two blank lines.
 |                                   | and will be aligning repeatedly)              |
 +-----------------------------------+-----------------------------------------------+
 | ``-h, --help``                    | Displays CLI guide for                        |
-|                                   | ``make-xml``                                   |
+|                                   | ``make-xml``                                  |
 +-----------------------------------+-----------------------------------------------+
 
 The ``-l, --language`` argument requires a language’s 3 character `ISO

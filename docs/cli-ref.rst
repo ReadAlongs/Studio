@@ -23,7 +23,7 @@ e.g., ``readalongs -h``, ``readalongs align --help``.
   :prog: readalongs align
 
 .. _cli-make-xml:
-.. click:: readalongs.cli:make-xml
+.. click:: readalongs.cli:make_xml
   :prog: readalongs make-xml
 
 .. _cli-tokenize:
