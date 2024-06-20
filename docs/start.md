@@ -1,5 +1,3 @@
-% start:
-
 # Getting Started
 
 This library is an end-to-end audio/text aligner. It is meant to be used
@@ -16,7 +14,7 @@ which ultimately leads to a time-aligned audiobook, i.e., a package of:
 - HTML file describing the web component
 
 Which can be loaded using the [read-along web
-component](https://github.com/roedoejet/ReadAlong-Web-Component).
+component](https://github.com/ReadAlongs/Studio-Web/tree/main/packages/web-component).
 
 A book is generated as a standalone HTML page by default, but can
 optionally be generated as an ePub file.
@@ -24,7 +22,7 @@ optionally be generated as an ePub file.
 ## Required knowledge
 
 - How to use a [Command-line interface (CLI)](https://en.wikipedia.org/wiki/Command-line_interface).
-- How to edit and manipulate plain text, [XML](https://www.w3.org/standards/xml/core) and [SMIL](https://www.w3.org/TR/smil/) files using a text editor or a code editor.
+- How to edit and manipulate plain text and [XML](https://www.w3.org/standards/xml/core) files using a text editor or a code editor.
 - How to edit and examine an audio file with [Audacity](https://www.audacityteam.org/) or similar software.
 - How to spin up a local web server (e.g., see [How do you set up a local testing server?](https://developer.mozilla.org/en-US/docs/Learn/Common_questions/set_up_a_local_testing_server))
 

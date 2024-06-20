@@ -1,0 +1,27 @@
+site_name: ReadAlong-Studio
+theme:
+  name: material
+  features:
+    - content.code.copy
+    - navigation.instant
+plugins:
+  - search
+  - autorefs
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [readalongs]
+markdown_extensions:
+  - mkdocs-click
+  - admonition
+  - def_list
+nav:
+  - Home: index.md
+  - Start: start.md
+  - Installation: installation.md
+  - CLI Guide: cli-guide.md
+  - CLI reference: cli-ref.md
+  - Output Realizations: outputs.md
+  - Advanced Topics: advanced-use.md
+  - Troubleshooting: troubleshooting.md

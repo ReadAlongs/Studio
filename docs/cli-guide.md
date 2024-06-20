@@ -1,9 +1,7 @@
-(cli-guide)=
-
 # Command line interface (CLI) user guide
 
 This page contains guidelines on using the ReadAlongs CLI. See also
-{ref}`cli-ref` for the full CLI reference.
+[Command line interface (CLI) reference ](cli-ref.md) for the full CLI reference.
 
 The ReadAlongs CLI has two main commands: `readalongs make-xml` and
 `readalongs align`.
@@ -32,7 +30,7 @@ then used as input to `align`.
 
 ## Getting from TXT to XML with readalongs make-xml
 
-Run {ref}`cli-make-xml` to make the ReadAlongs XML file for `align` from a TXT file.
+Run [`readalongs make-xml`][readalongs-make-xml] to make the ReadAlongs XML file for `align` from a TXT file.
 
 `readalongs make-xml [options] [story.txt] [story.readalong]`
 
@@ -46,7 +44,7 @@ breaks are marked by two blank lines.
 
 | Key Options                    | Option descriptions                                                                                                   |
 | ------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| `-l, --language(s)` (required) | The language code for story.txt. Specifying multiple comma- or colon-separated languages triggers {ref}`g2p-cascade`. |
+| `-l, --language(s)` (required) | The language code for story.txt. Specifying multiple comma- or colon-separated languages triggers the [g2p cascade][the-g2p-cascade]. |
 | `-f, --force-overwrite`        | Force overwrite output files (handy if you're troubleshooting and will be aligning repeatedly)                        |
 | `-h, --help`                   | Displays CLI guide for `make-xml`                                                                                     |
 
@@ -54,7 +52,7 @@ The `-l, --language` argument requires a language’s 3 character [ISO
 code](https://en.wikipedia.org/wiki/ISO_639-3) as an argument.
 
 The languages supported by RAS can be listed by running `readalongs make-xml -h`
-and they can also be found in the {ref}`cli-make-xml` reference.
+and they can also be found in the [`readalongs make-xml`][readalongs-make-xml] reference.
 
 So, a full command for a story in Algonquin, with an implicit g2p fallback to
 Undetermined, would be something like:
@@ -65,8 +63,8 @@ The generated XML will be parsed in to sentences. At this stage you can
 edit the XML to have any modifications, such as adding `do-not-align`
 as an attribute of any element in your XML.
 
-The format of the generated XML is based on \[TEI
-Lite\](<https://tei-c.org/guidelines/customization/lite/>) but is
+The format of the generated XML is based on [TEI
+Lite](https://tei-c.org/guidelines/customization/lite/) but is
 considerably simplified.  The DTD (document type definition) can be
 found in the ReadAlong Studio source code under
 `readalongs/static/read-along-1.0.dtd`.
@@ -120,7 +118,7 @@ To use DNA audio, you can specify a timeframe in milliseconds in the
 
 ## Aligning your text and audio with readalongs align
 
-Run {ref}`cli-align` to align a text file (RAS or TXT) and an audio file to
+Run [`readalongs align`][readalongs-align] to align a text file (RAS or TXT) and an audio file to
 create a time-aligned audiobook.
 
 `readalongs align [options] [story.txt/xml] [story.mp3/wav] [output_base]`
@@ -135,7 +133,7 @@ created, as `output_base*`
 
 | Key Options             | Option descriptions                                                                                                                                     |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `-l, --language(s)`     | The language code for story.txt. Specifying multiple comma- or colon-separated languages triggers {ref}`g2p-cascade`. (required if input is plain text) |
+| `-l, --language(s)`     | The language code for story.txt. Specifying multiple comma- or colon-separated languages triggers the [g2p cascade][the-g2p-cascade]. (required if input is plain text) |
 | `-c, --config PATH`     | Use ReadAlong-Studio configuration file (in JSON format)                                                                                                |
 | `--debug-g2p`           | Display verbose g2p debugging messages                                                                                                                  |
 | `-s, --save-temps`      | Save intermediate stages of processing and temporary files (dictionary, FSG, tokenization, etc.)                                                        |
@@ -167,7 +165,7 @@ Here is that list at the time of compiling this documentation:
 .. command-output:: readalongs langs
 ```
 
-See {ref}`adding-a-lang` for references on adding new languages to that list.
+See [Adding a new language to g2p][adding-a-new-language-to-g2p] for references on adding new languages to that list.
 
 ## Adding titles, images and do-not-align segments via the config.json file
 
@@ -224,8 +222,6 @@ Warning: mind your commas! The JSON format is very picky: commas
 separate elements in a list or dictionnary, but if you accidentally have
 a comma after the last element (e.g., by cutting and pasting whole
 lines), you will get a syntax error.
-
-(g2p-cascade)=
 
 ## The g2p cascade
 

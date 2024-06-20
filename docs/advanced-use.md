@@ -1,8 +1,4 @@
-(advanced-use)=
-
 # Advanced topics
-
-(adding-a-lang)=
 
 ## Adding a new language to g2p
 
@@ -10,9 +6,11 @@ If you want to align an audio book in a language that is not yet supported by
 the g2p library, you will have to write your own g2p mapping for that language.
 
 References:
-: - The [g2p library](https://github.com/roedoejet/g2p) and its
-    [documentation](https://g2p.readthedocs.io/).
-  - The [7-part blog post on creating g2p mappings](https://blog.mothertongues.org/g2p-background/) on the [Mother Tongues Blog](https://blog.mothertongues.org/).
+
+ - The [g2p library](https://github.com/roedoejet/g2p) and its
+   [documentation](https://roedoejet.github.io/g2p).
+ - The [7-part blog post on creating g2p mappings](https://blog.mothertongues.org/g2p-background/)
+   on the [Mother Tongues Blog](https://blog.mothertongues.org/).
 
 Once you have created a g2p mapping for your language, please consider
 [contributing it to the project](https://blog.mothertongues.org/g2p-contributing/)
@@ -38,7 +36,7 @@ pip-installed. Keep in mind that Pydub uses milliseconds.
 If your data is currently 1 audio file, you will need to split it into
 segments where you want to put the silences.
 
-```
+```py
 ten_seconds = 10 * 1000
 first_10_seconds = soundtrack[:ten_seconds]
 last_5_seconds = soundtrack[-5000:]
@@ -47,7 +45,7 @@ last_5_seconds = soundtrack[-5000:]
 Once you have your segments, create an MP3 file containing only 1 second
 of silence.
 
-```
+```py
 from pydub import AudioSegment
 
 wfile = "appended_1000ms.mp3"
@@ -57,7 +55,7 @@ soundtrack = silence
 
 Then you loop the audio files you want to append (segments and silence).
 
-```
+```py
 seg = AudioSegment.from_mp3(mp3file)
 soundtrack = soundtrack + silence + seg
 ```
@@ -65,7 +63,7 @@ soundtrack = soundtrack + silence + seg
 Write the soundtrack file as an MP3. This will then be the audio input
 for your Read-Along.
 
-```
+```py
 soundtrack.export(wfile, format="mp3")
 ```
 
@@ -83,7 +81,7 @@ of their supported languages), consider adding a library like
 [num2words](https://github.com/savoirfairelinux/num2words) to your
 pre-processing.
 
-```
+```txt
 num2words 123456789
 one hundred and twenty-three million, four hundred and fifty-six thousand, seven hundred and eighty-nine
 ```
