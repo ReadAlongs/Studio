@@ -1,5 +1,7 @@
-Sphinx
-guzzle_sphinx_theme
-sphinx-click
-sphinxcontrib-programoutput
+mkdocs>=1.6.0
+mkdocs-click>=0.8.1
+mkdocs-material>=9.5.27
+mkdocs-autorefs>=1.0.1
+mkdocstrings[python]>=0.25.1
+mike>=2.1.1
 -r ../requirements.min.txt
