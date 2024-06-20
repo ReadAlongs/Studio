@@ -1,28 +1,19 @@
----
-substitutions:
-  image1: |-
-    ```{image} https://i.imgur.com/vKPhTud.png
-    ```
----
-
-(troubleshooting)=
-
-:::{note}
-This troubleshooting guide is under construction.
-:::
+!!! note
+    This troubleshooting guide is under construction.
 
 # Troubleshooting
 
-Here are three types of common errors you may encounter when trying to
+This document in intended to list common errors your may encounter when trying to
 run ReadAlongs, and ways to debug them.
+
+It only ever got one contribution, but more can get added here as needed.
 
 ## Phones missing in the acoustic model
 
-:::{note}
-Troubleshooting item under construction
-:::
+!!! note
+    Troubleshooting item under construction
 
-You may get an error that looks like this:{{ image1 }}
+You may get an error that looks like this:![error screen capture](https://i.imgur.com/vKPhTud.png)
 
 The general structure of your error would look like
 `Phone [character] is missing in the acoustic model; word [index] ignored`
@@ -36,18 +27,19 @@ because it cannot understand what sound the text is meant to represent.
 Follow these steps to debug the issue **in g2p**.
 
 1. Identify which characters in each line of the error message are
-   **not** being converted to eng-arpabet. These will either be:
+**not** being converted to eng-arpabet. These will either be:
 
-   1. characters that are not in caps (for example `g` in the string
-      `gUW` in the error message shown above.)
-   2. a character not traditionally used in English (for example é or Ŧ,
-      or `ʰ` in the error message shown above.) You can confirm you
-      have isolated the right characters by ensuring every other
-      character in your error message appears as an **output** in the
-      [eng-ipa-to-arpabet
-      mapping](https://github.com/roedoejet/g2p/blob/main/g2p/mappings/langs/eng/eng_ipa_to_arpabet.json).
-      These are the problematic characters we need to debug in the error
-      message shown above: `g` and `ʰ`.
+    1. characters that are not in caps (for example `g` in the string
+       `gUW` in the error message shown above.)
+
+    2. a character not traditionally used in English (for example `é` or `Ŧ`,
+       or `ʰ` in the error message shown above.) You can confirm you
+       have isolated the right characters by ensuring every other
+       character in your error message appears as an **output** in the
+       [eng-ipa-to-arpabet
+       mapping](https://github.com/roedoejet/g2p/blob/main/g2p/mappings/langs/eng/eng_ipa_to_arpabet.json).
+       These are the problematic characters we need to debug in the error
+       message shown above: `g` and `ʰ`.
 
 2. Once you have isolated the characters that are not being converted to
    eng-arpabet, you are ready to begin debugging the issue. Start at
@@ -57,14 +49,14 @@ Follow these steps to debug the issue **in g2p**.
    problematic characters incorrectly. Most of the time, the issue will
    be in either the first or the second of the following mappings:
 
-   1. *xyz-ipa* (where xyz is the ISO language code for your mapping)
-   2. *xyz-equiv* (if you have one)
-   3. *xyz-ipa_to_eng-ipa* (this mapping must be generated
-      automatically in g2p. Refer //here_in_the_guide to see how to do
-      this.)
-   4. [eng-ipa-to-arpabet
-      mapping](https://github.com/roedoejet/g2p/blob/main/g2p/mappings/langs/eng/eng_ipa_to_arpabet.json)
-      (The issue is rarely found here, but it doesn’t hurt to check.)
+    1. *xyz-ipa* (where xyz is the ISO language code for your mapping)
+    2. *xyz-equiv* (if you have one)
+    3. *xyz-ipa_to_eng-ipa* (this mapping must be generated
+       automatically in g2p. Refer //here_in_the_guide to see how to do
+       this.)
+    4. [eng-ipa-to-arpabet
+       mapping](https://github.com/roedoejet/g2p/blob/main/g2p/mappings/langs/eng/eng_ipa_to_arpabet.json)
+       (The issue is rarely found here, but it doesn’t hurt to check.)
 
 4. Find a word in your text that uses the problematic character. For the
    sake of example, let us assume the character I am debugging is `g`,
@@ -93,19 +85,3 @@ Follow these steps to debug the issue **in g2p**.
 8. Note the result from running the command in 7. Check that the
    characters \[TODO-fix this text\] (appear/being mapped by generated --
    use debugger or just look at mapping)
-
-## Type 2
-
-:::{note}
-TODO
-:::
-
-Common error type 2...
-
-## Type 3
-
-:::{note}
-TODO
-:::
-
-Common error type 3...
