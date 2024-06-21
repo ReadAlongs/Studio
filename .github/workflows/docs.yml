@@ -3,12 +3,11 @@ on:
   push:
     branches:
       - main
+      - dev.ej/deploy-docs-test
 jobs:
   docs:
     # Create latest docs
     runs-on: ubuntu-latest
-    permissions:
-      contents: write  # to push to the gh-pages branch
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,6 +24,10 @@ jobs:
         run: |
             git config user.name 'github-actions[bot]'
             git config user.email 'github-actions[bot]@users.noreply.github.com'
-      - name: Deploy docs with mike 🚀
+      - name: Deploy docs with mike 🚀 (DRY RUN)
         run: |
-          mike deploy --push --update-aliases dev latest
+          mike deploy --update-aliases dev latest
+      - name: show the results of the mike deploy
+        run: |
+          git show --stat gh-pages
+          git show gh-pages
