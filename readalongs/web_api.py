@@ -41,6 +41,8 @@ from lxml import etree
 from pydantic import BaseModel, Field
 from starlette.background import BackgroundTask
 
+from readalongs import VERSION
+from readalongs._version import __version__
 from readalongs.align import create_ras_from_text, save_label_files, save_subtitles
 from readalongs.log import LOGGER, capture_logs
 from readalongs.text.add_ids_to_xml import add_ids
@@ -77,7 +79,7 @@ v1 = FastAPI()
 # Call get_langs() when the server loads to load the languages into memory
 LANGS = get_langs()
 # Get the DTD
-DTDPATH = os.path.join(os.path.dirname(__file__), "static", "read-along-1.0.dtd")
+DTDPATH = os.path.join(os.path.dirname(__file__), "static", "read-along-1.1.dtd")
 with open(DTDPATH) as dtdfh:
     DTD = etree.DTD(dtdfh)
 
@@ -323,7 +325,8 @@ class ConvertRequest(BaseModel):
             dedent(
                 """\
                 <?xml version='1.0' encoding='utf-8'?>
-                <read-along version="1.0">
+                <read-along version="%s">
+    <meta name="generator" content="@readalongs/studio (cli) %s"/>
                     <text xml:lang="dan" fallback-langs="und" id="t0">
                         <body id="t0b0">
                             <div type="page" id="t0b0d0">
@@ -337,6 +340,7 @@ class ConvertRequest(BaseModel):
                         </body>
                     </text>
                 </read-along>"""
+                % (VERSION, __version__)
             )
         ],
     )

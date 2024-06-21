@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
-<read-along version="1.0">
+<read-along version="{{format_version}}">
+    <meta name="generator" content="@readalongs/studio (cli) {{studio_version}}"/>
     <text xml:lang="fra">
         <body>
             <div type="page">
