@@ -6,7 +6,7 @@
 [![Deploy web-api](https://img.shields.io/badge/%E2%86%91_Deploy_to-Heroku-7056bf.svg)](https://readalong-studio.herokuapp.com/api/v1/docs)
 [![GitHub license](https://img.shields.io/github/license/ReadAlongs/Studio)](https://github.com/ReadAlongs/Studio/blob/main/LICENSE)
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg)](https://github.com/ReadAlongs/Studio)
-[![Documentation Status](https://readthedocs.org/projects/readalong-studio/badge/)](https://readalong-studio.readthedocs.io)
+[![Documentation](https://github.com/ReadAlongs/studio/actions/workflows/docs.yml/badge.svg)](https://readalongs.github.io/Studio/)
 
 > Audiobook alignment for Indigenous languages!
 
