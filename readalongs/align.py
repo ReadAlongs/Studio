@@ -18,6 +18,8 @@ from pydub.exceptions import CouldntEncodeError
 from pympi.Praat import TextGrid
 from webvtt import Caption, WebVTT
 
+from readalongs import VERSION
+from readalongs._version import __version__
 from readalongs.audio_utils import (
     extract_section,
     mute_section,
@@ -175,7 +177,7 @@ def parse_and_make_xml(
     """Parse XML input and run tokenization and G2P.
 
     Args:
-        xml_path (str): Path to input in ReadAlong XML format (see static/read-along-1.0.dtd)
+        xml_path (str): Path to input in ReadAlong XML format (see static/read-along-1.1.dtd)
         config (dict): Optional; ReadAlong-Studio configuration to use
         save_temps (str): Optional; Save temporary files, by default None
         verbose_g2p_warnings (boolean): Optional; display all g2p errors and warnings
@@ -568,7 +570,7 @@ def align_audio(
     """Align an XML input file to an audio file.
 
     Args:
-        xml_path (str): Path to input file in ReadAlong XML format (see static/read-along-1.0.dtd)
+        xml_path (str): Path to input file in ReadAlong XML format (see static/read-along-1.1.dtd)
         audio_path (str): Path to audio input. Must be in a format supported by ffmpeg
         unit (str): Optional; Element to create alignments for, by default 'w'
         bare (boolean): Optional;
@@ -1156,7 +1158,8 @@ def convert_to_xhtml(tokenized_xml, title="Book"):
 
 # TODO: add this <!-- DO NOT USE THIS DATA WITHOUT EXPLICIT PERMISSION --> to template
 RAS_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
-<read-along version="1.0">
+<read-along version="{{format_version}}">
+    <meta name="generator" content="@readalongs/studio (cli) {{studio_version}}" />
     <text xml:lang="{{main_lang}}" fallback-langs="{{fallback_langs}}">
         <body>
         {{#pages}}
@@ -1177,7 +1180,7 @@ RAS_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 
 
 def create_ras_from_text(lines: Iterable[str], text_languages=Sequence[str]) -> str:
-    """Create input xml in ReadAlong XML format (see static/read-along-1.0.dtd)
+    """Create input xml in ReadAlong XML format (see static/read-along-1.1.dtd)
         Uses the line sequence to infer paragraph and sentence structure from plain text:
         Assumes a double blank line marks a page break, and a single blank line
         marks a paragraph break.
@@ -1194,6 +1197,8 @@ def create_ras_from_text(lines: Iterable[str], text_languages=Sequence[str]) -> 
     kwargs = {
         "main_lang": text_languages[0],
         "fallback_langs": ",".join(text_languages[1:]),
+        "studio_version": __version__,
+        "format_version": VERSION,
     }
     pages: List[dict] = []
     paragraphs: List[dict] = []
@@ -1223,7 +1228,7 @@ def create_ras_from_text(lines: Iterable[str], text_languages=Sequence[str]) -> 
 
 
 def create_input_ras(**kwargs):
-    """Create input xml in ReadAlong XML format (see static/read-along-1.0.dtd)
+    """Create input xml in ReadAlong XML format (see static/read-along-1.1.dtd)
         Uses readlines to infer paragraph and sentence structure from plain text.
         Assumes a double blank line marks a page break, and a single blank line
         marks a paragraph break.
