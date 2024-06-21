@@ -12,6 +12,10 @@ plugins:
       handlers:
         python:
           paths: [readalongs]
+extra:
+  version:
+    provider: mike
+    default: stable
 markdown_extensions:
   - mkdocs-click
   - admonition
