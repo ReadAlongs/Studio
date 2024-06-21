@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
-<read-along version="1.0">
+<read-along version="{{format_version}}">
+    <meta name="generator" content="@readalongs/studio (cli) {{studio_version}}"/>
     <!-- To exclude any element from alignment, add the do-not-align="true" attribute to
          it, e.g., <p do-not-align="true">...</p>, or
          <s>Some text <foo do-not-align="true">do not align this</foo> more text</s> -->

@@ -121,5 +121,5 @@ jobs:
         # This test will fail if the output encoding is cp1252
         # Warning: the diff line below is PowerShell syntax, not bash!
         run: |
-          echo ćś | readalongs make-xml -l fra - - > cs.readalong
+          echo ćś | readalongs make-xml -l fra - - | findstr /v meta > cs.readalong
           if (diff (cat cs.readalong) (cat test/data/cs-ref.readalong)) { throw "Output did not match reference" }
