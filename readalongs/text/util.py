@@ -230,7 +230,7 @@ MINIMAL_INDEX_HTML_TEMPLATE = """<!DOCTYPE html>
         <meta charset="UTF-8">
         <meta name="application-name" content="read along">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
-        <meta name="generator" content="@readalongs/studio-cli {studio_version}">
+        <meta name="generator" content="@readalongs/studio (cli) {studio_version}">
         <title>{title}</title>
         <!-- Import fonts. Material Icons are needed by the web component -->
         <link href="https://fonts.googleapis.com/css?family=Lato%7CMaterial+Icons%7CMaterial+Icons+Outlined" rel="stylesheet">
