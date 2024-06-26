@@ -9,6 +9,7 @@ from unittest import main
 from basic_test_case import BasicTestCase
 from lxml import etree
 from sound_swallower_stub import SoundSwallowerStub
+from test_make_xml_cli import updateFormatVersion, updateStudioVersion
 
 from readalongs.align import align_audio
 from readalongs.cli import align, g2p, make_xml, tokenize
@@ -76,9 +77,13 @@ class TestG2pCli(BasicTestCase):
             ref_file, encoding="utf8"
         ) as ref_f:
             self.maxDiff = None
+            # update version info
+            ref_list = list(ref_f)
+            ref_list[1] = updateFormatVersion(ref_list[1])
+            ref_list[2] = updateStudioVersion(ref_list[2])
             self.assertListEqual(
                 list(output_f),
-                list(ref_f),
+                ref_list,
                 f"output {g2p_file} and reference {ref_file} differ.",
             )
 
