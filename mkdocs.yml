@@ -24,6 +24,7 @@ nav:
   - Home: index.md
   - Start: start.md
   - Installation: installation.md
+  - The Web App: web-app.md
   - CLI Guide: cli-guide.md
   - CLI reference: cli-ref.md
   - Output Realizations: outputs.md
