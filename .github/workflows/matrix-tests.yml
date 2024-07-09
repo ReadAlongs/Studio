@@ -3,8 +3,9 @@
 # to main or release, we want to exercise the full matrix.
 name: Run Matrix Tests
 on:
+  workflow_call:
   push:
-    branches: [main, release]
+    branches: main
 jobs:
   test:
     strategy:
