@@ -16,7 +16,7 @@ import sys
 
 import click
 
-from readalongs._version import __version__
+from readalongs._version import VERSION
 from readalongs.util import (
     JoinerCallbackForClick,
     get_langs,
@@ -68,7 +68,7 @@ def get_click_file_name(click_file):
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
-@click.version_option(version=__version__, prog_name="readalongs")
+@click.version_option(version=VERSION, prog_name="readalongs")
 @click.group(context_settings=CONTEXT_SETTINGS)
 def cli():
     """Management script for ReadAlong Studio.

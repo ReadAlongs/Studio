@@ -1,16 +1,8 @@
-import datetime as dt
 import os
 
 from setuptools import find_packages, setup
 
-import readalongs
-
-build_no = dt.datetime.today().strftime("%Y%m%d")
-version_path = os.path.join(os.path.dirname(readalongs.__file__), "_version.py")
-VERSION = readalongs.VERSION + "." + build_no
-
-with open(version_path, "w", newline="\n", encoding="utf-8") as f:
-    print(f'__version__ = "{VERSION}"', file=f)
+from readalongs._version import VERSION
 
 with open("requirements.min.txt", encoding="utf8") as f:
     required = f.read().splitlines()
@@ -37,6 +29,7 @@ setup(
     entry_points={"console_scripts": ["readalongs = readalongs.cli:cli"]},
     classifiers=[
         "Programming Language :: Python :: 3",
+        *[f"Programming Language :: Python :: 3.{minor}" for minor in range(8, 13)],
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],

@@ -19,7 +19,7 @@ from unicodedata import normalize
 
 from lxml import etree
 
-from readalongs._version import __version__
+from readalongs._version import VERSION
 
 # removed "try: unicode() except" block (was for Python 2), but this file uses unicode()
 # too many times, so define it anyway.
@@ -269,7 +269,7 @@ def save_minimal_index_html(
                 header=header,
                 subheader=subheader,
                 version=CURRENT_WEB_APP_VERSION,
-                studio_version=__version__,
+                studio_version=VERSION,
             )
         )
 

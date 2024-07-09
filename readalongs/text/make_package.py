@@ -20,7 +20,7 @@ from typing import Any
 
 from lxml import etree
 
-from readalongs._version import __version__
+from readalongs._version import VERSION
 from readalongs.log import LOGGER
 from readalongs.text.util import parse_xml
 
@@ -167,5 +167,5 @@ def create_web_component_html(
         header=header,
         subheader=subheader,
         theme=theme,
-        studio_version=__version__,
+        studio_version=VERSION,
     )

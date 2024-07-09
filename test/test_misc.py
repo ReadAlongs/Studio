@@ -10,8 +10,10 @@ from unittest import main
 import click
 from basic_test_case import BasicTestCase
 from lxml import etree
+from pep440 import is_canonical
 from test_dna_utils import segments_from_pairs
 
+from readalongs._version import VERSION
 from readalongs.align import split_silences
 from readalongs.log import LOGGER, capture_logs
 from readalongs.text.util import (
@@ -295,6 +297,9 @@ class TestMisc(BasicTestCase):
             self.assertIn("propagate", captured_logs.getvalue())
         self.assertIn("included", "".join(cm.output))
         self.assertNotIn("propagate", "".join(cm.output))
+
+    def test_version_is_pep440_compliant(self):
+        self.assertTrue(is_canonical(VERSION))
 
 
 if __name__ == "__main__":

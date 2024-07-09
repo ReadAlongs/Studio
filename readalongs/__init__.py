@@ -10,8 +10,6 @@ The main alignment module is readalongs.align.
 
 import sys
 
-VERSION = "1.0"
-
 if sys.version_info < (3, 8, 0):  # pragma: no cover
     sys.exit(
         f"Python 3.8 or more recent is required. You are using {sys.version}. "
