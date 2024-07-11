@@ -2,7 +2,7 @@
 
 ## The ReadAlong Studio Web App
 
-The ReadAlong Studio functionality can now be used both from a CLI (see the rest of this guide) and a web application meant to be as easy to use as possible.
+The ReadAlong Studio functionality can now be used both from a CLI (see the rest of this guide) and a Web application meant to be as easy to use as possible.
 
 See
 
@@ -10,11 +10,11 @@ See
  - [El Studio de ReadAlong en español](https://readalong-studio.mothertongues.org/es/), or
  - [L'appli Studio ReadAlong en français](https://readalong-studio.mothertongues.org/fr/).
 
-The usage documentation for the web app can be access by clicking on "Take the tour"/"¡Siga el tour!"/"Visite guidée" button at the top of the page. We encourage you to take this tour on your first visit, or if you have not taken it yet, as it explains all the parts of the process.
+The usage documentation for the Web App can be accessed by clicking on the "Take the tour"/"¡Siga el tour!"/"Visite guidée" button at the top of the page. We encourage you to take this tour on your first visit, or if you have not taken it yet, as it explains all the parts of the process.
 
-### Web app features
+### Web App features
 
-The web app supports the most commonly used features of the ReadAlong Studio:
+The Web App supports the most commonly used features of the ReadAlong Studio:
 
  - recording audio or using pre-existing audio
  - typing text or using pre-existing text
@@ -41,6 +41,8 @@ Links:
  - [ReadAlong Studio Editor](https://readalong-studio.mothertongues.org/#/editor)
  - [L'éditeur du Studio ReadAlong](https://readalong-studio.mothertongues.org/fr/#/editor)
  - [El editor del Studio de ReadAlong](https://readalong-studio.mothertongues.org/es/#/editor)
+
+The usage documentation for the Editor is also the tour. Please click on the "Take the tour"/"¡Siga el tour!"/"Visite guidée" button at the top of the page to get familiar with all the features of the Editor.
 
 ### Opening a ReadAlong in the Editor
 
