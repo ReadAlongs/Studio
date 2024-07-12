@@ -100,4 +100,5 @@
 
  <!ELEMENT meta EMPTY>
  <!ATTLIST meta name CDATA #REQUIRED
-   content CDATA #REQUIRED>
+   content CDATA #REQUIRED
+   id CDATA #IMPLIED>
