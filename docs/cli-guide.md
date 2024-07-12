@@ -67,7 +67,7 @@ The format of the generated XML is based on [TEI
 Lite](https://tei-c.org/guidelines/customization/lite/) but is
 considerably simplified.  The DTD (document type definition) can be
 found in the ReadAlong Studio source code under
-`readalongs/static/read-along-1.0.dtd`.
+`readalongs/static/read-along-1.1.dtd`.
 
 (dna)=
 
