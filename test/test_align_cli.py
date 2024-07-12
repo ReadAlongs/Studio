@@ -14,8 +14,7 @@ from basic_test_case import BasicTestCase
 from lxml.html import fromstring
 from sound_swallower_stub import SoundSwallowerStub
 
-from readalongs import VERSION
-from readalongs._version import __version__
+from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.cli import align, langs
 
 
@@ -331,8 +330,8 @@ class TestAlignCli(BasicTestCase):
             <anchor /><s>Bonjour.</s><anchor time="invalid"/>
             </p></body></text></read-along>
         """ % (
+            READALONG_FILE_FORMAT_VERSION,
             VERSION,
-            __version__,
         )
         xml_file = join(self.tempdir, "bad-anchor.readalong")
         with open(xml_file, "w", encoding="utf8") as f:

@@ -7,8 +7,7 @@ from unittest import main
 
 from basic_test_case import BasicTestCase
 
-from readalongs import VERSION
-from readalongs._version import __version__
+from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.log import LOGGER
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
@@ -36,8 +35,8 @@ class TestWebApi(BasicTestCase):
             return (
                 f.read()
                 .strip()
-                .replace("{{format_version}}", VERSION)
-                .replace("{{studio_version}}", __version__)
+                .replace("{{format_version}}", READALONG_FILE_FORMAT_VERSION)
+                .replace("{{studio_version}}", VERSION)
             )
 
     def test_assemble_from_plain_text(self):
@@ -222,7 +221,7 @@ class TestWebApi(BasicTestCase):
             </text>
         </read-along>
         """
-        % (VERSION, __version__)
+        % (READALONG_FILE_FORMAT_VERSION, VERSION)
     )
 
     def test_convert_to_TextGrid(self):
@@ -456,7 +455,7 @@ class TestWebApi(BasicTestCase):
             </text>
         </read-along>
             """
-            % (VERSION, __version__)
+            % (READALONG_FILE_FORMAT_VERSION, VERSION)
         )
         request = {
             "dur": 83.1,

@@ -10,20 +10,18 @@ from unittest import main
 
 from basic_test_case import BasicTestCase
 
-from readalongs import VERSION
-
 # from readalongs.log import LOGGER
-from readalongs._version import __version__
+from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.align import create_input_ras, create_ras_from_text
 from readalongs.cli import align, make_xml
 
 
 def updateFormatVersion(input):
-    return input.replace("{{format_version}}", VERSION)
+    return input.replace("{{format_version}}", READALONG_FILE_FORMAT_VERSION)
 
 
 def updateStudioVersion(input):
-    return input.replace("{{studio_version}}", __version__)
+    return input.replace("{{studio_version}}", VERSION)
 
 
 class TestMakeXMLCli(BasicTestCase):

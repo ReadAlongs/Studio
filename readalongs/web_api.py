@@ -41,8 +41,7 @@ from lxml import etree
 from pydantic import BaseModel, Field
 from starlette.background import BackgroundTask
 
-from readalongs import VERSION
-from readalongs._version import __version__
+from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.align import create_ras_from_text, save_label_files, save_subtitles
 from readalongs.log import LOGGER, capture_logs
 from readalongs.text.add_ids_to_xml import add_ids
@@ -340,7 +339,7 @@ class ConvertRequest(BaseModel):
                         </body>
                     </text>
                 </read-along>"""
-                % (VERSION, __version__)
+                % (READALONG_FILE_FORMAT_VERSION, VERSION)
             )
         ],
     )

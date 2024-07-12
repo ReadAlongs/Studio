@@ -13,7 +13,7 @@ from lxml import etree
 from pep440 import is_canonical
 from test_dna_utils import segments_from_pairs
 
-from readalongs._version import VERSION
+from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.align import split_silences
 from readalongs.log import LOGGER, capture_logs
 from readalongs.text.util import (
@@ -105,8 +105,8 @@ class TestMisc(BasicTestCase):
             </text>
             </read-along>
         """ % (
+            READALONG_FILE_FORMAT_VERSION,
             VERSION,
-            __version__,
         )
         xml = parse_xml(raw_xml)
 

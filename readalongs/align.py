@@ -18,8 +18,7 @@ from pydub.exceptions import CouldntEncodeError
 from pympi.Praat import TextGrid
 from webvtt import Caption, WebVTT
 
-from readalongs import VERSION
-from readalongs._version import __version__
+from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.audio_utils import (
     extract_section,
     mute_section,
@@ -1197,8 +1196,8 @@ def create_ras_from_text(lines: Iterable[str], text_languages=Sequence[str]) -> 
     kwargs = {
         "main_lang": text_languages[0],
         "fallback_langs": ",".join(text_languages[1:]),
-        "studio_version": __version__,
-        "format_version": VERSION,
+        "studio_version": VERSION,
+        "format_version": READALONG_FILE_FORMAT_VERSION,
     }
     pages: List[dict] = []
     paragraphs: List[dict] = []
