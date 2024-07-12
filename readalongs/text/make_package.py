@@ -52,6 +52,11 @@ BASIC_HTML = """
 """
 
 
+DEFAULT_TITLE = "ReadAlong-Studio for Interactive Storytelling"
+DEFAULT_HEADER = "Your read-along title goes here"
+DEFAULT_SUBHEADER = "Your read-along subtitle goes here"
+
+
 def encode_from_path(path: str) -> str:
     """Encode file from bytes to b64 string with data and mime signature
 
@@ -115,9 +120,9 @@ def encode_from_path(path: str) -> str:
 def create_web_component_html(
     ras_path: str,
     audio_path: str,
-    title="Title goes here",
-    header="Header goes here",
-    subheader="Subheader goes here",
+    title=DEFAULT_TITLE,
+    header=DEFAULT_HEADER,
+    subheader=DEFAULT_SUBHEADER,
     theme="light",
 ) -> str:
     import requests  # Defer expensive import

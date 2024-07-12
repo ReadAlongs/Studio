@@ -5,9 +5,9 @@ Unit test suite for the readalongs align CLI command
 """
 
 import os
-import pathlib
 import tempfile
 from os.path import exists, join
+from pathlib import Path
 from unittest import main
 
 from basic_test_case import BasicTestCase
@@ -30,7 +30,7 @@ class TestAlignCli(BasicTestCase):
 
     def test_invoke_align(self):
         """Basic readalongs align invocation and some variants"""
-        output = join(self.tempdir, "output")
+        output = self.tempdir / "output"
         with open("image-for-page1.jpg", "wb"):
             pass
         # Run align from plain text
@@ -50,44 +50,44 @@ class TestAlignCli(BasicTestCase):
                 join(self.data_dir, "sample-config.json"),
                 self.add_bom(join(self.data_dir, "ej-fra.txt")),
                 join(self.data_dir, "ej-fra.m4a"),
-                output,
+                str(output),
             ],
         )
         # print(results.output)
         self.assertEqual(results.exit_code, 0)
         expected_output_files = [
-            "output.readalong",
-            "output.m4a",
-            "index.html",
+            "www/output.readalong",
+            "www/output.m4a",
+            "www/index.html",
             "output.TextGrid",
             "output.eaf",
             "output_sentences.srt",
             "output_sentences.vtt",
             "output_words.srt",
             "output_words.vtt",
-            "readme.txt",
+            "www/readme.txt",
         ]
         for f in expected_output_files:
             self.assertTrue(
-                exists(join(output, f)), f"successful alignment should have created {f}"
+                (output / f).exists(), f"successful alignment should have created {f}"
             )
-        with open(join(output, "index.html"), encoding="utf8") as f:
+        with open(output / "www/index.html", encoding="utf8") as f:
             self.assertIn(
                 '<read-along href="output.readalong" audio="output.m4a"',
                 f.read(),
             )
         self.assertTrue(
-            exists(join(output, "tempfiles", "output.tokenized.readalong")),
+            (output / "tempfiles/output.tokenized.readalong").exists(),
             "alignment with -s should have created tempfiles/output.tokenized.readalong",
         )
         with open(
-            join(output, "tempfiles", "output.tokenized.readalong"),
+            output / "tempfiles/output.tokenized.readalong",
             "r",
             encoding="utf-8",
         ) as f:
             self.assertNotIn("\ufeff", f.read())
         self.assertTrue(
-            exists(join(output, "assets", "image-for-page1.jpg")),
+            (output / "www/assets/image-for-page1.jpg").exists(),
             "alignment with image files should have copied image-for-page1.jpg to assets",
         )
         self.assertIn("image-for-page2.jpg is accessible ", results.stdout)
@@ -99,9 +99,9 @@ class TestAlignCli(BasicTestCase):
         # Move the alignment output to compare with further down
         # We cannot just output to a different name because changing the output file name
         # changes the contents of the output.
-        output1 = output + "1"
+        output1 = str(output) + "1"
         os.rename(output, output1)
-        self.assertFalse(exists(output), "os.rename() should have moved dir")
+        self.assertFalse(output.exists(), "os.rename() should have moved dir")
 
         # Run align again, but on an XML input file with various added DNA text
         results_dna = self.runner.invoke(
@@ -116,22 +116,22 @@ class TestAlignCli(BasicTestCase):
                 join(self.data_dir, "sample-config.json"),
                 self.add_bom(join(self.data_dir, "ej-fra-dna.readalong")),
                 join(self.data_dir, "ej-fra.m4a"),
-                output,
+                str(output),
             ],
         )
         self.assertEqual(results_dna.exit_code, 0)
         # print(results_dna.stdout)
         self.assertTrue(
-            exists(join(output, "output.readalong")),
+            (output / "www/output.readalong").exists(),
             "successful alignment with DNA should have created output.readalong",
         )
         self.assertTrue(
-            exists(join(output, "output.xhtml")),
+            (output / "output.xhtml").exists(),
             "successful alignment with -o xhtml should have created output.xhtml",
         )
         self.assertIn("Please copy image-for-page1.jpg to ", results_dna.stdout)
         self.assertFalse(
-            exists(join(output, "assets", "image-for-page1.jpg")),
+            (output / "www/assets/image-for-page1.jpg").exists(),
             "image-for-page1.jpg was not on disk, cannot have been copied",
         )
         self.assertIn(
@@ -144,7 +144,7 @@ class TestAlignCli(BasicTestCase):
             [
                 join(self.data_dir, "ej-fra-dna.readalong"),
                 join(self.data_dir, "ej-fra.m4a"),
-                output,
+                str(output),
             ],
         )
         self.assertNotEqual(results_output_exists.exit_code, 0)
@@ -158,7 +158,7 @@ class TestAlignCli(BasicTestCase):
             [
                 join(self.data_dir, "ej-fra-dna.readalong"),
                 join(self.data_dir, "ej-fra.m4a"),
-                join(output, "output.readalong"),
+                str(output / "www/output.readalong"),
             ],
         )
         self.assertNotEqual(results_output_is_regular_file, 0)
@@ -187,11 +187,11 @@ class TestAlignCli(BasicTestCase):
         # print(results_html.output)
         self.assertEqual(results_html.exit_code, 0)
         self.assertTrue(
-            exists(join(output, "html.html")),
-            "succesful html alignment should have created html/html.html",
+            exists(join(output, "Offline-HTML", "html.html")),
+            "succesful html alignment should have created html/Offline-HTML/html.html",
         )
 
-        with open(join(output, "html.html"), "rb") as fhtml:
+        with open(join(output, "Offline-HTML", "html.html"), "rb") as fhtml:
             path_bytes = fhtml.read()
         htmldoc = fromstring(path_bytes)
         b64_pattern = r"data:[\w\/\-\+]*;base64,\w*"
@@ -205,7 +205,7 @@ class TestAlignCli(BasicTestCase):
     def not_test_permission_denied(self):
         """Non-portable test to make sure denied permission triggers an error -- disabled"""
         # This test is not stable, just disable it.
-        # It apparently also does not work correctly on M1 Macs either, even in Docker.
+        # It apparently does not work correctly on M1 Macs either, even in Docker.
 
         import platform
 
@@ -623,7 +623,7 @@ class TestAlignCli(BasicTestCase):
         self.assertNotEqual(slurp_bin(base_file), slurp_bin(bom_file))
         self.assertEqual(b"\xef\xbb\xbf" + slurp_bin(base_file), slurp_bin(bom_file))
 
-        bom_file_pathlib = self.add_bom(pathlib.Path(base_file))
+        bom_file_pathlib = self.add_bom(Path(base_file))
         self.assertEqual(
             slurp_text(base_file, "utf-8"), slurp_text(bom_file_pathlib, "utf-8-sig")
         )
