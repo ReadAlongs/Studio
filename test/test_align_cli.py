@@ -14,6 +14,7 @@ from basic_test_case import BasicTestCase
 from lxml.html import fromstring
 from sound_swallower_stub import SoundSwallowerStub
 
+from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.cli import align, langs
 
 
@@ -325,10 +326,13 @@ class TestAlignCli(BasicTestCase):
         """Make sure invalid anchors yield appropriate errors"""
 
         xml_text = """<?xml version='1.0' encoding='utf-8'?>
-            <read-along version="1.0"><text xml:lang="fra"><body><p>
+            <read-along version="%s"><meta name="generator" content="@readalongs/studio (cli) %s"/><text xml:lang="fra"><body><p>
             <anchor /><s>Bonjour.</s><anchor time="invalid"/>
             </p></body></text></read-along>
-        """
+        """ % (
+            READALONG_FILE_FORMAT_VERSION,
+            VERSION,
+        )
         xml_file = join(self.tempdir, "bad-anchor.readalong")
         with open(xml_file, "w", encoding="utf8") as f:
             print(xml_text, file=f)

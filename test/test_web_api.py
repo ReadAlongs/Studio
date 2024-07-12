@@ -7,6 +7,7 @@ from unittest import main
 
 from basic_test_case import BasicTestCase
 
+from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.log import LOGGER
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
@@ -31,7 +32,12 @@ class TestWebApi(BasicTestCase):
     def slurp_data_file(self, filename: str) -> str:
         """Convenience function to slurp a whole file in self.data_dir"""
         with open(os.path.join(self.data_dir, filename), encoding="utf8") as f:
-            return f.read().strip()
+            return (
+                f.read()
+                .strip()
+                .replace("{{format_version}}", READALONG_FILE_FORMAT_VERSION)
+                .replace("{{studio_version}}", VERSION)
+            )
 
     def test_assemble_from_plain_text(self):
         # Test the assemble endpoint with plain text
@@ -198,9 +204,9 @@ class TestWebApi(BasicTestCase):
         self.assertIsNone(content["g2ped"])
 
     hej_verden_xml = dedent(
-        """\
-        <?xml version='1.0' encoding='utf-8'?>
-        <read-along version="1.0">
+        """<?xml version='1.0' encoding='utf-8'?>
+        <read-along version="%s">
+    <meta name="generator" content="@readalongs/studio (cli) %s"/>
             <text xml:lang="dan" fallback-langs="und" id="t0">
                 <body id="t0b0">
                     <div type="page" id="t0b0d0">
@@ -215,6 +221,7 @@ class TestWebApi(BasicTestCase):
             </text>
         </read-along>
         """
+        % (READALONG_FILE_FORMAT_VERSION, VERSION)
     )
 
     def test_convert_to_TextGrid(self):
@@ -431,9 +438,9 @@ class TestWebApi(BasicTestCase):
         # that exception in a sane way, with a 422 status code, while
         # also making sure the temporary directory gets deleted.
         overlap_xml = dedent(
-            """\
-        <?xml version='1.0' encoding='utf-8'?>
-        <read-along version="1.0">
+            """<?xml version='1.0' encoding='utf-8'?>
+        <read-along version="%s">
+    <meta name="generator" content="@readalongs/studio (cli) %s"/>
             <text xml:lang="dan" fallback-langs="und" id="t0">
                 <body id="t0b0">
                     <div type="page" id="t0b0d0">
@@ -448,6 +455,7 @@ class TestWebApi(BasicTestCase):
             </text>
         </read-along>
             """
+            % (READALONG_FILE_FORMAT_VERSION, VERSION)
         )
         request = {
             "dur": 83.1,

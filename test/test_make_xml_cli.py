@@ -10,10 +10,18 @@ from unittest import main
 
 from basic_test_case import BasicTestCase
 
+# from readalongs.log import LOGGER
+from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.align import create_input_ras, create_ras_from_text
 from readalongs.cli import align, make_xml
 
-# from readalongs.log import LOGGER
+
+def updateFormatVersion(input):
+    return input.replace("{{format_version}}", READALONG_FILE_FORMAT_VERSION)
+
+
+def updateStudioVersion(input):
+    return input.replace("{{studio_version}}", VERSION)
 
 
 class TestMakeXMLCli(BasicTestCase):
@@ -90,9 +98,13 @@ class TestMakeXMLCli(BasicTestCase):
             ref_file, encoding="utf8"
         ) as ref_f:
             self.maxDiff = None
+            # update version info
+            ref_list = list(ref_f)
+            ref_list[1] = updateFormatVersion(ref_list[1])
+            ref_list[2] = updateStudioVersion(ref_list[2])
             self.assertListEqual(
                 list(output_f),
-                list(ref_f),
+                ref_list,
                 f"output {xml_file} and reference {ref_file} differ.",
             )
 
