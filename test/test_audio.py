@@ -81,7 +81,7 @@ class TestAudio(BasicTestCase):
         if process.returncode != 0:
             LOGGER.error("Subprocess readalongs align failed: %s", process.stderr)
         # Check Result
-        raspath = Path(output_path)
+        raspath = Path(output_path) / "www"
         ras_files = raspath.glob("*.readalong")
         self.assertTrue(
             next(ras_files, False),
@@ -108,7 +108,7 @@ class TestAudio(BasicTestCase):
         if process.returncode != 0:
             LOGGER.error("Subprocess readalongs align failed: %s", process.stderr)
         # Check Result
-        raspath = Path(output_path)
+        raspath = Path(output_path) / "www"
         ras_files = raspath.glob("*.readalong")
         self.assertTrue(
             next(ras_files, False),
@@ -135,7 +135,7 @@ class TestAudio(BasicTestCase):
         if process.returncode != 0:
             LOGGER.error("Subprocess readalongs align failed: %s", process.stderr)
         # Check Result
-        raspath = Path(output_path)
+        raspath = Path(output_path) / "www"
         ras_files = raspath.glob("*.readalong")
         self.assertTrue(
             next(ras_files, False),
