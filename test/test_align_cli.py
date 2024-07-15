@@ -188,7 +188,7 @@ class TestAlignCli(BasicTestCase):
         self.assertEqual(results_html.exit_code, 0)
         self.assertTrue(
             exists(join(output, "Offline-HTML", "html.html")),
-            "succesful html alignment should have created html/Offline-HTML/html.html",
+            "successful html alignment should have created html/Offline-HTML/html.html",
         )
 
         with open(join(output, "Offline-HTML", "html.html"), "rb") as fhtml:
