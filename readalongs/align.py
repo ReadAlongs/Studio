@@ -40,7 +40,12 @@ from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.make_dict import make_dict
 from readalongs.text.make_fsg import make_fsg
-from readalongs.text.make_package import create_web_component_html
+from readalongs.text.make_package import (
+    DEFAULT_HEADER,
+    DEFAULT_SUBHEADER,
+    DEFAULT_TITLE,
+    create_web_component_html,
+)
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import (
     get_word_text,
@@ -941,7 +946,12 @@ def save_readalong(
             output_formats=output_formats,
         )
 
-    ras_path = output_base + ".readalong"
+    bundle_path = os.path.join(output_dir, "www")
+    if not os.path.exists(bundle_path):
+        os.mkdir(bundle_path)
+    bundle_base = os.path.join(bundle_path, output_basename)
+
+    ras_path = bundle_base + ".readalong"
     save_xml(ras_path, align_results["tokenized"])
 
     if "xhtml" in output_formats:
@@ -950,41 +960,44 @@ def save_readalong(
         save_xml(tokenized_xhtml_path, align_results["tokenized"])
 
     audio_path = save_audio(
-        audiofile=audiofile, output_base=output_base, audiosegment=audiosegment
+        audiofile=audiofile, output_base=bundle_base, audiosegment=audiosegment
     )
 
     if "html" in output_formats:
-        html_out_path = output_base + ".html"
+        offline_html_dir = os.path.join(output_dir, "Offline-HTML")
+        html_out_path = os.path.join(offline_html_dir, output_basename + ".html")
         html_out = create_web_component_html(
             ras_path,
             audio_path,
-            config.get("title", "Title goes here"),
-            config.get("header", "Header goes here"),
-            config.get("subheader", ""),
+            config.get("title", DEFAULT_TITLE),
+            config.get("header", DEFAULT_HEADER),
+            config.get("subheader", DEFAULT_SUBHEADER),
             config.get("theme", "light"),
         )
+        if not os.path.exists(offline_html_dir):
+            os.mkdir(offline_html_dir)
         with open(html_out_path, "w", encoding="utf-8") as f:
             f.write(html_out)
 
     save_minimal_index_html(
-        os.path.join(output_dir, "index.html"),
+        os.path.join(bundle_path, "index.html"),
         os.path.basename(ras_path),
         os.path.basename(audio_path),
-        config.get("title", "Title goes here"),
-        config.get("header", "Header goes here"),
-        config.get("subheader", ""),
+        config.get("title", DEFAULT_TITLE),
+        config.get("header", DEFAULT_HEADER),
+        config.get("subheader", DEFAULT_SUBHEADER),
         config.get("theme", "light"),
     )
 
     # Copy the image files to the output's asset directory, if any are found
     if "images" in config:
-        save_images(config=config, output_dir=output_dir)
+        save_images(config=config, output_dir=bundle_path)
     save_readme_txt(
-        os.path.join(output_dir, "readme.txt"),
+        os.path.join(bundle_path, "readme.txt"),
         os.path.basename(ras_path),
         os.path.basename(audio_path),
-        config.get("header", "Header goes here"),
-        config.get("subheader", ""),
+        config.get("header", DEFAULT_HEADER),
+        config.get("subheader", DEFAULT_SUBHEADER),
         config.get("theme", "light"),
     )
 

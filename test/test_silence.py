@@ -17,7 +17,7 @@ class TestSilence(BasicTestCase):
 
     def test_basic_silence_insertion(self):
         """Basic usage of the silence feature in a readalong"""
-        output = os.path.join(self.tempdir, "silence")
+        output = self.tempdir / "silence"
         # Run align from xml
         results = self.runner.invoke(
             align,
@@ -35,22 +35,20 @@ class TestSilence(BasicTestCase):
                 "fra",
                 os.path.join(self.data_dir, "ej-fra-silence.readalong"),
                 os.path.join(self.data_dir, "ej-fra.m4a"),
-                output,
+                str(output),
             ],
         )
         self.assertEqual(results.exit_code, 0)
-        self.assertTrue(os.path.exists(os.path.join(output, "silence.m4a")))
+        self.assertTrue((output / "www/silence.m4a").exists())
         # test silence spans in output xml
-        root = load_xml(os.path.join(output, "silence.readalong"))
+        root = load_xml(output / "www/silence.readalong")
         silence_spans = root.xpath("//silence")
         self.assertEqual(len(silence_spans), 3)
         # test audio has correct amount of silence added
         original_audio = AudioSegment.from_file(
             os.path.join(self.data_dir, "ej-fra.m4a")
         )
-        new_audio = AudioSegment.from_file(
-            os.path.join(output, "silence.m4a"), format="m4a"
-        )
+        new_audio = AudioSegment.from_file(output / "www/silence.m4a", format="m4a")
         self.assertAlmostEqual(
             len(new_audio) - len(original_audio),
             2882,
@@ -59,7 +57,7 @@ class TestSilence(BasicTestCase):
         )
 
     def test_bad_silence(self):
-        output = os.path.join(self.tempdir, "bad_silence")
+        output = self.tempdir / "bad_silence"
         # Run align from bad xml
         results = self.runner.invoke(
             align,
@@ -77,7 +75,7 @@ class TestSilence(BasicTestCase):
                 "fra",
                 os.path.join(self.data_dir, "ej-fra-silence-bad.readalong"),
                 os.path.join(self.data_dir, "ej-fra.m4a"),
-                output,
+                str(output),
             ],
         )
         self.assertNotEqual(results.exit_code, 0)

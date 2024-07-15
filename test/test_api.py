@@ -34,13 +34,13 @@ class TestAlignApi(BasicTestCase):
         self.assertTrue(exception is None)
         self.assertIn("Words (<w>) not present; tokenizing", log)
         expected_output_files = (
-            "output.readalong",
-            "output.m4a",
+            "www/output.readalong",
+            "www/output.m4a",
             "output.TextGrid",
             "output_sentences.srt",
             "output_words.srt",
-            "index.html",
-            "output.html",
+            "www/index.html",
+            "Offline-HTML/output.html",
         )
         for f in expected_output_files:
             self.assertTrue(

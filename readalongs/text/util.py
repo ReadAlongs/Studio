@@ -14,6 +14,7 @@ import zipfile
 from collections import OrderedDict
 from datetime import datetime
 from io import TextIOWrapper
+from pathlib import Path
 from typing import IO, Union
 from unicodedata import normalize
 
@@ -104,7 +105,7 @@ def is_do_not_align(element):
     return dna in ("true", "True", "TRUE", "1")
 
 
-def load_xml(input_path: Union[str, IO]) -> etree.ElementTree:
+def load_xml(input_path: Union[str, Path, IO]) -> etree.ElementTree:
     """Safely load an XML file with etree.parse to respect encoding
 
     Return: the root of the XML etree
