@@ -255,7 +255,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
 
     \b
     If TEXTFILE has a .txt extension or does not start with an XML declaration
-    line, is it read as plain text with the following conventions:
+    line, it is  read as plain text with the following conventions:
      - The text should be plain UTF-8 text without any markup.
      - Paragraph breaks are indicated by inserting one blank line.
      - Page breaks are indicated by inserting two blank lines.
