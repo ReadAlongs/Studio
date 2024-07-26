@@ -73,7 +73,9 @@
  class CDATA #IMPLIED
  do-not-align CDATA #IMPLIED
  time CDATA #IMPLIED
- dur CDATA #IMPLIED>
+ dur CDATA #IMPLIED
+ annotation-id CDATA #IMPLIED
+ sentence-id CDATA #IMPLIED>
 
 <!ELEMENT w (#PCDATA|span|syl)*>
 <!ATTLIST w
