@@ -17,6 +17,7 @@ DTDPATH = os.path.join(
 VALID_RAS = """
 ej-fra-anchors2.readalong
 ej-fra-anchors.readalong
+ej-fra-annotated.readalong
 ej-fra-converted.readalong
 ej-fra-dna.readalong
 ej-fra-package.readalong

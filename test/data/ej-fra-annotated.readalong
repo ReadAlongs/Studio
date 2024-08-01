@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='utf-8'?>
+<read-along version="1.1">
+  <meta name="generator" content="human made" id="meta0" />
+  <meta name="annotations-ids" content="translation1, translation2" id="meta1" />
+  <meta name="annotations-labels" content="Algonquin, English" id="meta2" />
+  <meta name="annotations-labels-eng" content="Algonquin, English" id="meta3" />
+  <meta name="annotations-labels-fra" content="algonquin, anglais" id="meta4" />
+  <text xml:lang="fra" id="t0">
+    <body id="t0b0">
+      <div type="page" id="t0b0d0" class="two-column-layout-page">
+        <graphic url="avatar.png" id="t0b0d0graphic0" />
+        <p id="t0b0d0p0">
+          <s id="t0b0d0p0s0"><w id="t0b0d0p0s0w0" time="0.455" dur="1.165">Bonjour</w>.</s>
+          <s do-not-align="true" xml:lang="otw" id="t0b0d0p0s0an01" annotation-id="translation1" sentence-id="t0b0d0p0s0">
+            Kwei.</s>
+          <s do-not-align="true" xml:lang="eng" id="t0b0d0p0s0an02" annotation-id="translation2"
+            sentence-id="t0b0d0p0s0">
+            Hello.</s>
+          <s id="t0b0d0p0s1"><w id="t0b0d0p0s1w0" time="1.620" dur="0.070">Je</w> <w
+              id="t0b0d0p0s1w1" time="1.690" dur="0.070">m</w>'<w id="t0b0d0p0s1w2" time="1.760"
+              dur="0.240">appelle</w> <w id="t0b0d0p0s1w3" time="2.000" dur="1.705">Éric</w> <w
+              id="t0b0d0p0s1w4" time="3.705" dur="1.905">Joanis</w>.</s>
+          <s do-not-align="true" xml:lang="otw" id="t0b0d0p0s1an01" annotation-id="translation1"
+            sentence-id="t0b0d0p0s1">Éric
+            Joanis nindijinikàz.</s>
+          <s do-not-align="true" xml:lang="eng" id="t0b0d0p0s1an01" annotation-id="translation2"
+            sentence-id="t0b0d0p0s1">My
+            name is Éric Joanis.</s>
+        </p>
+      </div>
+
+    </body>
+  </text>
+</read-along>
