@@ -4,7 +4,7 @@ chevron==0.14.0
 click>=8.0.4
 coloredlogs>=10.0
 fastapi>=0.100.0
-g2p>=1.1.20230822, <2.1
+g2p>=1.1.20230822, <3
 httpx>=0.24.1
 lxml==4.9.4
 networkx>=2.6
@@ -16,3 +16,5 @@ python-slugify==5.0.0
 requests>=2.31.0
 soundswallower~=0.6.0
 webvtt-py==0.4.2
+# Temporary work-around: panphon 0.21.{0,1,2} are not compatible with python 3.8
+panphon>=0.19, <0.21
