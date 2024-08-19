@@ -181,7 +181,7 @@ def parse_and_make_xml(
     """Parse XML input and run tokenization and G2P.
 
     Args:
-        xml_path (str): Path to input in ReadAlong XML format (see static/read-along-1.1.dtd)
+        xml_path (str): Path to input in ReadAlong XML format (see static/read-along-1.2.dtd)
         config (dict): Optional; ReadAlong-Studio configuration to use
         save_temps (str): Optional; Save temporary files, by default None
         verbose_g2p_warnings (boolean): Optional; display all g2p errors and warnings
@@ -574,7 +574,7 @@ def align_audio(
     """Align an XML input file to an audio file.
 
     Args:
-        xml_path (str): Path to input file in ReadAlong XML format (see static/read-along-1.1.dtd)
+        xml_path (str): Path to input file in ReadAlong XML format (see static/read-along-1.2.dtd)
         audio_path (str): Path to audio input. Must be in a format supported by ffmpeg
         unit (str): Optional; Element to create alignments for, by default 'w'
         bare (boolean): Optional;
@@ -1192,7 +1192,7 @@ RAS_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 
 
 def create_ras_from_text(lines: Iterable[str], text_languages=Sequence[str]) -> str:
-    """Create input xml in ReadAlong XML format (see static/read-along-1.1.dtd)
+    """Create input xml in ReadAlong XML format (see static/read-along-1.2.dtd)
         Uses the line sequence to infer paragraph and sentence structure from plain text:
         Assumes a double blank line marks a page break, and a single blank line
         marks a paragraph break.
@@ -1240,7 +1240,7 @@ def create_ras_from_text(lines: Iterable[str], text_languages=Sequence[str]) -> 
 
 
 def create_input_ras(**kwargs):
-    """Create input xml in ReadAlong XML format (see static/read-along-1.1.dtd)
+    """Create input xml in ReadAlong XML format (see static/read-along-1.2.dtd)
         Uses readlines to infer paragraph and sentence structure from plain text.
         Assumes a double blank line marks a page break, and a single blank line
         marks a paragraph break.
