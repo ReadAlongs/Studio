@@ -122,4 +122,8 @@ jobs:
         # Warning: the diff line below is PowerShell syntax, not bash!
         run: |
           echo ćś | readalongs make-xml -l fra - - | findstr /v meta > cs.readalong
+          echo Output ====
+          cat cs.readalong
+          echo Reference ====
+          cat test/data/cs-ref.readalong
           if (diff (cat cs.readalong) (cat test/data/cs-ref.readalong)) { throw "Output did not match reference" }

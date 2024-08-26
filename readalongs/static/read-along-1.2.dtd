@@ -1,0 +1,106 @@
+<!-- VERSION: 1.2 -->
+<!ELEMENT read-along (meta|text|body|div|span|anchor|silence|graphic|p|s|w)*>
+<!ATTLIST read-along
+ use-assets-folder CDATA #IMPLIED
+ href CDATA #IMPLIED
+ audio CDATA #IMPLIED
+ xml:lang CDATA #IMPLIED
+ language CDATA #IMPLIED
+ lang CDATA #IMPLIED
+ version CDATA #IMPLIED>
+
+<!ELEMENT text (body|div|span|anchor|silence|graphic|p|s|w)*>
+<!ATTLIST text
+ xml:lang CDATA #IMPLIED
+ lang CDATA #IMPLIED
+ fallback-langs CDATA #IMPLIED
+ id CDATA #IMPLIED>
+
+<!ELEMENT body (div|span|anchor|silence|graphic|p|s|w)*>
+<!ATTLIST body
+ xml:lang CDATA #IMPLIED
+ lang CDATA #IMPLIED
+ id CDATA #IMPLIED>
+
+<!ELEMENT anchor EMPTY>
+<!ATTLIST anchor time CDATA #REQUIRED>
+
+<!ELEMENT silence EMPTY>
+<!ATTLIST silence dur CDATA #REQUIRED>
+
+<!ELEMENT graphic EMPTY>
+<!ATTLIST graphic
+ url CDATA #REQUIRED
+ id CDATA #IMPLIED>
+
+<!ELEMENT div (#PCDATA|div|span|anchor|silence|graphic|p|s|w)*>
+<!ATTLIST div
+ xml:lang CDATA #IMPLIED
+ lang CDATA #IMPLIED
+ id CDATA #IMPLIED
+ class CDATA #IMPLIED
+ type CDATA #IMPLIED
+ do-not-align CDATA #IMPLIED
+ time CDATA #IMPLIED
+ dur CDATA #IMPLIED>
+
+<!ELEMENT span (#PCDATA|div|span|anchor|silence|graphic|p|s|w)*>
+<!ATTLIST span
+ xml:lang CDATA #IMPLIED
+ lang CDATA #IMPLIED
+ id CDATA #IMPLIED
+ class CDATA #IMPLIED
+ type CDATA #IMPLIED
+ do-not-align CDATA #IMPLIED
+ time CDATA #IMPLIED
+ dur CDATA #IMPLIED>
+
+<!ELEMENT p (#PCDATA|span|anchor|silence|s|w)*>
+<!ATTLIST p
+ xml:lang CDATA #IMPLIED
+ lang CDATA #IMPLIED
+ id CDATA #IMPLIED
+ class CDATA #IMPLIED
+ do-not-align CDATA #IMPLIED
+ time CDATA #IMPLIED
+ dur CDATA #IMPLIED>
+
+<!ELEMENT s (#PCDATA|span|anchor|silence|w)*>
+<!ATTLIST s
+ xml:lang CDATA #IMPLIED
+ lang CDATA #IMPLIED
+ id CDATA #IMPLIED
+ class CDATA #IMPLIED
+ do-not-align CDATA #IMPLIED
+ time CDATA #IMPLIED
+ dur CDATA #IMPLIED
+ annotation-id CDATA #IMPLIED
+ sentence-id CDATA #IMPLIED>
+
+<!ELEMENT w (#PCDATA|span|syl)*>
+<!ATTLIST w
+ xml:lang CDATA #IMPLIED
+ effective-g2p-lang CDATA #IMPLIED
+ lang CDATA #IMPLIED
+ id CDATA #IMPLIED
+ class CDATA #IMPLIED
+ do-not-align CDATA #IMPLIED
+ ARPABET CDATA #IMPLIED
+ time CDATA #IMPLIED
+ dur CDATA #IMPLIED>
+
+<!ELEMENT syl (#PCDATA|span)*>
+<!ATTLIST syl
+ xml:lang CDATA #IMPLIED
+ lang CDATA #IMPLIED
+ id CDATA #IMPLIED
+ class CDATA #IMPLIED
+ do-not-align CDATA #IMPLIED
+ ARPABET CDATA #IMPLIED
+ time CDATA #IMPLIED
+ dur CDATA #IMPLIED>
+
+ <!ELEMENT meta EMPTY>
+ <!ATTLIST meta name CDATA #REQUIRED
+   content CDATA #REQUIRED
+   id CDATA #IMPLIED>

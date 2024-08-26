@@ -11,12 +11,13 @@ from lxml import etree
 from readalongs.text.util import load_xml
 
 DTDPATH = os.path.join(
-    dirname(__file__), "..", "readalongs", "static", "read-along-1.1.dtd"
+    dirname(__file__), "..", "readalongs", "static", "read-along-1.2.dtd"
 )
 
 VALID_RAS = """
 ej-fra-anchors2.readalong
 ej-fra-anchors.readalong
+ej-fra-annotated.readalong
 ej-fra-converted.readalong
 ej-fra-dna.readalong
 ej-fra-package.readalong
@@ -70,7 +71,11 @@ class TestDTD(TestCase):
 
     def test_backwards_compatibility(self):
         # the DTD needs to be backwards compatible as long as the major version does not change
-        versions = ["ras-dtd-1.0.readalong", "ras-dtd-1.1.readalong"]
+        versions = [
+            "ras-dtd-1.0.readalong",
+            "ras-dtd-1.1.readalong",
+            "ras-dtd-1.2.readalong",
+        ]
         for name in versions:
             path = os.path.join(dirname(__file__), "data", name.strip())
             # DTD is text, XML is binary... okay
