@@ -34,7 +34,8 @@ jobs:
       - name: Check that VERSION in _version.py and the tag are consistent
         env:
           VERSION: ${{ github.ref_name }}
-        run: echo "VERSION = \"${VERSION#v}\"" | diff - readalongs/_version.py"
+        shell: bash
+        run: diff <(echo "VERSION = \"${VERSION#v}\"") <(head -1 readalongs/_version.py)
 
       - name: Install dependencies
         run: |
