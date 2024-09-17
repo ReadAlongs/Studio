@@ -68,11 +68,15 @@ jobs:
           body: ${{ steps.changelog.outputs.changes }}
           token: ${{ github.token }}
 
+      - name: Remove the sigstore files, not supported by pypa publish
+        run: rm -f ./dist/*.sigstore.json
+
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
           verbose: true
+          attestations: true
 
   deploy-docs:
     # Create latest docs
