@@ -2,6 +2,7 @@
 black~=24.3
 flake8>=4.0.1
 gitlint-core>=0.17.0
+httpx>=0.24.1
 isort>=5.10.1
 mypy>=1.4.1
 mypy>=1.5.1; python_version >= "3.8"
