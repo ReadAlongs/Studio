@@ -206,12 +206,18 @@ async def assemble(
                     ),
                 )
         elif request.mime_type == InputFormat.TEXT:
-            parsed = parse_xml(
-                create_ras_from_text(
-                    (request.input_text or "").splitlines(keepends=True),
-                    text_languages=request.text_languages,
+            try:
+                parsed = parse_xml(
+                    create_ras_from_text(
+                        (request.input_text or "").splitlines(keepends=True),
+                        text_languages=request.text_languages,
+                    )
                 )
-            )
+            except etree.ParseError as e:
+                raise HTTPException(
+                    status_code=422,
+                    detail="XML could not be created from the provided text. This is an unexpected error, if you are willing to e-mail the text and the process that triggered it to readalong.studio@gmail.com, we would appreciate the opportunity to try to figure out what causes it.",
+                ) from e
 
         else:  # pragma: no cover
             raise HTTPException(
