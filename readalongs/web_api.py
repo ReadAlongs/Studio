@@ -145,28 +145,26 @@ async def langs() -> List[SupportedLanguage]:
 @v1.post("/assemble", response_model=AssembleResponse)
 async def assemble(
     request: AssembleRequest = Body(
-        examples=[
-            {
-                "text": {
-                    "summary": "A basic example with plain text input",
-                    "value": {
-                        "input": "hej verden",
-                        "type": "text/plain",
-                        "text_languages": ["dan", "und"],
-                        "debug": False,
-                    },
+        openapi_examples={
+            "text": {
+                "summary": "A basic example with plain text input",
+                "value": {
+                    "input": "hej verden",
+                    "type": "text/plain",
+                    "text_languages": ["dan", "und"],
+                    "debug": False,
                 },
-                "xml": {
-                    "summary": "A basic example with xml input",
-                    "value": {
-                        "input": "<?xml version='1.0' encoding='utf-8'?><read-along version=\"1.0\"><text><p><s>hej verden</s></p></text></read-along>",
-                        "type": "application/readalong+xml",
-                        "text_languages": ["dan", "und"],
-                        "debug": False,
-                    },
+            },
+            "xml": {
+                "summary": "A basic example with xml input",
+                "value": {
+                    "input": "<?xml version='1.0' encoding='utf-8'?><read-along version=\"1.0\"><text><p><s>hej verden</s></p></text></read-along>",
+                    "type": "application/readalong+xml",
+                    "text_languages": ["dan", "und"],
+                    "debug": False,
                 },
-            }
-        ]
+            },
+        }
     ),
 ):
     """Create an input RAS from the given text (as plain text or XML).
@@ -331,7 +329,7 @@ class ConvertRequest(BaseModel):
                 """\
                 <?xml version='1.0' encoding='utf-8'?>
                 <read-along version="%s">
-    <meta name="generator" content="@readalongs/studio (cli) %s"/>
+                    <meta name="generator" content="@readalongs/studio (cli) %s"/>
                     <text xml:lang="dan" fallback-langs="und" id="t0">
                         <body id="t0b0">
                             <div type="page" id="t0b0d0">
