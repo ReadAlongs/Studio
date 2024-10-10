@@ -20,13 +20,11 @@ from unicodedata import normalize
 
 from lxml import etree
 
-from readalongs._version import VERSION
+from readalongs._version import CURRENT_WEB_APP_VERSION, VERSION
 
 # removed "try: unicode() except" block (was for Python 2), but this file uses unicode()
 # too many times, so define it anyway.
 unicode = str
-# todo: sync with web component major and minor releases
-CURRENT_WEB_APP_VERSION = "1.4.x"
 
 
 def ensure_dirs(path):

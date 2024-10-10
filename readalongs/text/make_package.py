@@ -20,13 +20,17 @@ from typing import Any
 
 from lxml import etree
 
-from readalongs._version import VERSION
+from readalongs._version import CURRENT_WEB_APP_VERSION, VERSION
 from readalongs.log import LOGGER
 from readalongs.text.util import parse_xml
 
-JS_BUNDLE_URL = "https://unpkg.com/@readalongs/web-component@^1.4.0/dist/bundle.js"
+JS_BUNDLE_URL = (
+    "https://unpkg.com/@readalongs/web-component@%s/dist/bundle.js"
+    % CURRENT_WEB_APP_VERSION
+)
 FONTS_BUNDLE_URL = (
-    "https://unpkg.com/@readalongs/web-component@^1.4.0/dist/fonts.b64.css"
+    "https://unpkg.com/@readalongs/web-component@%s/dist/fonts.b64.css"
+    % CURRENT_WEB_APP_VERSION
 )
 
 BASIC_HTML = """

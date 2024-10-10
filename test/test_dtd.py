@@ -11,7 +11,7 @@ from lxml import etree
 from readalongs.text.util import load_xml
 
 DTDPATH = os.path.join(
-    dirname(__file__), "..", "readalongs", "static", "read-along-1.2.dtd"
+    dirname(__file__), "..", "readalongs", "static", "read-along-1.3.dtd"
 )
 
 VALID_RAS = """
@@ -75,6 +75,7 @@ class TestDTD(TestCase):
             "ras-dtd-1.0.readalong",
             "ras-dtd-1.1.readalong",
             "ras-dtd-1.2.readalong",
+            "ras-dtd-1.3.readalong",
         ]
         for name in versions:
             path = os.path.join(dirname(__file__), "data", name.strip())
