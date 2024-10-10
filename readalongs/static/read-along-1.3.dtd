@@ -76,7 +76,8 @@
   time CDATA #IMPLIED
   dur CDATA #IMPLIED
   annotation-id CDATA #IMPLIED
-  sentence-id CDATA #IMPLIED>
+  sentence-id CDATA #IMPLIED
+  xmlns CDATA #IMPLIED>
 
 <!ELEMENT w (#PCDATA|span|syl)*>
 <!ATTLIST w
