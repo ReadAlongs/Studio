@@ -165,6 +165,12 @@ For information on spinning up your own dev Web API server locally, have a look 
 
     DEVELOPMENT=1 uvicorn readalongs.web_api:web_api_app --reload
 
+or
+
+    ./run-web-api.sh
+
+Note that the production command line for the Web API is defined in [Procfile](Procfile) and documented in [web\_api.py](readalongs/web_api.py).
+
 #### /langs
 
 To query a list of available languages in the ReadAlong Studio API, send a GET request to https://readalongs-studio.herokuapp.com/api/v1/langs
