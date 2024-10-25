@@ -83,23 +83,29 @@ The compiler should already be there, but run `<your package manager> install gc
 
 #### Dependencies on Windows
 
-##### The easy way, using Anaconda
+##### The easy way, using conda
 
-Anaconda/Miniconda will install Python 3 and the required compiler automatically for you,
+The `conda` package manager can install Python 3 and the required compiler automatically for you,
 and simplifies ffmpeg and git installation. We recommend this solution.
 
-Download and install the latest "Miniconda3 Windows 64-bit" installer from
-https://docs.conda.io/en/latest/miniconda.html.
-You can accept all the default options suggested by the installer.
+If the Anaconda Terms of Service are compatible with your organization, you can
+use Miniconda3: download and run the latest "Miniconda3 Windows 64-bit"
+installer from https://docs.conda.io/en/latest/miniconda.html.
 
-Launch an Anaconda Prompt (this should be available from your Start menu after
-installation) and run:
+Fully open-source alternative, free for all organizations: Miniforge3.
+Download and run the latest "Miniforge3-Windows-x86_64" installer from
+https://github.com/conda-forge/miniforge.
+
+Either way, you can accept all the default options suggested by the installer.
+
+Launch an Anaconda Prompt or a Miniforge Prompt (this should be available from
+your Start Menu after installation) and run:
 
     conda install ffmpeg
     conda install git
 
-You can then run the pip install and git commands below, and use readalongs, all from the Anaconda
-Prompt.
+You can then run the pip install and git commands below, and use readalongs, all
+from the Anaconda or Miniforge Prompt.
 
 ##### The hard way
 
