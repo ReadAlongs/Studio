@@ -4,6 +4,8 @@
 
 import os
 import re
+from contextlib import redirect_stderr
+from io import StringIO
 from unittest import main
 
 from basic_test_case import BasicTestCase
@@ -303,8 +305,9 @@ class TestG2pCli(BasicTestCase):
         self.assertIn('<w ARPABET="NOT ARPABET" id="s0w2">error</w>', results.output)
 
         audio_file = os.path.join(self.data_dir, "ej-fra.m4a")
-        with self.assertRaises(RuntimeError) as e:
-            results = align_audio(input_file, audio_file)
+        with redirect_stderr(StringIO()):
+            with self.assertRaises(RuntimeError) as e:
+                results = align_audio(input_file, audio_file)
         self.assertIn("could not be g2p'd", str(e.exception))
 
     def test_align_with_preg2p(self):
@@ -330,9 +333,10 @@ class TestG2pCli(BasicTestCase):
             "t0b0d0p0s3w2:15:16",
             "t0b0d0p0s3w3:16:17",
         ):
-            _ = align_audio(
-                text_file, audio_file, save_temps=os.path.join(self.tempdir, "foo")
-            )
+            with redirect_stderr(StringIO()):
+                _ = align_audio(
+                    text_file, audio_file, save_temps=os.path.join(self.tempdir, "foo")
+                )
         with open(os.path.join(self.tempdir, "foo.dict"), "r", encoding="utf8") as f:
             dict_file = f.read()
             self.assertIn("S AH S IY", dict_file)  # "ceci" in fra
@@ -452,7 +456,8 @@ class TestG2pCli(BasicTestCase):
         self.assertTrue(valid, "convert_xml with valid pre-g2p'd text")
 
         xml = parse_xml('<s><w ARPABET="invalid">invalid</w></s>')
-        c_xml, valid = convert_xml(xml)
+        with redirect_stderr(StringIO()):
+            c_xml, valid = convert_xml(xml)
         self.assertEqual(
             etree.tounicode(c_xml), '<s><w ARPABET="invalid">invalid</w></s>'
         )

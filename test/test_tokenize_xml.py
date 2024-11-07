@@ -2,6 +2,8 @@
 
 """Unit test suite for our XML tokenizer module"""
 
+from contextlib import redirect_stderr
+from io import StringIO
 from unittest import TestCase, main
 
 from lxml import etree
@@ -23,7 +25,8 @@ class TestTokenizer(TestCase):
 <s xml:lang="atj"><w>Kwei</w>! <w>Tan</w> <w>e</w> <w>ici</w> <w>matisihin</w>?</s>
 </document>"""
         xml = parse_xml(txt)
-        tokenized = tokenize_xml.tokenize_xml(xml)
+        with redirect_stderr(StringIO()):
+            tokenized = tokenize_xml.tokenize_xml(xml)
         # print(etree.tounicode(tokenized))
         self.assertEqual(etree.tounicode(tokenized), ref)
 
@@ -39,7 +42,8 @@ class TestTokenizer(TestCase):
 <s xml:lang="fra"><w>Bonjour</w>! <w>Comment</w> <w>ça</w> <w>va</w>?</s>
 </document>"""
         xml = parse_xml(txt)
-        tokenized = tokenize_xml.tokenize_xml(xml)
+        with redirect_stderr(StringIO()):
+            tokenized = tokenize_xml.tokenize_xml(xml)
         # print(etree.tounicode(tokenized))
         self.assertEqual(etree.tounicode(tokenized), ref)
 
@@ -55,7 +59,8 @@ class TestTokenizer(TestCase):
 <s xml:lang="atj">Tan e ici matisihin?</s>
 </document>"""
         xml = parse_xml(txt)
-        tokenized = tokenize_xml.tokenize_xml(xml)
+        with redirect_stderr(StringIO()):
+            tokenized = tokenize_xml.tokenize_xml(xml)
         # print(etree.tounicode(tokenized))
         self.assertEqual(etree.tounicode(tokenized), ref)
 
@@ -73,7 +78,8 @@ class TestTokenizer(TestCase):
 <s xml:lang="atj"><w>Tan</w> <w>e</w> <w>ici</w> <w>matisihin</w>?</s>
 </document>"""
         xml = parse_xml(txt)
-        tokenized = tokenize_xml.tokenize_xml(xml)
+        with redirect_stderr(StringIO()):
+            tokenized = tokenize_xml.tokenize_xml(xml)
         # print(etree.tounicode(tokenized))
         self.assertEqual(etree.tounicode(tokenized), ref)
 
