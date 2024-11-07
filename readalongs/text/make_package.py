@@ -130,18 +130,18 @@ def create_web_component_html(
     try:
         js = requests.get(JS_BUNDLE_URL, timeout=10)
         js_status_code: Any = js.status_code
-    except requests.exceptions.ReadTimeout as e:
+    except requests.exceptions.ReadTimeout as e:  # pragma: no cover
         js_status_code = "TIMEOUT"
         LOGGER.warning(e)
 
     try:
         fonts = requests.get(FONTS_BUNDLE_URL, timeout=10)
         fonts_status_code: Any = fonts.status_code
-    except requests.exceptions.ReadTimeout as e:
+    except requests.exceptions.ReadTimeout as e:  # pragma: no cover
         LOGGER.warning(e)
         fonts_status_code = "TIMEOUT"
 
-    if js_status_code != 200:
+    if js_status_code != 200:  # pragma: no cover
         LOGGER.warning(
             f"Sorry, the JavaScript bundle that is supposed to be at {JS_BUNDLE_URL} returned a {js_status_code}. Your ReadAlong will be bundled using a version that may not be up-to-date. Please check your internet connection."
         )
@@ -149,10 +149,10 @@ def create_web_component_html(
             os.path.join(os.path.dirname(__file__), "bundle.js"), encoding="utf8"
         ) as f:
             js_raw = f.read()
-    else:
+    else:  # pragma: no cover
         js_raw = js.text
 
-    if fonts_status_code != 200:
+    if fonts_status_code != 200:  # pragma: no cover
         LOGGER.warning(
             f"Sorry, the fonts bundle that is supposed to be at {FONTS_BUNDLE_URL} returned a {fonts_status_code}. Your ReadAlong will be bundled using a version that may not be up-to-date. Please check your internet connection."
         )
@@ -160,7 +160,7 @@ def create_web_component_html(
             os.path.join(os.path.dirname(__file__), "bundle.css"), encoding="utf8"
         ) as f:
             fonts_raw = f.read()
-    else:
+    else:  # pragma: no cover
         fonts_raw = fonts.text
 
     return BASIC_HTML.format(
