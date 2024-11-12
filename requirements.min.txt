@@ -1,10 +1,11 @@
 # This is the minimal set of dependencies required for the readalongs package
+audioop-lts; python_version>='3.13'
 chevron==0.14.0
 click>=8.0.4
 coloredlogs>=10.0
 fastapi>=0.103.0
 g2p>=1.1.20230822, <3
-lxml==4.9.4
+lxml>=4.9.4
 numpy>=1.20.2
 pydantic>=1.8.2,<3
 pydub>=0.23.1

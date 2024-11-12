@@ -29,7 +29,7 @@ setup(
     entry_points={"console_scripts": ["readalongs = readalongs.cli:cli"]},
     classifiers=[
         "Programming Language :: Python :: 3",
-        *[f"Programming Language :: Python :: 3.{minor}" for minor in range(8, 13)],
+        *[f"Programming Language :: Python :: 3.{minor}" for minor in range(8, 14)],
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
