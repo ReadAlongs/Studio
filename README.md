@@ -257,7 +257,7 @@ Here is a partial list:
 [@littell](https://github.com/littell).
 [@roedoejet](https://github.com/roedoejet).
 
-Project web page: [ReadAlong Studio: Application for Indigenous audiobooks and videos project](https://nrc.canada.ca/en/research-development/research-collaboration/programs/readalong-studio-application-indigenous-audiobooks-videos-project)
+Project web page: [ReadAlong Studio: Application for Indigenous audiobooks and videos project](https://nrc.canada.ca/en/research-development/research-collaboration/programs/readalong-studio)
 
 ### Citation
 
