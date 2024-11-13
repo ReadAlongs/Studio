@@ -1,8 +1,0 @@
-recursive-include readalongs/templates *
-recursive-include readalongs/static *
-recursive-include readalongs/epub *
-include MANIFEST.in
-exclude .gitignore
-recursive-exclude * *.py[co]
-recursive-exclude * *~
-recursive-exclude * *.orig
