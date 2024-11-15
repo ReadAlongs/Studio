@@ -92,6 +92,12 @@ include = [
     "/readalongs",
 ]
 
+[tool.hatch.envs.prod]
+features = [ "api" ]
+type = "pip-compile"
+python = "3.11"
+lock-filename = "requirements.txt"
+
 [project.urls]
 Homepage = "https://github.com/ReadAlongs/"
 Documentation = "https://readalongs.github.io/Studio/"
