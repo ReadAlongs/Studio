@@ -1,4 +1,0 @@
-# Heroku can only read requirements from "requirements.txt",
-# so we separate the minimal library from the rest of the dependencies.
--r requirements.min.txt
--r requirements.api.txt

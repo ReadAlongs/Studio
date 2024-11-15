@@ -76,6 +76,11 @@ ci = [
     "pip-licenses",
 ]
 
+all = [
+    "readalongs[dev]",
+    "readalongs[ci]",
+]
+
 [project.scripts]
 readalongs = "readalongs.cli:cli"
 

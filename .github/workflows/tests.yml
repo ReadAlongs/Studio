@@ -24,13 +24,8 @@ jobs:
         run: |
           # Keep pip up to date
           python -m pip install --upgrade pip
-          # Some dependencies are built using wheel
-          pip install wheel
           # Install all Python dependencies in just one pip call, including Studio itself
-          pip install -r requirements.txt \
-                      -r requirements.dev.txt \
-                      -r requirements.ci.txt \
-                      -e .
+          pip install -e .[all]
 
       - name: Run tests
         run: |
@@ -107,11 +102,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install wheel
-          pip install -r requirements.txt `
-                      -r requirements.dev.txt `
-                      -r requirements.ci.txt `
-                      -e .
+          pip install -e .[all]
 
       - name: Run tests on Windows
         run: cd test && python run.py prod
