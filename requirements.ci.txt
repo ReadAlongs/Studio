@@ -1,4 +1,0 @@
-# These are dependencies required by our continuous integration and testing pipelines
-coverage
-pip-licenses
--r requirements.api.txt

@@ -1,7 +1,0 @@
-# These are dependencies required by the production Web API
-# gunivorn is only available on *nix, but it's only required for production deployments
-gunicorn>=23.0.0
-# uvicorn works on all platforms and is required for both dev and prod deployments
-uvicorn>=0.30.1
-# For deployment on Heroku, we want the latest g2p off GitHub
-g2p @ git+https://github.com/roedoejet/g2p.git@main

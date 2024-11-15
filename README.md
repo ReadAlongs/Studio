@@ -236,7 +236,7 @@ This repo follows the [Contributor Covenant](http://contributor-covenant.org/ver
 You can install our standard Git hooks by running these commands in your sandbox:
 
 ```sh
-pip install -r requirements.dev.txt
+pip install -e .[dev]
 pre-commit install
 gitlint install-hook
 ```
