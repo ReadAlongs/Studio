@@ -5,6 +5,8 @@ Test suite for the API way to call align
 """
 
 import os
+from contextlib import redirect_stderr
+from io import StringIO
 from unittest import main
 
 import click
@@ -23,13 +25,14 @@ class TestAlignApi(BasicTestCase):
         # API accepts them too.
         langs = ("fra",)  # make sure language can be an iterable, not just a list.
         with SoundSwallowerStub("t0b0d0p0s0w0:920:1520", "t0b0d0p0s1w0:1620:1690"):
-            (status, exception, log) = api.align(
-                self.data_dir / "ej-fra.txt",
-                self.data_dir / "ej-fra.m4a",
-                self.tempdir / "output",
-                langs,
-                output_formats=["html", "TextGrid", "srt"],
-            )
+            with redirect_stderr(StringIO()):
+                (status, exception, log) = api.align(
+                    self.data_dir / "ej-fra.txt",
+                    self.data_dir / "ej-fra.m4a",
+                    self.tempdir / "output",
+                    langs,
+                    output_formats=["html", "TextGrid", "srt"],
+                )
         self.assertEqual(status, 0)
         self.assertTrue(exception is None)
         self.assertIn("Words (<w>) not present; tokenizing", log)
@@ -53,16 +56,18 @@ class TestAlignApi(BasicTestCase):
             "Make sure the API call doesn't not modify my variables",
         )
 
-        (status, exception, log) = api.align("", "", self.tempdir / "errors")
+        with redirect_stderr(StringIO()):
+            (status, exception, log) = api.align("", "", self.tempdir / "errors")
         self.assertNotEqual(status, 0)
         self.assertFalse(exception is None)
 
     def test_call_make_xml(self):
-        (status, exception, log) = api.make_xml(
-            self.data_dir / "ej-fra.txt",
-            self.tempdir / "prepared.readalong",
-            ("fra", "eng"),
-        )
+        with redirect_stderr(StringIO()):
+            (status, exception, log) = api.make_xml(
+                self.data_dir / "ej-fra.txt",
+                self.tempdir / "prepared.readalong",
+                ("fra", "eng"),
+            )
         self.assertEqual(status, 0)
         self.assertTrue(exception is None)
         self.assertIn("Wrote ", log)

@@ -2,6 +2,8 @@
 
 """Test handling of DNA text in tokenization"""
 
+from contextlib import redirect_stderr
+from io import StringIO
 from unittest import main
 
 from basic_test_case import BasicTestCase
@@ -23,7 +25,8 @@ class TestDNAText(BasicTestCase):
 <s>Voici une deuxième phrase.</s>
 </document>"""
         xml = parse_xml(txt)
-        tokenized = tokenize_xml.tokenize_xml(xml)
+        with redirect_stderr(StringIO()):
+            tokenized = tokenize_xml.tokenize_xml(xml)
         as_txt = etree.tounicode(tokenized)
         # print(etree.tounicode(tokenized))
 
@@ -54,7 +57,8 @@ class TestDNAText(BasicTestCase):
 <s>Un <foo do-not-align="1">mot ou deux</foo> à exclure.</s>
 </document>"""
         xml = parse_xml(txt)
-        tokenized = tokenize_xml.tokenize_xml(xml)
+        with redirect_stderr(StringIO()):
+            tokenized = tokenize_xml.tokenize_xml(xml)
         as_txt = etree.tounicode(tokenized)
         # print('as_txt="' + as_txt +'"')
 
@@ -96,7 +100,8 @@ class TestDNAText(BasicTestCase):
 </div>
 </document>"""
         xml = parse_xml(txt)
-        tokenized = tokenize_xml.tokenize_xml(xml)
+        with redirect_stderr(StringIO()):
+            tokenized = tokenize_xml.tokenize_xml(xml)
         as_txt = etree.tounicode(tokenized)
         # print('as_txt="' + as_txt +'"')
 
@@ -143,7 +148,8 @@ class TestDNAText(BasicTestCase):
 
         txt = """<s xml:lang="fra">Une <w do-not-align="true">exclude</w> phrase.</s>"""
         xml = parse_xml(txt)
-        tokenized = tokenize_xml.tokenize_xml(xml)
+        with redirect_stderr(StringIO()):
+            tokenized = tokenize_xml.tokenize_xml(xml)
         self.assertRaises(RuntimeError, add_ids, tokenized)
 
     def test_dna_word_nested(self):
@@ -151,7 +157,8 @@ class TestDNAText(BasicTestCase):
 
         txt = """<s xml:lang="fra">Une <foo do-not-align="true"><bar><w>exclude</w></bar></foo> phrase.</s>"""
         xml = parse_xml(txt)
-        tokenized = tokenize_xml.tokenize_xml(xml)
+        with redirect_stderr(StringIO()):
+            tokenized = tokenize_xml.tokenize_xml(xml)
         self.assertRaises(RuntimeError, add_ids, tokenized)
 
 

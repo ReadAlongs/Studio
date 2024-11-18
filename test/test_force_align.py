@@ -8,9 +8,11 @@ import os
 import shutil
 import unittest
 import wave
+from contextlib import redirect_stderr
+from io import StringIO
 from tempfile import TemporaryDirectory
 
-from basic_test_case import BasicTestCase
+from basic_test_case import BasicTestCase, silence_c_stderr
 from lxml import etree
 from soundswallower import get_model_path
 
@@ -32,7 +34,8 @@ class TestForceAlignment(BasicTestCase):
         """Basic alignment test case with XML input"""
         xml_path = os.path.join(self.data_dir, "ej-fra.readalong")
         wav_path = os.path.join(self.data_dir, "ej-fra.m4a")
-        results = align_audio(xml_path, wav_path, unit="w", debug_aligner=True)
+        with silence_c_stderr(), redirect_stderr(StringIO()):
+            results = align_audio(xml_path, wav_path, unit="w", debug_aligner=True)
 
         # Verify that the same IDs are in the output
         converted_path = os.path.join(self.data_dir, "ej-fra-converted.readalong")
@@ -50,7 +53,8 @@ class TestForceAlignment(BasicTestCase):
         _, temp_fn = create_input_ras(
             input_file_name=txt_path, text_languages=("fra",), save_temps=None
         )
-        results = align_audio(temp_fn, wav_path, unit="w", save_temps=None)
+        with redirect_stderr(StringIO()):
+            results = align_audio(temp_fn, wav_path, unit="w", save_temps=None)
 
         # Verify that the same IDs are in the output
         converted_path = os.path.join(self.data_dir, "ej-fra-converted.readalong")
@@ -131,14 +135,22 @@ class TestForceAlignment(BasicTestCase):
             with open(os.path.join(custom_am_path, "noisedict"), "at") as fh:
                 fh.write(";; here is a comment\n")
                 fh.write("[BOGUS] SIL\n")
-            results = align_audio(
-                xml_path, wav_path, unit="w", config={"acoustic_model": custom_am_path}
-            )
+            with redirect_stderr(StringIO()):
+                results = align_audio(
+                    xml_path,
+                    wav_path,
+                    unit="w",
+                    config={"acoustic_model": custom_am_path},
+                )
             # Try with no noisedict
             os.remove(os.path.join(custom_am_path, "noisedict"))
-            results = align_audio(
-                xml_path, wav_path, unit="w", config={"acoustic_model": custom_am_path}
-            )
+            with redirect_stderr(StringIO()):
+                results = align_audio(
+                    xml_path,
+                    wav_path,
+                    unit="w",
+                    config={"acoustic_model": custom_am_path},
+                )
         # Verify that the same IDs are in the output
         converted_path = os.path.join(self.data_dir, "ej-fra-converted.readalong")
         xml = load_xml(converted_path)
@@ -157,11 +169,11 @@ class TestForceAlignment(BasicTestCase):
                 writer.setsampwidth(2)
                 writer.setframerate(16000)
                 writer.writeframes(b"\x00\x00")
-            with self.assertRaises(RuntimeError):
+            with self.assertRaises(RuntimeError), redirect_stderr(StringIO()):
                 _ = align_audio(xml_path, tf.name, unit="w")
 
     def test_bad_align_mode(self):
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(AssertionError), redirect_stderr(StringIO()):
             _ = align_audio(
                 os.path.join(self.data_dir, "ej-fra.readalong"),
                 os.path.join(self.data_dir, "noise.mp3"),

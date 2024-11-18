@@ -2,6 +2,8 @@
 
 import os
 import re
+from contextlib import redirect_stderr
+from io import StringIO
 from textwrap import dedent
 from unittest import main
 
@@ -46,17 +48,20 @@ class TestWebApi(BasicTestCase):
             "type": "text/plain",
             "text_languages": ["fra"],
         }
-        response = self.API_CLIENT.post("/api/v1/assemble", json=request)
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post("/api/v1/assemble", json=request)
         self.assertEqual(response.status_code, 200)
 
     def test_bad_path(self):
         # Test a request to a path that doesn't exist
-        response = self.API_CLIENT.get("/pathdoesntexist")
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.get("/pathdoesntexist")
         self.assertEqual(response.status_code, 404)
 
     def test_bad_method(self):
         # Test a request to a valid path with a bad method
-        response = self.API_CLIENT.get("/api/v1/assemble")
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.get("/api/v1/assemble")
         self.assertEqual(response.status_code, 405)
 
     def test_assemble_from_xml(self):
@@ -67,7 +72,8 @@ class TestWebApi(BasicTestCase):
             "type": "application/readalong+xml",
             "text_languages": ["fra"],
         }
-        response = self.API_CLIENT.post("/api/v1/assemble", json=request)
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post("/api/v1/assemble", json=request)
         self.assertEqual(response.status_code, 200)
 
     def test_illformed_xml(self):
@@ -77,7 +83,8 @@ class TestWebApi(BasicTestCase):
             "type": "application/readalong+xml",
             "text_languages": ["fra"],
         }
-        response = self.API_CLIENT.post("/api/v1/assemble", json=request)
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post("/api/v1/assemble", json=request)
         self.assertEqual(response.status_code, 422)
 
     def test_invalid_ras(self):
@@ -87,13 +94,15 @@ class TestWebApi(BasicTestCase):
             "type": "application/readalong+xml",
             "text_languages": ["fra"],
         }
-        response = self.API_CLIENT.post("/api/v1/assemble", json=request)
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post("/api/v1/assemble", json=request)
         self.assertEqual(response.status_code, 422)
 
     def test_create_grammar(self):
         # Test the create grammar function
         parsed = parse_xml(self.slurp_data_file("ej-fra.readalong"))
-        tokenized = tokenize_xml(parsed)
+        with redirect_stderr(StringIO()):
+            tokenized = tokenize_xml(parsed)
         ids_added = add_ids(tokenized)
         g2ped, valid = convert_xml(ids_added)
         from readalongs.web_api import create_grammar
@@ -110,7 +119,8 @@ class TestWebApi(BasicTestCase):
             "type": "text/plain",
             "text_languages": ["test"],
         }
-        response = self.API_CLIENT.post("/api/v1/assemble", json=request)
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post("/api/v1/assemble", json=request)
         self.assertIn("No language called", response.json()["detail"])
         self.assertEqual(response.status_code, 422)
 
@@ -121,7 +131,8 @@ class TestWebApi(BasicTestCase):
             "type": "text/plain",
             "text_languages": ["fra"],
         }
-        response = self.API_CLIENT.post("/api/v1/assemble", json=request)
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post("/api/v1/assemble", json=request)
         self.assertEqual(response.status_code, 422)
         content = response.json()
         self.assertIn("No valid g2p conversion", content["detail"])
@@ -133,7 +144,8 @@ class TestWebApi(BasicTestCase):
             "type": "text/plain",
             "text_languages": ["eng"],
         }
-        response = self.API_CLIENT.post("/api/v1/assemble", json=request)
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post("/api/v1/assemble", json=request)
         self.assertEqual(response.status_code, 422)
         content = response.json()
         self.assertIn("Could not find any words", content["detail"])
@@ -146,7 +158,8 @@ class TestWebApi(BasicTestCase):
             "type": "text/plain",
             "text_languages": ["eng", "und"],
         }
-        response = self.API_CLIENT.post("/api/v1/assemble", json=request)
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post("/api/v1/assemble", json=request)
         self.assertEqual(response.status_code, 422)
         content_log = response.json()["detail"]
         for message_part in ["The output of the g2p process", "24", "23", "is empty"]:
@@ -154,7 +167,8 @@ class TestWebApi(BasicTestCase):
 
     def test_langs(self):
         # Test the langs endpoint
-        response = self.API_CLIENT.get("/api/v1/langs")
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.get("/api/v1/langs")
         codes = [x["code"] for x in response.json()]
         self.assertEqual(set(codes), set(get_langs()[0]))
         self.assertEqual(codes, list(sorted(codes)))
@@ -170,7 +184,8 @@ class TestWebApi(BasicTestCase):
             "debug": True,
             "text_languages": ["fra", "und"],
         }
-        response = self.API_CLIENT.post("/api/v1/assemble", json=request)
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post("/api/v1/assemble", json=request)
         content = response.json()
         # print("Content", content)
         self.assertIn('Could not g2p "ña" as French', content["log"])
@@ -183,7 +198,8 @@ class TestWebApi(BasicTestCase):
             "debug": True,
             "text_languages": ["fra"],
         }
-        response = self.API_CLIENT.post("/api/v1/assemble", json=request)
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post("/api/v1/assemble", json=request)
         content = response.json()
         self.assertEqual(content["input"], request)
         self.assertGreater(len(content["tokenized"]), 10)
@@ -196,7 +212,8 @@ class TestWebApi(BasicTestCase):
             "type": "text/plain",
             "text_languages": ["fra"],
         }
-        response = self.API_CLIENT.post("/api/v1/assemble", json=request)
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post("/api/v1/assemble", json=request)
         content = response.json()
         self.assertIsNone(content["input"])
         self.assertIsNone(content["tokenized"])
@@ -229,9 +246,10 @@ class TestWebApi(BasicTestCase):
             "dur": 83.1,
             "ras": self.hej_verden_xml,
         }
-        response = self.API_CLIENT.post(
-            "/api/v1/convert_alignment/textgrid", json=request
-        )
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post(
+                "/api/v1/convert_alignment/textgrid", json=request
+            )
         self.assertEqual(response.status_code, 200)
         self.assertIn("aligned.TextGrid", response.headers["content-disposition"])
         self.assertEqual(
@@ -293,9 +311,10 @@ class TestWebApi(BasicTestCase):
         request = {
             "ras": self.hej_verden_xml,
         }
-        response = self.API_CLIENT.post(
-            "/api/v1/convert_alignment/textgrid", json=request
-        )
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post(
+                "/api/v1/convert_alignment/textgrid", json=request
+            )
         self.assertEqual(response.status_code, 200)
         self.assertIn("aligned.TextGrid", response.headers["content-disposition"])
         self.assertNotIn("xmax = 83.100000", response.text)
@@ -305,7 +324,10 @@ class TestWebApi(BasicTestCase):
             "dur": 83.1,
             "ras": self.hej_verden_xml,
         }
-        response = self.API_CLIENT.post("/api/v1/convert_alignment/eaf", json=request)
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post(
+                "/api/v1/convert_alignment/eaf", json=request
+            )
         self.assertEqual(response.status_code, 200)
         self.assertIn("<ANNOTATION_DOCUMENT", response.text)
         self.assertIn("aligned.eaf", response.headers["content-disposition"])
@@ -315,7 +337,10 @@ class TestWebApi(BasicTestCase):
             "dur": 83.1,
             "ras": self.hej_verden_xml,
         }
-        response = self.API_CLIENT.post("/api/v1/convert_alignment/srt", json=request)
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post(
+                "/api/v1/convert_alignment/srt", json=request
+            )
         self.assertEqual(response.status_code, 200)
         self.assertIn("aligned_sentences.srt", response.headers["content-disposition"])
         self.assertEqual(
@@ -330,9 +355,10 @@ class TestWebApi(BasicTestCase):
             ),
         )
 
-        response = self.API_CLIENT.post(
-            "/api/v1/convert_alignment/srt?tier=word", json=request
-        )
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post(
+                "/api/v1/convert_alignment/srt?tier=word", json=request
+            )
         self.assertEqual(response.status_code, 200)
         self.assertIn("aligned_words.srt", response.headers["content-disposition"])
         self.assertEqual(
@@ -357,9 +383,10 @@ class TestWebApi(BasicTestCase):
             "dur": 83.1,
             "ras": self.hej_verden_xml,
         }
-        response = self.API_CLIENT.post(
-            "/api/v1/convert_alignment/vtt?tier=sentence", json=request
-        )
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post(
+                "/api/v1/convert_alignment/vtt?tier=sentence", json=request
+            )
         self.assertEqual(response.status_code, 200)
         self.assertIn("aligned_sentences.vtt", response.headers["content-disposition"])
         self.assertEqual(
@@ -374,9 +401,10 @@ class TestWebApi(BasicTestCase):
             ),
         )
 
-        response = self.API_CLIENT.post(
-            "/api/v1/convert_alignment/vtt?tier=word", json=request
-        )
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post(
+                "/api/v1/convert_alignment/vtt?tier=word", json=request
+            )
         self.assertEqual(response.status_code, 200)
         self.assertIn("aligned_words.vtt", response.headers["content-disposition"])
         self.assertEqual(
@@ -399,18 +427,20 @@ class TestWebApi(BasicTestCase):
             "dur": 83.1,
             "ras": "this is not XML",
         }
-        response = self.API_CLIENT.post(
-            "/api/v1/convert_alignment/textgrid", json=request
-        )
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post(
+                "/api/v1/convert_alignment/textgrid", json=request
+            )
         self.assertEqual(response.status_code, 422, "Invalid XML should fail.")
 
         request = {
             "dur": -10.0,
             "ras": self.hej_verden_xml,
         }
-        response = self.API_CLIENT.post(
-            "/api/v1/convert_alignment/textgrid", json=request
-        )
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post(
+                "/api/v1/convert_alignment/textgrid", json=request
+            )
         self.assertEqual(response.status_code, 422, "Negative duration should fail.")
 
     def test_cleanup_temp_dir(self):
@@ -481,21 +511,24 @@ class TestWebApi(BasicTestCase):
             "dur": 83.1,
             "ras": self.hej_verden_xml,
         }
-        response = self.API_CLIENT.post(
-            "/api/v1/convert_alignment/badformat", json=request
-        )
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post(
+                "/api/v1/convert_alignment/badformat", json=request
+            )
         self.assertEqual(response.status_code, 422)
 
         request = {
             "dur": 83.1,
             "ras": self.hej_verden_xml,
         }
-        response = self.API_CLIENT.post("/api/v1/convert_alignment", json=request)
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post("/api/v1/convert_alignment", json=request)
         self.assertEqual(response.status_code, 404)
 
-        response = self.API_CLIENT.post(
-            "/api/v1/convert_alignment/vtt?tier=badtier", json=request
-        )
+        with redirect_stderr(StringIO()):
+            response = self.API_CLIENT.post(
+                "/api/v1/convert_alignment/vtt?tier=badtier", json=request
+            )
         self.assertEqual(response.status_code, 422)
 
 

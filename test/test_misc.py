@@ -293,9 +293,9 @@ class TestMisc(BasicTestCase):
         with capture_logs() as captured_logs:
             LOGGER.info("this will be captured")
         self.assertIn("this will be captured", captured_logs.getvalue())
-        with self.assertLogs():
+        with self.assertLogs(LOGGER):
             LOGGER.info("blah")
-        with self.assertLogs() as cm:
+        with self.assertLogs(LOGGER) as cm:
             with capture_logs() as captured_logs:
                 LOGGER.info("This text does not propagate to root")
             LOGGER.info("This text is included in root")

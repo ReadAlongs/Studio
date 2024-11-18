@@ -13,6 +13,7 @@ where [suite] can be one of:
    other: run the other tests
 """
 
+import argparse
 import os
 import re
 import sys
@@ -97,7 +98,7 @@ def describe_suite(suite: TestSuite):
 SUITES = ["all", "dev", "e2e", "prod", "api", "other"]
 
 
-def run_tests(suite: str, describe: bool = False) -> bool:
+def run_tests(suite: str, describe: bool = False, verbosity=3) -> bool:
     """Run the specified test suite.
 
     Args:
@@ -131,7 +132,7 @@ def run_tests(suite: str, describe: bool = False) -> bool:
         describe_suite(test_suite)
         return True
     else:
-        runner = TextTestRunner(verbosity=3)
+        runner = TextTestRunner(verbosity=verbosity)
         success = runner.run(test_suite).wasSuccessful()
         if not success:
             LOGGER.error("Some tests failed. Please see log above.")
@@ -139,10 +140,19 @@ def run_tests(suite: str, describe: bool = False) -> bool:
 
 
 if __name__ == "__main__":
-    describe = "--describe" in sys.argv
-    if describe:
-        sys.argv.remove("--describe")
-
-    result = run_tests("" if len(sys.argv) <= 1 else sys.argv[1], describe)
+    parser = argparse.ArgumentParser(description="Run ReadAlongs/Studio test suites.")
+    parser.add_argument("--quiet", "-q", action="store_true", help="reduce output")
+    parser.add_argument(
+        "--describe", action="store_true", help="describe the selected test suite"
+    )
+    parser.add_argument(
+        "suite",
+        nargs="?",
+        default="dev",
+        help="the test suite to run [dev]",
+        choices=SUITES,
+    )
+    args = parser.parse_args()
+    result = run_tests(args.suite, args.describe, 1 if args.quiet else 3)
     if not result:
         sys.exit(1)

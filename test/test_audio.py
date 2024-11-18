@@ -41,9 +41,6 @@ class TestAudio(BasicTestCase):
             input_audio_path,
             output_path,
         ] + flags
-        LOGGER.info(
-            f"Aligning {input_text_path} and {input_audio_path}, outputting to {output_path}"
-        )
         return run(args, capture_output=True, check=False, encoding="utf-8")
 
     def test_mute_section(self):

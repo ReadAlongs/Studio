@@ -3,9 +3,11 @@
 """Unit testing for the anchors functionality in readalongs align"""
 
 import os
+from contextlib import redirect_stderr
+from io import StringIO
 from unittest import main
 
-from basic_test_case import BasicTestCase
+from basic_test_case import BasicTestCase, silence_c_stderr
 
 from readalongs.align import align_audio
 from readalongs.log import LOGGER
@@ -18,10 +20,11 @@ class TestAnchors(BasicTestCase):
         """Test aligning with anchors only between existing text"""
 
         # ej-fra-anchors has anchors between words/sentences only
-        results = align_audio(
-            os.path.join(self.data_dir, "ej-fra-anchors.readalong"),
-            os.path.join(self.data_dir, "ej-fra.m4a"),
-        )
+        with redirect_stderr(StringIO()):
+            results = align_audio(
+                os.path.join(self.data_dir, "ej-fra-anchors.readalong"),
+                os.path.join(self.data_dir, "ej-fra.m4a"),
+            )
         words = results["words"]
         # The input text file has 99 words, so should the aligned segments.
         self.assertEqual(len(words), 99)
@@ -39,11 +42,12 @@ class TestAnchors(BasicTestCase):
 
         # ej-fra-anchors2 also has anchors before the first word and after the last word
         save_temps_prefix = os.path.join(self.tempdir, "anchors2-temps")
-        results = align_audio(
-            os.path.join(self.data_dir, "ej-fra-anchors2.readalong"),
-            os.path.join(self.data_dir, "ej-fra.m4a"),
-            save_temps=save_temps_prefix,
-        )
+        with redirect_stderr(StringIO()):
+            results = align_audio(
+                os.path.join(self.data_dir, "ej-fra-anchors2.readalong"),
+                os.path.join(self.data_dir, "ej-fra.m4a"),
+                save_temps=save_temps_prefix,
+            )
         words = results["words"]
         # The input text file has 99 words, so should the aligned segments.
         self.assertEqual(len(words), 99)
@@ -83,10 +87,11 @@ class TestAnchors(BasicTestCase):
         with open(xml_file, "wt", encoding="utf8") as f:
             print(xml_with_anchors, file=f)
         with self.assertLogs(LOGGER, level="INFO") as cm:
-            results = align_audio(
-                xml_file,
-                os.path.join(self.data_dir, "noise.mp3"),
-            )
+            with silence_c_stderr(), redirect_stderr(StringIO()):
+                results = align_audio(
+                    xml_file,
+                    os.path.join(self.data_dir, "noise.mp3"),
+                )
         words = results["words"]
         self.assertEqual(len(words), 10)
         logger_output = "\n".join(cm.output)
