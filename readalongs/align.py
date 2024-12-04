@@ -1191,7 +1191,7 @@ RAS_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 """
 
 
-def create_ras_from_text(lines: Iterable[str], text_languages=Sequence[str]) -> str:
+def create_ras_from_text(lines: Iterable[str], text_languages: Sequence[str]) -> str:
     """Create input xml in ReadAlong XML format (see static/read-along-1.2.dtd)
         Uses the line sequence to infer paragraph and sentence structure from plain text:
         Assumes a double blank line marks a page break, and a single blank line
