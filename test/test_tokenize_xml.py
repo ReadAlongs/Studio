@@ -39,7 +39,7 @@ class TestTokenizer(TestCase):
 """
         ref = """<document>
 <s xml:lang="atj"><w>Kwei</w>! <w>Tan</w> <w>e</w> <w>ici</w> <w>matisihin</w>?</s>
-<s xml:lang="fra"><w>Bonjour</w>! <w>Comment</w> <w>ça</w> <w>va</w>?</s>
+<s xml:lang="fra"><w>Bonjour</w>! <w>Comment</w> <w>ça</w> <w>va</w>?</s>
 </document>"""
         xml = parse_xml(txt)
         with redirect_stderr(StringIO()):
