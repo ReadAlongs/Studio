@@ -34,15 +34,19 @@ All API functions return the following tuple: (status, exception, log)
 
 Additional API function:
 
-convert_to_readalong()
-
+convert_to_readalong(sentences: Sequence[Sequence[Token]], language: Sequence[str]) -> str:
+    convert a list of sentences into a readalong XML string ready to print to file.
+    Just like align and make_xml, this function expects a black line (empty list) to
+    make a paragraph break, and two consecutive blank lines to make a page break.
+    Unlike the other functions here, this function is not a wrapper around the CLI and
+    it just returns the string, non status.
 """
 
 import io
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Optional, Sequence, Tuple, Union
 
 import click
 
@@ -55,15 +59,20 @@ from readalongs.util import JoinerCallbackForClick, get_langs_deferred
 
 
 def align(
-    textfile, audiofile, output_base, language=(), output_formats=(), **kwargs
+    textfile: Union[str, Path],
+    audiofile: Union[str, Path],
+    output_base: Union[str, Path],
+    language: Sequence[str] = (),
+    output_formats: Sequence[str] = (),
+    **kwargs
 ) -> Tuple[int, Optional[Exception], str]:
     """Run the "readalongs align" command from within a Python script.
 
     Args:
-        textfile (str | Path): input text file (XML or plain text)
-        audiofile (str | Path): input audio file (format supported by ffmpeg)
-        output_base (str | Path): basename for output files
-        language (List[str]): Specify only of textfile is plain text;
+        textfile: input text file (XML or plain text)
+        audiofile: input audio file (format supported by ffmpeg)
+        output_base: basename for output files
+        language: Specify only if textfile is plain text;
             list of languages for g2p and g2p cascade
         save_temps (bool): Optional; whether to save temporary files
 
@@ -110,14 +119,17 @@ def align(
 
 
 def make_xml(
-    plaintextfile, xmlfile, language, **kwargs
+    plaintextfile: Union[str, Path],
+    xmlfile: Union[str, Path],
+    language: Sequence[str],
+    **kwargs
 ) -> Tuple[int, Optional[Exception], str]:
     """Run the "readalongs make-xml" command from within a Python script.
 
     Args:
-        plaintextfile (str | Path): input plain text file
-        xmlfile (str | Path): output XML file
-        language (List[str]): list of languages for g2p and g2p cascade
+        plaintextfile: input plain text file
+        xmlfile: output XML file
+        language: list of languages for g2p and g2p cascade
 
         Run "readalongs make-xml -h" or consult
         https://readalong-studio.readthedocs.io/en/latest/cli-ref.html#readalongs-make-xml
@@ -198,13 +210,18 @@ class Token:
         self.is_word = is_word if is_word is not None else bool(time is not None)
 
 
-def convert_to_readalong(sentences: List[List[Token]]) -> str:
-    """Convert a list of pages of tokens into a readalong XML string.
+def convert_to_readalong(
+    sentences: Sequence[Sequence[Token]],
+    language: Sequence[str] = ("und",),
+) -> str:
+    """Convert a list of sentences/paragraphs/pages of tokens into a readalong XML string.
 
     Args:
         sentences: a list of sentences, each of which is a list of Token objects
             Paragraph breaks are marked by a empty sentence (i.e., an empty list)
             Page breaks are marked by two empty sentences in a row
+        language: list of languages to declare at the top of the readalong
+            (has no functional effect since g2p is not applied, it's only metadata)
 
     Returns:
         str: the readalong XML string, ready to print to a .readalong file
@@ -212,7 +229,8 @@ def convert_to_readalong(sentences: List[List[Token]]) -> str:
     from lxml import etree
 
     xml_text = create_ras_from_text(
-        ["".join(token.text for token in sentence) for sentence in sentences], ("und",)
+        ["".join(token.text for token in sentence) for sentence in sentences],
+        language,
     )
     xml = parse_xml(xml_text)
     filtered_sentences = [sentence for sentence in sentences if sentence]
