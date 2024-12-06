@@ -16,7 +16,6 @@ from datetime import datetime
 from io import TextIOWrapper
 from pathlib import Path
 from typing import IO, Union
-from unicodedata import normalize
 
 from lxml import etree
 
@@ -273,15 +272,6 @@ def save_minimal_index_html(
                 studio_version=VERSION,
             )
         )
-
-
-def unicode_normalize_xml(element):
-    if element.text:
-        element.text = normalize("NFD", unicode(element.text))
-    for child in element.getchildren():
-        unicode_normalize_xml(child)
-        if child.tail:
-            child.tail = normalize("NFD", unicode(child.tail))
 
 
 def parse_time(time_string: str) -> int:

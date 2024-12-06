@@ -31,8 +31,8 @@ class TestDNAText(BasicTestCase):
         # print(etree.tounicode(tokenized))
 
         ref = """<document xml:lang="fra">
-<s><w>Bonjour</w>! <w>Comment</w> <w>ça</w> <w>va</w>?</s>
-<s><w>Voici</w> <w>une</w> <w>deuxième</w> <w>phrase</w>.</s>
+<s><w>Bonjour</w>! <w>Comment</w> <w>ça</w> <w>va</w>?</s>
+<s><w>Voici</w> <w>une</w> <w>deuxième</w> <w>phrase</w>.</s>
 </document>"""
         # print('as_txt="' + as_txt +'"')
         # print('ref="' + ref +'"')
@@ -42,8 +42,8 @@ class TestDNAText(BasicTestCase):
         ids_as_txt = etree.tounicode(with_ids)
         # print('with ids="' + ids_as_txt + '"')
         ref_with_ids = """<document xml:lang="fra">
-<s id="s0"><w id="s0w0">Bonjour</w>! <w id="s0w1">Comment</w> <w id="s0w2">ça</w> <w id="s0w3">va</w>?</s>
-<s id="s1"><w id="s1w0">Voici</w> <w id="s1w1">une</w> <w id="s1w2">deuxième</w> <w id="s1w3">phrase</w>.</s>
+<s id="s0"><w id="s0w0">Bonjour</w>! <w id="s0w1">Comment</w> <w id="s0w2">ça</w> <w id="s0w3">va</w>?</s>
+<s id="s1"><w id="s1w0">Voici</w> <w id="s1w1">une</w> <w id="s1w2">deuxième</w> <w id="s1w3">phrase</w>.</s>
 </document>"""
         self.assertEqual(ids_as_txt, ref_with_ids)
 
@@ -63,10 +63,10 @@ class TestDNAText(BasicTestCase):
         # print('as_txt="' + as_txt +'"')
 
         ref = """<document xml:lang="fra">
-<p><s><w>Bonjour</w>! <w>Comment</w> <w>ça</w> <w>va</w>?</s></p>
-<p do-not-align="true"><s>Bonjour! Comment ça va?</s></p>
-<s do-not-align="TRUE">Voici une deuxième phrase.</s>
-<s><w>Un</w> <foo do-not-align="1">mot ou deux</foo> <w>à</w> <w>exclure</w>.</s>
+<p><s><w>Bonjour</w>! <w>Comment</w> <w>ça</w> <w>va</w>?</s></p>
+<p do-not-align="true"><s>Bonjour! Comment ça va?</s></p>
+<s do-not-align="TRUE">Voici une deuxième phrase.</s>
+<s><w>Un</w> <foo do-not-align="1">mot ou deux</foo> <w>à</w> <w>exclure</w>.</s>
 </document>"""
         self.assertEqual(as_txt, ref)
 
@@ -74,10 +74,10 @@ class TestDNAText(BasicTestCase):
         ids_as_txt = etree.tounicode(with_ids)
         # print('with ids="' + ids_as_txt + '"')
         ref_with_ids = """<document xml:lang="fra">
-<p id="p0"><s id="p0s0"><w id="p0s0w0">Bonjour</w>! <w id="p0s0w1">Comment</w> <w id="p0s0w2">ça</w> <w id="p0s0w3">va</w>?</s></p>
-<p do-not-align="true"><s>Bonjour! Comment ça va?</s></p>
-<s do-not-align="TRUE">Voici une deuxième phrase.</s>
-<s id="s0"><w id="s0w0">Un</w> <foo do-not-align="1">mot ou deux</foo> <w id="s0w1">à</w> <w id="s0w2">exclure</w>.</s>
+<p id="p0"><s id="p0s0"><w id="p0s0w0">Bonjour</w>! <w id="p0s0w1">Comment</w> <w id="p0s0w2">ça</w> <w id="p0s0w3">va</w>?</s></p>
+<p do-not-align="true"><s>Bonjour! Comment ça va?</s></p>
+<s do-not-align="TRUE">Voici une deuxième phrase.</s>
+<s id="s0"><w id="s0w0">Un</w> <foo do-not-align="1">mot ou deux</foo> <w id="s0w1">à</w> <w id="s0w2">exclure</w>.</s>
 </document>"""
         self.assertEqual(ids_as_txt, ref_with_ids)
 
