@@ -5,6 +5,7 @@ Test suite for the API way to call align
 """
 
 import os
+import re
 from contextlib import redirect_stderr
 from io import StringIO
 from unittest import main
@@ -13,7 +14,7 @@ import click
 from basic_test_case import BasicTestCase
 from sound_swallower_stub import SoundSwallowerStub
 
-import readalongs.api as api
+from readalongs import api
 from readalongs.log import LOGGER
 
 
@@ -95,6 +96,61 @@ class TestAlignApi(BasicTestCase):
         with self.assertLogs(LOGGER, level="WARNING") as cm:
             api.prepare(self.data_dir / "ej-fra.txt", os.devnull, ("fra",))
         self.assertIn("deprecated", "\n".join(cm.output))
+
+    def test_convert_to_readalong(self):
+        sentences = [
+            [
+                api.Token("Bonjöûr,", 0.2, 1.0),
+                api.Token(" "),
+                api.Token("hello", 1.0, 0.2),
+                api.Token("!"),
+            ],
+            [api.Token("Sentence2", 4.2, 0.2), api.Token("!")],
+            [],
+            [api.Token("Paragraph2", 4.2, 0.2), api.Token(".")],
+            [],
+            [],
+            [
+                api.Token("("),
+                api.Token('"'),
+                api.Token("Page2", 5.2, 0.2),
+                api.Token("."),
+                api.Token('"'),
+                api.Token(")"),
+            ],
+        ]
+
+        readalong = api.convert_to_readalong(sentences)
+        # print(readalong)
+
+        # Make the reference by calling align with the same text and adjusting
+        # things we expect to be different.
+        sentences_as_text = "\n".join(
+            "".join(token.text for token in sentence) for sentence in sentences
+        )
+        with open(self.tempdir / "sentences.txt", "w", encoding="utf8") as f:
+            f.write(sentences_as_text)
+        with redirect_stderr(StringIO()):
+            result = api.align(
+                self.tempdir / "sentences.txt",
+                self.data_dir / "noise.mp3",
+                self.tempdir / "output",
+                ("und",),
+            )
+        if result[0] != 0:
+            print("align error:", result)
+        with open(self.tempdir / "output/www/output.readalong", encoding="utf8") as f:
+            align_result = f.read()
+
+        align_result = re.sub(r" ARPABET=\".*?\"", "", align_result)
+        align_result = re.sub(
+            r'<w (id=".*?") time=".*?" dur=".*?"',
+            r'<w time="ttt" dur="ddd" \1',
+            align_result,
+        )
+        readalong = re.sub(r"time=\".*?\"", 'time="ttt"', readalong)
+        readalong = re.sub(r"dur=\".*?\"", 'dur="ddd"', readalong)
+        self.assertEqual(readalong, align_result)
 
 
 if __name__ == "__main__":

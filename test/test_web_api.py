@@ -188,7 +188,7 @@ class TestWebApi(BasicTestCase):
             response = self.API_CLIENT.post("/api/v1/assemble", json=request)
         content = response.json()
         # print("Content", content)
-        self.assertIn('Could not g2p "ña" as French', content["log"])
+        self.assertIn('Could not g2p "ña" as French', content["log"])
 
     def test_debug(self):
         # Test the assemble endpoint with debug mode on

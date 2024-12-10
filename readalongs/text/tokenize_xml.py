@@ -32,7 +32,7 @@ from copy import deepcopy
 from lxml import etree
 
 from readalongs.log import LOGGER
-from readalongs.text.util import get_lang_attrib, is_do_not_align, unicode_normalize_xml
+from readalongs.text.util import get_lang_attrib, is_do_not_align
 
 
 def tokenize_xml_in_place(xml):
@@ -115,8 +115,6 @@ def tokenize_xml_in_place(xml):
 def tokenize_xml(xml):
     """Returns a deep copy of xml with all words wrapped in a "w" XML element"""
     xml = deepcopy(xml)
-    # FIXME: different langs have different normalizations, is this necessary?
-    unicode_normalize_xml(xml)
     words = xml.xpath(".//w")
     if words:
         LOGGER.info("Words (<w>) already present; skipping tokenization")

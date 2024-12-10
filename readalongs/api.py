@@ -31,29 +31,48 @@ All API functions return the following tuple: (status, exception, log)
                         you come accross such an exception and you believe the
                         problem is not in your own code.
  - log: any logging messages issued during execution
+
+Additional API function:
+
+convert_to_readalong(sentences: Sequence[Sequence[Token]], language: Sequence[str]) -> str:
+    convert a list of sentences into a readalong XML string ready to print to file.
+    Just like align and make_xml, this function expects a black line (empty list) to
+    make a paragraph break, and two consecutive blank lines to make a page break.
+    Unlike the other functions here, this function is not a wrapper around the CLI and
+    it just returns the string, non status.
 """
 
 import io
 import logging
-from typing import Optional, Tuple
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Optional, Sequence, Tuple, Union
 
 import click
 
 from readalongs import cli
+from readalongs.align import create_ras_from_text
 from readalongs.log import LOGGER
+from readalongs.text.add_ids_to_xml import add_ids
+from readalongs.text.util import parse_xml
 from readalongs.util import JoinerCallbackForClick, get_langs_deferred
 
 
 def align(
-    textfile, audiofile, output_base, language=(), output_formats=(), **kwargs
+    textfile: Union[str, Path],
+    audiofile: Union[str, Path],
+    output_base: Union[str, Path],
+    language: Sequence[str] = (),
+    output_formats: Sequence[str] = (),
+    **kwargs
 ) -> Tuple[int, Optional[Exception], str]:
     """Run the "readalongs align" command from within a Python script.
 
     Args:
-        textfile (str | Path): input text file (XML or plain text)
-        audiofile (str | Path): input audio file (format supported by ffmpeg)
-        output_base (str | Path): basename for output files
-        language (List[str]): Specify only of textfile is plain text;
+        textfile: input text file (XML or plain text)
+        audiofile: input audio file (format supported by ffmpeg)
+        output_base: basename for output files
+        language: Specify only if textfile is plain text;
             list of languages for g2p and g2p cascade
         save_temps (bool): Optional; whether to save temporary files
 
@@ -100,14 +119,17 @@ def align(
 
 
 def make_xml(
-    plaintextfile, xmlfile, language, **kwargs
+    plaintextfile: Union[str, Path],
+    xmlfile: Union[str, Path],
+    language: Sequence[str],
+    **kwargs
 ) -> Tuple[int, Optional[Exception], str]:
     """Run the "readalongs make-xml" command from within a Python script.
 
     Args:
-        plaintextfile (str | Path): input plain text file
-        xmlfile (str | Path): output XML file
-        language (List[str]): list of languages for g2p and g2p cascade
+        plaintextfile: input plain text file
+        xmlfile: output XML file
+        language: list of languages for g2p and g2p cascade
 
         Run "readalongs make-xml -h" or consult
         https://readalong-studio.readthedocs.io/en/latest/cli-ref.html#readalongs-make-xml
@@ -116,11 +138,13 @@ def make_xml(
     Returns: (status, exception, log_text)
     """
     # plaintextfile is not a file object if passed from click
+
     plaintextfile = (
         plaintextfile.name
         if isinstance(plaintextfile, click.utils.LazyFile)
         else plaintextfile
     )
+    xmlfile = str(xmlfile) if isinstance(xmlfile, Path) else xmlfile
     logging_stream = io.StringIO()
     logging_handler = logging.StreamHandler(logging_stream)
     try:
@@ -157,3 +181,81 @@ def prepare(*args, **kwargs):
         "readalongs.api.prepare() is deprecated. Please use make_xml() instead."
     )
     return make_xml(*args, **kwargs)
+
+
+@dataclass
+class Token:
+    """A token in a readalong: a word has a time and dur, a non-word does not."""
+
+    text: str
+    time: Optional[float]
+    dur: Optional[float]
+    is_word: bool
+
+    def __init__(
+        self,
+        text: str,
+        time: Optional[float] = None,
+        dur: Optional[float] = None,
+        is_word: Optional[bool] = None,
+    ):
+        """Create a word token:
+            t = Token("asdf", time=1.3, dur=.34) or t = Token("asdf", 1.3, .34)
+        Create a non-word token (e.g., punctuation, spacing):
+            t = Token(", ")
+        """
+        self.text = text
+        self.time = time
+        self.dur = dur
+        self.is_word = is_word if is_word is not None else bool(time is not None)
+
+
+def convert_to_readalong(
+    sentences: Sequence[Sequence[Token]],
+    language: Sequence[str] = ("und",),
+) -> str:
+    """Convert a list of sentences/paragraphs/pages of tokens into a readalong XML string.
+
+    Args:
+        sentences: a list of sentences, each of which is a list of Token objects
+            Paragraph breaks are marked by a empty sentence (i.e., an empty list)
+            Page breaks are marked by two empty sentences in a row
+        language: list of languages to declare at the top of the readalong
+            (has no functional effect since g2p is not applied, it's only metadata)
+
+    Returns:
+        str: the readalong XML string, ready to print to a .readalong file
+    """
+    from lxml import etree
+
+    xml_text = create_ras_from_text(
+        ["".join(token.text for token in sentence) for sentence in sentences],
+        language,
+    )
+    xml = parse_xml(xml_text)
+    filtered_sentences = [sentence for sentence in sentences if sentence]
+    for sentence, sentence_xml in zip(filtered_sentences, xml.findall(".//s")):
+        sentence_xml.text = ""
+        for token in sentence:
+            if token.is_word:
+                w = etree.Element("w")
+                w.text = token.text
+                w.attrib["time"] = str(token.time)
+                w.attrib["dur"] = str(token.dur)
+                sentence_xml.append(w)
+            else:
+                if len(sentence_xml):  # if it has children
+                    if not sentence_xml[-1].tail:
+                        sentence_xml[-1].tail = ""
+                    sentence_xml[-1].tail += token.text
+                else:
+                    sentence_xml.text += token.text
+
+    xml = add_ids(xml)
+    xml_text = etree.tostring(
+        xml,
+        encoding="utf-8",
+        xml_declaration=True,
+    ).decode("utf8")
+
+    return xml_text + "\n"
