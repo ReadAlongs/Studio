@@ -35,15 +35,6 @@ jobs:
           coverage combine
           coverage xml
 
-      - name: Exercise the Heroku Procfile
-        run: |
-          cmd=$(grep web: Procfile | cut -d' ' -f2-)
-          echo "Running $cmd"
-          $cmd &
-          curl --retry 20 --retry-delay 1 --retry-all-errors http://127.0.0.1:8000/api/v1/docs | grep SwaggerUIBundle
-          curl http://127.0.0.1:8000/api/v1/langs | grep Cree
-          kill %1
-
       - name: Make sure pre-commit hooks pass
         uses: pre-commit/action@v3.0.1
 
@@ -119,3 +110,36 @@ jobs:
           echo Reference ====
           cat test/data/cs-ref.readalong
           if (diff (cat cs.readalong) (cat test/data/cs-ref.readalong)) { throw "Output did not match reference" }
+
+  test-heroku-env:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read the Heroku run time env and cmd
+        run: |
+          echo "PYTHON_VERSION=$(cat runtime.txt | sed 's/python-//')" >> $GITHUB_ENV
+          echo "RUNTIME_CMD=$(cat Procfile | grep web: | sed 's/web: *//')" >> $GITHUB_ENV
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install Python dependencies the way Heroku would
+        run: |
+          pip install -r requirements.txt
+          bin/post_compile
+
+      - name: Launch the API via the Heroku Procfile
+        run: |
+          ${{ env.RUNTIME_CMD }} &
+          curl --retry 20 --retry-delay 1 --retry-all-errors http://127.0.0.1:8000/api/v1/docs | grep SwaggerUIBundle
+          curl http://127.0.0.1:8000/api/v1/langs | grep Cree
+          kill %1
+
+      - name: unit test the web API
+        run: |
+          pip install -e .[dev]
+          python test/test_web_api.py
