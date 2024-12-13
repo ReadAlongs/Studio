@@ -60,11 +60,7 @@
 
 
 import argparse
-import codecs
-import itertools
 import unicodedata
-import xml.etree.ElementTree
-from io import BytesIO, StringIO
 
 from lxml import etree
 
