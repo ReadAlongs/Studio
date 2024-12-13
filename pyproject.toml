@@ -95,7 +95,7 @@ include = [
 [tool.hatch.envs.prod]
 features = [ "api" ]
 type = "pip-compile"
-python = "3.11"
+python = "3.13"
 lock-filename = "requirements.txt"
 
 [project.urls]
