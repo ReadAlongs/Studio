@@ -36,7 +36,6 @@ BASIC_HTML = """
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
   <meta name="application-name" content="read along">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
   <meta name="generator" content="@readalongs/studio (cli) {studio_version}">
   <title>{title}</title>
   <script>{js}</script>
