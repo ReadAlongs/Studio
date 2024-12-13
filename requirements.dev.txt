@@ -1,14 +1,5 @@
 # This is a set of development dependencies
-black~=24.3
-flake8>=4.0.1
 gitlint-core>=0.17.0
 httpx>=0.24.1
-isort>=5.10.1
-mypy>=1.4.1
-mypy>=1.5.1; python_version >= "3.8"
 pep440>=0.1.2
 pre-commit>=2.6.0
-types-python-slugify>=5.0.3
-types-pyyaml>=6.0.5
-types-requests>=2.31.0
-types-setuptools>=57.4.9
