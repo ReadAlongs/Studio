@@ -44,8 +44,8 @@ convert_to_readalong(sentences: Sequence[Sequence[Token]], language: Sequence[st
 
 import io
 import logging
+import os
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Optional, Sequence, Tuple, Union
 
 import click
@@ -59,9 +59,9 @@ from readalongs.util import JoinerCallbackForClick, get_langs_deferred
 
 
 def align(
-    textfile: Union[str, Path],
-    audiofile: Union[str, Path],
-    output_base: Union[str, Path],
+    textfile: Union[str, os.PathLike],
+    audiofile: Union[str, os.PathLike],
+    output_base: Union[str, os.PathLike],
     language: Sequence[str] = (),
     output_formats: Sequence[str] = (),
     **kwargs
@@ -119,8 +119,8 @@ def align(
 
 
 def make_xml(
-    plaintextfile: Union[str, Path],
-    xmlfile: Union[str, Path],
+    plaintextfile: Union[str, os.PathLike],
+    xmlfile: Union[str, os.PathLike],
     language: Sequence[str],
     **kwargs
 ) -> Tuple[int, Optional[Exception], str]:
@@ -144,7 +144,7 @@ def make_xml(
         if isinstance(plaintextfile, click.utils.LazyFile)
         else plaintextfile
     )
-    xmlfile = str(xmlfile) if isinstance(xmlfile, Path) else xmlfile
+    xmlfile = str(xmlfile) if isinstance(xmlfile, os.PathLike) else xmlfile
     logging_stream = io.StringIO()
     logging_handler = logging.StreamHandler(logging_stream)
     try:

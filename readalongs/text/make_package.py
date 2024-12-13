@@ -16,7 +16,7 @@
 import os
 from base64 import b64encode
 from mimetypes import guess_type
-from typing import Any
+from typing import Any, Union
 
 from lxml import etree
 
@@ -57,11 +57,11 @@ DEFAULT_HEADER = "Your read-along title goes here"
 DEFAULT_SUBHEADER = "Your read-along subtitle goes here"
 
 
-def encode_from_path(path: str) -> str:
+def encode_from_path(path: Union[str, os.PathLike]) -> str:
     """Encode file from bytes to b64 string with data and mime signature
 
     Args:
-        path (str): path to file
+        path: path to file
 
     Returns:
         str: base64 string with data and mime signature
@@ -118,8 +118,8 @@ def encode_from_path(path: str) -> str:
 
 
 def create_web_component_html(
-    ras_path: str,
-    audio_path: str,
+    ras_path: Union[str, os.PathLike],
+    audio_path: Union[str, os.PathLike],
     title=DEFAULT_TITLE,
     header=DEFAULT_HEADER,
     subheader=DEFAULT_SUBHEADER,
