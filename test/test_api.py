@@ -97,36 +97,38 @@ class TestAlignApi(BasicTestCase):
             api.prepare(self.data_dir / "ej-fra.txt", os.devnull, ("fra",))
         self.assertIn("deprecated", "\n".join(cm.output))
 
-    def test_convert_to_readalong(self):
-        sentences = [
-            [
-                api.Token("Bonjöûr,", 0.2, 1.0),
-                api.Token(" "),
-                api.Token("hello", 1.0, 0.2),
-                api.Token("!"),
-            ],
-            [api.Token("Sentence2", 4.2, 0.2), api.Token("!")],
-            [],
-            [api.Token("Paragraph2", 4.2, 0.2), api.Token(".")],
-            [],
-            [],
-            [
-                api.Token("("),
-                api.Token('"'),
-                api.Token("Page2", 5.2, 0.2),
-                api.Token("."),
-                api.Token('"'),
-                api.Token(")"),
-            ],
-        ]
+    sentences_to_convert = [
+        [
+            api.Token("Bonjöûr,", 0.2, 1.0),
+            api.Token(" "),
+            api.Token("hello", 1.0, 0.2),
+            api.Token("!"),
+        ],
+        [api.Token("Sentence2", 4.2, 0.2), api.Token("!")],
+        [],
+        [api.Token("Paragraph2", 4.2, 0.2), api.Token(".")],
+        [],
+        [],
+        [
+            api.Token("("),
+            api.Token('"'),
+            api.Token("Page2", 5.2, 0.2),
+            api.Token("."),
+            api.Token('"'),
+            api.Token(")"),
+        ],
+    ]
 
-        readalong = api.convert_to_readalong(sentences)
+    def test_convert_to_readalong(self):
+
+        readalong = api.convert_to_readalong(self.sentences_to_convert)
         # print(readalong)
 
         # Make the reference by calling align with the same text and adjusting
         # things we expect to be different.
         sentences_as_text = "\n".join(
-            "".join(token.text for token in sentence) for sentence in sentences
+            "".join(token.text for token in sentence)
+            for sentence in self.sentences_to_convert
         )
         with open(self.tempdir / "sentences.txt", "w", encoding="utf8") as f:
             f.write(sentences_as_text)
@@ -151,6 +153,23 @@ class TestAlignApi(BasicTestCase):
         readalong = re.sub(r"time=\".*?\"", 'time="ttt"', readalong)
         readalong = re.sub(r"dur=\".*?\"", 'dur="ddd"', readalong)
         self.assertEqual(readalong, align_result)
+
+    def test_convert_to_offline_html(self):
+        html, _ = api.convert_to_offline_html(
+            self.sentences_to_convert,
+            str(self.data_dir / "noise.mp3"),
+            subheader="by Jove!",
+        )
+        # with open("test.html", "w", encoding="utf8") as f:
+        #     f.write(html)
+        # print(html)
+        self.assertIn("<html", html)
+        self.assertIn("<body", html)
+        self.assertIn('<meta name="generator" content="@readalongs/studio (cli)', html)
+        self.assertIn('<read-along href="data:application/readalong+xml;base64', html)
+        self.assertIn('audio="data:audio/', html)
+        self.assertIn("<span slot='read-along-header'>", html)
+        self.assertIn("<span slot='read-along-subheader'>by Jove!</span>", html)
 
 
 if __name__ == "__main__":

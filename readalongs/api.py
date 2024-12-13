@@ -45,15 +45,23 @@ convert_to_readalong(sentences: Sequence[Sequence[Token]], language: Sequence[st
 import io
 import logging
 import os
+import tempfile
 from dataclasses import dataclass
 from typing import Optional, Sequence, Tuple, Union
 
 import click
+from lxml import etree
 
 from readalongs import cli
 from readalongs.align import create_ras_from_text
 from readalongs.log import LOGGER
 from readalongs.text.add_ids_to_xml import add_ids
+from readalongs.text.make_package import (
+    DEFAULT_HEADER,
+    DEFAULT_SUBHEADER,
+    DEFAULT_TITLE,
+    create_web_component_html,
+)
 from readalongs.text.util import parse_xml
 from readalongs.util import JoinerCallbackForClick, get_langs_deferred
 
@@ -64,7 +72,7 @@ def align(
     output_base: Union[str, os.PathLike],
     language: Sequence[str] = (),
     output_formats: Sequence[str] = (),
-    **kwargs
+    **kwargs,
 ) -> Tuple[int, Optional[Exception], str]:
     """Run the "readalongs align" command from within a Python script.
 
@@ -122,7 +130,7 @@ def make_xml(
     plaintextfile: Union[str, os.PathLike],
     xmlfile: Union[str, os.PathLike],
     language: Sequence[str],
-    **kwargs
+    **kwargs,
 ) -> Tuple[int, Optional[Exception], str]:
     """Run the "readalongs make-xml" command from within a Python script.
 
@@ -224,10 +232,8 @@ def convert_to_readalong(
             (has no functional effect since g2p is not applied, it's only metadata)
 
     Returns:
-        str: the readalong XML string, ready to print to a .readalong file
+        str: the readalong XML file contents, ready to print to .readalong
     """
-    from lxml import etree
-
     xml_text = create_ras_from_text(
         ["".join(token.text for token in sentence) for sentence in sentences],
         language,
@@ -259,3 +265,47 @@ def convert_to_readalong(
     ).decode("utf8")
 
     return xml_text + "\n"
+
+
+def convert_to_offline_html(
+    sentences: Sequence[Sequence[Token]],
+    audio_file_name: Union[str, os.PathLike],
+    language: Sequence[str] = ("und",),
+    title: str = DEFAULT_TITLE,
+    header: str = DEFAULT_HEADER,
+    subheader: str = DEFAULT_SUBHEADER,
+) -> Tuple[str, str]:
+    """Convert a list of sentences/paragraphs/pages of tokens, with corresponding autdio,
+    into a readalong Offline HTML
+
+    Args:
+        sentences: a list of sentences, each of which is a list of Token objects
+            Paragraph breaks are marked by a empty sentence (i.e., an empty list)
+            Page breaks are marked by two empty sentences in a row
+        audio_file_name: the name of the audio file to be used in the offline HTML
+        language: list of languages to declare at the top of the readalong
+            (has no functional effect since g2p is not applied, it's only metadata)
+        title: optional title, will fill the HTML <title> tag
+        header: optional header, will fill the readalong <span slot='read-along-header'>
+        subheader: optional subheader, will fill the readalong <span slot='read-along-subheader'>
+
+    Returns:
+        (html_contents, readalong_contents):
+         - the readalong Offline HTML file contents, ready to print to .html
+         - the readalong XML file contents, ready to print to .readalong
+    """
+
+    readalong_xml = convert_to_readalong(sentences, language)
+    try:
+        readalong_file = tempfile.NamedTemporaryFile(
+            "w", encoding="utf8", delete=False, suffix=".readalong"
+        )
+        readalong_file.write(readalong_xml)
+        readalong_file.close()
+        # print(readalong_file.name)
+        offline_html = create_web_component_html(
+            readalong_file.name, audio_file_name, title, header, subheader
+        )
+        return offline_html, readalong_xml
+    finally:
+        os.unlink(readalong_file.name)
