@@ -124,17 +124,22 @@ async def langs() -> List[SupportedLanguage]:
     """Return the list of supported languages and their names as a dict.
 
     Returns:
-        Supported languages as list with language codes and mapping of
-        language code to name, including minimally the key "_" for the
-        default display name (usually, but not always, in English).
-        For example:
+      Supported languages as a list with language codes and a mapping
+      `{ "_": "Default Display Name" }`, where the language's default display name is
+      usually (but not always) in English.
+      For example:
 
         [
-            {"code": "alq", names: { "alq": "Anishinaabemowin", "_": "Algonquin" }},
-            {"code": "atj", names: { "atj": "Nehiromowin", "_": "Atikamekw" }},
-            {"code": "fra", names: { "fra": "Français", "_": "French" }},
+            {"code": "alq", names: { "_": "Algonquin" }},
+            {"code": "atj", names: { "_": "Atikamekw" }},
+            {"code": "fra", names: { "_": "French" }},
             ...
         ]
+
+      In the future, we may add localized names to this mapping with language
+      codes as the keys, e.g.,
+
+        [ {"code": "alq", names: { "alq": "Anishinaabemowin", "_": "Algonquin" }}, ... ]
     """
     langs, lang_names = LANGS
     return [
