@@ -34,12 +34,17 @@ All API functions return the following tuple: (status, exception, log)
 
 Additional API function:
 
-convert_to_readalong(sentences: Sequence[Sequence[Token]], language: Sequence[str]) -> str:
+convert_prealigned_text_to_readalong():
     convert a list of sentences into a readalong XML string ready to print to file.
     Just like align and make_xml, this function expects a black line (empty list) to
     make a paragraph break, and two consecutive blank lines to make a page break.
     Unlike the other functions here, this function is not a wrapper around the CLI and
-    it just returns the string, non status.
+    it just returns the string, with no status.
+
+convert_prealigned_text_to_offline_html():
+    same as convert_prealigned_text_to_readalong, but also creates an offline HTML file.
+
+See their respective docstrings for more details.
 """
 
 import io
@@ -218,7 +223,7 @@ class Token:
         self.is_word = is_word if is_word is not None else bool(time is not None)
 
 
-def convert_to_readalong(
+def convert_prealigned_text_to_readalong(
     sentences: Sequence[Sequence[Token]],
     language: Sequence[str] = ("und",),
 ) -> str:
@@ -267,7 +272,7 @@ def convert_to_readalong(
     return xml_text + "\n"
 
 
-def convert_to_offline_html(
+def convert_prealigned_text_to_offline_html(
     sentences: Sequence[Sequence[Token]],
     audio_file_name: Union[str, os.PathLike],
     language: Sequence[str] = ("und",),
@@ -275,7 +280,7 @@ def convert_to_offline_html(
     header: str = DEFAULT_HEADER,
     subheader: str = DEFAULT_SUBHEADER,
 ) -> Tuple[str, str]:
-    """Convert a list of sentences/paragraphs/pages of tokens, with corresponding autdio,
+    """Convert a list of sentences/paragraphs/pages of tokens, with corresponding audio,
     into a readalong Offline HTML
 
     Args:
@@ -295,7 +300,7 @@ def convert_to_offline_html(
          - the readalong XML file contents, ready to print to .readalong
     """
 
-    readalong_xml = convert_to_readalong(sentences, language)
+    readalong_xml = convert_prealigned_text_to_readalong(sentences, language)
     try:
         readalong_file = tempfile.NamedTemporaryFile(
             "w", encoding="utf8", delete=False, suffix=".readalong"

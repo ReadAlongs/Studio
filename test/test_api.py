@@ -121,7 +121,7 @@ class TestAlignApi(BasicTestCase):
 
     def test_convert_to_readalong(self):
 
-        readalong = api.convert_to_readalong(self.sentences_to_convert)
+        readalong = api.convert_prealigned_text_to_readalong(self.sentences_to_convert)
         # print(readalong)
 
         # Make the reference by calling align with the same text and adjusting
@@ -155,7 +155,7 @@ class TestAlignApi(BasicTestCase):
         self.assertEqual(readalong, align_result)
 
     def test_convert_to_offline_html(self):
-        html, _ = api.convert_to_offline_html(
+        html, _ = api.convert_prealigned_text_to_offline_html(
             self.sentences_to_convert,
             str(self.data_dir / "noise.mp3"),
             subheader="by Jove!",
