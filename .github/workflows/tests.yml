@@ -24,13 +24,8 @@ jobs:
         run: |
           # Keep pip up to date
           python -m pip install --upgrade pip
-          # Some dependencies are built using wheel
-          pip install wheel
           # Install all Python dependencies in just one pip call, including Studio itself
-          pip install -r requirements.txt \
-                      -r requirements.dev.txt \
-                      -r requirements.ci.txt \
-                      -e .
+          pip install -e .[all]
 
       - name: Run tests
         run: |
@@ -40,22 +35,16 @@ jobs:
           coverage combine
           coverage xml
 
-      - name: Exercise the Heroku Procfile
-        run: |
-          cmd=$(grep web: Procfile | cut -d' ' -f2-)
-          echo "Running $cmd"
-          $cmd &
-          curl --retry 20 --retry-delay 1 --retry-all-errors http://127.0.0.1:8000/api/v1/docs | grep SwaggerUIBundle
-          curl http://127.0.0.1:8000/api/v1/langs | grep Cree
-          kill %1
-
       - name: Make sure pre-commit hooks pass
         uses: pre-commit/action@v3.0.1
 
-      - name: Minimalist license check
-        run: |
-          # Legal check: make sure we don't have or introduce GPL dependencies
-          if pip-licenses | grep -v 'Artistic License' | grep -v LGPL | grep GNU; then echo 'Please avoid introducing *GPL dependencies'; false; fi
+      - name: Automated license checking
+        # Make sure we don't have or introduce dependencies with incompatible licenses.
+        # Exclusions where auto detection and analysis do not work:
+        #  - pympi-ling is MIT, but not auto-detected. https://github.com/dopefishh/pympi
+        #  - text-unidecode is Artistic License or GPL (at our choice): MIT is
+        #    compatible with the former. https://github.com/kmike/text-unidecode/
+        run: licensecheck --zero --ignore-packages pympi-ling text-unidecode
 
       - uses: codecov/codecov-action@v4
         with:
@@ -107,11 +96,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install wheel
-          pip install -r requirements.txt `
-                      -r requirements.dev.txt `
-                      -r requirements.ci.txt `
-                      -e .
+          pip install -e .[all]
 
       - name: Run tests on Windows
         run: cd test && python run.py prod
@@ -128,3 +113,36 @@ jobs:
           echo Reference ====
           cat test/data/cs-ref.readalong
           if (diff (cat cs.readalong) (cat test/data/cs-ref.readalong)) { throw "Output did not match reference" }
+
+  test-heroku-env:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read the Heroku run time env and cmd
+        run: |
+          echo "PYTHON_VERSION=$(cat runtime.txt | sed 's/python-//')" >> $GITHUB_ENV
+          echo "RUNTIME_CMD=$(cat Procfile | grep web: | sed 's/web: *//')" >> $GITHUB_ENV
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install Python dependencies the way Heroku would
+        run: |
+          pip install -r requirements.txt
+          bin/post_compile
+
+      - name: Launch the API via the Heroku Procfile
+        run: |
+          ${{ env.RUNTIME_CMD }} &
+          curl --retry 20 --retry-delay 1 --retry-all-errors http://127.0.0.1:8000/api/v1/docs | grep SwaggerUIBundle
+          curl http://127.0.0.1:8000/api/v1/langs | grep Cree
+          kill %1
+
+      - name: unit test the web API
+        run: |
+          pip install -e .[dev]
+          python test/test_web_api.py

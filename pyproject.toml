@@ -1,0 +1,113 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "readalongs"
+dynamic = ["version"]
+requires-python = ">= 3.8"
+description = "ReadAlong Studio: Audiobook alignment for Indigenous languages"
+readme = "README.md"
+authors = [
+    { name = "Aidan Pine", email = "Aidan.Pine@nrc-cnrc.gc.ca" },
+    { name = "David Huggins-Daines", email = "dhd@ecolingui.ca" },
+    { name = "Eric Joanis", email = "Eric.Joanis@nrc-cnrc.gc.ca" },
+    { name = "Patrick Littell", email = "Patrick.Littell@nrc-cnrc.gc.ca" },
+    { name = "Delasie Torkornoo", email = "Delasie.Torkornoo@nrc-cnrc.gc.ca" },
+]
+maintainers = [
+    { name = "Eric Joanis", email = "Eric.Joanis@nrc-cnrc.gc.ca" },
+    { name = "Aidan Pine", email = "Aidan.Pine@nrc-cnrc.gc.ca" },
+    { name = "David Huggins-Daines", email = "dhd@ecolingui.ca" },
+]
+
+classifiers = [
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+    "Typing :: Typed",
+]
+
+dependencies = [
+    "audioop-lts; python_version>='3.13'",
+    "chevron==0.14.0",
+    "click>=8.0.4",
+    "coloredlogs>=10.0",
+    "fastapi>=0.103.0",
+    "g2p>=1.1.20230822, <3",
+    "lxml>=4.9.4",
+    "numpy>=1.20.2",
+    "pydantic>=1.8.2,<3",
+    "pydub>=0.23.1",
+    "pympi-ling>=1.69,<2.0",
+    "python-slugify==5.0.0",
+    "requests>=2.31.0",
+    "soundswallower~=0.6.0",
+    "webvtt-py==0.4.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "readalongs[api]",
+    "gitlint-core>=0.17.0",
+    "httpx>=0.24.1",
+    "pep440>=0.1.2",
+    "pre-commit>=2.6.0",
+]
+
+api = [
+    # gunivorn is only available on *nix, but it's only required for production deployments
+    "gunicorn>=23.0.0; platform_system != 'Windows'",
+    # uvicorn works on all platforms and is required for both dev and prod deployments
+    "uvicorn>=0.30.1",
+]
+
+ci = [
+    "readalongs[api]",
+    "coverage",
+    "licensecheck",
+]
+
+all = [
+    "readalongs[dev]",
+    "readalongs[ci]",
+]
+
+[project.scripts]
+readalongs = "readalongs.cli:cli"
+
+[tool.hatch.version]
+path = "readalongs/_version.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/readalongs",
+]
+
+[tool.hatch.envs.prod]
+features = [ "api" ]
+type = "pip-compile"
+python = "3.13"
+lock-filename = "requirements.txt"
+
+[project.urls]
+Homepage = "https://github.com/ReadAlongs/"
+Documentation = "https://readalongs.github.io/Studio/"
+Repository = "https://github.com/ReadAlongs/Studio"
+Issues = "https://github.com/ReadAlongs/Studio/issues"
+Changelog = "https://github.com/ReadAlongs/Studio/releases"
+
+[tool.mypy]
+plugins = ["pydantic.mypy"]
+ignore_missing_imports = true
+
+[tool.isort]
+profile = "black"
