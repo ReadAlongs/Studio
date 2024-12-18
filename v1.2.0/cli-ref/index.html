@@ -1,0 +1,623 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../cli-guide/">
+      
+      
+        <link rel="next" href="../outputs/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.49">
+    
+    
+      
+        <title>CLI reference - ReadAlong-Studio</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.6f8fc17f.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#command-line-interface-cli-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ReadAlong-Studio" class="md-header__button md-logo" aria-label="ReadAlong-Studio" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ReadAlong-Studio
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CLI reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ReadAlong-Studio" class="md-nav__button md-logo" aria-label="ReadAlong-Studio" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ReadAlong-Studio
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../start/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Start
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../web-app/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    The Web App
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli-guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    CLI Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    CLI reference
+  </span>
+  
+
+      </a>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../outputs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Output Realizations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced-use/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Advanced Topics
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../troubleshooting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Troubleshooting
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<h1 id="command-line-interface-cli-reference">Command line interface (CLI) reference</h1>
+<p>This page contains the full reference documentation for each command in the CLI.
+See also <a href="../cli-guide/">Command line interface (CLI) user guide</a> for guidelines on using the CLI.</p>
+<p>The ReadAlongs CLI has five key commands:</p>
+<ul>
+<li><a class="autorefs autorefs-internal" href="#readalongs-align"><code>readalongs align</code></a>: full alignment pipeline, from plain text or XML to a
+  viewable readalong</li>
+<li><a class="autorefs autorefs-internal" href="#readalongs-make-xml"><code>readalongs make-xml</code></a>: convert a plain text file into XML, for align</li>
+<li><a class="autorefs autorefs-internal" href="#readalongs-tokenize"><code>readalongs tokenize</code></a>: tokenize an XML file</li>
+<li><a class="autorefs autorefs-internal" href="#readalongs-g2p"><code>readalongs g2p</code></a>: g2p a tokenized XML file</li>
+<li><a class="autorefs autorefs-internal" href="#readalongs-langs"><code>readalongs langs</code></a>: list supported languages</li>
+</ul>
+<p>Each command can be run with <code>-h</code> or <code>--help</code> to display its usage manual,
+e.g., <code>readalongs -h</code>, <code>readalongs align --help</code>.</p>
+<h1 id="readalongs-align">readalongs align</h1>
+<p>Align TEXTFILE and AUDIOFILE and create output files as OUTPUT_BASE.* in directory
+OUTPUT_BASE/.</p>
+<p>TEXTFILE:    Input text file path (in XML or plain text)</p>
+<p>If TEXTFILE has a .xml or .readalong extension or starts with an XML declaration line,
+it is parsed as XML and can be in one of three formats:
+ - the output of 'readalongs make-xml',
+ - the output of 'readalongs tokenize', or
+ - the output of 'readalongs g2p'.</p>
+<p>If TEXTFILE has a .txt extension or does not start with an XML declaration
+line, it is read as plain text with the following conventions:
+ - The text should be plain UTF-8 text without any markup.
+ - Paragraph breaks are indicated by inserting one blank line.
+ - Page breaks are indicated by inserting two blank lines.</p>
+<p>One can add the known ARPABET phonetics in the XML for words (<w> elements)
+that are not correctly handled by g2p in the output of 'readalongs tokenize'
+or 'readalongs g2p', via the ARPABET attribute.</p>
+<p>One can add anchor elements in the XML, e.g., '<anchor time="2.345s"/>', to
+mark known anchor points between the audio and text stream.</p>
+<p>AUDIOFILE:   Input audio file path, in any format supported by ffmpeg</p>
+<p>OUTPUT_BASE: Output files will be saved as OUTPUT_BASE/OUTPUT_BASE.*</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">readalongs align [OPTIONS] TEXTFILE AUDIOFILE OUTPUT_BASE
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  -b, --bare                      Bare alignments do not split silences
+                                  between words
+  -c, --config PATH               Use ReadAlong-Studio configuration file (in
+                                  JSON format)
+  -o, --output-formats TEXT       Comma- or colon-separated list of additional
+                                  output file formats to export to. The text
+                                  is always exported as XML and alignments as
+                                  SMIL, but one or more of these formats can
+                                  be requested in addition:
+
+                                  eaf (ELAN file), html (Single-file, offline
+                                  HTML), srt (SRT subtitle), TextGrid (Praat
+                                  TextGrid), vtt (WebVTT subtitle), xhtml
+                                  (Simple XHTML)
+  -f, --force-overwrite           Force overwrite output files
+  -l, --language, --languages TEXT
+                                  The language code(s) for text in TEXTFILE
+                                  (use only with plain text input); multiple
+                                  codes can be joined by ',' or ':', or by
+                                  repeating the option, to enable the g2p
+                                  cascade (run 'readalongs g2p -h' for
+                                  details); run 'readalongs langs' to list all
+                                  supported languages.
+  -m, --align-mode [strict|moderate|loose|auto]
+                                  Decoder search parameters: 'strict' means a
+                                  narrow beam, fastest but might fail to find
+                                  an alignment; 'loose' means an unlimited
+                                  beam, slowest, should always succeed but the
+                                  alignment is more likely to be wrong;
+                                  'moderate' is in between; 'auto' (the
+                                  default) means try strict first, and fall
+                                  back to moderate then loose if no alignment
+                                  is found.
+  -s, --save-temps                Save intermediate stages of processing and
+                                  temporary files (dictionary, FSG,
+                                  tokenization, etc)
+  -d, --debug                     Display debugging messages
+  --debug-aligner                 Display logs from the aligner
+  --debug-g2p                     Display verbose g2p error messages
+  --help                          Show this message and exit.
+</code></pre>
+<h1 id="readalongs-make-xml">readalongs make-xml</h1>
+<p>make XMLFILE for 'readalongs align' from PLAINTEXTFILE.</p>
+<p>PLAINTEXTFILE must be plain text encoded in UTF-8, with one sentence per line,
+paragraph breaks marked by a blank line, and page breaks marked by two
+blank lines.</p>
+<p>PLAINTEXTFILE: Path to the plain text input file, or - for stdin</p>
+<p>XMLFILE:       Path to the XML output file, or - for stdout [default: PLAINTEXTFILE.readalong]</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">readalongs make-xml [OPTIONS] PLAINTEXTFILE [XMLFILE]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  -d, --debug                     Add debugging messages to logger
+  -f, --force-overwrite           Force overwrite output files
+  -l, --language, --languages TEXT
+                                  The language code(s) for text in
+                                  PLAINTEXTFILE; multiple codes can be joined
+                                  by ',' or ':', or by repeating the option,
+                                  to enable the g2p cascade (run 'readalongs
+                                  g2p -h' for details); run 'readalongs langs'
+                                  to list all supported languages.  [required]
+  --help                          Show this message and exit.
+</code></pre>
+<h1 id="readalongs-tokenize">readalongs tokenize</h1>
+<p>Tokenize XMLFILE for 'readalongs align' into TOKFILE.</p>
+<p>XMLFILE should have been produced by 'readalongs make-xml'.
+TOKFILE can then be augmented with word-specific language codes.
+'readalongs align' can be called with either XMLFILE or TOKFILE as XML input.</p>
+<p>XMLFILE: Path to the XML file to tokenize, or - for stdin</p>
+<p>TOKFILE: Output path for the tok'd XML, or - for stdout [default: XMLFILE.tokenized.readalong]</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">readalongs tokenize [OPTIONS] XMLFILE [TOKFILE]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  -d, --debug            Add debugging messages to logger
+  -f, --force-overwrite  Force overwrite output files
+  --help                 Show this message and exit.
+</code></pre>
+<h1 id="readalongs-g2p">readalongs g2p</h1>
+<p>Apply g2p mappings to TOKFILE into G2PFILE.</p>
+<p>TOKFILE should have been produced by 'readalongs tokenize'.
+G2PFILE can then be modified to adjust the phonetic representation as needed.
+'readalongs align' can be called with G2PFILE instead of TOKFILE as XML input.</p>
+<p>The g2p cascade will be enabled whenever an XML element or any of its
+ancestors in TOKFILE has the attribute "fallback-langs" containing a comma-
+or colon-separated list of language codes. Provide multiple language codes to
+"readalongs make-xml" via its -l option to generate this attribute globally,
+or add it manually where needed. Undetermined, "und", is automatically
+added at the end of the language list provided via -l.</p>
+<p>With the g2p cascade, if a word cannot be mapped to valid ARPABET with the
+language found in the "xml:lang" attribute, the languages in
+"fallback-langs" are tried in order until a valid ARPABET mapping is
+generated.</p>
+<p>The output XML file can be used as input to align.</p>
+<p>TOKFILE: Path to the input tokenized XML file, or - for stdin</p>
+<p>G2PFILE: Output path for the g2p'd XML, or - for stdout [default: TOKFILE
+with .g2p. inserted]</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">readalongs g2p [OPTIONS] TOKFILE [G2PFILE]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  -f, --force-overwrite  Force overwrite output files
+  --debug-g2p            Display verbose messages about g2p errors.
+  -d, --debug            Add debugging messages to logger
+  --help                 Show this message and exit.
+</code></pre>
+<h1 id="readalongs-langs">readalongs langs</h1>
+<p>List all the language codes and names currently supported by g2p
+that can be used for ReadAlongs creation.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-text">readalongs langs [OPTIONS]
+</code></pre>
+<p><strong>Options:</strong></p>
+<pre><code class="language-text">  --help  Show this message and exit.
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "navigation.instant"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.88dd0f4e.min.js"></script>
+      
+    
+  </body>
+</html>
