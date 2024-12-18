@@ -38,10 +38,13 @@ jobs:
       - name: Make sure pre-commit hooks pass
         uses: pre-commit/action@v3.0.1
 
-      - name: Minimalist license check
-        run: |
-          # Legal check: make sure we don't have or introduce GPL dependencies
-          if pip-licenses | grep -v 'Artistic License' | grep -v LGPL | grep GNU; then echo 'Please avoid introducing *GPL dependencies'; false; fi
+      - name: Automated license checking
+        # Make sure we don't have or introduce dependencies with incompatible licenses.
+        # Exclusions where auto detection and analysis do not work:
+        #  - pympi-ling is MIT, but not auto-detected. https://github.com/dopefishh/pympi
+        #  - text-unidecode is Artistic License or GPL (at our choice): MIT is
+        #    compatible with the former. https://github.com/kmike/text-unidecode/
+        run: licensecheck --zero --ignore-packages pympi-ling text-unidecode
 
       - uses: codecov/codecov-action@v4
         with:

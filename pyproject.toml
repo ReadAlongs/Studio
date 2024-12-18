@@ -73,7 +73,7 @@ api = [
 ci = [
     "readalongs[api]",
     "coverage",
-    "pip-licenses",
+    "licensecheck",
 ]
 
 all = [
