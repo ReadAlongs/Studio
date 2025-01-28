@@ -24,9 +24,9 @@ from readalongs._version import VERSION
 from readalongs.log import LOGGER
 from readalongs.text.util import parse_xml
 
-JS_BUNDLE_URL = "https://unpkg.com/@readalongs/web-component@^1.4.0/dist/bundle.js"
+JS_BUNDLE_URL = "https://unpkg.com/@readalongs/web-component@^1.5.2/dist/bundle.js"
 FONTS_BUNDLE_URL = (
-    "https://unpkg.com/@readalongs/web-component@^1.4.0/dist/fonts.b64.css"
+    "https://unpkg.com/@readalongs/web-component@^1.5.2/dist/fonts.b64.css"
 )
 
 BASIC_HTML = """
