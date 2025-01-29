@@ -58,7 +58,7 @@ import click
 from lxml import etree
 
 from readalongs import cli
-from readalongs.align import create_ras_from_text
+from readalongs.align_utils import create_ras_from_text
 from readalongs.log import LOGGER
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.make_package import (

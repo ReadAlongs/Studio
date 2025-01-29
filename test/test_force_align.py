@@ -16,8 +16,8 @@ from basic_test_case import BasicTestCase, silence_c_stderr
 from lxml import etree
 from soundswallower import get_model_path
 
-from readalongs.align import (
-    align_audio,
+from readalongs.align import align_audio
+from readalongs.align_utils import (
     convert_to_xhtml,
     create_input_ras,
     get_word_texts_and_sentences,

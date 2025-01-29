@@ -277,7 +277,8 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
 
     from lxml import etree
 
-    from readalongs.align import align_audio, create_input_ras, save_readalong
+    from readalongs.align import align_audio, save_readalong
+    from readalongs.align_utils import create_input_ras
     from readalongs.log import LOGGER
     from readalongs.text.util import load_xml
 
@@ -509,7 +510,7 @@ def make_xml(**kwargs):
     XMLFILE:       Path to the XML output file, or - for stdout [default: PLAINTEXTFILE.readalong]
     """
     # deferred expensive import
-    from readalongs.align import create_input_ras
+    from readalongs.align_utils import create_input_ras
     from readalongs.log import LOGGER
 
     if kwargs["debug"]:

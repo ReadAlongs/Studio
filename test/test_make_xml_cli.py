@@ -12,7 +12,7 @@ from basic_test_case import BasicTestCase
 
 # from readalongs.log import LOGGER
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
-from readalongs.align import create_input_ras, create_ras_from_text
+from readalongs.align_utils import create_input_ras, create_ras_from_text
 from readalongs.cli import align, make_xml
 
 
