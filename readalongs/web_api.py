@@ -42,7 +42,11 @@ from pydantic import BaseModel, Field
 from starlette.background import BackgroundTask
 
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
-from readalongs.align import create_ras_from_text, save_label_files, save_subtitles
+from readalongs.align_utils import (
+    create_ras_from_text,
+    save_label_files,
+    save_subtitles,
+)
 from readalongs.log import LOGGER, capture_logs
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import convert_xml
