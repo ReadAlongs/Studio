@@ -35,6 +35,8 @@ jobs:
           coverage combine
           coverage xml
 
+      - run: cd test && coverage report
+
       - name: Make sure pre-commit hooks pass
         uses: pre-commit/action@v3.0.1
 

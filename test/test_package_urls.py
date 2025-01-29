@@ -3,9 +3,13 @@
 from unittest import main
 
 import requests
-from basic_test_case import BasicTestCase
+from basic_test_case import BasicTestCase, silence_c_stderr
 
-from readalongs.text.make_package import FONTS_BUNDLE_URL, JS_BUNDLE_URL
+from readalongs.text.make_package import (
+    FONTS_BUNDLE_URL,
+    JS_BUNDLE_URL,
+    fetch_bundle_file,
+)
 
 
 class TestPackageURLs(BasicTestCase):
@@ -18,6 +22,24 @@ class TestPackageURLs(BasicTestCase):
             except requests.exceptions.ReadTimeout:
                 # Don't fail on a timeout, sometimes unpkg can be slow
                 pass
+
+    def test_fetch_bundles_fallback(self):
+        """Test graceful exit when the URLs are not accessible."""
+        # Pretend the previous attempt failed: we'll get the file from disk
+        status, contents = fetch_bundle_file(JS_BUNDLE_URL, "bundle.js", "SomeError")
+        # print(status, len(contents))
+        self.assertEqual(status, "SomeError")
+        ref_length = len(contents)
+
+        # Try with a bad URL
+        bad_url = JS_BUNDLE_URL.replace("unpkg.com", "not-a-server.zzz")
+        # print(bad_url)
+        with silence_c_stderr():
+            status, contents = fetch_bundle_file(bad_url, "bundle.js", None)
+        # print(status, len(contents))
+        self.assertNotEqual(status, 200)
+        self.assertIsInstance(status, str)
+        self.assertEqual(ref_length, len(contents))
 
 
 if __name__ == "__main__":

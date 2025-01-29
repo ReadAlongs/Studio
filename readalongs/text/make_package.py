@@ -24,9 +24,9 @@ from readalongs._version import VERSION
 from readalongs.log import LOGGER
 from readalongs.text.util import parse_xml
 
-JS_BUNDLE_URL = "https://unpkg.com/@readalongs/web-component@^1.4.0/dist/bundle.js"
+JS_BUNDLE_URL = "https://unpkg.com/@readalongs/web-component@^1.5.2/dist/bundle.js"
 FONTS_BUNDLE_URL = (
-    "https://unpkg.com/@readalongs/web-component@^1.4.0/dist/fonts.b64.css"
+    "https://unpkg.com/@readalongs/web-component@^1.5.2/dist/fonts.b64.css"
 )
 
 BASIC_HTML = """
@@ -116,6 +116,42 @@ def encode_from_path(path: Union[str, os.PathLike]) -> str:
     return f"data:{mime_type};base64,{b64}"
 
 
+def fetch_bundle_file(url, filename, prev_status_code):
+    """Fetch either of the online bundles, or their on-disk fallback if needed."""
+    import requests  # Defer expensive import
+
+    # Don't try again from the web if if failed last time in the same process
+    # This matters when a client uses the convert_prealigned_text_to_offline_html
+    # endpoint in api.py, we don't want them to wait many times for the same
+    # download attempt to fail when, e.g., they don't have web access enabled.
+    if prev_status_code in (None, 200):
+        try:
+            get_result = requests.get(url, timeout=5)
+            status_code: Any = get_result.status_code
+        except requests.exceptions.RequestException as e:
+            LOGGER.warning(e)
+            status_code = type(e).__name__
+        if status_code != 200:  # pragma: no cover
+            LOGGER.warning(
+                f"Sorry, the JavaScript or fonts bundle that is supposed to be at {url} returned a {status_code}. Your ReadAlong will be bundled using a version that may not be up-to-date. Please check your internet connection."
+            )
+    else:
+        status_code = prev_status_code
+
+    if status_code != 200:
+        with open(
+            os.path.join(os.path.dirname(__file__), filename), encoding="utf8"
+        ) as f:
+            file_contents = f.read()
+    else:
+        file_contents = get_result.text
+    return status_code, file_contents
+
+
+_prev_js_status_code: Any = None
+_prev_fonts_status_code: Any = None
+
+
 def create_web_component_html(
     ras_path: Union[str, os.PathLike],
     audio_path: Union[str, os.PathLike],
@@ -124,43 +160,18 @@ def create_web_component_html(
     subheader=DEFAULT_SUBHEADER,
     theme="light",
 ) -> str:
-    import requests  # Defer expensive import
+    global _prev_js_status_code
+    _prev_js_status_code, js_raw = fetch_bundle_file(
+        JS_BUNDLE_URL, "bundle.js", _prev_js_status_code
+    )
 
-    try:
-        js = requests.get(JS_BUNDLE_URL, timeout=10)
-        js_status_code: Any = js.status_code
-    except requests.exceptions.ReadTimeout as e:  # pragma: no cover
-        js_status_code = "TIMEOUT"
-        LOGGER.warning(e)
-
-    try:
-        fonts = requests.get(FONTS_BUNDLE_URL, timeout=10)
-        fonts_status_code: Any = fonts.status_code
-    except requests.exceptions.ReadTimeout as e:  # pragma: no cover
-        LOGGER.warning(e)
-        fonts_status_code = "TIMEOUT"
-
-    if js_status_code != 200:  # pragma: no cover
-        LOGGER.warning(
-            f"Sorry, the JavaScript bundle that is supposed to be at {JS_BUNDLE_URL} returned a {js_status_code}. Your ReadAlong will be bundled using a version that may not be up-to-date. Please check your internet connection."
-        )
-        with open(
-            os.path.join(os.path.dirname(__file__), "bundle.js"), encoding="utf8"
-        ) as f:
-            js_raw = f.read()
-    else:  # pragma: no cover
-        js_raw = js.text
-
-    if fonts_status_code != 200:  # pragma: no cover
-        LOGGER.warning(
-            f"Sorry, the fonts bundle that is supposed to be at {FONTS_BUNDLE_URL} returned a {fonts_status_code}. Your ReadAlong will be bundled using a version that may not be up-to-date. Please check your internet connection."
-        )
-        with open(
-            os.path.join(os.path.dirname(__file__), "bundle.css"), encoding="utf8"
-        ) as f:
-            fonts_raw = f.read()
-    else:  # pragma: no cover
-        fonts_raw = fonts.text
+    global _prev_fonts_status_code
+    if _prev_fonts_status_code is None and _prev_js_status_code != 200:
+        # If fetching bundle.js failed, don't bother trying bundle.css
+        _prev_fonts_status_code = _prev_js_status_code
+    _prev_fonts_status_code, fonts_raw = fetch_bundle_file(
+        FONTS_BUNDLE_URL, "bundle.css", _prev_fonts_status_code
+    )
 
     return BASIC_HTML.format(
         ras=encode_from_path(ras_path),
