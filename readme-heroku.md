@@ -13,6 +13,8 @@ Updating dependencies:
        rm requirements.txt
        hatch env create prod
 
+   Then manually remove the soundswallower line, since it's not needed for the web api.
+
    It is also possible to edit it manually, e.g., to handle a critical vulnerability report,
    but an occasional full rebuild is a good idea, to keep things up to date.
 

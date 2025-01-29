@@ -146,5 +146,5 @@ jobs:
 
       - name: unit test the web API
         run: |
-          pip install -e .[dev]
+          pip install httpx
           python test/test_web_api.py

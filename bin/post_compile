@@ -1,4 +1,4 @@
 #!/bin/sh
 
 # Heroku expects to run your app in place, but doesn't actually do this for you
-pip install -e .
+pip install -e . --no-deps
