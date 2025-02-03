@@ -150,6 +150,10 @@ def fetch_bundle_file(url, filename, prev_status_code):
 
 _prev_js_status_code: Any = None
 _prev_fonts_status_code: Any = None
+# Cache the bundle contents so we don't fetch it more than once when running a process
+# that might generate several HTML files via the API, e.g., the EveryVoice demo app.
+js_bundle_contents = None
+fonts_bundle_contents = None
 
 
 def create_web_component_html(
@@ -160,24 +164,29 @@ def create_web_component_html(
     subheader=DEFAULT_SUBHEADER,
     theme="light",
 ) -> str:
-    global _prev_js_status_code
-    _prev_js_status_code, js_raw = fetch_bundle_file(
-        JS_BUNDLE_URL, "bundle.js", _prev_js_status_code
-    )
+    global js_bundle_contents
+    if js_bundle_contents is None:
+        global _prev_js_status_code
+        _prev_js_status_code, js_bundle_contents = fetch_bundle_file(
+            JS_BUNDLE_URL, "bundle.js", _prev_js_status_code
+        )
+        js_bundle_contents = js_bundle_contents
 
-    global _prev_fonts_status_code
-    if _prev_fonts_status_code is None and _prev_js_status_code != 200:
-        # If fetching bundle.js failed, don't bother trying bundle.css
-        _prev_fonts_status_code = _prev_js_status_code
-    _prev_fonts_status_code, fonts_raw = fetch_bundle_file(
-        FONTS_BUNDLE_URL, "bundle.css", _prev_fonts_status_code
-    )
+    global fonts_bundle_contents
+    if fonts_bundle_contents is None:
+        global _prev_fonts_status_code
+        if _prev_fonts_status_code is None and _prev_js_status_code != 200:
+            # If fetching bundle.js failed, don't bother trying bundle.css
+            _prev_fonts_status_code = _prev_js_status_code
+        _prev_fonts_status_code, fonts_bundle_contents = fetch_bundle_file(
+            FONTS_BUNDLE_URL, "bundle.css", _prev_fonts_status_code
+        )
 
     return BASIC_HTML.format(
         ras=encode_from_path(ras_path),
         audio=encode_from_path(audio_path),
-        js=js_raw,
-        fonts=fonts_raw,
+        js=js_bundle_contents,
+        fonts=fonts_bundle_contents,
         title=title,
         header=header,
         subheader=subheader,
