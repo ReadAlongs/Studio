@@ -190,6 +190,20 @@ class TestAlignApi(BasicTestCase):
         )
         self.assertEqual(html, html2)
 
+        # Once more, this time pretend we could not fetch the first bundle
+        make_package.fonts_bundle_contents = None
+        make_package.js_bundle_contents = None
+        make_package._prev_js_status_code = "TIMEOUT"
+        make_package._prev_fonts_status_code = None
+        _, _ = api.convert_prealigned_text_to_offline_html(
+            self.sentences_to_convert,
+            str(self.data_dir / "noise.mp3"),
+            subheader="by Jove!",
+        )
+        self.assertEqual(make_package._prev_fonts_status_code, "TIMEOUT")
+        self.assertIsNotNone(make_package.fonts_bundle_contents)
+        self.assertIsNotNone(make_package.js_bundle_contents)
+
 
 if __name__ == "__main__":
     main()
