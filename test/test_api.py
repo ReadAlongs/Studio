@@ -155,6 +155,13 @@ class TestAlignApi(BasicTestCase):
         self.assertEqual(readalong, align_result)
 
     def test_convert_to_offline_html(self):
+        import readalongs.text.make_package as make_package
+
+        # We want to exercise caching of the bundles, but first we need to uncache
+        # them in case some other test case already cached them.
+        make_package.fonts_bundle_contents = None
+        make_package.js_bundle_contents = None
+
         html, _ = api.convert_prealigned_text_to_offline_html(
             self.sentences_to_convert,
             str(self.data_dir / "noise.mp3"),
@@ -170,6 +177,32 @@ class TestAlignApi(BasicTestCase):
         self.assertIn('audio="data:audio/', html)
         self.assertIn("<span slot='read-along-header'>", html)
         self.assertIn("<span slot='read-along-subheader'>by Jove!</span>", html)
+
+        # Make sure the bundles got cached
+        self.assertIsNotNone(make_package.fonts_bundle_contents)
+        self.assertIsNotNone(make_package.js_bundle_contents)
+
+        # And convert again, this time it's going to use the cached bundles.
+        html2, _ = api.convert_prealigned_text_to_offline_html(
+            self.sentences_to_convert,
+            str(self.data_dir / "noise.mp3"),
+            subheader="by Jove!",
+        )
+        self.assertEqual(html, html2)
+
+        # Once more, this time pretend we could not fetch the first bundle
+        make_package.fonts_bundle_contents = None
+        make_package.js_bundle_contents = None
+        make_package._prev_js_status_code = "TIMEOUT"
+        make_package._prev_fonts_status_code = None
+        _, _ = api.convert_prealigned_text_to_offline_html(
+            self.sentences_to_convert,
+            str(self.data_dir / "noise.mp3"),
+            subheader="by Jove!",
+        )
+        self.assertEqual(make_package._prev_fonts_status_code, "TIMEOUT")
+        self.assertIsNotNone(make_package.fonts_bundle_contents)
+        self.assertIsNotNone(make_package.js_bundle_contents)
 
 
 if __name__ == "__main__":
