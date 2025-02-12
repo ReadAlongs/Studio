@@ -49,11 +49,14 @@ from readalongs.align_utils import (
 )
 from readalongs.log import LOGGER, capture_logs
 from readalongs.text.add_ids_to_xml import add_ids
-from readalongs.text.convert_xml import convert_xml
+from readalongs.text.convert_xml import TimeLimitException, convert_xml
 from readalongs.text.make_dict import make_dict_list
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import parse_xml
 from readalongs.util import get_langs
+
+# Heroku drops requests that take more than 30s total to respond, so give g2p a 25s budget
+G2P_TIME_LIMIT_IN_SECONDS = 25
 
 # Create the app
 web_api_app = FastAPI()
@@ -245,7 +248,11 @@ async def assemble(
         ids_added = add_ids(tokenized)
 
         # g2p
-        g2ped, valid = convert_xml(ids_added)
+        try:
+            g2ped, valid = convert_xml(ids_added, time_limit=G2P_TIME_LIMIT_IN_SECONDS)
+        except TimeLimitException as e:
+            raise HTTPException(status_code=422, detail=str(e)) from e
+
         if not valid:
             raise HTTPException(
                 status_code=422,

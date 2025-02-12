@@ -35,6 +35,8 @@
 
 import copy
 import re
+from time import perf_counter
+from typing import Optional
 
 from readalongs.log import LOGGER
 from readalongs.text.util import get_attrib_recursive, get_word_text, iterate_over_text
@@ -61,11 +63,22 @@ def get_same_language_units(element):
     return same_language_units
 
 
+class TimeLimitException(Exception):
+    pass
+
+
 def convert_words(  # noqa: C901
-    xml, word_unit="w", output_orthography="eng-arpabet", verbose_warnings=False
+    xml,
+    word_unit: str = "w",
+    output_orthography: str = "eng-arpabet",
+    verbose_warnings: Optional[bool] = False,
+    time_limit: Optional[int] = None,
 ):
     """Helper for convert_xml(), with the same Args and Return values, except
     xml is modified in place returned itself, instead of making a copy.
+
+    Raises:
+        TimeLimitException: if the time_limit is specified and exceeded
     """
 
     if output_orthography != "eng-arpabet":
@@ -124,7 +137,13 @@ def convert_words(  # noqa: C901
         return text, valid
 
     all_g2p_valid = True
-    for word in xml.xpath(".//" + word_unit):
+    start_time = perf_counter()
+    for i, word in enumerate(xml.xpath(".//" + word_unit)):
+        if time_limit is not None and perf_counter() - start_time > time_limit:
+            raise TimeLimitException(
+                f"g2p conversion exceeded time limit of {time_limit} seconds. "
+                f"Aborting after processing {i} tokens. Please use a shorter text."
+            )
         # if the word was already g2p'd, skip and keep existing ARPABET representation
         if "ARPABET" in word.attrib:
             arpabet = word.attrib["ARPABET"]
@@ -194,24 +213,32 @@ def convert_words(  # noqa: C901
 
 
 def convert_xml(
-    xml, word_unit="w", output_orthography="eng-arpabet", verbose_warnings=False
+    xml,
+    word_unit: str = "w",
+    output_orthography: str = "eng-arpabet",
+    verbose_warnings: Optional[bool] = False,
+    time_limit: Optional[int] = None,
 ):
     """Convert all the words in XML though g2p, putting the results in attribute ARPABET
 
     Args:
         xml (etree): input XML
-        word_unit (str): which XML element should be considered the unit to g2p
-        output_orthography (str): target language for g2p mappings
-        verbose_warnings (bool): whether (very!) verbose g2p errors should be produced
+        word_unit: which XML element should be considered the unit to g2p
+        output_orthography: target language for g2p mappings
+        verbose_warnings: whether (very!) verbose g2p errors should be produced
+        time_limit: if not None, maximum time in seconds to spend on g2p conversion
 
     Returns:
         xml (etree), valid (bool):
           - xml is a deepcopy of the input xml with the ARPABET attribute added
             to each word_unit element;
           - valid is a flag indicating whether all words were g2p'd successfully
+
+    Raises:
+        TimeLimitException: if the time_limit is specified and exceeded
     """
     xml_copy = copy.deepcopy(xml)
     xml_copy, valid = convert_words(
-        xml_copy, word_unit, output_orthography, verbose_warnings
+        xml_copy, word_unit, output_orthography, verbose_warnings, time_limit
     )
     return xml_copy, valid
