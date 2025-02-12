@@ -91,3 +91,10 @@ def silence_c_stderr():
     os.dup2(stderr_save, stderr_fileno)
     os.close(stderr_save)
     os.close(stderr_fd)
+
+
+@contextmanager
+def silence_logs():
+    LOGGER.disabled = True
+    yield
+    LOGGER.disabled = False

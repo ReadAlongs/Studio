@@ -3,7 +3,7 @@
 from unittest import main
 
 import requests
-from basic_test_case import BasicTestCase, silence_c_stderr
+from basic_test_case import BasicTestCase, silence_logs
 
 from readalongs.text.make_package import (
     FONTS_BUNDLE_URL,
@@ -34,7 +34,7 @@ class TestPackageURLs(BasicTestCase):
         # Try with a bad URL
         bad_url = JS_BUNDLE_URL.replace("unpkg.com", "not-a-server.zzz")
         # print(bad_url)
-        with silence_c_stderr():
+        with silence_logs():
             status, contents = fetch_bundle_file(bad_url, "bundle.js", None)
         # print(status, len(contents))
         self.assertNotEqual(status, 200)
