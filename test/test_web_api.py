@@ -356,15 +356,14 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("aligned_sentences.srt", response.headers["content-disposition"])
         self.assertEqual(
-            response.text.replace("\r", ""),  # CRLF->LF, in case we're on Windows.
+            response.text.replace("\r", "").strip(),  # CRLF->LF, for Windows.
             dedent(
                 """\
                 1
                 00:00:17,745 --> 00:01:22,190
                 hej é verden à
-
                 """
-            ),
+            ).strip(),
         )
 
         with redirect_stderr(StringIO()):
@@ -374,7 +373,7 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("aligned_words.srt", response.headers["content-disposition"])
         self.assertEqual(
-            response.text.replace("\r", ""),  # CRLF->LF, in case we're on Windows.
+            response.text.replace("\r", "").strip(),  # CRLF->LF, for Windows
             dedent(
                 """\
                 1
@@ -384,9 +383,8 @@ class TestWebApi(BasicTestCase):
                 2
                 00:00:58,600 --> 00:01:22,190
                 verden à
-
                 """
-            ),
+            ).strip(),
         )
 
     def test_convert_to_vtt(self):

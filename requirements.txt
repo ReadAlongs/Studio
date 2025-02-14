@@ -121,7 +121,7 @@ urllib3==2.2.3
     # via requests
 uvicorn==0.32.1
     # via hatch.envs.prod
-webvtt-py==0.4.2
+webvtt-py==0.5.1
     # via hatch.envs.prod
 
 # The following packages are considered to be unsafe in a requirements file:
