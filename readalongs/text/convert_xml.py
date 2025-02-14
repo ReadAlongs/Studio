@@ -94,17 +94,16 @@ def convert_words(  # noqa: C901
     g2p_empty_warning_count = 0
 
     # Tuck this function inside convert_words(), to share common arguments and imports
-    def convert_word(word: str, lang: str):
+    def convert_word(word: str, lang: str) -> Tuple[str, bool]:
         """Convert one individual word through the specified cascade of g2p mappings.
 
         Args:
-            word (str): input word to map through g2p
-            lang (str): the language code to use to attempt the g2p mapping
+            word: input word to map through g2p
+            lang: the language code to use to attempt the g2p mapping
 
         Returns:
-            g2p_text (str), valid(bool):
-              - g2p_text is the word mapping from lang to output_orthography
-              - valid is a flag indicating whether g2p conversion yielded valid
+            g2p_text: the word mapping from lang to output_orthography
+            valid: a flag indicating whether g2p conversion yielded valid
                 output, which includes making sure IPA output was valid IPA and
                 ARPABET output was valid ARPABET, at all intermediate steps as
                 well as in the final output.
@@ -136,6 +135,54 @@ def convert_words(  # noqa: C901
             converter.check(tg, shallow=False, display_warnings=verbose_warnings)
         return text, valid
 
+    def convert_word_with_cascade(
+        text_to_g2p: str, g2p_lang: str, g2p_fallbacks: str
+    ) -> Tuple[str, bool, Optional[str]]:
+        """Convert one individual word through the specified cascade of g2p mappings.
+
+        Args:
+            text_to_g2p: input word to map through g2p
+            g2p_lang: the language code to use to attempt the g2p mapping
+            g2p_fallbacks: comma-separated list of language codes to try if lang fails
+
+        Returns:
+            g2p_text: the final g2p mapping of word
+            valid: a flag indicating whether g2p conversion yielded valid
+                output in the final fallback tried
+            effective_language: indicates the language code that was used to convert the word:
+                if g2p_lang was successfully used: None
+                if a fallback lang was successfully used: that lang's code
+                if no valid conversion was found: None (and valid==False)
+        """
+        g2p_text, valid = convert_word(text_to_g2p, g2p_lang)
+        if valid:
+            return g2p_text, True, None
+
+        # This is where we apply the g2p cascade
+        for lang in re.split(r"[,:]", g2p_fallbacks) if g2p_fallbacks else []:
+            _, langs = get_langs()
+            nonlocal g2p_fallback_warning_count
+            if g2p_fallback_warning_count < 2 or verbose_warnings:
+                g2p_fallback_warning_count += 1
+                LOGGER.warning(
+                    f'Could not g2p "{text_to_g2p}" as {langs.get(g2p_lang, "")} ({g2p_lang}). '
+                    f"Trying fallback: {langs.get(lang, '')} ({lang})."
+                )
+            g2p_lang = lang.strip()
+            g2p_text, valid = convert_word(text_to_g2p, g2p_lang)
+            if valid:
+                return g2p_text, True, g2p_lang
+        else:
+            nonlocal g2p_fail_warning_count
+            if g2p_fail_warning_count < 2 or verbose_warnings:
+                g2p_fail_warning_count += 1
+                LOGGER.warning(
+                    f'No valid g2p conversion found for "{text_to_g2p}". '
+                    f"Check its orthography and language code, "
+                    f"or pick suitable g2p fallback languages."
+                )
+            return g2p_text, False, None
+
     all_g2p_valid = True
     start_time = perf_counter()
     for i, word in enumerate(xml.xpath(".//" + word_unit)):
@@ -163,33 +210,13 @@ def convert_words(  # noqa: C901
             g2p_fallbacks = get_attrib_recursive(word, "fallback-langs")
             text_to_g2p = text.strip()
             try:
-                g2p_text, valid = convert_word(text_to_g2p, g2p_lang)
+                g2p_text, valid, effective_g2p_lang = convert_word_with_cascade(
+                    text_to_g2p, g2p_lang, g2p_fallbacks
+                )
                 if not valid:
-                    # This is where we apply the g2p cascade
-                    for lang in (
-                        re.split(r"[,:]", g2p_fallbacks) if g2p_fallbacks else []
-                    ):
-                        _, langs = get_langs()
-                        if g2p_fallback_warning_count < 2 or verbose_warnings:
-                            g2p_fallback_warning_count += 1
-                            LOGGER.warning(
-                                f'Could not g2p "{text_to_g2p}" as {langs.get(g2p_lang, "")} ({g2p_lang}). '
-                                f"Trying fallback: {langs.get(lang, '')} ({lang})."
-                            )
-                        g2p_lang = lang.strip()
-                        g2p_text, valid = convert_word(text_to_g2p, g2p_lang)
-                        if valid:
-                            word.attrib["effective-g2p-lang"] = g2p_lang
-                            break
-                    else:
-                        all_g2p_valid = False
-                        if g2p_fail_warning_count < 2 or verbose_warnings:
-                            g2p_fail_warning_count += 1
-                            LOGGER.warning(
-                                f'No valid g2p conversion found for "{text_to_g2p}". '
-                                f"Check its orthography and language code, "
-                                f"or pick suitable g2p fallback languages."
-                            )
+                    all_g2p_valid = False
+                if effective_g2p_lang:
+                    word.attrib["effective-g2p-lang"] = effective_g2p_lang
 
                 # Save the g2p_text from the last conversion attemps, even when
                 # it's not valid, so it's in the g2p output if the user wants to
