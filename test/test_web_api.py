@@ -6,6 +6,7 @@ from contextlib import redirect_stderr
 from io import StringIO
 from textwrap import dedent
 from unittest import main
+from unittest.mock import patch
 
 from basic_test_case import BasicTestCase
 
@@ -16,6 +17,7 @@ from readalongs.text.convert_xml import convert_xml
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import parse_xml
 from readalongs.util import get_langs
+from readalongs.web_api import OutputFormat, create_grammar, web_api_app
 
 
 class TestWebApi(BasicTestCase):
@@ -24,8 +26,6 @@ class TestWebApi(BasicTestCase):
     @property
     def API_CLIENT(self):
         from fastapi.testclient import TestClient
-
-        from readalongs.web_api import web_api_app
 
         if TestWebApi._API_CLIENT is None:
             TestWebApi._API_CLIENT = TestClient(web_api_app)
@@ -105,12 +105,24 @@ class TestWebApi(BasicTestCase):
             tokenized = tokenize_xml(parsed)
         ids_added = add_ids(tokenized)
         g2ped, valid = convert_xml(ids_added)
-        from readalongs.web_api import create_grammar
 
         word_dict, text = create_grammar(g2ped)
         self.assertTrue(valid)
         self.assertEqual(len(word_dict), len(text.split()))
         self.assertEqual(len(word_dict), 99)
+
+    def test_exceed_time_limit(self):
+        text = self.slurp_data_file("ej-fra.txt") * 200
+        with patch("readalongs.web_api.G2P_TIME_LIMIT_IN_SECONDS", 1):
+            request = {
+                "input": text,
+                "type": "text/plain",
+                "text_languages": ["und"],
+            }
+            with redirect_stderr(StringIO()):
+                response = self.API_CLIENT.post("/api/v1/assemble", json=request)
+            self.assertEqual(response.status_code, 422)
+            self.assertIn("exceeded time limit", response.json()["detail"])
 
     def test_bad_g2p(self):
         # Test the assemble endpoint with invalid g2p languages
@@ -344,15 +356,14 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("aligned_sentences.srt", response.headers["content-disposition"])
         self.assertEqual(
-            response.text.replace("\r", ""),  # CRLF->LF, in case we're on Windows.
+            response.text.replace("\r", "").strip(),  # CRLF->LF, for Windows.
             dedent(
                 """\
                 1
                 00:00:17,745 --> 00:01:22,190
                 hej é verden à
-
                 """
-            ),
+            ).strip(),
         )
 
         with redirect_stderr(StringIO()):
@@ -362,7 +373,7 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("aligned_words.srt", response.headers["content-disposition"])
         self.assertEqual(
-            response.text.replace("\r", ""),  # CRLF->LF, in case we're on Windows.
+            response.text.replace("\r", "").strip(),  # CRLF->LF, for Windows
             dedent(
                 """\
                 1
@@ -372,9 +383,8 @@ class TestWebApi(BasicTestCase):
                 2
                 00:00:58,600 --> 00:01:22,190
                 verden à
-
                 """
-            ),
+            ).strip(),
         )
 
     def test_convert_to_vtt(self):
@@ -491,7 +501,6 @@ class TestWebApi(BasicTestCase):
             "dur": 83.1,
             "ras": overlap_xml,
         }
-        from readalongs.web_api import OutputFormat
 
         for format_name in OutputFormat:
             with self.assertLogs(LOGGER, "INFO") as log_cm:

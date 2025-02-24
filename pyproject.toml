@@ -51,7 +51,7 @@ dependencies = [
     "python-slugify==5.0.0",
     "requests>=2.31.0",
     "soundswallower~=0.6.0",
-    "webvtt-py==0.4.2",
+    "webvtt-py==0.5.1",
 ]
 
 [project.optional-dependencies]

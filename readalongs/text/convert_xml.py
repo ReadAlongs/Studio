@@ -35,6 +35,8 @@
 
 import copy
 import re
+from time import perf_counter
+from typing import Dict, Optional, Tuple
 
 from readalongs.log import LOGGER
 from readalongs.text.util import get_attrib_recursive, get_word_text, iterate_over_text
@@ -61,11 +63,22 @@ def get_same_language_units(element):
     return same_language_units
 
 
+class TimeLimitException(Exception):
+    pass
+
+
 def convert_words(  # noqa: C901
-    xml, word_unit="w", output_orthography="eng-arpabet", verbose_warnings=False
+    xml,
+    word_unit: str = "w",
+    output_orthography: str = "eng-arpabet",
+    verbose_warnings: Optional[bool] = False,
+    time_limit: Optional[int] = None,
 ):
     """Helper for convert_xml(), with the same Args and Return values, except
     xml is modified in place returned itself, instead of making a copy.
+
+    Raises:
+        TimeLimitException: if the time_limit is specified and exceeded
     """
 
     if output_orthography != "eng-arpabet":
@@ -81,17 +94,16 @@ def convert_words(  # noqa: C901
     g2p_empty_warning_count = 0
 
     # Tuck this function inside convert_words(), to share common arguments and imports
-    def convert_word(word: str, lang: str):
+    def convert_word(word: str, lang: str) -> Tuple[str, bool]:
         """Convert one individual word through the specified cascade of g2p mappings.
 
         Args:
-            word (str): input word to map through g2p
-            lang (str): the language code to use to attempt the g2p mapping
+            word: input word to map through g2p
+            lang: the language code to use to attempt the g2p mapping
 
         Returns:
-            g2p_text (str), valid(bool):
-              - g2p_text is the word mapping from lang to output_orthography
-              - valid is a flag indicating whether g2p conversion yielded valid
+            g2p_text: the word mapping from lang to output_orthography
+            valid: a flag indicating whether g2p conversion yielded valid
                 output, which includes making sure IPA output was valid IPA and
                 ARPABET output was valid ARPABET, at all intermediate steps as
                 well as in the final output.
@@ -123,8 +135,80 @@ def convert_words(  # noqa: C901
             converter.check(tg, shallow=False, display_warnings=verbose_warnings)
         return text, valid
 
+    # We cache words passed through the g2p cascade, but only internally to this function
+    # so that the cache is specific to a document, and does not leak between documents
+    # or excessively grow the memory requirement over time.
+    convert_word_with_cascade_cache: Dict[
+        Tuple[str, str, str], Tuple[str, bool, Optional[str]]
+    ] = {}
+
+    def convert_word_with_cascade(
+        text_to_g2p: str, g2p_lang: str, g2p_fallbacks: str
+    ) -> Tuple[str, bool, Optional[str]]:
+        """Convert one individual word through the specified cascade of g2p mappings.
+
+        Args:
+            text_to_g2p: input word to map through g2p
+            g2p_lang: the language code to use to attempt the g2p mapping
+            g2p_fallbacks: comma-separated list of language codes to try if lang fails
+
+        Returns:
+            g2p_text: the final g2p mapping of word
+            valid: a flag indicating whether g2p conversion yielded valid
+                output in the final fallback tried
+            effective_language: indicates the language code that was used to convert the word:
+                if g2p_lang was successfully used: None
+                if a fallback lang was successfully used: that lang's code
+                if no valid conversion was found: None (and valid==False)
+        """
+        cached_result = convert_word_with_cascade_cache.get(
+            (text_to_g2p, g2p_lang, g2p_fallbacks)
+        )
+        if cached_result:
+            return cached_result
+
+        result: Tuple[str, bool, Optional[str]]
+        g2p_text, valid = convert_word(text_to_g2p, g2p_lang)
+        if valid:
+            result = g2p_text, True, None
+        else:
+            # This is where we apply the g2p cascade
+            for lang in re.split(r"[,:]", g2p_fallbacks) if g2p_fallbacks else []:
+                _, langs = get_langs()
+                nonlocal g2p_fallback_warning_count
+                if g2p_fallback_warning_count < 2 or verbose_warnings:
+                    g2p_fallback_warning_count += 1
+                    LOGGER.warning(
+                        f'Could not g2p "{text_to_g2p}" as {langs.get(g2p_lang, "")} ({g2p_lang}). '
+                        f"Trying fallback: {langs.get(lang, '')} ({lang})."
+                    )
+                g2p_lang = lang.strip()
+                g2p_text, valid = convert_word(text_to_g2p, g2p_lang)
+                if valid:
+                    result = g2p_text, True, g2p_lang
+                    break
+            else:
+                nonlocal g2p_fail_warning_count
+                if g2p_fail_warning_count < 2 or verbose_warnings:
+                    g2p_fail_warning_count += 1
+                    LOGGER.warning(
+                        f'No valid g2p conversion found for "{text_to_g2p}". '
+                        f"Check its orthography and language code, "
+                        f"or pick suitable g2p fallback languages."
+                    )
+                result = g2p_text, False, None
+
+        convert_word_with_cascade_cache[(text_to_g2p, g2p_lang, g2p_fallbacks)] = result
+        return result
+
     all_g2p_valid = True
-    for word in xml.xpath(".//" + word_unit):
+    start_time = perf_counter()
+    for i, word in enumerate(xml.xpath(".//" + word_unit)):
+        if time_limit is not None and perf_counter() - start_time > time_limit:
+            raise TimeLimitException(
+                f"g2p conversion exceeded time limit of {time_limit} seconds. "
+                f"Aborting after processing {i} tokens. Please use a shorter text."
+            )
         # if the word was already g2p'd, skip and keep existing ARPABET representation
         if "ARPABET" in word.attrib:
             arpabet = word.attrib["ARPABET"]
@@ -144,33 +228,13 @@ def convert_words(  # noqa: C901
             g2p_fallbacks = get_attrib_recursive(word, "fallback-langs")
             text_to_g2p = text.strip()
             try:
-                g2p_text, valid = convert_word(text_to_g2p, g2p_lang)
+                g2p_text, valid, effective_g2p_lang = convert_word_with_cascade(
+                    text_to_g2p, g2p_lang, g2p_fallbacks
+                )
                 if not valid:
-                    # This is where we apply the g2p cascade
-                    for lang in (
-                        re.split(r"[,:]", g2p_fallbacks) if g2p_fallbacks else []
-                    ):
-                        _, langs = get_langs()
-                        if g2p_fallback_warning_count < 2 or verbose_warnings:
-                            g2p_fallback_warning_count += 1
-                            LOGGER.warning(
-                                f'Could not g2p "{text_to_g2p}" as {langs.get(g2p_lang, "")} ({g2p_lang}). '
-                                f"Trying fallback: {langs.get(lang, '')} ({lang})."
-                            )
-                        g2p_lang = lang.strip()
-                        g2p_text, valid = convert_word(text_to_g2p, g2p_lang)
-                        if valid:
-                            word.attrib["effective-g2p-lang"] = g2p_lang
-                            break
-                    else:
-                        all_g2p_valid = False
-                        if g2p_fail_warning_count < 2 or verbose_warnings:
-                            g2p_fail_warning_count += 1
-                            LOGGER.warning(
-                                f'No valid g2p conversion found for "{text_to_g2p}". '
-                                f"Check its orthography and language code, "
-                                f"or pick suitable g2p fallback languages."
-                            )
+                    all_g2p_valid = False
+                if effective_g2p_lang:
+                    word.attrib["effective-g2p-lang"] = effective_g2p_lang
 
                 # Save the g2p_text from the last conversion attemps, even when
                 # it's not valid, so it's in the g2p output if the user wants to
@@ -194,24 +258,32 @@ def convert_words(  # noqa: C901
 
 
 def convert_xml(
-    xml, word_unit="w", output_orthography="eng-arpabet", verbose_warnings=False
+    xml,
+    word_unit: str = "w",
+    output_orthography: str = "eng-arpabet",
+    verbose_warnings: Optional[bool] = False,
+    time_limit: Optional[int] = None,
 ):
     """Convert all the words in XML though g2p, putting the results in attribute ARPABET
 
     Args:
         xml (etree): input XML
-        word_unit (str): which XML element should be considered the unit to g2p
-        output_orthography (str): target language for g2p mappings
-        verbose_warnings (bool): whether (very!) verbose g2p errors should be produced
+        word_unit: which XML element should be considered the unit to g2p
+        output_orthography: target language for g2p mappings
+        verbose_warnings: whether (very!) verbose g2p errors should be produced
+        time_limit: if not None, maximum time in seconds to spend on g2p conversion
 
     Returns:
         xml (etree), valid (bool):
           - xml is a deepcopy of the input xml with the ARPABET attribute added
             to each word_unit element;
           - valid is a flag indicating whether all words were g2p'd successfully
+
+    Raises:
+        TimeLimitException: if the time_limit is specified and exceeded
     """
     xml_copy = copy.deepcopy(xml)
     xml_copy, valid = convert_words(
-        xml_copy, word_unit, output_orthography, verbose_warnings
+        xml_copy, word_unit, output_orthography, verbose_warnings, time_limit
     )
     return xml_copy, valid

@@ -123,13 +123,13 @@ jobs:
 
       - name: Read the Heroku run time env and cmd
         run: |
-          echo "PYTHON_VERSION=$(cat runtime.txt | sed 's/python-//')" >> $GITHUB_ENV
+          echo "PYTHON_VERSION=$(cat .python-version)" >> $GITHUB_ENV
           echo "RUNTIME_CMD=$(cat Procfile | grep web: | sed 's/web: *//')" >> $GITHUB_ENV
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: "${{ env.PYTHON_VERSION }}"
           cache: "pip"
 
       - name: Install Python dependencies the way Heroku would
