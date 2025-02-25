@@ -56,7 +56,7 @@ from readalongs.text.util import parse_xml
 from readalongs.util import get_langs
 
 # Heroku drops requests that take more than 30s total to respond, so give g2p a 25s budget
-G2P_TIME_LIMIT_IN_SECONDS = 25
+ASSEMBLE_TIME_LIMIT_IN_SECONDS = 25
 
 # Create the app
 web_api_app = FastAPI()
@@ -199,6 +199,9 @@ async def assemble(
      - processed_xml: the XML with all the readalongs info in it
      - log: collected warnings and error messages
     """
+    from time import perf_counter
+
+    start_time = perf_counter()
     with capture_logs() as captured_logs:
         if request.mime_type == InputFormat.RAS:
             try:
@@ -247,9 +250,20 @@ async def assemble(
         # add ids
         ids_added = add_ids(tokenized)
 
+        if perf_counter() - start_time > ASSEMBLE_TIME_LIMIT_IN_SECONDS:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Preprocessing the input exceeded time limit of {ASSEMBLE_TIME_LIMIT_IN_SECONDS} "
+                + "seconds. Aborting. Please use a shorter text.",
+            )
+
         # g2p
         try:
-            g2ped, valid = convert_xml(ids_added, time_limit=G2P_TIME_LIMIT_IN_SECONDS)
+            g2ped, valid = convert_xml(
+                ids_added,
+                start_time=start_time,
+                time_limit=ASSEMBLE_TIME_LIMIT_IN_SECONDS,
+            )
         except TimeLimitException as e:
             raise HTTPException(status_code=422, detail=str(e)) from e
 
