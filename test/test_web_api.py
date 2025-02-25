@@ -5,6 +5,7 @@ import re
 from contextlib import redirect_stderr
 from io import StringIO
 from textwrap import dedent
+from time import perf_counter
 from unittest import main
 from unittest.mock import patch
 
@@ -13,7 +14,7 @@ from basic_test_case import BasicTestCase
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.log import LOGGER
 from readalongs.text.add_ids_to_xml import add_ids
-from readalongs.text.convert_xml import convert_xml
+from readalongs.text.convert_xml import TimeLimitException, convert_xml
 from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import parse_xml
 from readalongs.util import get_langs
@@ -111,9 +112,11 @@ class TestWebApi(BasicTestCase):
         self.assertEqual(len(word_dict), len(text.split()))
         self.assertEqual(len(word_dict), 99)
 
-    def test_exceed_time_limit(self):
-        text = self.slurp_data_file("ej-fra.txt") * 200
-        with patch("readalongs.web_api.G2P_TIME_LIMIT_IN_SECONDS", 1):
+    def test_g2p_exceeds_time_limit(self):
+        # preprocessing takes about 5 ms, g2p about 200 ms, use 50 ms is nicely between
+        # so we know it'll fail in g2p.
+        text = self.slurp_data_file("ej-fra.txt")
+        with patch("readalongs.web_api.ASSEMBLE_TIME_LIMIT_IN_SECONDS", 0.05):
             request = {
                 "input": text,
                 "type": "text/plain",
@@ -122,7 +125,46 @@ class TestWebApi(BasicTestCase):
             with redirect_stderr(StringIO()):
                 response = self.API_CLIENT.post("/api/v1/assemble", json=request)
             self.assertEqual(response.status_code, 422)
-            self.assertIn("exceeded time limit", response.json()["detail"])
+            self.assertIn(
+                "g2p conversion exceeded time limit", response.json()["detail"]
+            )
+
+    def test_prepro_exceeds_time_limit(self):
+        # preprocessing takes about 5 ms, so 1 micros is guaranteed to be too short on any hardware.
+        text = self.slurp_data_file("ej-fra.txt")
+        with patch("readalongs.web_api.ASSEMBLE_TIME_LIMIT_IN_SECONDS", 0.000001):
+            request = {
+                "input": text,
+                "type": "text/plain",
+                "text_languages": ["und"],
+            }
+            with redirect_stderr(StringIO()):
+                response = self.API_CLIENT.post("/api/v1/assemble", json=request)
+            self.assertEqual(response.status_code, 422)
+            self.assertIn(
+                "Preprocessing the input exceeded time limit", response.json()["detail"]
+            )
+
+    def test_convert_time_limit(self):
+        parsed = parse_xml(self.slurp_data_file("ej-fra.readalong"))
+        with redirect_stderr(StringIO()):
+            tokenized = tokenize_xml(parsed)
+        ids_added = add_ids(tokenized)
+        # This convert_xml call takes about 0.2s on my machine, so 1ms is guaranteed to be
+        # too short on any hardware.
+        with self.assertRaises(TimeLimitException):
+            _ = convert_xml(ids_added, time_limit=0.001)
+        with self.assertRaises(TimeLimitException):
+            _ = convert_xml(
+                ids_added, time_limit=1.001, start_time=perf_counter() - 1.0
+            )
+        # Lots of time, should not raise
+        _, valid = convert_xml(
+            ids_added, time_limit=100, start_time=perf_counter() - 1.0
+        )
+        self.assertTrue(valid)
+        _, valid = convert_xml(ids_added, time_limit=100)
+        self.assertTrue(valid)
 
     def test_bad_g2p(self):
         # Test the assemble endpoint with invalid g2p languages

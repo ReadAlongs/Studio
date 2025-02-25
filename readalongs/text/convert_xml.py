@@ -72,7 +72,8 @@ def convert_words(  # noqa: C901
     word_unit: str = "w",
     output_orthography: str = "eng-arpabet",
     verbose_warnings: Optional[bool] = False,
-    time_limit: Optional[int] = None,
+    time_limit: Optional[float] = None,
+    start_time: Optional[float] = None,
 ):
     """Helper for convert_xml(), with the same Args and Return values, except
     xml is modified in place returned itself, instead of making a copy.
@@ -202,7 +203,8 @@ def convert_words(  # noqa: C901
         return result
 
     all_g2p_valid = True
-    start_time = perf_counter()
+    if start_time is None:
+        start_time = perf_counter()
     for i, word in enumerate(xml.xpath(".//" + word_unit)):
         if time_limit is not None and perf_counter() - start_time > time_limit:
             raise TimeLimitException(
@@ -262,7 +264,8 @@ def convert_xml(
     word_unit: str = "w",
     output_orthography: str = "eng-arpabet",
     verbose_warnings: Optional[bool] = False,
-    time_limit: Optional[int] = None,
+    time_limit: Optional[float] = None,
+    start_time: Optional[float] = None,
 ):
     """Convert all the words in XML though g2p, putting the results in attribute ARPABET
 
@@ -272,6 +275,9 @@ def convert_xml(
         output_orthography: target language for g2p mappings
         verbose_warnings: whether (very!) verbose g2p errors should be produced
         time_limit: if not None, maximum time in seconds to spend on g2p conversion
+        start_time: when the clock started for enforcing the time limit; if not None,
+                    must have been set by calling time.perf_counter() at the beginning
+                    of the calling process
 
     Returns:
         xml (etree), valid (bool):
@@ -284,6 +290,11 @@ def convert_xml(
     """
     xml_copy = copy.deepcopy(xml)
     xml_copy, valid = convert_words(
-        xml_copy, word_unit, output_orthography, verbose_warnings, time_limit
+        xml_copy,
+        word_unit,
+        output_orthography,
+        verbose_warnings,
+        time_limit,
+        start_time,
     )
     return xml_copy, valid
