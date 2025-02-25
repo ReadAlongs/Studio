@@ -199,6 +199,9 @@ async def assemble(
      - processed_xml: the XML with all the readalongs info in it
      - log: collected warnings and error messages
     """
+    from time import perf_counter
+
+    start = perf_counter()
     with capture_logs() as captured_logs:
         if request.mime_type == InputFormat.RAS:
             try:
@@ -246,6 +249,12 @@ async def assemble(
 
         # add ids
         ids_added = add_ids(tokenized)
+
+        if perf_counter() - start > G2P_TIME_LIMIT_IN_SECONDS:
+            raise TimeLimitException(
+                f"Preprocessing the input exceeded time limit of {G2P_TIME_LIMIT_IN_SECONDS} seconds. "
+                f"Aborting. Please use a shorter text."
+            )
 
         # g2p
         try:

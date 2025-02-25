@@ -73,6 +73,7 @@ def convert_words(  # noqa: C901
     output_orthography: str = "eng-arpabet",
     verbose_warnings: Optional[bool] = False,
     time_limit: Optional[int] = None,
+    display_time_limit: Optional[int] = None,
 ):
     """Helper for convert_xml(), with the same Args and Return values, except
     xml is modified in place returned itself, instead of making a copy.
@@ -206,7 +207,7 @@ def convert_words(  # noqa: C901
     for i, word in enumerate(xml.xpath(".//" + word_unit)):
         if time_limit is not None and perf_counter() - start_time > time_limit:
             raise TimeLimitException(
-                f"g2p conversion exceeded time limit of {time_limit} seconds. "
+                f"g2p conversion exceeded time limit of {display_time_limit or time_limit} seconds. "
                 f"Aborting after processing {i} tokens. Please use a shorter text."
             )
         # if the word was already g2p'd, skip and keep existing ARPABET representation
@@ -263,6 +264,7 @@ def convert_xml(
     output_orthography: str = "eng-arpabet",
     verbose_warnings: Optional[bool] = False,
     time_limit: Optional[int] = None,
+    display_time_limit: Optional[int] = None,
 ):
     """Convert all the words in XML though g2p, putting the results in attribute ARPABET
 
@@ -272,6 +274,7 @@ def convert_xml(
         output_orthography: target language for g2p mappings
         verbose_warnings: whether (very!) verbose g2p errors should be produced
         time_limit: if not None, maximum time in seconds to spend on g2p conversion
+        display_time_limit: the value to display in the error when time_limit is exceeded
 
     Returns:
         xml (etree), valid (bool):
@@ -284,6 +287,6 @@ def convert_xml(
     """
     xml_copy = copy.deepcopy(xml)
     xml_copy, valid = convert_words(
-        xml_copy, word_unit, output_orthography, verbose_warnings, time_limit
+        xml_copy, word_unit, output_orthography, verbose_warnings, time_limit, display_time_limit
     )
     return xml_copy, valid
