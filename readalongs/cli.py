@@ -749,7 +749,9 @@ def g2p(**kwargs):
     xml = add_ids(xml)
 
     # Apply the g2p mappings.
-    xml, valid = convert_xml(xml, verbose_warnings=kwargs["debug_g2p"])
+    xml, valid, non_convertible_words = convert_xml(
+        xml, verbose_warnings=kwargs["debug_g2p"]
+    )
 
     if output_path == "-":
         write_xml(sys.stdout.buffer, xml)
@@ -759,7 +761,9 @@ def g2p(**kwargs):
 
     if not valid:
         LOGGER.error(
-            "Some word(s) could not be g2p'd correctly."
+            "These word(s) could not be g2p'd correctly: '"
+            + "', '".join(non_convertible_words)
+            + "'."
             + (
                 " Run again with --debug-g2p to get more detailed error messages."
                 if not kwargs["debug_g2p"]

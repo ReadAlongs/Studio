@@ -105,7 +105,7 @@ class TestWebApi(BasicTestCase):
         with redirect_stderr(StringIO()):
             tokenized = tokenize_xml(parsed)
         ids_added = add_ids(tokenized)
-        g2ped, valid = convert_xml(ids_added)
+        g2ped, valid, _ = convert_xml(ids_added)
 
         word_dict, text = create_grammar(g2ped)
         self.assertTrue(valid)
@@ -159,11 +159,11 @@ class TestWebApi(BasicTestCase):
                 ids_added, time_limit=1.001, start_time=perf_counter() - 1.0
             )
         # Lots of time, should not raise
-        _, valid = convert_xml(
+        _, valid, _ = convert_xml(
             ids_added, time_limit=100, start_time=perf_counter() - 1.0
         )
         self.assertTrue(valid)
-        _, valid = convert_xml(ids_added, time_limit=100)
+        _, valid, _ = convert_xml(ids_added, time_limit=100)
         self.assertTrue(valid)
 
     def test_bad_g2p(self):
@@ -189,7 +189,7 @@ class TestWebApi(BasicTestCase):
             response = self.API_CLIENT.post("/api/v1/assemble", json=request)
         self.assertEqual(response.status_code, 422)
         content = response.json()
-        self.assertIn("No valid g2p conversion", content["detail"])
+        self.assertIn("These words could not", content["detail"])
 
     def test_no_words(self):
         # Test the assemble endpoint with no actual words in the text
@@ -216,7 +216,7 @@ class TestWebApi(BasicTestCase):
             response = self.API_CLIENT.post("/api/v1/assemble", json=request)
         self.assertEqual(response.status_code, 422)
         content_log = response.json()["detail"]
-        for message_part in ["The output of the g2p process", "24", "23", "is empty"]:
+        for message_part in ["These words could not", "24", "23"]:
             self.assertIn(message_part, content_log)
 
     def test_langs(self):

@@ -116,7 +116,7 @@ def encode_from_path(path: Union[str, os.PathLike]) -> str:
     return f"data:{mime_type};base64,{b64}"
 
 
-def fetch_bundle_file(url, filename, prev_status_code):
+def fetch_bundle_file(url: str, filename: str, prev_status_code: Any):
     """Fetch either of the online bundles, or their on-disk fallback if needed."""
     import requests  # Defer expensive import
 

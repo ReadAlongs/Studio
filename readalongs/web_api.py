@@ -259,7 +259,7 @@ async def assemble(
 
         # g2p
         try:
-            g2ped, valid = convert_xml(
+            g2ped, valid, non_convertible_words = convert_xml(
                 ids_added,
                 start_time=start_time,
                 time_limit=ASSEMBLE_TIME_LIMIT_IN_SECONDS,
@@ -268,10 +268,18 @@ async def assemble(
             raise HTTPException(status_code=422, detail=str(e)) from e
 
         if not valid:
+            if non_convertible_words:
+                logs = (
+                    "These words could not be converted from text to phonemes by g2p: '"
+                    + "', '".join(non_convertible_words)
+                    + "'."
+                )
+            else:
+                logs = "Logs: " + captured_logs.getvalue()
             raise HTTPException(
                 status_code=422,
-                detail="g2p could not be performed, please check your text or your language code. Logs: "
-                + captured_logs.getvalue(),
+                detail="g2p could not be performed, please check your text or your language code. "
+                + logs,
             )
         # create grammar
         dict_data, text_input = create_grammar(g2ped)

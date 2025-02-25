@@ -205,6 +205,7 @@ def convert_words(  # noqa: C901
     all_g2p_valid = True
     if start_time is None:
         start_time = perf_counter()
+    non_convertible_words: Dict[str, bool] = {}  # dict used as ordered set
     for i, word in enumerate(xml.xpath(".//" + word_unit)):
         if time_limit is not None and perf_counter() - start_time > time_limit:
             raise TimeLimitException(
@@ -234,6 +235,7 @@ def convert_words(  # noqa: C901
                     text_to_g2p, g2p_lang, g2p_fallbacks
                 )
                 if not valid:
+                    non_convertible_words[text_to_g2p] = True
                     all_g2p_valid = False
                 if effective_g2p_lang:
                     word.attrib["effective-g2p-lang"] = effective_g2p_lang
@@ -256,7 +258,7 @@ def convert_words(  # noqa: C901
 
         word.attrib["ARPABET"] = all_arpabet.strip()
 
-    return xml, all_g2p_valid
+    return xml, all_g2p_valid, list(non_convertible_words.keys())
 
 
 def convert_xml(
@@ -280,16 +282,17 @@ def convert_xml(
                     of the calling process
 
     Returns:
-        xml (etree), valid (bool):
+        xml (etree), valid (bool), non_convertible_words (list[str]):
           - xml is a deepcopy of the input xml with the ARPABET attribute added
             to each word_unit element;
           - valid is a flag indicating whether all words were g2p'd successfully
+          - non_convertible_words is a list of words that could not be g2p converted
 
     Raises:
         TimeLimitException: if the time_limit is specified and exceeded
     """
     xml_copy = copy.deepcopy(xml)
-    xml_copy, valid = convert_words(
+    xml_copy, valid, non_convertible_words = convert_words(
         xml_copy,
         word_unit,
         output_orthography,
@@ -297,4 +300,4 @@ def convert_xml(
         time_limit,
         start_time,
     )
-    return xml_copy, valid
+    return xml_copy, valid, non_convertible_words

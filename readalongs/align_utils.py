@@ -58,7 +58,7 @@ def parse_and_make_xml(
     xml = add_ids(xml)
     if save_temps is not None:
         save_xml(save_temps + ".ids.readalong", xml)
-    xml, valid = convert_xml(
+    xml, valid, non_convertible_words = convert_xml(
         xml,
         verbose_warnings=verbose_g2p_warnings,
         output_orthography=output_orthography,
@@ -67,8 +67,10 @@ def parse_and_make_xml(
         save_xml(save_temps + ".g2p.readalong", xml)
     if not valid:
         raise RuntimeError(
-            "Some words could not be g2p'd correctly. Aborting. "
-            "Run with --debug-g2p for more detailed g2p error logs."
+            "These words could not be g2p'd correctly: '"
+            + "', '".join(non_convertible_words)
+            + "'. Aborting. "
+            + "Run with --debug-g2p for more detailed g2p error logs."
         )
     return xml
 

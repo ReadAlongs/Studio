@@ -449,7 +449,7 @@ class TestG2pCli(BasicTestCase):
     def test_convert_xml_invalid(self):
         """test readalongs.text.convert_xml.convert_xml() with invalid input"""
         xml = parse_xml('<s><w ARPABET="V AA L IY D">valid</w></s>')
-        c_xml, valid = convert_xml(xml)
+        c_xml, valid, _ = convert_xml(xml)
         self.assertEqual(
             etree.tounicode(c_xml), '<s><w ARPABET="V AA L IY D">valid</w></s>'
         )
@@ -457,7 +457,7 @@ class TestG2pCli(BasicTestCase):
 
         xml = parse_xml('<s><w ARPABET="invalid">invalid</w></s>')
         with redirect_stderr(StringIO()):
-            c_xml, valid = convert_xml(xml)
+            c_xml, valid, _ = convert_xml(xml)
         self.assertEqual(
             etree.tounicode(c_xml), '<s><w ARPABET="invalid">invalid</w></s>'
         )
@@ -473,12 +473,19 @@ class TestG2pCli(BasicTestCase):
         """
         )
         with self.assertLogs(LOGGER, level="WARNING") as cm:
-            c_xml, valid = convert_xml(xml, verbose_warnings=True)
+            c_xml, valid, _ = convert_xml(xml, verbose_warnings=True)
         self.assertFalse(valid)
         logger_output = "\n".join(cm.output)
         self.assertIn("No lang", logger_output)
         self.assertIn("foo", logger_output)
         self.assertIn('no path from "crx-syl"', logger_output)
+
+    def test_non_convertible_words(self):
+        xml = parse_xml("<s><w>43:23</w><w>65:67</w><w>43:23</w></s>")
+        with self.assertLogs(LOGGER, level="WARNING"):
+            g2p_xml, valid, non_convertible_words = convert_xml(xml)
+        self.assertFalse(valid)
+        self.assertEqual(non_convertible_words, ["43:23", "65:67"])
 
 
 if __name__ == "__main__":
