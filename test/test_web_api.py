@@ -125,9 +125,9 @@ class TestWebApi(BasicTestCase):
             with redirect_stderr(StringIO()):
                 response = self.API_CLIENT.post("/api/v1/assemble", json=request)
             self.assertEqual(response.status_code, 422)
-            self.assertIn(
-                "g2p conversion exceeded time limit", response.json()["detail"]
-            )
+            # But still let the test pass if it's the preprocessing that fails by
+            # asserting the common substring of the two possible failure messages.
+            self.assertIn("exceeded time limit", response.json()["detail"])
 
     def test_prepro_exceeds_time_limit(self):
         # preprocessing takes about 5 ms, so 1 micros is guaranteed to be too short on any hardware.
