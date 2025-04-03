@@ -1,6 +1,6 @@
 Our production Heroku deployment is controlled by the following files:
  - `Procfile`: tells Heroku what command to launch in each Dyno;
- - `runtime.txt`: tells Heroku which run-time engine to use (i.e., which version of Python);
+ - `.python-version`: tells Heroku which run-time engine to use (i.e., which version of Python);
  - `requirements.txt`: tells Heroku what our production dependencies are;
  - `bin/post_compile`: Heroku builds run this after doing `pip install -r requirements.txt`.
 
@@ -27,4 +27,4 @@ Updating `g2p`:
    - Commit that change to `main` in a sandbox connected to Heroku.
    - `git push heroku main`
    - This will force a build which will fetch the main branch of g2p from GitHub.
-   - Subsequent builds reuse the cached g2p, so they'll reuse this one. Exception: if `runtime.txt` is updated, a fresh build is done and g2p will be reverted to the latest published version.
+   - Subsequent builds reuse the cached g2p, so they'll reuse this one. Exception: if `.python-version` is updated, a fresh build is done and g2p will be reverted to the latest published version.
