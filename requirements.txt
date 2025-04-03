@@ -49,8 +49,12 @@ et-xmlfile==2.0.0
     # via openpyxl
 fastapi==0.115.6
     # via hatch.envs.prod
-g2p==2.2.0
+
+# Manual override: for deployment on Heroku, we want the latest g2p@main on GitHub
+g2p @ git+https://github.com/roedoejet/g2p.git@main
+#g2p==2.2.0
     # via hatch.envs.prod
+
 gunicorn==23.0.0 ; platform_system != "Windows"
     # via hatch.envs.prod
 h11==0.14.0
