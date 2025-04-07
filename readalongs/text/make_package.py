@@ -31,6 +31,29 @@ FONTS_BUNDLE_URL = (
 
 BASIC_HTML = """
 <!DOCTYPE html>
+
+<!--
+
+                    Instructions for Opening this File
+
+This is a read-along file that can be opened in a web browser without
+requiring Internet access.
+
+If you see this text, you probably downloaded a ReadAlong HTML file from a
+cloud storage service, and it's showing you the raw contents instead of
+displaying your readalong.
+
+To view the file:
+
+1. Download the file to your computer -- there should be a download button
+    visible or hidden in the three dot menu in your cloud storage service.
+
+2. Once downloaded, open the file in a web browser. You can do this by
+    double-clicking it in your file explorer or in your browser's downloaded
+    files list.
+
+-->
+
 <html lang="en">
 <head>
   <meta charset="utf-8">
