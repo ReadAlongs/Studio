@@ -27,6 +27,7 @@ from readalongs.text.util import CURRENT_WEB_APP_VERSION, parse_xml
 JS_BUNDLE_URL = f"https://unpkg.com/@readalongs/web-component@^{CURRENT_WEB_APP_VERSION}/dist/bundle.js"
 FONTS_BUNDLE_URL = f"https://unpkg.com/@readalongs/web-component@^{CURRENT_WEB_APP_VERSION}/dist/fonts.b64.css"
 
+# Template for the Offline HTML file
 BASIC_HTML = """
 <!DOCTYPE html>
 
@@ -59,14 +60,23 @@ To view the file:
   <meta name="application-name" content="read along">
   <meta name="generator" content="@readalongs/studio (cli) {studio_version}">
   <title>{title}</title>
-  <script>{js}</script>
-  <style attribution="See https://fonts.google.com/attribution for copyrights and font attribution">{fonts}</style>
+  <script>
+{js}
+  </script>
+  <style attribution="See https://fonts.google.com/attribution for copyrights and font attribution">
+{fonts}
+  </style>
 </head>
 <body>
-    <read-along href="{ras}" audio="{audio}" theme="{theme}" use-assets-folder="false">
-        <span slot='read-along-header'>{header}</span>
-        <span slot='read-along-subheader'>{subheader}</span>
-    </read-along>
+  <read-along
+    href="{ras}"
+    audio="{audio}"
+    theme="{theme}"
+    use-assets-folder="false"
+  >
+    <span slot='read-along-header'>{header}</span>
+    <span slot='read-along-subheader'>{subheader}</span>
+  </read-along>
 </body>
 </html>
 """
