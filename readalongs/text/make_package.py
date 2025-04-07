@@ -22,12 +22,10 @@ from lxml import etree
 
 from readalongs._version import VERSION
 from readalongs.log import LOGGER
-from readalongs.text.util import parse_xml
+from readalongs.text.util import CURRENT_WEB_APP_VERSION, parse_xml
 
-JS_BUNDLE_URL = "https://unpkg.com/@readalongs/web-component@^1.5.2/dist/bundle.js"
-FONTS_BUNDLE_URL = (
-    "https://unpkg.com/@readalongs/web-component@^1.5.2/dist/fonts.b64.css"
-)
+JS_BUNDLE_URL = f"https://unpkg.com/@readalongs/web-component@^{CURRENT_WEB_APP_VERSION}/dist/bundle.js"
+FONTS_BUNDLE_URL = f"https://unpkg.com/@readalongs/web-component@^{CURRENT_WEB_APP_VERSION}/dist/fonts.b64.css"
 
 BASIC_HTML = """
 <!DOCTYPE html>
