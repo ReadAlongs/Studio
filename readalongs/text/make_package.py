@@ -17,6 +17,7 @@ import os
 import re
 from base64 import b64encode
 from mimetypes import guess_type
+from textwrap import indent
 from typing import Any, Union
 
 from lxml import etree
@@ -55,30 +56,30 @@ To view the file:
 -->
 
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
-  <meta name="application-name" content="read along">
-  <meta name="generator" content="@readalongs/studio (cli) {studio_version}">
-  <title>{title}</title>
-  <script name="@readalongs/web-component" version="{js_version}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
+    <meta name="application-name" content="read along">
+    <meta name="generator" content="@readalongs/studio (cli) {studio_version}">
+    <title>{title}</title>
+    <script name="@readalongs/web-component" version="{js_version}">
 {js}
-  </script>
-  <style attribution="See https://fonts.google.com/attribution for copyrights and font attribution">
+    </script>
+    <style attribution="See https://fonts.google.com/attribution for copyrights and font attribution">
 {fonts}
-  </style>
-</head>
-<body>
-  <read-along
-    href="{ras}"
-    audio="{audio}"
-    theme="{theme}"
-    use-assets-folder="false"
-  >
-    <span slot='read-along-header'>{header}</span>
-    <span slot='read-along-subheader'>{subheader}</span>
-  </read-along>
-</body>
+    </style>
+  </head>
+  <body>
+    <read-along
+      href="{ras}"
+      audio="{audio}"
+      theme="{theme}"
+      use-assets-folder="false"
+    >
+      <span slot='read-along-header'>{header}</span>
+      <span slot='read-along-subheader'>{subheader}</span>
+    </read-along>
+  </body>
 </html>
 """
 
@@ -215,6 +216,7 @@ def create_web_component_html(
         _prev_js_status_code, js_bundle_contents, js_bundle_version = fetch_bundle_file(
             JS_BUNDLE_URL, "bundle.js", _prev_js_status_code
         )
+        js_bundle_contents = indent(js_bundle_contents, " " * 6)
 
     global fonts_bundle_contents
     if fonts_bundle_contents is None:
@@ -225,6 +227,7 @@ def create_web_component_html(
         _prev_fonts_status_code, fonts_bundle_contents, _ = fetch_bundle_file(
             FONTS_BUNDLE_URL, "bundle.css", _prev_fonts_status_code
         )
+        fonts_bundle_contents = indent(fonts_bundle_contents, " " * 6)
 
     return BASIC_HTML.format(
         ras=encode_from_path(ras_path),
