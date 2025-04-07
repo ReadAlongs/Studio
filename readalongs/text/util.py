@@ -225,26 +225,31 @@ def copy_file_to_zip(zip_path, origin_path, destination_path):
 
 MINIMAL_INDEX_HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="application-name" content="read along">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
-        <meta name="generator" content="@readalongs/studio (cli) {studio_version}">
-        <title>{title}</title>
-        <!-- Import fonts. Material Icons are needed by the web component -->
-        <link href="https://fonts.googleapis.com/css?family=Lato%7CMaterial+Icons%7CMaterial+Icons+Outlined" rel="stylesheet">
-    </head>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="application-name" content="read along">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
+    <meta name="generator" content="@readalongs/studio (cli) {studio_version}">
+    <title>{title}</title>
+    <!-- Import fonts. Material Icons are needed by the web component -->
+    <link href="https://fonts.googleapis.com/css?family=Lato%7CMaterial+Icons%7CMaterial+Icons+Outlined" rel="stylesheet">
+  </head>
 
-    <body>
-        <!-- Here is how you declare the Web Component. Supported languages: eng, fra, spa -->
-        <read-along href="{text}" audio="{audio}" theme="{theme}" language="eng">
-            <span slot='read-along-header'>{header}</span>
-            <span slot='read-along-subheader'>{subheader}</span>
-        </read-along>
-    </body>
+  <body>
+    <!-- Here is how you declare the Web Component. Supported languages: eng, fra, spa -->
+    <read-along
+      href="{text}"
+      audio="{audio}"
+      theme="{theme}"
+      language="eng"
+    >
+      <span slot='read-along-header'>{header}</span>
+      <span slot='read-along-subheader'>{subheader}</span>
+    </read-along>
+  </body>
 
-    <!-- The last step needed is to import the package -->
-    <script type="module" src='https://unpkg.com/@readalongs/web-component@{version}/dist/web-component/web-component.esm.js'></script>
+  <!-- The last step needed is to import the package -->
+  <script type="module" src='https://unpkg.com/@readalongs/web-component@{version}/dist/web-component/web-component.esm.js'></script>
 </html>
 """
 
