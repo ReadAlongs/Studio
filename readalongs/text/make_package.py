@@ -14,6 +14,7 @@
 ###################################################
 
 import os
+import re
 from base64 import b64encode
 from mimetypes import guess_type
 from typing import Any, Union
@@ -60,7 +61,7 @@ To view the file:
   <meta name="application-name" content="read along">
   <meta name="generator" content="@readalongs/studio (cli) {studio_version}">
   <title>{title}</title>
-  <script>
+  <script name="@readalongs/web-component" version="{js_version}">
 {js}
   </script>
   <style attribution="See https://fonts.google.com/attribution for copyrights and font attribution">
@@ -147,6 +148,17 @@ def encode_from_path(path: Union[str, os.PathLike]) -> str:
     return f"data:{mime_type};base64,{b64}"
 
 
+def extract_version_from_url(url: str) -> str:
+    """Extract the version from a URL string."""
+
+    match = re.search(r"@(\d+\.\d+\.\d+)", url)
+    if match:
+        return match.group(1)
+    else:
+        LOGGER.warning(f"Could not extract bundle version from URL: {url}")
+        return "unknown"
+
+
 def fetch_bundle_file(url: str, filename: str, prev_status_code: Any):
     """Fetch either of the online bundles, or their on-disk fallback if needed."""
     import requests  # Defer expensive import
@@ -174,9 +186,11 @@ def fetch_bundle_file(url: str, filename: str, prev_status_code: Any):
             os.path.join(os.path.dirname(__file__), filename), encoding="utf8"
         ) as f:
             file_contents = f.read()
+            bundle_version = "unknown"
     else:
         file_contents = get_result.text
-    return status_code, file_contents
+        bundle_version = extract_version_from_url(get_result.url)
+    return status_code, file_contents, bundle_version
 
 
 _prev_js_status_code: Any = None
@@ -184,6 +198,7 @@ _prev_fonts_status_code: Any = None
 # Cache the bundle contents so we don't fetch it more than once when running a process
 # that might generate several HTML files via the API, e.g., the EveryVoice demo app.
 js_bundle_contents = None
+js_bundle_version = None
 fonts_bundle_contents = None
 
 
@@ -195,13 +210,11 @@ def create_web_component_html(
     subheader=DEFAULT_SUBHEADER,
     theme="light",
 ) -> str:
-    global js_bundle_contents
+    global _prev_js_status_code, js_bundle_contents, js_bundle_version
     if js_bundle_contents is None:
-        global _prev_js_status_code
-        _prev_js_status_code, js_bundle_contents = fetch_bundle_file(
+        _prev_js_status_code, js_bundle_contents, js_bundle_version = fetch_bundle_file(
             JS_BUNDLE_URL, "bundle.js", _prev_js_status_code
         )
-        js_bundle_contents = js_bundle_contents
 
     global fonts_bundle_contents
     if fonts_bundle_contents is None:
@@ -209,7 +222,7 @@ def create_web_component_html(
         if _prev_fonts_status_code is None and _prev_js_status_code != 200:
             # If fetching bundle.js failed, don't bother trying bundle.css
             _prev_fonts_status_code = _prev_js_status_code
-        _prev_fonts_status_code, fonts_bundle_contents = fetch_bundle_file(
+        _prev_fonts_status_code, fonts_bundle_contents, _ = fetch_bundle_file(
             FONTS_BUNDLE_URL, "bundle.css", _prev_fonts_status_code
         )
 
@@ -217,6 +230,7 @@ def create_web_component_html(
         ras=encode_from_path(ras_path),
         audio=encode_from_path(audio_path),
         js=js_bundle_contents,
+        js_version=js_bundle_version,
         fonts=fonts_bundle_contents,
         title=title,
         header=header,
