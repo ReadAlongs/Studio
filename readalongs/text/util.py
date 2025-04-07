@@ -249,7 +249,7 @@ MINIMAL_INDEX_HTML_TEMPLATE = """<!DOCTYPE html>
   </body>
 
   <!-- The last step needed is to import the package -->
-  <script type="module" src='https://unpkg.com/@readalongs/web-component@{version}/dist/web-component/web-component.esm.js'></script>
+  <script type="module" src='https://unpkg.com/@readalongs/web-component@^{version}/dist/web-component/web-component.esm.js'></script>
 </html>
 """
 
