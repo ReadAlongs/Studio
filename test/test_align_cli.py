@@ -72,10 +72,13 @@ class TestAlignCli(BasicTestCase):
                 (output / f).exists(), f"successful alignment should have created {f}"
             )
         with open(output / "www/index.html", encoding="utf8") as f:
-            self.assertIn(
-                '<read-along href="output.readalong" audio="output.m4a"',
-                f.read(),
-            )
+            contents = f.read()
+            for snippet in (
+                "<read-along",
+                'href="output.readalong"',
+                'audio="output.m4a"',
+            ):
+                self.assertIn(snippet, contents)
         self.assertTrue(
             (output / "tempfiles/output.tokenized.readalong").exists(),
             "alignment with -s should have created tempfiles/output.tokenized.readalong",

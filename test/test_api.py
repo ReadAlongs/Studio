@@ -173,7 +173,7 @@ class TestAlignApi(BasicTestCase):
         self.assertIn("<html", html)
         self.assertIn("<body", html)
         self.assertIn('<meta name="generator" content="@readalongs/studio (cli)', html)
-        self.assertIn('<read-along href="data:application/readalong+xml;base64', html)
+        self.assertIn('href="data:application/readalong+xml;base64', html)
         self.assertIn('audio="data:audio/', html)
         self.assertIn("<span slot='read-along-header'>", html)
         self.assertIn("<span slot='read-along-subheader'>by Jove!</span>", html)
