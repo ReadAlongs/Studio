@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     # #no-ci in the commit log flags commit we don't want CI-validated
     if: ${{ !contains(github.event.head_commit.message, '#no-ci') }}
+    permissions:
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
@@ -62,8 +64,12 @@ jobs:
           echo "CLI load time: $CLI_LOAD_TIME" > import-message.txt
           PR_HEAD="${{ github.event.pull_request.head.sha }}"
           [[ $PR_HEAD ]] && echo "Pull Request HEAD: $PR_HEAD" >> import-message.txt
-          echo "Imports that take more than 0.1 s:" >> import-message.txt
-          grep -E 'cumulative|[0-9]{6} ' importtime.txt >> import-message.txt
+          if grep -q -E '[0-9]{6} ' importtime.txt; then \
+            echo "Imports that take more than 0.1 s:" >> import-message.txt; \
+            grep -E 'cumulative|[0-9]{6} ' importtime.txt >> import-message.txt; \
+          else \
+            echo "No imports take more than 0.1 s." >> import-message.txt; \
+          fi
           cat import-message.txt
           echo "Full import time log:"
           cat importtime.txt
