@@ -1,7 +1,7 @@
 MIT License
 
-Copyright (c) 2019 David Huggins-Daines
-Copyright (c) 2019-2023 National Research Council Canada
+Copyright (c) 2019-2025 David Huggins-Daines
+Copyright (c) 2019-2025 National Research Council Canada
 Exceptions:
  - Acoustic model in readalongs/static/model/cmusphinx-en-us-5.2 Copyright (c) 2015 Alpha Cephei Inc. licensed under the FreeBSD License; see README in that directory.
  - Each file in misc-utils/ has its own licensing terms in the headers

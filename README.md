@@ -300,4 +300,4 @@ Aidan Pine, David Huggins-Daines, Eric Joanis, Patrick Littell, Marc Tessier, De
 
 ## License
 
-[MIT](LICENSE) © 2019-2022 David Huggins-Daines and National Research Council Canada
+[MIT](LICENSE) © 2019-2025 David Huggins-Daines and National Research Council Canada
