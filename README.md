@@ -137,7 +137,7 @@ Run `readalongs -h` to confirm that installation was successful.
 If you installed the current development version with Git, you can also run the
 full test suite (requires installing the dev dependencies):
 
-    pip install -e .[dev]
+    pip install -e '.[dev]'
     python test/run.py dev
 
 And you can download our [open samples on GitHub](https://github.com/ReadAlongs/OpenSamples)
@@ -237,7 +237,7 @@ This repo follows the [Contributor Covenant](http://contributor-covenant.org/ver
 You can install our standard Git hooks by running these commands in your sandbox:
 
 ```sh
-pip install -e .[dev]
+pip install -e '.[dev]'
 pre-commit install
 gitlint install-hook
 ```

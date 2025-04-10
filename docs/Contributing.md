@@ -14,7 +14,7 @@ commands at the root of your Studio sandbox:
 
 1. Install Studio and the required build software (mkdocs and friends):
 
-       pip install -e .[docs]
+       pip install -e '.[docs]'
 
 2. Run this command to serve the documentation locally:
 
