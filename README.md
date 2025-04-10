@@ -134,10 +134,11 @@ $ pip install -e .
 
 Run `readalongs -h` to confirm that installation was successful.
 
-If you installed the current development version with Git, you can also run the full test suite:
+If you installed the current development version with Git, you can also run the
+full test suite (requires installing the dev dependencies):
 
-    cd Studio/test
-    python run.py dev
+    pip install -e .[dev]
+    python test/run.py dev
 
 And you can download our [open samples on GitHub](https://github.com/ReadAlongs/OpenSamples)
 to run your first alignments.
@@ -187,7 +188,7 @@ This endpoint is a remote procedural call that assembles the data needed to buil
 
 ### Studio web application
 
-The ReadAlong-Studio web interface is available at https://readalong-studio.mothertongues.org/ and the source code is available here: https://github.com/ReadAlongs/Web-Component
+The ReadAlong-Studio web interface is available at https://readalong-studio.mothertongues.org/ and the source code is available here: https://github.com/ReadAlongs/Studio-Web
 
 ### Docker
 
@@ -259,9 +260,9 @@ Here is a partial list:
 
 Project web page: [ReadAlong Studio: Application for Indigenous audiobooks and videos project](https://nrc.canada.ca/en/research-development/research-collaboration/programs/readalong-studio)
 
-### Citation
+## Citation
 
-if you use this software in a project of yours and write about it, please cite
+If you use this software in a project of yours and write about it, please cite
 us using the following:
 
 Littell, P., Joanis, E., Pine, A., Tessier, M., Huggins-Daines, D., & Torkornoo, D. (2022). ReadAlong Studio: Practical Zero-Shot Text-Speech Alignment for Indigenous Language Audiobooks. Proceedings of SIGUL2022 @LREC2022, 23–32.
