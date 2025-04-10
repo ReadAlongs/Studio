@@ -1,9 +1,14 @@
 site_name: ReadAlong-Studio
+repo_url: https://github.com/ReadAlongs/Studio
+edit_uri: blob/main/docs/
+site_description: "Documentation for the ReadAlong-Studio: Audiobook alignment for Indigenous languages"
+copyright: Copyright ©2019-2025 David Huggins-Daines and National Research Council Canada
 theme:
   name: material
   features:
     - content.code.copy
     - navigation.instant
+    - navigation.footer
 plugins:
   - search
   - autorefs
@@ -30,3 +35,5 @@ nav:
   - Output Realizations: outputs.md
   - Advanced Topics: advanced-use.md
   - Troubleshooting: troubleshooting.md
+exclude_docs:
+  Contributing.md
