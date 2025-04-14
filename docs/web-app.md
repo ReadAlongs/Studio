@@ -23,6 +23,7 @@ The Web App supports the most commonly used features of the ReadAlong Studio:
  - adding images
  - saving the results in the single file Offline HTML format
  - saving the results in a multi-file Web Bundle for [deployment on a web page](outputs.md#simple-web-deployment)
+ - fixing alignment errors or typos in the Editor (see below for more details about the Editor)
 
 ### Input text format
 

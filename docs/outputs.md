@@ -66,3 +66,7 @@ This file is also compatible with our [Editor](web-app.md#the-readalong-studio-e
 ## ELAN/Praat files
 
 With `-o eaf` or `-o TextGrid`, the ReadAlongs Studio can output files in the ELAN eaf and Praat TextGrid file formats.
+
+## Subtitle files
+
+With `-o srt` or `-o vtt`, the ReadAlongs Studio can output subtitle files in the SRT or WebVTT formats.

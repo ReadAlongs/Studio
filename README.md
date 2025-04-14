@@ -58,6 +58,14 @@ Optionally a book can be generated as a standalone HTML page, XHTML, Praat TextG
 
 ## Install
 
+### The short version
+
+Install [FFmpeg](https://ffmpeg.org/) and Python 3.8 or higher.
+
+Run:
+
+    pip install readalongs
+
 ### Installing dependencies
 
 Before you can install the ReadAlong Studio, you will need to install these dependencies:
@@ -118,8 +126,9 @@ If you know what you're doing, you can install the dependencies directly on your
 
 ### Installing ReadAlongs Studio itself
 
-To install the latest version of readalongs published to PyPI, you can run a standard pip
-installation: `pip install readalongs`. Be warned, however, that this project is still very active so the published version could be out-of-date. Consider installing the current development version instead.
+To install the latest published version on PyPI:
+
+    pip install readalongs
 
 To install the current development version, clone the repo and pip install it
 locally:
@@ -137,7 +146,8 @@ Run `readalongs -h` to confirm that installation was successful.
 If you installed the current development version with Git, you can also run the
 full test suite (requires installing the dev dependencies):
 
-    pip install -e '.[dev]'
+    pip install 'readalongs[dev]'  # if you installed from PyPI, or
+    pip install -e '.[dev]'        # if you installed from a local clone
     python test/run.py dev
 
 And you can download our [open samples on GitHub](https://github.com/ReadAlongs/OpenSamples)
