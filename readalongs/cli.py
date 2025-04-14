@@ -428,6 +428,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
     context_settings=CONTEXT_SETTINGS,
     short_help="Renamed: use 'readalongs make-xml' instead.",
     deprecated=True,
+    hidden=True,
 )
 @click.argument("plaintextfile", type=click.File("r", encoding="utf-8-sig", lazy=True))
 @click.argument("xmlfile", type=click.Path(), required=False, default="")
