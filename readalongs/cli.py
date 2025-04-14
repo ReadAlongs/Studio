@@ -122,6 +122,14 @@ def cli():
     """
 
 
+LANGUAGES_DETAILS = (
+    "use 'und' for the generic language-independent mapping; "
+    "multiple codes can be joined by ',' or ':', or by repeating the option, "
+    "to enable the g2p cascade (run 'readalongs g2p -h' for details); "
+    "run 'readalongs langs' to list all supported languages."
+)
+
+
 @cli.command(  # type: ignore  # noqa: C901  # some versions of flake8 need this here
     context_settings=CONTEXT_SETTINGS, short_help="Force align a text and a sound file."
 )
@@ -189,9 +197,7 @@ def cli():
     callback=JoinerCallbackForClick(get_langs_deferred()),
     help=(
         "The language code(s) for text in TEXTFILE (use only with plain text input); "
-        "multiple codes can be joined by ',' or ':', or by repeating the option, "
-        "to enable the g2p cascade (run 'readalongs g2p -h' for details); "
-        "run 'readalongs langs' to list all supported languages."
+        + LANGUAGES_DETAILS
     ),
 )
 @click.option(
@@ -365,7 +371,8 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
         if not kwargs["language"]:
             raise click.BadParameter(
                 "No input language specified for plain text input. "
-                "Please provide the -l/--language switch."
+                "Please provide the -l/--language switch.\n"
+                "You can use '-l und' if you don't know the language or if it's not explicitly supported."
             )
         languages = list(kwargs["language"])
         if not kwargs["lang_no_append_und"] and "und" not in languages:
@@ -442,12 +449,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
     required=True,
     multiple=True,
     callback=JoinerCallbackForClick(get_langs_deferred()),
-    help=(
-        "The language code(s) for text in PLAINTEXTFILE; "
-        "multiple codes can be joined by ',' or ':', or by repeating the option, "
-        "to enable the g2p cascade (run 'readalongs g2p -h' for details); "
-        "run 'readalongs langs' to list all supported languages."
-    ),
+    help=("The language code(s) for text in PLAINTEXTFILE; " + LANGUAGES_DETAILS),
 )
 def prepare(**kwargs):
     """DEPRECATED - renamed: use `readalongs make-xml` instead.
@@ -494,12 +496,7 @@ def prepare(**kwargs):
     required=True,
     multiple=True,
     callback=JoinerCallbackForClick(get_langs_deferred()),
-    help=(
-        "The language code(s) for text in PLAINTEXTFILE; "
-        "multiple codes can be joined by ',' or ':', or by repeating the option, "
-        "to enable the g2p cascade (run 'readalongs g2p -h' for details); "
-        "run 'readalongs langs' to list all supported languages."
-    ),
+    help=("The language code(s) for text in PLAINTEXTFILE; " + LANGUAGES_DETAILS),
 )
 def make_xml(**kwargs):
     """make XMLFILE for 'readalongs align' from PLAINTEXTFILE.
