@@ -34,7 +34,7 @@ SUPPORTED_OUTPUT_FORMATS = {
 }
 
 SUPPORTED_OUTPUT_FORMATS_DESC = ", ".join(
-    k + f" ({v})" for k, v in SUPPORTED_OUTPUT_FORMATS.items()
+    k + f" ({v})" for k, v in SUPPORTED_OUTPUT_FORMATS.items() if k != "html"
 )
 
 
@@ -147,8 +147,8 @@ def cli():
     callback=JoinerCallbackForClick(SUPPORTED_OUTPUT_FORMATS, drop_case=True),
     help=(
         "Comma- or colon-separated list of additional output file formats to export to. "
-        "The text is always exported as XML and alignments as SMIL, but "
-        "one or more of these formats can be requested in addition:\b \n\n"
+        "The www bundle and Offline HTML are always generated, "
+        "but one or more of these formats can be requested in addition:\b \n\n"
         + SUPPORTED_OUTPUT_FORMATS_DESC
     ),
 )
@@ -402,6 +402,9 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
         # sys.exit(1)
 
     output_formats = kwargs["output_formats"]
+    # Now that Offline HTML is the editable format in Studio-Web, always generate it.
+    if "html" not in output_formats:
+        output_formats = [*output_formats, "html"]
 
     save_readalong(
         align_results=results,
