@@ -12,6 +12,7 @@ theme:
 plugins:
   - search
   - autorefs
+  - markdown-exec
   - mkdocstrings:
       default_handler: python
       handlers:
@@ -25,6 +26,7 @@ markdown_extensions:
   - mkdocs-click
   - admonition
   - def_list
+  - pymdownx.superfences
 nav:
   - Home: index.md
   - Start: start.md

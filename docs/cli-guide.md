@@ -161,8 +161,8 @@ The `readalongs langs` command can be used to list all supported languages.
 
 Here is that list at the time of compiling this documentation:
 
-```{eval-rst}
-.. command-output:: readalongs langs
+```bash exec="1" result="text"
+readalongs langs
 ```
 
 See [Adding a new language to g2p][adding-a-new-language-to-g2p] for references on adding new languages to that list.

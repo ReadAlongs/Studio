@@ -82,6 +82,7 @@ docs = [
     "mkdocs-material>=9.5.27",
     "mkdocs-autorefs>=1.0.1",
     "mkdocstrings[python]>=0.25.1",
+    "markdown-exec[ansi]",
     "mike>=2.1.1",
 ]
 
