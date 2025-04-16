@@ -26,16 +26,19 @@ class TestPackageURLs(BasicTestCase):
     def test_fetch_bundles_fallback(self):
         """Test graceful exit when the URLs are not accessible."""
         # Pretend the previous attempt failed: we'll get the file from disk
-        status, contents = fetch_bundle_file(JS_BUNDLE_URL, "bundle.js", "SomeError")
+        status, contents, js_bundle_version = fetch_bundle_file(
+            JS_BUNDLE_URL, "bundle.js", "SomeError"
+        )
         # print(status, len(contents))
         self.assertEqual(status, "SomeError")
+        self.assertEqual(js_bundle_version, "unknown")
         ref_length = len(contents)
 
         # Try with a bad URL
         bad_url = JS_BUNDLE_URL.replace("unpkg.com", "not-a-server.zzz")
         # print(bad_url)
         with silence_logs():
-            status, contents = fetch_bundle_file(bad_url, "bundle.js", None)
+            status, contents, _ = fetch_bundle_file(bad_url, "bundle.js", None)
         # print(status, len(contents))
         self.assertNotEqual(status, 200)
         self.assertIsInstance(status, str)

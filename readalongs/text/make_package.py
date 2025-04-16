@@ -14,39 +14,72 @@
 ###################################################
 
 import os
+import re
 from base64 import b64encode
 from mimetypes import guess_type
+from textwrap import indent
 from typing import Any, Union
 
 from lxml import etree
 
 from readalongs._version import VERSION
 from readalongs.log import LOGGER
-from readalongs.text.util import parse_xml
+from readalongs.text.util import CURRENT_WEB_APP_VERSION, parse_xml
 
-JS_BUNDLE_URL = "https://unpkg.com/@readalongs/web-component@^1.5.2/dist/bundle.js"
-FONTS_BUNDLE_URL = (
-    "https://unpkg.com/@readalongs/web-component@^1.5.2/dist/fonts.b64.css"
-)
+JS_BUNDLE_URL = f"https://unpkg.com/@readalongs/web-component@^{CURRENT_WEB_APP_VERSION}/dist/bundle.js"
+FONTS_BUNDLE_URL = f"https://unpkg.com/@readalongs/web-component@^{CURRENT_WEB_APP_VERSION}/dist/fonts.b64.css"
 
+# Template for the Offline HTML file
 BASIC_HTML = """
 <!DOCTYPE html>
+
+<!--
+
+                    Instructions for Opening this File
+
+This is a read-along file that can be opened in a web browser without
+requiring Internet access.
+
+If you see this text, you probably downloaded a ReadAlong HTML file from a
+cloud storage service, and it's showing you the raw contents instead of
+displaying your readalong.
+
+To view the file:
+
+1. Download the file to your computer -- there should be a download button
+    visible or hidden in the three dot menu in your cloud storage service.
+
+2. Once downloaded, open the file in a web browser. You can do this by
+    double-clicking it in your file explorer or in your browser's downloaded
+    files list.
+
+-->
+
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
-  <meta name="application-name" content="read along">
-  <meta name="generator" content="@readalongs/studio (cli) {studio_version}">
-  <title>{title}</title>
-  <script>{js}</script>
-  <style attribution="See https://fonts.google.com/attribution for copyrights and font attribution">{fonts}</style>
-</head>
-<body>
-    <read-along href="{ras}" audio="{audio}" theme="{theme}" use-assets-folder="false">
-        <span slot='read-along-header'>{header}</span>
-        <span slot='read-along-subheader'>{subheader}</span>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0">
+    <meta name="application-name" content="read along">
+    <meta name="generator" content="@readalongs/studio (cli) {studio_version}">
+    <title>{title}</title>
+    <script name="@readalongs/web-component" version="{js_version}">
+{js}
+    </script>
+    <style attribution="See https://fonts.google.com/attribution for copyrights and font attribution">
+{fonts}
+    </style>
+  </head>
+  <body>
+    <read-along
+      href="{ras}"
+      audio="{audio}"
+      theme="{theme}"
+      use-assets-folder="false"
+    >
+      <span slot='read-along-header'>{header}</span>
+      <span slot='read-along-subheader'>{subheader}</span>
     </read-along>
-</body>
+  </body>
 </html>
 """
 
@@ -116,6 +149,17 @@ def encode_from_path(path: Union[str, os.PathLike]) -> str:
     return f"data:{mime_type};base64,{b64}"
 
 
+def extract_version_from_url(url: str) -> str:
+    """Extract the version from a URL string."""
+
+    match = re.search(r"@(\d+\.\d+\.\d+)", url)
+    if match:
+        return match.group(1)
+    else:
+        LOGGER.warning(f"Could not extract bundle version from URL: {url}")
+        return "unknown"
+
+
 def fetch_bundle_file(url: str, filename: str, prev_status_code: Any):
     """Fetch either of the online bundles, or their on-disk fallback if needed."""
     import requests  # Defer expensive import
@@ -143,9 +187,11 @@ def fetch_bundle_file(url: str, filename: str, prev_status_code: Any):
             os.path.join(os.path.dirname(__file__), filename), encoding="utf8"
         ) as f:
             file_contents = f.read()
+            bundle_version = "unknown"
     else:
         file_contents = get_result.text
-    return status_code, file_contents
+        bundle_version = extract_version_from_url(get_result.url)
+    return status_code, file_contents, bundle_version
 
 
 _prev_js_status_code: Any = None
@@ -153,6 +199,7 @@ _prev_fonts_status_code: Any = None
 # Cache the bundle contents so we don't fetch it more than once when running a process
 # that might generate several HTML files via the API, e.g., the EveryVoice demo app.
 js_bundle_contents = None
+js_bundle_version = None
 fonts_bundle_contents = None
 
 
@@ -164,13 +211,12 @@ def create_web_component_html(
     subheader=DEFAULT_SUBHEADER,
     theme="light",
 ) -> str:
-    global js_bundle_contents
+    global _prev_js_status_code, js_bundle_contents, js_bundle_version
     if js_bundle_contents is None:
-        global _prev_js_status_code
-        _prev_js_status_code, js_bundle_contents = fetch_bundle_file(
+        _prev_js_status_code, js_bundle_contents, js_bundle_version = fetch_bundle_file(
             JS_BUNDLE_URL, "bundle.js", _prev_js_status_code
         )
-        js_bundle_contents = js_bundle_contents
+        js_bundle_contents = indent(js_bundle_contents, " " * 6)
 
     global fonts_bundle_contents
     if fonts_bundle_contents is None:
@@ -178,14 +224,16 @@ def create_web_component_html(
         if _prev_fonts_status_code is None and _prev_js_status_code != 200:
             # If fetching bundle.js failed, don't bother trying bundle.css
             _prev_fonts_status_code = _prev_js_status_code
-        _prev_fonts_status_code, fonts_bundle_contents = fetch_bundle_file(
+        _prev_fonts_status_code, fonts_bundle_contents, _ = fetch_bundle_file(
             FONTS_BUNDLE_URL, "bundle.css", _prev_fonts_status_code
         )
+        fonts_bundle_contents = indent(fonts_bundle_contents, " " * 6)
 
     return BASIC_HTML.format(
         ras=encode_from_path(ras_path),
         audio=encode_from_path(audio_path),
         js=js_bundle_contents,
+        js_version=js_bundle_version,
         fonts=fonts_bundle_contents,
         title=title,
         header=header,

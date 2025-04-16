@@ -11,7 +11,7 @@ from io import StringIO
 from unittest import main
 
 import click
-from basic_test_case import BasicTestCase
+from basic_test_case import BasicTestCase, silence_logs
 from sound_swallower_stub import SoundSwallowerStub
 
 from readalongs import api
@@ -173,7 +173,7 @@ class TestAlignApi(BasicTestCase):
         self.assertIn("<html", html)
         self.assertIn("<body", html)
         self.assertIn('<meta name="generator" content="@readalongs/studio (cli)', html)
-        self.assertIn('<read-along href="data:application/readalong+xml;base64', html)
+        self.assertIn('href="data:application/readalong+xml;base64', html)
         self.assertIn('audio="data:audio/', html)
         self.assertIn("<span slot='read-along-header'>", html)
         self.assertIn("<span slot='read-along-subheader'>by Jove!</span>", html)
@@ -203,6 +203,20 @@ class TestAlignApi(BasicTestCase):
         self.assertEqual(make_package._prev_fonts_status_code, "TIMEOUT")
         self.assertIsNotNone(make_package.fonts_bundle_contents)
         self.assertIsNotNone(make_package.js_bundle_contents)
+
+    def test_extract_version_from_url(self):
+        from readalongs.text.make_package import extract_version_from_url
+
+        # Test that the version is extracted correctly from the URL
+        url = "https://unpkg.com/@readalongs/web-component@1.2.3/dist/bundle.js"
+        version = extract_version_from_url(url)
+        self.assertEqual(version, "1.2.3")
+
+        # Test with a URL that doesn't contain a version
+        url = "https://unpkg.com/@readalongs/web-component/dist/bundle.js"
+        with silence_logs():
+            version = extract_version_from_url(url)
+        self.assertEqual(version, "unknown")
 
 
 if __name__ == "__main__":
