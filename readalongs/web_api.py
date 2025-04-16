@@ -20,7 +20,7 @@ environment variables.  This is usually done through an environment variable fil
 (or in a dashboard) and will depend on your hosting environment.
 
 You can also spin up the API server grade (on Linux, not Windows) with gunicorn:
-    pip install -e .[api]
+    pip install -e '.[api]'
     gunicorn -w 4 -k uvicorn.workers.UvicornWorker readalongs.web_api:web_api_app
 
 Once spun up, the documentation and API playground will be visible at

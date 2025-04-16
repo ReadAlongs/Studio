@@ -48,11 +48,12 @@ breaks are marked by two blank lines.
 | `-f, --force-overwrite`        | Force overwrite output files (handy if you're troubleshooting and will be aligning repeatedly)                        |
 | `-h, --help`                   | Displays CLI guide for `make-xml`                                                                                     |
 
-The `-l, --language` argument requires a language’s 3 character [ISO
-code](https://en.wikipedia.org/wiki/ISO_639-3) as an argument.
+The `-l, --language` argument requires a language code, typically a language’s 3
+character [ISO code](https://en.wikipedia.org/wiki/ISO_639-3), as an argument.
+Use `-l und` to use the generic, language-independent mapping.
 
-The languages supported by RAS can be listed by running `readalongs make-xml -h`
-and they can also be found in the [`readalongs make-xml`][readalongs-make-xml] reference.
+The supported languages can be listed by running `readalongs langs`,
+and they can also be found in the [Supported languages][supported-languages] section below.
 
 So, a full command for a story in Algonquin, with an implicit g2p fallback to
 Undetermined, would be something like:
@@ -68,8 +69,6 @@ Lite](https://tei-c.org/guidelines/customization/lite/) but is
 considerably simplified.  The DTD (document type definition) can be
 found in the ReadAlong Studio source code under
 `readalongs/static/read-along-1.2.dtd`.
-
-(dna)=
 
 ### Handling mismatches: do-not-align
 
@@ -161,8 +160,8 @@ The `readalongs langs` command can be used to list all supported languages.
 
 Here is that list at the time of compiling this documentation:
 
-```{eval-rst}
-.. command-output:: readalongs langs
+```bash exec="1" result="text"
+readalongs langs
 ```
 
 See [Adding a new language to g2p][adding-a-new-language-to-g2p] for references on adding new languages to that list.
@@ -173,7 +172,7 @@ Some additional parameters can be specified via a config file: create
 a JSON file called `config.json`, possibly in the same folder as
 your other ReadAlong input files for convenience. The config file
 currently accepts a few components: adding titles and headers, adding
-images to your ReadAlongs, and DNA audio (see {ref}`dna`).
+images to your ReadAlongs, and DNA audio (see [Handling mismatches: do-not-align][handling-mismatches-do-not-align]).
 
 To add a title and headers to the output HTML, you can use the keys
 `"title"`, `"header"`, and `"subheader"`, for example:
@@ -423,7 +422,7 @@ silences for you.
 
 Silences are inserted in the audio stream wherever a `silence` element is
 found in the XML input.
-**TODO say something about how the silence placement determined.**
+*TODO say something about how the silence placement determined.*
 The syntax is like the anchor syntax: `<silence dur="4.2s"/>` or
 `<silence dur="100ms"/>`. Like anchors, silence elements can be inserted
 anywhere.
@@ -451,9 +450,9 @@ Example:
 1. Your read along has a title page that is not read out in the audio stream:
    insert a silence at the beginning so that it stays on the first page for
    the specified time.
-   **TODO: test that a silence before the first word really keeps the RA on the
-   first page during that silence, even if all text on the first page is DNA.**
+   *TODO: test that a silence before the first word really keeps the RA on the
+   first page during that silence, even if all text on the first page is DNA.*
 2. Your read along has a credits page at the end that is not read out in the
    audio stream: insert a silence at the end so that people see that credits
    page for the specified time before the streaming end.
-   **TODO: also test that this use case works as described.**
+   *TODO: also test that this use case works as described.*

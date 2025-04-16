@@ -7,17 +7,17 @@ alignment.
 ## Background
 
 The concept is a web application with a series of stages of processing,
-which ultimately leads to a time-aligned audiobook, i.e., a package of:
+which ultimately leads to a time-aligned audiobook, i.e., a www bundle of:
 
-- ReadAlong XML file describing text
+- ReadAlong XML file describing text and alignment
 - Audio file (WAV or MP3)
 - HTML file describing the web component
 
-Which can be loaded using the [read-along web
+Which is displayed using the [read-along web
 component](https://github.com/ReadAlongs/Studio-Web/tree/main/packages/web-component).
 
-A book is generated as a standalone HTML page by default, but can
-optionally be generated as an ePub file.
+A book is generated as a standalong Offline HTML page and a www bundle by default,
+but can optionally be generated as ELAN, Praat or subtitle files.
 
 ## Required knowledge
 
@@ -35,5 +35,5 @@ In order to create a ReadAlong you will need two files:
 
 The content of the text file should be a transcription of the audio
 file. The audio can be spoken or sung, but if there is background music
-or noise of any kind, the aligner is likely to fail. Clearly enunciated
+or noise of any kind, the aligner might have a harder time. Clearly enunciated
 audio is also likely to increase accuracy.

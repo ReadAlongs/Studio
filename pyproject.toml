@@ -76,9 +76,20 @@ ci = [
     "licensecheck",
 ]
 
+docs = [
+    "mkdocs>=1.6.0",
+    "mkdocs-click>=0.8.1",
+    "mkdocs-material>=9.5.27",
+    "mkdocs-autorefs>=1.0.1",
+    "mkdocstrings[python]>=0.25.1",
+    "markdown-exec[ansi]",
+    "mike>=2.1.1",
+]
+
 all = [
     "readalongs[dev]",
     "readalongs[ci]",
+    "readalongs[docs]",
 ]
 
 [project.scripts]

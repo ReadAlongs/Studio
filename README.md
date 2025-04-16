@@ -58,6 +58,14 @@ Optionally a book can be generated as a standalone HTML page, XHTML, Praat TextG
 
 ## Install
 
+### The short version
+
+Install [FFmpeg](https://ffmpeg.org/) and Python 3.8 or higher.
+
+Run:
+
+    pip install readalongs
+
 ### Installing dependencies
 
 Before you can install the ReadAlong Studio, you will need to install these dependencies:
@@ -118,8 +126,9 @@ If you know what you're doing, you can install the dependencies directly on your
 
 ### Installing ReadAlongs Studio itself
 
-To install the latest version of readalongs published to PyPI, you can run a standard pip
-installation: `pip install readalongs`. Be warned, however, that this project is still very active so the published version could be out-of-date. Consider installing the current development version instead.
+To install the latest published version on PyPI:
+
+    pip install readalongs
 
 To install the current development version, clone the repo and pip install it
 locally:
@@ -134,10 +143,12 @@ $ pip install -e .
 
 Run `readalongs -h` to confirm that installation was successful.
 
-If you installed the current development version with Git, you can also run the full test suite:
+If you installed the current development version with Git, you can also run the
+full test suite (requires installing the dev dependencies):
 
-    cd Studio/test
-    python run.py dev
+    pip install 'readalongs[dev]'  # if you installed from PyPI, or
+    pip install -e '.[dev]'        # if you installed from a local clone
+    python test/run.py dev
 
 And you can download our [open samples on GitHub](https://github.com/ReadAlongs/OpenSamples)
 to run your first alignments.
@@ -187,7 +198,7 @@ This endpoint is a remote procedural call that assembles the data needed to buil
 
 ### Studio web application
 
-The ReadAlong-Studio web interface is available at https://readalong-studio.mothertongues.org/ and the source code is available here: https://github.com/ReadAlongs/Web-Component
+The ReadAlong-Studio web interface is available at https://readalong-studio.mothertongues.org/ and the source code is available here: https://github.com/ReadAlongs/Studio-Web
 
 ### Docker
 
@@ -236,7 +247,7 @@ This repo follows the [Contributor Covenant](http://contributor-covenant.org/ver
 You can install our standard Git hooks by running these commands in your sandbox:
 
 ```sh
-pip install -e .[dev]
+pip install -e '.[dev]'
 pre-commit install
 gitlint install-hook
 ```
@@ -259,9 +270,9 @@ Here is a partial list:
 
 Project web page: [ReadAlong Studio: Application for Indigenous audiobooks and videos project](https://nrc.canada.ca/en/research-development/research-collaboration/programs/readalong-studio)
 
-### Citation
+## Citation
 
-if you use this software in a project of yours and write about it, please cite
+If you use this software in a project of yours and write about it, please cite
 us using the following:
 
 Littell, P., Joanis, E., Pine, A., Tessier, M., Huggins-Daines, D., & Torkornoo, D. (2022). ReadAlong Studio: Practical Zero-Shot Text-Speech Alignment for Indigenous Language Audiobooks. Proceedings of SIGUL2022 @LREC2022, 23–32.
@@ -300,4 +311,4 @@ Aidan Pine, David Huggins-Daines, Eric Joanis, Patrick Littell, Marc Tessier, De
 
 ## License
 
-[MIT](LICENSE) © 2019-2022 David Huggins-Daines and National Research Council Canada
+[MIT](LICENSE) © 2019-2025 David Huggins-Daines and National Research Council Canada

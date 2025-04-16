@@ -13,7 +13,7 @@ It only ever got one contribution, but more can get added here as needed.
 !!! note
     Troubleshooting item under construction
 
-You may get an error that looks like this:![error screen capture](https://i.imgur.com/vKPhTud.png)
+You may get an error that looks like this:![error screen capture](assets/error-screen-capture.png)
 
 The general structure of your error would look like
 `Phone [character] is missing in the acoustic model; word [index] ignored`

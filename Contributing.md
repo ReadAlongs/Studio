@@ -16,7 +16,7 @@ commits.
 Run these commands in each of your sandboxes to enable our pre-commit hooks and commitlint:
 
 ```sh
-pip install -e .[dev]
+pip install -e '.[dev]'
 pre-commit install
 gitlint install-hook
 ```
@@ -52,7 +52,7 @@ We've listed all the developper dependencies for the project in
 [pyproject.toml](pyproject.toml) to make them easy to install:
 
 ```sh
-pip install -e .[dev]
+pip install -e '.[dev]'
 pre-commit install
 ```
 
@@ -114,7 +114,7 @@ commit-msg hook in Git.
 Run this command in your g2p sandbox to install and enable the commit-msg hook:
 
 ```sh
-pip install -e .[dev]
+pip install -e '.[dev]'
 gitlint install-hook
 ```
 
