@@ -479,24 +479,24 @@ mark known anchor points between the audio and text stream.</p>
   -c, --config PATH               Use ReadAlong-Studio configuration file (in
                                   JSON format)
   -o, --output-formats TEXT       Comma- or colon-separated list of additional
-                                  output file formats to export to. The text
-                                  is always exported as XML and alignments as
-                                  SMIL, but one or more of these formats can
-                                  be requested in addition:
+                                  output file formats to export to. The www
+                                  bundle and Offline HTML are always
+                                  generated, but one or more of these formats
+                                  can be requested in addition:
 
-                                  eaf (ELAN file), html (Single-file, offline
-                                  HTML), srt (SRT subtitle), TextGrid (Praat
-                                  TextGrid), vtt (WebVTT subtitle), xhtml
-                                  (Simple XHTML)
+                                  eaf (ELAN file), srt (SRT subtitle),
+                                  TextGrid (Praat TextGrid), vtt (WebVTT
+                                  subtitle), xhtml (Simple XHTML)
   -f, --force-overwrite           Force overwrite output files
   -l, --language, --languages TEXT
                                   The language code(s) for text in TEXTFILE
-                                  (use only with plain text input); multiple
-                                  codes can be joined by ',' or ':', or by
-                                  repeating the option, to enable the g2p
-                                  cascade (run 'readalongs g2p -h' for
-                                  details); run 'readalongs langs' to list all
-                                  supported languages.
+                                  (use only with plain text input); use 'und'
+                                  for the generic language-independent
+                                  mapping; multiple codes can be joined by ','
+                                  or ':', or by repeating the option, to
+                                  enable the g2p cascade (run 'readalongs g2p
+                                  -h' for details); run 'readalongs langs' to
+                                  list all supported languages.
   -m, --align-mode [strict|moderate|loose|auto]
                                   Decoder search parameters: 'strict' means a
                                   narrow beam, fastest but might fail to find
@@ -530,11 +530,13 @@ blank lines.</p>
   -f, --force-overwrite           Force overwrite output files
   -l, --language, --languages TEXT
                                   The language code(s) for text in
-                                  PLAINTEXTFILE; multiple codes can be joined
-                                  by ',' or ':', or by repeating the option,
-                                  to enable the g2p cascade (run 'readalongs
-                                  g2p -h' for details); run 'readalongs langs'
-                                  to list all supported languages.  [required]
+                                  PLAINTEXTFILE; use 'und' for the generic
+                                  language-independent mapping; multiple codes
+                                  can be joined by ',' or ':', or by repeating
+                                  the option, to enable the g2p cascade (run
+                                  'readalongs g2p -h' for details); run
+                                  'readalongs langs' to list all supported
+                                  languages.  [required]
   --help                          Show this message and exit.
 </code></pre>
 <h1 id="readalongs-tokenize">readalongs tokenize</h1>
