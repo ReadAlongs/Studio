@@ -6,6 +6,8 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
+        <meta name="description" content="Documentation for the ReadAlong-Studio: Audiobook alignment for Indigenous languages">
+      
       
       
       
@@ -42,6 +44,10 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
+    
+      <link rel="stylesheet" href="../assets/_markdown_exec_pyodide.css">
+    
+      <link rel="stylesheet" href="../assets/_markdown_exec_ansi.css">
     
       <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
@@ -157,6 +163,18 @@
       
     
     
+      <div class="md-header__source">
+        <a href="https://github.com/ReadAlongs/Studio" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
   </nav>
   
 </header>
@@ -190,6 +208,18 @@
     </a>
     ReadAlong-Studio
   </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ReadAlongs/Studio" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
   
   <ul class="md-nav__list" data-md-scrollfix>
     
@@ -618,6 +648,9 @@
                   
 
 
+  
+  
+
 
 <h1 id="advanced-topics">Advanced topics</h1>
 <h2 id="adding-a-new-language-to-g2p">Adding a new language to g2p</h2>
@@ -647,26 +680,26 @@ sometimes improves the performance of the aligner. We do this using the
 pip-installed. Keep in mind that Pydub uses milliseconds.</p>
 <p>If your data is currently 1 audio file, you will need to split it into
 segments where you want to put the silences.</p>
-<pre><code class="language-py">ten_seconds = 10 * 1000
-first_10_seconds = soundtrack[:ten_seconds]
-last_5_seconds = soundtrack[-5000:]
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">ten_seconds</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">*</span> <span class="mi">1000</span>
+<span class="n">first_10_seconds</span> <span class="o">=</span> <span class="n">soundtrack</span><span class="p">[:</span><span class="n">ten_seconds</span><span class="p">]</span>
+<span class="n">last_5_seconds</span> <span class="o">=</span> <span class="n">soundtrack</span><span class="p">[</span><span class="o">-</span><span class="mi">5000</span><span class="p">:]</span>
+</code></pre></div>
 <p>Once you have your segments, create an MP3 file containing only 1 second
 of silence.</p>
-<pre><code class="language-py">from pydub import AudioSegment
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">pydub</span><span class="w"> </span><span class="kn">import</span> <span class="n">AudioSegment</span>
 
-wfile = &quot;appended_1000ms.mp3&quot;
-silence = AudioSegment.silent(duration=1000)
-soundtrack = silence
-</code></pre>
+<span class="n">wfile</span> <span class="o">=</span> <span class="s2">&quot;appended_1000ms.mp3&quot;</span>
+<span class="n">silence</span> <span class="o">=</span> <span class="n">AudioSegment</span><span class="o">.</span><span class="n">silent</span><span class="p">(</span><span class="n">duration</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">soundtrack</span> <span class="o">=</span> <span class="n">silence</span>
+</code></pre></div>
 <p>Then you loop the audio files you want to append (segments and silence).</p>
-<pre><code class="language-py">seg = AudioSegment.from_mp3(mp3file)
-soundtrack = soundtrack + silence + seg
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">seg</span> <span class="o">=</span> <span class="n">AudioSegment</span><span class="o">.</span><span class="n">from_mp3</span><span class="p">(</span><span class="n">mp3file</span><span class="p">)</span>
+<span class="n">soundtrack</span> <span class="o">=</span> <span class="n">soundtrack</span> <span class="o">+</span> <span class="n">silence</span> <span class="o">+</span> <span class="n">seg</span>
+</code></pre></div>
 <p>Write the soundtrack file as an MP3. This will then be the audio input
 for your Read-Along.</p>
-<pre><code class="language-py">soundtrack.export(wfile, format=&quot;mp3&quot;)
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">soundtrack</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">wfile</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;mp3&quot;</span><span class="p">)</span>
+</code></pre></div>
 <h3 id="text-pre-processing">Text pre-processing</h3>
 <h4 id="numbers">Numbers</h4>
 <p>ReadAlong Studio cannot align numbers written as digits (ex. "123").
@@ -677,9 +710,9 @@ file.</p>
 of their supported languages), consider adding a library like
 <a href="https://github.com/savoirfairelinux/num2words">num2words</a> to your
 pre-processing.</p>
-<pre><code class="language-txt">num2words 123456789
+<div class="highlight"><pre><span></span><code>num2words 123456789
 one hundred and twenty-three million, four hundred and fifty-six thousand, seven hundred and eighty-nine
-</code></pre>
+</code></pre></div>
 
 
 
@@ -704,9 +737,53 @@ one hundred and twenty-three million, four hundred and fifty-six thousand, seven
       
         <footer class="md-footer">
   
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../outputs/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Output Realizations">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Output Realizations
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../troubleshooting/" class="md-footer__link md-footer__link--next" aria-label="Next: Troubleshooting">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Troubleshooting
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
       <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright ©2019-2025 David Huggins-Daines and National Research Council Canada
+    </div>
   
   
     Made with
@@ -728,10 +805,12 @@ one hundred and twenty-three million, four hundred and fifty-six thousand, seven
     
     
       
-      <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "navigation.instant"], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "navigation.instant", "navigation.footer"], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
     
     
       <script src="../assets/javascripts/bundle.c8b220af.min.js"></script>
+      
+        <script src="../assets/_markdown_exec_pyodide.js"></script>
       
     
   </body>

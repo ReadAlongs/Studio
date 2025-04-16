@@ -6,6 +6,8 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
+        <meta name="description" content="Documentation for the ReadAlong-Studio: Audiobook alignment for Indigenous languages">
+      
       
       
       
@@ -42,6 +44,10 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
+    
+      <link rel="stylesheet" href="../assets/_markdown_exec_pyodide.css">
+    
+      <link rel="stylesheet" href="../assets/_markdown_exec_ansi.css">
     
       <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
@@ -157,6 +163,18 @@
       
     
     
+      <div class="md-header__source">
+        <a href="https://github.com/ReadAlongs/Studio" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
   </nav>
   
 </header>
@@ -190,6 +208,18 @@
     </a>
     ReadAlong-Studio
   </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ReadAlongs/Studio" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
   
   <ul class="md-nav__list" data-md-scrollfix>
     
@@ -840,6 +870,9 @@
                   
 
 
+  
+  
+
 
 <h1 id="command-line-interface-cli-user-guide">Command line interface (CLI) user guide</h1>
 <p>This page contains guidelines on using the ReadAlongs CLI. See also
@@ -886,7 +919,7 @@ breaks are marked by two blank lines.</p>
 <tbody>
 <tr>
 <td><code>-l, --language(s)</code> (required)</td>
-<td>The language code for story.txt. Specifying multiple comma- or colon-separated languages triggers the <a class="autorefs autorefs-internal" href="#the-g2p-cascade">g2p cascade</a>.</td>
+<td>The language code for story.txt. Specifying multiple comma- or colon-separated languages triggers the <a class="autorefs autorefs-internal" title="The g2p cascade" href="#the-g2p-cascade">g2p cascade</a>.</td>
 </tr>
 <tr>
 <td><code>-f, --force-overwrite</code></td>
@@ -898,10 +931,11 @@ breaks are marked by two blank lines.</p>
 </tr>
 </tbody>
 </table>
-<p>The <code>-l, --language</code> argument requires a language’s 3 character <a href="https://en.wikipedia.org/wiki/ISO_639-3">ISO
-code</a> as an argument.</p>
-<p>The languages supported by RAS can be listed by running <code>readalongs make-xml -h</code>
-and they can also be found in the <a class="autorefs autorefs-internal" href="../cli-ref/#readalongs-make-xml"><code>readalongs make-xml</code></a> reference.</p>
+<p>The <code>-l, --language</code> argument requires a language code, typically a language’s 3
+character <a href="https://en.wikipedia.org/wiki/ISO_639-3">ISO code</a>, as an argument.
+Use <code>-l und</code> to use the generic, language-independent mapping.</p>
+<p>The supported languages can be listed by running <code>readalongs langs</code>,
+and they can also be found in the <a class="autorefs autorefs-internal" href="#supported-languages">Supported languages</a> section below.</p>
 <p>So, a full command for a story in Algonquin, with an implicit g2p fallback to
 Undetermined, would be something like:</p>
 <p><code>readalongs make-xml -l alq Studio/story.txt Studio/story.readalong</code></p>
@@ -913,23 +947,22 @@ Lite</a> but is
 considerably simplified.  The DTD (document type definition) can be
 found in the ReadAlong Studio source code under
 <code>readalongs/static/read-along-1.2.dtd</code>.</p>
-<p>(dna)=</p>
 <h3 id="handling-mismatches-do-not-align">Handling mismatches: do-not-align</h3>
 <p>There are two types of "do-not-align" (DNA) content: DNA audio and DNA text.</p>
 <p>To use DNA text, add <code>do-not-align</code> as an attribute to any
 element in the xml (word, sentence, paragraph, or page).</p>
-<pre><code>&lt;w do-not-align=&quot;true&quot; id=&quot;t0b0d0p0s0w0&quot;&gt;dog&lt;/w&gt;
-</code></pre>
+<div class="highlight"><pre><span></span><code>&lt;w do-not-align=&quot;true&quot; id=&quot;t0b0d0p0s0w0&quot;&gt;dog&lt;/w&gt;
+</code></pre></div>
 <p>If you have already run <code>readalongs make-xml</code>, there will be
 documentation for DNA text in comments at the beginning of the generated
 xml file.</p>
-<pre><code>&lt;!-- To exclude any element from alignment, add the do-not-align=&quot;true&quot; attribute to
+<div class="highlight"><pre><span></span><code>&lt;!-- To exclude any element from alignment, add the do-not-align=&quot;true&quot; attribute to
      it, e.g., &lt;p do-not-align=&quot;true&quot;&gt;...&lt;/p&gt;, or
      &lt;s&gt;Some text &lt;foo do-not-align=&quot;true&quot;&gt;do not align this&lt;/foo&gt; more text&lt;/s&gt; --&gt;
-</code></pre>
+</code></pre></div>
 <p>To use DNA audio, you can specify a timeframe in milliseconds in the
 <code>config.json</code> file which you want the aligner to ignore.</p>
-<pre><code>&quot;do-not-align&quot;:
+<div class="highlight"><pre><span></span><code>&quot;do-not-align&quot;:
     {
     &quot;method&quot;: &quot;remove&quot;,
     &quot;segments&quot;:
@@ -940,7 +973,7 @@ xml file.</p>
         }
     ]
     }
-</code></pre>
+</code></pre></div>
 <h4 id="use-cases-for-dna">Use cases for DNA</h4>
 <ul>
 <li>Spoken introduction in the audio file that has no accompanying text
@@ -967,7 +1000,7 @@ created, as <code>output_base*</code></p>
 <tbody>
 <tr>
 <td><code>-l, --language(s)</code></td>
-<td>The language code for story.txt. Specifying multiple comma- or colon-separated languages triggers the <a class="autorefs autorefs-internal" href="#the-g2p-cascade">g2p cascade</a>. (required if input is plain text)</td>
+<td>The language code for story.txt. Specifying multiple comma- or colon-separated languages triggers the <a class="autorefs autorefs-internal" title="The g2p cascade" href="#the-g2p-cascade">g2p cascade</a>. (required if input is plain text)</td>
 </tr>
 <tr>
 <td><code>-c, --config PATH</code></td>
@@ -1005,30 +1038,74 @@ created, as <code>output_base*</code></p>
 <h2 id="supported-languages">Supported languages</h2>
 <p>The <code>readalongs langs</code> command can be used to list all supported languages.</p>
 <p>Here is that list at the time of compiling this documentation:</p>
-<pre><code>.. command-output:: readalongs langs
-</code></pre>
+<div class="highlight"><pre><span></span><code>alq         Algonquin
+atj         Atikamekw
+ckt         Chukchi
+clm         Klallam
+crg-dv      Michif
+crg-tmd     Michif
+crj         East Cree, Southern
+crk         Plains Cree
+crl         East Cree, Northern
+crm         Moose Cree
+csw         Swampy Cree
+ctp         Western Highland Chatino
+dan         Danish
+eng         English
+fin         Finnish
+fra         French
+git         Gitksan
+gla         Scottish Gaelic
+gwi         Gwich&#39;in
+haa         Hän
+ikt         Inuktut, Western
+iku         Inuktitut Syllabics
+iku-sro     Inuktitut Romanized
+kkz         Kaska
+kwk-boas    Kwak&#39;wala (Boas orthography)
+kwk-napa    Kwak&#39;wala (NAPA orthography)
+kwk-umista  Kwak&#39;wala (U&#39;mista orthography)
+lml         Raga
+mic         Mi&#39;kmaq
+moe         Innu-aimun
+moh         Kanien&#39;kéha
+oji         Ojibwe
+oji-syl     Ojibwe Syllabics
+oka         nsyilxcən
+sal-apa     Salishan languages with APA-based writing systems
+see         Seneca
+srs         Tsuut&#39;ina
+str         SENĆOŦEN
+tau         Upper Tanana
+tce         Southern Tutchone
+tgx         Tagish
+tli         Tlingit
+ttm         Northern Tutchone
+und         Undetermined
+win         Hoocąk
+</code></pre></div>
 <p>See <a class="autorefs autorefs-internal" href="../advanced-use/#adding-a-new-language-to-g2p">Adding a new language to g2p</a> for references on adding new languages to that list.</p>
 <h2 id="adding-titles-images-and-do-not-align-segments-via-the-configjson-file">Adding titles, images and do-not-align segments via the config.json file</h2>
 <p>Some additional parameters can be specified via a config file: create
 a JSON file called <code>config.json</code>, possibly in the same folder as
 your other ReadAlong input files for convenience. The config file
 currently accepts a few components: adding titles and headers, adding
-images to your ReadAlongs, and DNA audio (see {ref}<code>dna</code>).</p>
+images to your ReadAlongs, and DNA audio (see <a class="autorefs autorefs-internal" href="#handling-mismatches-do-not-align">Handling mismatches: do-not-align</a>).</p>
 <p>To add a title and headers to the output HTML, you can use the keys
 <code>"title"</code>, <code>"header"</code>, and <code>"subheader"</code>, for example:</p>
-<pre><code>{
+<div class="highlight"><pre><span></span><code>{
   &quot;title&quot;: &quot;My awesome read-along&quot;,
   &quot;header&quot;: &quot;A story in my language&quot;,
   &quot;subheader&quot;: &quot;Read by me&quot;
 }
-</code></pre>
+</code></pre></div>
 <p>To add images, indicate the page number as the key, and the name of the image
 file as the value, as an entry in the <code>"images"</code> dictionary.</p>
-<pre><code>{ &quot;images&quot;: { &quot;0&quot;: &quot;p1.jpg&quot;, &quot;1&quot;: &quot;p2.jpg&quot; } }
-</code></pre>
+<div class="highlight"><pre><span></span><code>{ &quot;images&quot;: { &quot;0&quot;: &quot;p1.jpg&quot;, &quot;1&quot;: &quot;p2.jpg&quot; } }
+</code></pre></div>
 <p>Both images and DNA audio can be specified in the same config file, such
 as in the example below:</p>
-<pre><code>{
+<div class="highlight"><pre><span></span><code>{
     &quot;images&quot;:
         {
             &quot;0&quot;: &quot;image-for-page1.jpg&quot;,
@@ -1047,7 +1124,7 @@ as in the example below:</p>
             ]
         }
 }
-</code></pre>
+</code></pre></div>
 <p>Warning: mind your commas! The JSON format is very picky: commas
 separate elements in a list or dictionnary, but if you accidentally have
 a comma after the last element (e.g., by cutting and pasting whole
@@ -1061,13 +1138,13 @@ so the system will not be able to proceed to alignment by the
 aligner, SoundSwallower.</p>
 <p>If you know the language for that text, you can mark it as such in the
 XML. E.g.:</p>
-<pre><code class="language-xml">&lt;s xml:lang=&quot;eng&quot;&gt;This sentence is in English.&lt;/s&gt;
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="nt">&lt;s</span><span class="w"> </span><span class="na">xml:lang=</span><span class="s">&quot;eng&quot;</span><span class="nt">&gt;</span>This<span class="w"> </span>sentence<span class="w"> </span>is<span class="w"> </span>in<span class="w"> </span>English.<span class="nt">&lt;/s&gt;</span>
+</code></pre></div>
 <p>The <code>xml:lang</code> attribute can be added to any element in the XML structure
 and will apply to text at any depth within that element, unless the
 attribute is specified again at a deeper level, e.g.:</p>
-<pre><code class="language-xml">&lt;s xml:lang=&quot;eng&quot;&gt;English mixed with &lt;foo xml:lang=&quot;fra&quot;&gt;français&lt;/foo&gt;.&lt;/s&gt;
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="nt">&lt;s</span><span class="w"> </span><span class="na">xml:lang=</span><span class="s">&quot;eng&quot;</span><span class="nt">&gt;</span>English<span class="w"> </span>mixed<span class="w"> </span>with<span class="w"> </span><span class="nt">&lt;foo</span><span class="w"> </span><span class="na">xml:lang=</span><span class="s">&quot;fra&quot;</span><span class="nt">&gt;</span>français<span class="nt">&lt;/foo&gt;</span>.<span class="nt">&lt;/s&gt;</span>
+</code></pre></div>
 <p>There is also a simpler option available: the g2p cascade. When the g2p
 cascade is enabled, the g2p mapping will be done by first trying the
 language specified by the <code>xml:lang</code> attribute in the XML file
@@ -1080,13 +1157,13 @@ possible, are error message is printed and alignment is not attempted.</p>
 <p>To enable the g2p cascade, provide multiple languages via the <code>-l</code> switch
 (for plain text input) or add the <code>fallback-langs="l2,l3,...</code> attribute to
 any element in the XML file:</p>
-<pre><code class="language-xml">&lt;s xml:lang=&quot;eng&quot; fallback-langs=&quot;fra,und&quot;&gt;English mixed with français.&lt;/s&gt;
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="nt">&lt;s</span><span class="w"> </span><span class="na">xml:lang=</span><span class="s">&quot;eng&quot;</span><span class="w"> </span><span class="na">fallback-langs=</span><span class="s">&quot;fra,und&quot;</span><span class="nt">&gt;</span>English<span class="w"> </span>mixed<span class="w"> </span>with<span class="w"> </span>français.<span class="nt">&lt;/s&gt;</span>
+</code></pre></div>
 <p>These command line examples will set the language to <code>fra</code>, with the g2p cascade
 falling back to <code>eng</code> and then <code>und</code> (see below) when needed.</p>
-<pre><code class="language-bash">readalongs make-xml -l fra,eng myfile.txt myfile.readalong
-readalongs align -l fra,eng myfile.txt myfile.wav output-dir
-</code></pre>
+<div class="highlight"><pre><span></span><code>readalongs<span class="w"> </span>make-xml<span class="w"> </span>-l<span class="w"> </span>fra,eng<span class="w"> </span>myfile.txt<span class="w"> </span>myfile.readalong
+readalongs<span class="w"> </span>align<span class="w"> </span>-l<span class="w"> </span>fra,eng<span class="w"> </span>myfile.txt<span class="w"> </span>myfile.wav<span class="w"> </span>output-dir
+</code></pre></div>
 <h3 id="the-undetermined-language-code-und">The "Undetermined" language code: und</h3>
 <p>Notice how the sample XML snippet above has <code>und</code> as the last language in the
 cascade. <code>und</code>, for Undetermined, is a special language mapping that
@@ -1116,14 +1193,14 @@ attempted.</p>
 <p>Some commands were added to the CLI in the last year to break processing up step
 by step.</p>
 <p>The following series of commands:</p>
-<pre><code>readalongs make-xml -l l1,l2 file.txt file.readalong
+<div class="highlight"><pre><span></span><code>readalongs make-xml -l l1,l2 file.txt file.readalong
 readalongs tokenize file.readalong file.tokenized.readalong
 readalongs g2p file.tokenized.readalong file.g2p.readalong
 readalongs align file.g2p.readalong file.wav output
-</code></pre>
+</code></pre></div>
 <p>is equivalent to the single command:</p>
-<pre><code>readalongs align -l l1,l2 file.txt file.wav output
-</code></pre>
+<div class="highlight"><pre><span></span><code>readalongs align -l l1,l2 file.txt file.wav output
+</code></pre></div>
 <p>except that when running the pipeline as four separate commands, you can
 edit the XML files between each step to make manual adjustments and
 corrections if you want, like inserting anchors, silences, changing the
@@ -1143,20 +1220,20 @@ is the default) or milliseconds.</p>
 <p>Anchors can be placed anywhere in the XML file: between/before/after any
 element or text.</p>
 <p>Example:</p>
-<pre><code class="language-xml">&lt;?xml version='1.0' encoding='utf-8'?&gt;
-&lt;read-along version=&quot;1.0&quot;&gt; &lt;text xml:lang=&quot;eng&quot;&gt; &lt;body&gt;
-    &lt;anchor time=&quot;143ms&quot;/&gt;
-    &lt;div type=&quot;page&quot;&gt;
-    &lt;p&gt;
-        &lt;s&gt;Hello.&lt;/s&gt;
-        &lt;anchor time=&quot;1.62s&quot;/&gt;
-        &lt;s&gt;This is &lt;anchor time=&quot;3.81s&quot;/&gt; &lt;anchor time=&quot;3.94s&quot;/&gt; a test&lt;/s&gt;
-        &lt;s&gt;&lt;anchor time=&quot;4123ms&quot;/&gt;weirdword&lt;anchor time=&quot;4789ms&quot;/&gt;&lt;/s&gt;
-    &lt;/p&gt;
-    &lt;/div&gt;
-    &lt;anchor time=&quot;6.74s&quot;/&gt;
-&lt;/body&gt; &lt;/text&gt; &lt;/read-along&gt;
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="cp">&lt;?xml version=&#39;1.0&#39; encoding=&#39;utf-8&#39;?&gt;</span>
+<span class="nt">&lt;read-along</span><span class="w"> </span><span class="na">version=</span><span class="s">&quot;1.0&quot;</span><span class="nt">&gt;</span><span class="w"> </span><span class="nt">&lt;text</span><span class="w"> </span><span class="na">xml:lang=</span><span class="s">&quot;eng&quot;</span><span class="nt">&gt;</span><span class="w"> </span><span class="nt">&lt;body&gt;</span>
+<span class="w">    </span><span class="nt">&lt;anchor</span><span class="w"> </span><span class="na">time=</span><span class="s">&quot;143ms&quot;</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;div</span><span class="w"> </span><span class="na">type=</span><span class="s">&quot;page&quot;</span><span class="nt">&gt;</span>
+<span class="w">    </span><span class="nt">&lt;p&gt;</span>
+<span class="w">        </span><span class="nt">&lt;s&gt;</span>Hello.<span class="nt">&lt;/s&gt;</span>
+<span class="w">        </span><span class="nt">&lt;anchor</span><span class="w"> </span><span class="na">time=</span><span class="s">&quot;1.62s&quot;</span><span class="nt">/&gt;</span>
+<span class="w">        </span><span class="nt">&lt;s&gt;</span>This<span class="w"> </span>is<span class="w"> </span><span class="nt">&lt;anchor</span><span class="w"> </span><span class="na">time=</span><span class="s">&quot;3.81s&quot;</span><span class="nt">/&gt;</span><span class="w"> </span><span class="nt">&lt;anchor</span><span class="w"> </span><span class="na">time=</span><span class="s">&quot;3.94s&quot;</span><span class="nt">/&gt;</span><span class="w"> </span>a<span class="w"> </span>test<span class="nt">&lt;/s&gt;</span>
+<span class="w">        </span><span class="nt">&lt;s&gt;&lt;anchor</span><span class="w"> </span><span class="na">time=</span><span class="s">&quot;4123ms&quot;</span><span class="nt">/&gt;</span>weirdword<span class="nt">&lt;anchor</span><span class="w"> </span><span class="na">time=</span><span class="s">&quot;4789ms&quot;</span><span class="nt">/&gt;&lt;/s&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/p&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/div&gt;</span>
+<span class="w">    </span><span class="nt">&lt;anchor</span><span class="w"> </span><span class="na">time=</span><span class="s">&quot;6.74s&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/body&gt;</span><span class="w"> </span><span class="nt">&lt;/text&gt;</span><span class="w"> </span><span class="nt">&lt;/read-along&gt;</span>
+</code></pre></div>
 <h3 id="anchor-semantics">Anchor semantics</h3>
 <p>When anchors are used, the alignment task is divided at each anchor,
 creating a series of segments that are aligned independently from one
@@ -1206,36 +1283,36 @@ silences for you.</p>
 <h3 id="silence-syntax">Silence syntax</h3>
 <p>Silences are inserted in the audio stream wherever a <code>silence</code> element is
 found in the XML input.
-<strong>TODO say something about how the silence placement determined.</strong>
+<em>TODO say something about how the silence placement determined.</em>
 The syntax is like the anchor syntax: <code>&lt;silence dur="4.2s"/&gt;</code> or
 <code>&lt;silence dur="100ms"/&gt;</code>. Like anchors, silence elements can be inserted
 anywhere.</p>
 <p>Example:</p>
-<pre><code class="language-xml">&lt;?xml version='1.0' encoding='utf-8'?&gt;
-&lt;read-along version=&quot;1.0&quot;&gt; &lt;text xml:lang=&quot;eng&quot;&gt; &lt;body&gt;
-    &lt;silence dur=&quot;1s&quot;/&gt;
-    &lt;div type=&quot;page&quot;&gt;
-    &lt;p&gt;
-        &lt;s&gt;Hello.&lt;/s&gt;
-        &lt;silence dur=&quot;10s&quot;/&gt;
-        &lt;s&gt;After this pregnant pause, &lt;silence dur=&quot;100ms&quot;/&gt; we'll pause
-           again before it's all over!&lt;/s&gt;
-    &lt;/p&gt;
-    &lt;silence dur=&quot;1s&quot;/&gt;
-    &lt;/div&gt;
-&lt;/body&gt; &lt;/text&gt; &lt;/read-along&gt;
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="cp">&lt;?xml version=&#39;1.0&#39; encoding=&#39;utf-8&#39;?&gt;</span>
+<span class="nt">&lt;read-along</span><span class="w"> </span><span class="na">version=</span><span class="s">&quot;1.0&quot;</span><span class="nt">&gt;</span><span class="w"> </span><span class="nt">&lt;text</span><span class="w"> </span><span class="na">xml:lang=</span><span class="s">&quot;eng&quot;</span><span class="nt">&gt;</span><span class="w"> </span><span class="nt">&lt;body&gt;</span>
+<span class="w">    </span><span class="nt">&lt;silence</span><span class="w"> </span><span class="na">dur=</span><span class="s">&quot;1s&quot;</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;div</span><span class="w"> </span><span class="na">type=</span><span class="s">&quot;page&quot;</span><span class="nt">&gt;</span>
+<span class="w">    </span><span class="nt">&lt;p&gt;</span>
+<span class="w">        </span><span class="nt">&lt;s&gt;</span>Hello.<span class="nt">&lt;/s&gt;</span>
+<span class="w">        </span><span class="nt">&lt;silence</span><span class="w"> </span><span class="na">dur=</span><span class="s">&quot;10s&quot;</span><span class="nt">/&gt;</span>
+<span class="w">        </span><span class="nt">&lt;s&gt;</span>After<span class="w"> </span>this<span class="w"> </span>pregnant<span class="w"> </span>pause,<span class="w"> </span><span class="nt">&lt;silence</span><span class="w"> </span><span class="na">dur=</span><span class="s">&quot;100ms&quot;</span><span class="nt">/&gt;</span><span class="w"> </span>we&#39;ll<span class="w"> </span>pause
+<span class="w">           </span>again<span class="w"> </span>before<span class="w"> </span>it&#39;s<span class="w"> </span>all<span class="w"> </span>over!<span class="nt">&lt;/s&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/p&gt;</span>
+<span class="w">    </span><span class="nt">&lt;silence</span><span class="w"> </span><span class="na">dur=</span><span class="s">&quot;1s&quot;</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;/div&gt;</span>
+<span class="nt">&lt;/body&gt;</span><span class="w"> </span><span class="nt">&lt;/text&gt;</span><span class="w"> </span><span class="nt">&lt;/read-along&gt;</span>
+</code></pre></div>
 <h3 id="silence-use-cases">Silence use cases</h3>
 <ol>
 <li>Your read along has a title page that is not read out in the audio stream:
    insert a silence at the beginning so that it stays on the first page for
    the specified time.
-   <strong>TODO: test that a silence before the first word really keeps the RA on the
-   first page during that silence, even if all text on the first page is DNA.</strong></li>
+   <em>TODO: test that a silence before the first word really keeps the RA on the
+   first page during that silence, even if all text on the first page is DNA.</em></li>
 <li>Your read along has a credits page at the end that is not read out in the
    audio stream: insert a silence at the end so that people see that credits
    page for the specified time before the streaming end.
-   <strong>TODO: also test that this use case works as described.</strong></li>
+   <em>TODO: also test that this use case works as described.</em></li>
 </ol>
 
 
@@ -1261,9 +1338,53 @@ anywhere.</p>
       
         <footer class="md-footer">
   
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../web-app/" class="md-footer__link md-footer__link--prev" aria-label="Previous: The Web App">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                The Web App
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../cli-ref/" class="md-footer__link md-footer__link--next" aria-label="Next: CLI reference">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                CLI reference
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
       <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright ©2019-2025 David Huggins-Daines and National Research Council Canada
+    </div>
   
   
     Made with
@@ -1285,10 +1406,12 @@ anywhere.</p>
     
     
       
-      <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "navigation.instant"], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"base": "..", "features": ["content.code.copy", "navigation.instant", "navigation.footer"], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
     
     
       <script src="../assets/javascripts/bundle.c8b220af.min.js"></script>
+      
+        <script src="../assets/_markdown_exec_pyodide.js"></script>
       
     
   </body>
