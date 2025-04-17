@@ -215,23 +215,23 @@ To build the Docker image, run:
 
     docker build . --tag=readalong-studio
 
-To run the Flask web app in a Docker container using that image:
+To run the web API in a Docker container using that image:
 
-    docker run -p 5000:5000 -it readalong-studio
+    docker run -p 8000:8000 -it readalong-studio
 
-To run the Flask web app with real-time update:
+To run the web API with real-time updates:
 
-    docker run -p 5000:5000 -it -v $(pwd):/opt/readalong-studio readalong-studio
+    docker run -p 8000:8000 -it -v $(pwd):/opt/readalong-studio readalong-studio
 
-Then you should be able to visit http://localhost:5000/.
+Then you should be able to test the API at http://localhost:8000/api/v1/docs.
 
-To run the interactive shell with real-time update:
+To run the interactive shell with real-time updates:
 
-    docker run -p 5000:5000 -it -v $(pwd):/opt/readalong-studio readalong-studio sh
+    docker run -p 8000:8000 -it -v $(pwd):/opt/readalong-studio readalong-studio sh
 
-To run an interactive bash shell, using your local user inside Docker:
+To run an interactive shell, using your local user inside Docker:
 
-    docker run -p 5000:5000 -it -v $(pwd):/opt/readalong-studio -u $(id -u):$(id -g) readalong-studio bash
+    docker run -p 8000:8000 -it -v $(pwd):/opt/readalong-studio -u $(id -u):$(id -g) readalong-studio sh
 
 ## Maintainers
 
