@@ -66,13 +66,15 @@ Run:
 
     pip install readalongs
 
+### The long version
+
 ### Installing dependencies
 
 Before you can install the ReadAlong Studio, you will need to install these dependencies:
 
  - Python, version 3.8 or higher,
  - [FFmpeg](https://ffmpeg.org/),
- - a C compiler,
+ - a C compiler (sometimes required for some dependant libraries),
  - Git (optional, needed to get the current development version).
 
 #### Dependencies on MacOS
