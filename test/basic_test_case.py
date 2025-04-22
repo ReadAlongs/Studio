@@ -10,7 +10,10 @@ from unittest import TestCase
 
 from click.testing import CliRunner
 
+import readalongs.text.make_package as make_package
 from readalongs.log import LOGGER
+
+make_package.FETCH_BUNDLE_TIMEOUT_SECONDS = 5  # shorter timeout for testing
 
 
 class BasicTestCase(TestCase):

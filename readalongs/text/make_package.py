@@ -160,6 +160,9 @@ def extract_version_from_url(url: str) -> str:
         return "unknown"
 
 
+FETCH_BUNDLE_TIMEOUT_SECONDS = 10
+
+
 def fetch_bundle_file(url: str, filename: str, prev_status_code: Any):
     """Fetch either of the online bundles, or their on-disk fallback if needed."""
     import requests  # Defer expensive import
@@ -170,7 +173,7 @@ def fetch_bundle_file(url: str, filename: str, prev_status_code: Any):
     # download attempt to fail when, e.g., they don't have web access enabled.
     if prev_status_code in (None, 200):
         try:
-            get_result = requests.get(url, timeout=5)
+            get_result = requests.get(url, timeout=FETCH_BUNDLE_TIMEOUT_SECONDS)
             status_code: Any = get_result.status_code
         except requests.exceptions.RequestException as e:
             LOGGER.warning(e)
