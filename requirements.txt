@@ -57,7 +57,7 @@ g2p @ git+https://github.com/roedoejet/g2p.git@main
 
 gunicorn==23.0.0 ; platform_system != "Windows"
     # via hatch.envs.prod
-h11==0.14.0
+h11==0.16.0
     # via uvicorn
 humanfriendly==10.0
     # via coloredlogs
