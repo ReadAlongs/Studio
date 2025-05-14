@@ -103,6 +103,9 @@ include = [
     "/readalongs",
 ]
 
+[tool.hatch.env]
+requires = [ "hatch-pip-compile" ]
+
 [tool.hatch.envs.prod]
 features = [ "api" ]
 type = "pip-compile"
