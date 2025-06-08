@@ -65,7 +65,7 @@ edit the XML to have any modifications, such as adding `do-not-align`
 as an attribute of any element in your XML.
 
 The format of the generated XML is based on [TEI
-Lite](https://tei-c.org/guidelines/customization/lite/) but is
+Lite](https://old.tei-c.org/guidelines/customization/lite/) but is
 considerably simplified.  The DTD (document type definition) can be
 found in the ReadAlong Studio source code under
 `readalongs/static/read-along-1.2.dtd`.
