@@ -10,6 +10,7 @@ from unittest import main
 from unittest.mock import patch
 
 from basic_test_case import BasicTestCase
+from packaging.version import Version
 
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.log import LOGGER
@@ -38,7 +39,7 @@ class TestWebApi(BasicTestCase):
             return (
                 f.read()
                 .strip()
-                .replace("{{format_version}}", READALONG_FILE_FORMAT_VERSION)
+                .replace("{{format_version}}", "1.2")
                 .replace("{{studio_version}}", VERSION)
             )
 
@@ -75,7 +76,14 @@ class TestWebApi(BasicTestCase):
         }
         with redirect_stderr(StringIO()):
             response = self.API_CLIENT.post("/api/v1/assemble", json=request)
+
         self.assertEqual(response.status_code, 200)
+
+        # verify the xml document was migrated to the most recent DTD version.
+        if Version(READALONG_FILE_FORMAT_VERSION) >= Version("1.2.1"):
+            ras_text = response.json()["processed_ras"]
+            xml = parse_xml(ras_text)
+            self.assertEqual(xml.get("version"), READALONG_FILE_FORMAT_VERSION)
 
     def test_illformed_xml(self):
         # Test the assemble endpoint with ill-formed XML
@@ -276,7 +284,7 @@ class TestWebApi(BasicTestCase):
 
     hej_verden_xml = dedent(
         """<?xml version='1.0' encoding='utf-8'?>
-        <read-along version="%s">
+        <read-along version="1.2">
     <meta name="generator" content="@readalongs/studio (cli) %s"/>
             <text xml:lang="dan" fallback-langs="und" id="t0">
                 <body id="t0b0">
@@ -292,7 +300,7 @@ class TestWebApi(BasicTestCase):
             </text>
         </read-along>
         """
-        % (READALONG_FILE_FORMAT_VERSION, VERSION)
+        % (VERSION)
     )
 
     def test_convert_to_TextGrid(self):
@@ -521,7 +529,7 @@ class TestWebApi(BasicTestCase):
         # also making sure the temporary directory gets deleted.
         overlap_xml = dedent(
             """<?xml version='1.0' encoding='utf-8'?>
-        <read-along version="%s">
+        <read-along version="1.2">
     <meta name="generator" content="@readalongs/studio (cli) %s"/>
             <text xml:lang="dan" fallback-langs="und" id="t0">
                 <body id="t0b0">
@@ -537,7 +545,7 @@ class TestWebApi(BasicTestCase):
             </text>
         </read-along>
             """
-            % (READALONG_FILE_FORMAT_VERSION, VERSION)
+            % (VERSION)
         )
         request = {
             "dur": 83.1,
