@@ -18,7 +18,7 @@ from copy import deepcopy
 
 from lxml import etree
 
-from readalongs.text.util import is_do_not_align
+from readalongs.text.util import add_translation_ids, is_do_not_align
 
 TAG_TO_ID = {
     "text": "t",
@@ -112,4 +112,5 @@ def add_ids(xml: etree) -> etree:
         if child.tag is etree.Comment:
             continue
         ids = add_ids_aux(child, ids)
-    return xml
+
+    return add_translation_ids(xml)

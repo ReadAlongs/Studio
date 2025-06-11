@@ -17,8 +17,9 @@ from io import TextIOWrapper
 from typing import IO, Union
 
 from lxml import etree
+from packaging.version import Version
 
-from readalongs._version import VERSION
+from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 
 # removed "try: unicode() except" block (was for Python 2), but this file uses unicode()
 # too many times, so define it anyway.
@@ -116,10 +117,15 @@ def load_xml(input_path: Union[str, os.PathLike, IO]) -> etree.ElementTree:
         OSError: if there is a problem opening the file
     """
     # resolve_entities=False is a safety issue, prevents XML bombs.
-    return etree.parse(
+    xml = etree.parse(
         input_path,
         parser=etree.XMLParser(resolve_entities=False),
     ).getroot()
+
+    if is_ras(xml):
+        return migrate_ras(xml)
+
+    return xml
 
 
 def parse_xml(xml_text: Union[str, bytes]) -> etree.ElementTree:
@@ -133,11 +139,16 @@ def parse_xml(xml_text: Union[str, bytes]) -> etree.ElementTree:
     Raises:
         etree.ParseError: if there is a problem parsing the XML contents
     """
-    return etree.fromstring(
+    xml = etree.fromstring(
         xml_text if isinstance(xml_text, bytes) else bytes(xml_text, encoding="utf8"),
         # resolve_entities=False is a safety issue, prevents XML bombs.
         parser=etree.XMLParser(resolve_entities=False),
     )
+
+    if is_ras(xml):
+        return migrate_ras(xml)
+
+    return xml
 
 
 def load_xml_zip(zip_path, input_path) -> etree.ElementTree:
@@ -392,3 +403,110 @@ def save_readme_txt(
                 wp_upload_folder=wp_upload_folder,
             )
         )
+
+
+def add_translation_ids(xml: etree._Element) -> etree._Element:
+    """Generates unique ids for translation or annotation sentences.
+
+    It uses the aligned sentence's id to generate a unique id for each
+    translation. It also formalizes this relationship by adding the
+    sentence-id attribute.
+
+    This function does not overwrite exiting attributes.
+
+    Introduced with DTD version 1.2.1.
+
+    Args:
+        xml (etree._Element): xml tree to generate translation ids.
+
+    Returns:
+        The xml tree with translation sentences ids added.
+    """
+
+    # We only enable migration with DTD version 1.2.1 and greater.
+    if Version(READALONG_FILE_FORMAT_VERSION) <= Version("1.2.0"):
+        return xml
+
+    all_ids = {s.get("id") for s in xml.findall(".//*[@id]")}
+
+    def unique_tr_id(prefix: str, counter: int) -> tuple[str, int]:
+        while True:
+            id = f"{prefix}tr{counter}"
+            if id not in all_ids:
+                all_ids.add(id)
+                return id, counter + 1
+
+            counter += 1
+
+    aligned_sentences = [
+        s for s in xml.findall(".//s") if not is_do_not_align(s) and s.get("id")
+    ]
+    for sentence in aligned_sentences:
+        tr_count = 0
+        sentence_id = sentence.get("id")
+        cursor = sentence.getnext()
+        while cursor is not None:
+            if cursor.tag.lower() != "s":
+                cursor = cursor.getnext()
+                continue
+
+            if is_do_not_align(cursor):
+                if not cursor.get("id"):
+                    id, tr_count = unique_tr_id(sentence_id, tr_count)
+                    cursor.set("id", id)
+
+                if not cursor.get("sentence-id"):
+                    cursor.set("sentence-id", sentence_id)
+                cursor = cursor.getnext()
+            else:
+                # we've found the next aligned sentence, stop here
+                # and let the outer loop handle it.
+                break
+
+    return xml
+
+
+def migrate_ras(
+    xml: etree._Element,
+    to_version: Version = Version(READALONG_FILE_FORMAT_VERSION),
+) -> etree._Element:
+    """Migrate the RAS XML document to the latest published DTD version.
+
+    Args:
+        xml (etree._Element): document to migrate to the latest version
+        to_version: (3-int tuple):
+          The DTD version to migrate to. Defaults to the current version. Used
+          for testing purposes, to_version can be provided to isolate changes
+          up-to a specified version.
+
+    Returns:
+        The upgraded document if there exists any migrations.
+    """
+
+    # We only enable migration with DTD version 1.2.1 and greater.
+    if Version(READALONG_FILE_FORMAT_VERSION) <= Version("1.2.0"):
+        return xml
+
+    doc_version = Version(xml.get("version"))
+    if to_version > doc_version and doc_version < Version("1.2.1"):
+        xml = add_translation_ids(xml)
+        xml.set("version", "1.2.1")
+
+    # Example of migration to v1.3
+    doc_version = Version(xml.get("version"))
+    if to_version > doc_version and doc_version < Version("1.3.0"):
+        xml.set("version", "1.3")
+
+    return xml
+
+
+def is_ras(xml: etree._Element) -> bool:
+    """Verifies if the XML document contains a read along document.
+
+    Args:
+        xml (etree._Element): document to verify
+
+    Returns:
+        True if the XML document contains a read along document, false otherwise.
+    """
+    return xml.tag.lower() == "read-along"
