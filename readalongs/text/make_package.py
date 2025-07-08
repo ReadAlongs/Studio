@@ -126,7 +126,7 @@ def encode_from_path(path: Union[str, os.PathLike]) -> str:
                 )
                 continue
             img.attrib["url"] = f"data:{mime[0]};base64,{img_b64}"
-        path_bytes = etree.tostring(root)
+        path_bytes = etree.tostring(root, encoding="utf-8", xml_declaration=True)
     b64 = str(b64encode(path_bytes), encoding="utf8")
     mime = guess_type(path)
     if str(path).endswith(

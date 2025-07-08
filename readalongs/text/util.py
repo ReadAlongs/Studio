@@ -159,6 +159,10 @@ def save_xml(output_path, xml):
         write_xml(fout, xml)
 
 
+def xml_to_string(xml) -> str:
+    return etree.tostring(xml, encoding="utf-8", xml_declaration=True).decode()
+
+
 def save_xml_zip(zip_path, output_path, xml):
     ensure_dirs(zip_path)
     with zipfile.ZipFile(zip_path, "a", compression=zipfile.ZIP_DEFLATED) as fout_zip:

@@ -52,7 +52,7 @@ from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.convert_xml import TimeLimitException, convert_xml
 from readalongs.text.make_dict import make_dict_list
 from readalongs.text.tokenize_xml import tokenize_xml
-from readalongs.text.util import parse_xml
+from readalongs.text.util import parse_xml, xml_to_string
 from readalongs.util import get_langs
 
 # Heroku drops requests that take more than 30s total to respond, so give g2p a 25s budget
@@ -287,15 +287,15 @@ async def assemble(
     response = AssembleResponse(
         lexicon=dict_data,
         text_ids=text_input,
-        processed_ras=etree.tostring(g2ped, encoding="utf8").decode(),
+        processed_ras=xml_to_string(g2ped),
         log=captured_logs.getvalue(),
     )
 
     if request.debug:
         response.input_request = request
-        response.parsed = etree.tostring(parsed, encoding="utf8")
-        response.tokenized = etree.tostring(tokenized, encoding="utf8")
-        response.g2ped = etree.tostring(g2ped, encoding="utf8")
+        response.parsed = xml_to_string(parsed)
+        response.tokenized = xml_to_string(tokenized)
+        response.g2ped = xml_to_string(g2ped)
     return response
 
 
