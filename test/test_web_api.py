@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import json
 import os
 import re
 from contextlib import redirect_stderr
@@ -51,7 +52,10 @@ class TestWebApi(BasicTestCase):
         }
         with redirect_stderr(StringIO()):
             response = self.API_CLIENT.post("/api/v1/assemble", json=request)
+
+        resp_dict = json.loads(response.content.decode("utf-8"))
         self.assertEqual(response.status_code, 200)
+        self.assertTrue(resp_dict["processed_ras"].find("<?xml") >= 0)
 
     def test_bad_path(self):
         # Test a request to a path that doesn't exist

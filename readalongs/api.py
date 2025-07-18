@@ -67,7 +67,7 @@ from readalongs.text.make_package import (
     DEFAULT_TITLE,
     create_web_component_html,
 )
-from readalongs.text.util import parse_xml
+from readalongs.text.util import parse_xml, xml_to_string
 from readalongs.util import JoinerCallbackForClick, get_langs_deferred
 
 
@@ -263,12 +263,7 @@ def convert_prealigned_text_to_readalong(
                     sentence_xml.text += token.text
 
     xml = add_ids(xml)
-    xml_text = etree.tostring(
-        xml,
-        encoding="utf-8",
-        xml_declaration=True,
-    ).decode("utf8")
-
+    xml_text = xml_to_string(xml)
     return xml_text + "\n"
 
 
