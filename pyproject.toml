@@ -70,6 +70,13 @@ api = [
     "uvicorn>=0.30.1",
 ]
 
+heroku = [
+    "readalongs[api]",
+    # We don't actually use the panphon 0.22 improvements on heroku so stick to
+    # 0.21 with its lighter weight dependencies
+    "panphon<0.22",
+]
+
 ci = [
     "readalongs[api]",
     "coverage",
@@ -107,7 +114,7 @@ include = [
 requires = [ "hatch-pip-compile" ]
 
 [tool.hatch.envs.prod]
-features = [ "api" ]
+features = [ "heroku" ]
 type = "pip-compile"
 python = "3.13"
 lock-filename = "requirements.txt"
