@@ -7,13 +7,17 @@ Our production Heroku deployment is controlled by the following files:
 Updating dependencies:
  - Our dependencies are declared in `pyproject.toml`. This is where changes should be made first.
  - `requirements.txt` is the generated "lock" file that Heroku uses. To update it,
-   run these commands, preferably from a Linux machine to match the Heroku context:
+   run these commands on a **Linux** machine to match the Heroku context:
 
+       pip install hatch hatch-pip-compile
        hatch env remove prod
        rm requirements.txt
        hatch env create prod
 
-   Then manually remove the soundswallower line, since it's not needed for the web api.
+   Then manually do the following edits, and commit `requirements.txt` when you're done:
+    - remove the soundswallower line, since it's not needed for the web api;
+    - replace the g2p line by `g2p @ git+https://github.com/roedoejet/g2p.git@main` because we
+      always want to deploy on Heroku with the latest g2p main branch.
 
    It is also possible to edit it manually, e.g., to handle a critical vulnerability report,
    but an occasional full rebuild is a good idea, to keep things up to date.
