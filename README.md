@@ -150,7 +150,7 @@ full test suite (requires installing the dev dependencies):
 
     pip install 'readalongs[dev]'  # if you installed from PyPI, or
     pip install -e '.[dev]'        # if you installed from a local clone
-    python test/run.py dev
+    python tests/run.py dev
 
 And you can download our [open samples on GitHub](https://github.com/ReadAlongs/OpenSamples)
 to run your first alignments.
