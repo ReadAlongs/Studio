@@ -31,13 +31,13 @@ jobs:
 
       - name: Run tests
         run: |
-          cd test
+          cd tests
           coverage run --parallel-mode run.py prod
           DEVELOPMENT=1 coverage run --parallel-mode test_web_api.py
           coverage combine
           coverage xml
 
-      - run: cd test && coverage report
+      - run: cd tests && coverage report
 
       - name: Make sure pre-commit hooks pass
         uses: pre-commit/action@v3.0.1
@@ -52,7 +52,7 @@ jobs:
 
       - uses: codecov/codecov-action@v4
         with:
-          directory: ./test
+          directory: ./tests
           token: ${{ secrets.CODECOV_TOKEN }}  # optional but apparently makes upload more reliable
           fail_ci_if_error: false # too many upload errors to keep "true"
 
@@ -107,7 +107,7 @@ jobs:
           pip install -e .[all]
 
       - name: Run tests on Windows
-        run: cd test && python run.py prod
+        run: cd tests && python run.py prod
 
       - name: Make sure the CLI outputs utf8 on Windows
         # Note: we're checking something CLI specific, from a prompt, so we don't want to run
@@ -119,8 +119,8 @@ jobs:
           echo Output ====
           cat cs.readalong
           echo Reference ====
-          cat test/data/cs-ref.readalong
-          if (diff (cat cs.readalong) (cat test/data/cs-ref.readalong)) { throw "Output did not match reference" }
+          cat tests/data/cs-ref.readalong
+          if (diff (cat cs.readalong) (cat tests/data/cs-ref.readalong)) { throw "Output did not match reference" }
 
   test-heroku-env:
     runs-on: ubuntu-24.04
@@ -153,4 +153,4 @@ jobs:
       - name: unit test the web API
         run: |
           pip install httpx
-          python test/test_web_api.py
+          python tests/test_web_api.py

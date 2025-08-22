@@ -26,4 +26,4 @@ jobs:
         run: |
           pip install -e .[all]
       - name: Run tests
-        run: cd test && python run.py prod
+        run: cd tests && python run.py prod
