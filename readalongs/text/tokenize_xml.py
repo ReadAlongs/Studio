@@ -45,12 +45,8 @@ def tokenize_xml_in_place(xml):
         etree: tokenized xml
     """
 
-    # Defer expensive import, and use the new version, but keep it
-    # compatible with older versions of g2p for at least a little while.
-    try:
-        from g2p import make_tokenizer
-    except ImportError:
-        from g2p import get_tokenizer as make_tokenizer
+    # Defer expensive import
+    from g2p import make_tokenizer
 
     def add_word_children(element):
         """Recursive helper for tokenize_xml_in_place()"""
@@ -76,17 +72,17 @@ def tokenize_xml_in_place(xml):
         if element.text:
             new_element.text = ""
             for unit in tokenizer.tokenize_text(element.text):
-                if unit["is_word"]:
+                if unit.is_word:
                     new_child_element = etree.Element("w", nsmap=nsmap)
-                    new_child_element.text = unit["text"]
+                    new_child_element.text = unit.text
                     new_element.append(new_child_element)
                     continue
                 if new_element.getchildren():
                     if not new_element[-1].tail:
                         new_element[-1].tail = ""
-                    new_element[-1].tail += unit["text"]
+                    new_element[-1].tail += unit.text
                     continue
-                new_element.text += unit["text"]
+                new_element.text += unit.text
 
         for child in element:
             # Comments Cause Crashes so Copy them Cleanly
@@ -98,14 +94,14 @@ def tokenize_xml_in_place(xml):
             if child.tail:
                 # new_element.tail = ''  # in case it's a copy
                 for unit in tokenizer.tokenize_text(child.tail):
-                    if unit["is_word"]:
+                    if unit.is_word:
                         new_child_element = etree.Element("w")
-                        new_child_element.text = unit["text"]
+                        new_child_element.text = unit.text
                         new_element.append(new_child_element)
                         continue
                     if not new_element[-1].tail:
                         new_element[-1].tail = ""
-                    new_element[-1].tail += unit["text"]
+                    new_element[-1].tail += unit.text
 
         return new_element
 
