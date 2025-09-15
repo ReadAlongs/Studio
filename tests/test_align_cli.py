@@ -5,6 +5,7 @@ Unit test suite for the readalongs align CLI command
 """
 
 import os
+import subprocess
 import tempfile
 from os.path import exists, join
 from pathlib import Path
@@ -631,6 +632,21 @@ class TestAlignCli(BasicTestCase):
         self.assertEqual(
             slurp_text(base_file, "utf-8"), slurp_text(bom_file_pathlib, "utf-8-sig")
         )
+
+    def test_ffmpeg_is_present(self):
+        """ffmpeg must exist on the system for readalongs and unit tests to work
+
+        Let's just have an explicit test giving a clear error message when it's not there.
+        """
+        for ff_program in ("ffmpeg", "ffprobe"):
+            failure_message = f"Please install {ff_program} and place it on the PATH"
+            try:
+                result = subprocess.run(
+                    [ff_program, "-version"], capture_output=True, check=True
+                )
+                self.assertEqual(result.returncode, 0, failure_message)
+            except Exception:
+                self.fail(failure_message)
 
 
 if __name__ == "__main__":
