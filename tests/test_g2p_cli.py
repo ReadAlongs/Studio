@@ -135,6 +135,7 @@ class TestG2pCli(BasicTestCase):
                 f"results.output='{results.output}' "
                 f"results.exception={results.exception!r}"
             )
+        print(results.stdout)
         self.assertNotEqual(results.exit_code, 0)
         self.assertIn("could not be g2p", results.output)
         # self.assertTrue(isinstance(results.exception, KeyError))

@@ -16,7 +16,13 @@ from lxml.html import fromstring
 from sound_swallower_stub import SoundSwallowerStub
 
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
+from readalongs.align_utils import create_ras_from_text
 from readalongs.cli import align, langs
+from readalongs.log import capture_logs
+from readalongs.text.add_ids_to_xml import add_ids
+from readalongs.text.convert_xml import convert_xml
+from readalongs.text.tokenize_xml import tokenize_xml
+from readalongs.text.util import parse_xml
 
 
 def write_file(filename: str, file_contents: str) -> str:
@@ -646,6 +652,40 @@ class TestAlignCli(BasicTestCase):
                 self.assertEqual(result.returncode, 0, failure_message)
             except Exception:
                 self.fail(failure_message)
+
+    def not_test_tokens_with_empty_g2p_moh(self):
+        # TODO this test doesn't work yet because : stays as such in moh->ipa output,
+        # and ' goes to HH. So we just get non-IPA output for : and something valid for '.
+        # To make this test case work, we'd need a lone : to get deleted by moh->ipa
+        text = "Kanien'kéha ' :"
+        xml_text = parse_xml(create_ras_from_text([text], ["moh"]))
+        xml = tokenize_xml(xml_text)
+        xml = add_ids(xml)
+        with capture_logs():
+            xml, valid, non_convertible_words = convert_xml(xml)
+        self.assertTrue(valid)
+        # print(etree.tostring(xml).decode("utf-8"))
+        # print("non convertible: ", non_convertible_words)
+        self.assertEqual(len(non_convertible_words), 1)
+        # word_sequences = get_sequences(xml)
+
+    def test_tokens_with_empty_g2p_shu(self):
+        """Tokens that g2p map to nothing must get turned from word to non words"""
+        # In text, between "s7elk" and "wstsíllens" there is a U+0313 diacritic that is
+        # on a space. It should have been on the k, so it was a typo, but that should
+        # not have made readalong studio reject the input altogether!
+        text = "Secwepemctsín s7elk ̓ wstsíllens"
+        xml_text = parse_xml(create_ras_from_text([text], ["sal-apa", "und"]))
+        xml = tokenize_xml(xml_text)
+        xml = add_ids(xml)
+        with capture_logs() as logs:
+            xml, valid, non_convertible_words = convert_xml(xml)
+        # print(etree.tostring(xml).decode("utf-8"))
+        self.assertTrue(valid)
+        self.assertEqual(len(non_convertible_words), 1)
+        self.assertRegex(logs.getvalue(), r"Downgrading empty word.*to punctuation")
+        # make sure there are no remaining words with empty transcription
+        self.assertFalse(xml.xpath('//w[@ARPABET=""]'))
 
 
 if __name__ == "__main__":

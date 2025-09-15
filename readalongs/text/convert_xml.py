@@ -261,6 +261,32 @@ def convert_words(  # noqa: C901
     return xml, all_g2p_valid, list(non_convertible_words.keys())
 
 
+def strip_empty_non_words(xml, word_unit: str = "w") -> int:
+    """Strip words with empty pronunciation by turning them back into non-word text
+
+    After convert_xml, sometimes there are word tokens with no alphabetic characters
+    and no phonemes. These are invariably tokenization issues, sometimes due to
+    punctuation or diacritics used as letters but found not properly attached
+    to a letter. We remove these words by turning them back into non-word text.
+
+    Return how many empty words were turned into punctuation."""
+
+    empty_words = xml.xpath('//w[@ARPABET=""]')
+    empty_word_count = len(empty_words)
+    # pp(list(empty_words))
+    for empty_word in empty_words:
+        LOGGER.warning(f"Downgrading empty word '{empty_word.text}' to punctuation.")
+        left_sibling = empty_word.getprevious()
+        parent = empty_word.getparent()
+        if left_sibling is not None:
+            left_sibling.tail = left_sibling.tail + empty_word.text + empty_word.tail
+        else:
+            parent.text = parent.text + empty_word.text + empty_word.tail
+        parent.remove(empty_word)
+
+    return empty_word_count
+
+
 def convert_xml(
     xml,
     word_unit: str = "w",
@@ -300,4 +326,8 @@ def convert_xml(
         time_limit,
         start_time,
     )
+    stripped_word_count = strip_empty_non_words(xml_copy)
+    # print("convert", stripped_word_count, non_convertible_words)
+    if stripped_word_count == len(non_convertible_words):
+        valid = True
     return xml_copy, valid, non_convertible_words
