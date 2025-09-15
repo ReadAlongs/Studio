@@ -26,7 +26,7 @@ class TestTokenizer(TestCase):
 </document>"""
         xml = parse_xml(txt)
         with redirect_stderr(StringIO()):
-            tokenized = tokenize_xml.tokenize_xml(xml)
+            tokenized = tokenize_xml(xml)
         # print(etree.tounicode(tokenized))
         self.assertEqual(etree.tounicode(tokenized), ref)
 
@@ -43,7 +43,7 @@ class TestTokenizer(TestCase):
 </document>"""
         xml = parse_xml(txt)
         with redirect_stderr(StringIO()):
-            tokenized = tokenize_xml.tokenize_xml(xml)
+            tokenized = tokenize_xml(xml)
         # print(etree.tounicode(tokenized))
         self.assertEqual(etree.tounicode(tokenized), ref)
 
@@ -60,7 +60,7 @@ class TestTokenizer(TestCase):
 </document>"""
         xml = parse_xml(txt)
         with redirect_stderr(StringIO()):
-            tokenized = tokenize_xml.tokenize_xml(xml)
+            tokenized = tokenize_xml(xml)
         # print(etree.tounicode(tokenized))
         self.assertEqual(etree.tounicode(tokenized), ref)
 
@@ -79,7 +79,7 @@ class TestTokenizer(TestCase):
 </document>"""
         xml = parse_xml(txt)
         with redirect_stderr(StringIO()):
-            tokenized = tokenize_xml.tokenize_xml(xml)
+            tokenized = tokenize_xml(xml)
         # print(etree.tounicode(tokenized))
         self.assertEqual(etree.tounicode(tokenized), ref)
 

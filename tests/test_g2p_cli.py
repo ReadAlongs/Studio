@@ -16,7 +16,7 @@ from test_make_xml_cli import updateFormatVersion, updateStudioVersion
 from readalongs.align import align_audio
 from readalongs.cli import align, g2p, make_xml, tokenize
 from readalongs.log import LOGGER
-from readalongs.text.convert_xml import convert_xml
+from readalongs.text import convert_xml
 from readalongs.text.util import parse_xml
 
 

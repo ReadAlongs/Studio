@@ -48,10 +48,9 @@ from readalongs.align_utils import (
     save_subtitles,
 )
 from readalongs.log import LOGGER, capture_logs
-from readalongs.text.add_ids_to_xml import add_ids
+from readalongs.text import add_ids, tokenize_xml
 from readalongs.text.convert_xml import TimeLimitException, convert_xml
 from readalongs.text.make_dict import make_dict_list
-from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import parse_xml, xml_to_string
 from readalongs.util import get_langs
 

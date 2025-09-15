@@ -9,8 +9,7 @@ from unittest import main
 from basic_test_case import BasicTestCase
 from lxml import etree
 
-from readalongs.text import tokenize_xml
-from readalongs.text.add_ids_to_xml import add_ids
+from readalongs.text import add_ids, tokenize_xml
 from readalongs.text.util import parse_xml
 
 
@@ -26,7 +25,7 @@ class TestDNAText(BasicTestCase):
 </document>"""
         xml = parse_xml(txt)
         with redirect_stderr(StringIO()):
-            tokenized = tokenize_xml.tokenize_xml(xml)
+            tokenized = tokenize_xml(xml)
         as_txt = etree.tounicode(tokenized)
         # print(etree.tounicode(tokenized))
 
@@ -58,7 +57,7 @@ class TestDNAText(BasicTestCase):
 </document>"""
         xml = parse_xml(txt)
         with redirect_stderr(StringIO()):
-            tokenized = tokenize_xml.tokenize_xml(xml)
+            tokenized = tokenize_xml(xml)
         as_txt = etree.tounicode(tokenized)
         # print('as_txt="' + as_txt +'"')
 
@@ -101,7 +100,7 @@ class TestDNAText(BasicTestCase):
 </document>"""
         xml = parse_xml(txt)
         with redirect_stderr(StringIO()):
-            tokenized = tokenize_xml.tokenize_xml(xml)
+            tokenized = tokenize_xml(xml)
         as_txt = etree.tounicode(tokenized)
         # print('as_txt="' + as_txt +'"')
 
@@ -149,7 +148,7 @@ class TestDNAText(BasicTestCase):
         txt = """<s xml:lang="fra">Une <w do-not-align="true">exclude</w> phrase.</s>"""
         xml = parse_xml(txt)
         with redirect_stderr(StringIO()):
-            tokenized = tokenize_xml.tokenize_xml(xml)
+            tokenized = tokenize_xml(xml)
         self.assertRaises(RuntimeError, add_ids, tokenized)
 
     def test_dna_word_nested(self):
@@ -158,7 +157,7 @@ class TestDNAText(BasicTestCase):
         txt = """<s xml:lang="fra">Une <foo do-not-align="true"><bar><w>exclude</w></bar></foo> phrase.</s>"""
         xml = parse_xml(txt)
         with redirect_stderr(StringIO()):
-            tokenized = tokenize_xml.tokenize_xml(xml)
+            tokenized = tokenize_xml(xml)
         self.assertRaises(RuntimeError, add_ids, tokenized)
 
 

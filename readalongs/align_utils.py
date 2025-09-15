@@ -13,10 +13,8 @@ from webvtt import Caption, WebVTT
 
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.portable_tempfile import PortableNamedTemporaryFile
+from readalongs.text import add_ids, convert_xml, tokenize_xml
 from readalongs.text.add_elements_to_xml import add_images, add_supplementary_xml
-from readalongs.text.add_ids_to_xml import add_ids
-from readalongs.text.convert_xml import convert_xml
-from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import get_word_text, load_xml, save_xml
 
 

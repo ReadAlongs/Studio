@@ -590,7 +590,7 @@ def tokenize(**kwargs):
     from lxml import etree
 
     from readalongs.log import LOGGER
-    from readalongs.text.tokenize_xml import tokenize_xml
+    from readalongs.text import tokenize_xml
     from readalongs.text.util import load_xml, save_xml, write_xml
 
     if kwargs["debug"]:
@@ -703,8 +703,7 @@ def g2p(**kwargs):
     from lxml import etree
 
     from readalongs.log import LOGGER
-    from readalongs.text.add_ids_to_xml import add_ids
-    from readalongs.text.convert_xml import convert_xml
+    from readalongs.text import add_ids, convert_xml
     from readalongs.text.util import load_xml, save_xml, write_xml
 
     if kwargs["debug"]:
