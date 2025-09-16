@@ -281,7 +281,9 @@ async def assemble(
             raise HTTPException(
                 status_code=422,
                 detail="g2p could not be performed, please check your text or your language code. "
-                + logs,
+                + logs
+                + "PARTIAL RAS: "
+                + xml_to_string(g2ped),
             )
         # create grammar
         dict_data, text_input = create_grammar(g2ped)
