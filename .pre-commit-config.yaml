@@ -25,6 +25,7 @@ repos:
     rev: v1.13.0
     hooks:
       - id: mypy
+        args: [--check-untyped-defs]
         additional_dependencies: [pydantic, types-requests, types-python-slugify]
 
 exclude: |
