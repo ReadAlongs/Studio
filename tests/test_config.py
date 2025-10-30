@@ -16,12 +16,14 @@ from readalongs.text.util import load_xml
 class TestConfig(TestCase):
     """Test suite for loading the config.json configuration file for readalongs align"""
 
+    readalong: etree
+
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         data_dir = os.path.join(os.path.dirname(__file__), "data")
         cls.readalong = load_xml(os.path.join(data_dir, "ej-fra.readalong"))
 
-    def test_image(self):
+    def test_image(self) -> None:
         """Test images are added correctly"""
         with self.assertRaises(KeyError):
             new_xml = add_images(self.readalong, {})

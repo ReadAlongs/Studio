@@ -417,7 +417,7 @@ def create_input_ras(**kwargs):
 
     save_temps = kwargs.get("save_temps", None)
     if kwargs.get("output_file", False):
-        filename = kwargs.get("output_file")
+        filename = kwargs["output_file"]
         outfile = io.open(filename, "wb")
     elif save_temps is not None:
         filename = save_temps + ".input.readalong"

@@ -385,7 +385,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
                 save_temps=temp_base,
             )
         except (RuntimeError, OSError) as e:
-            raise click.UsageError(e) from e
+            raise click.UsageError(str(e)) from e
     else:
         xml_textfile = kwargs["textfile"]
 
@@ -404,7 +404,7 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
             alignment_mode=kwargs["align_mode"],
         )
     except RuntimeError as e:
-        raise click.UsageError(e) from e
+        raise click.UsageError(str(e)) from e
         # LOGGER.error(e)
         # sys.exit(1)
 
@@ -470,7 +470,7 @@ def prepare(**kwargs):
     LOGGER.warning(
         'WARNING: "readalongs prepare" is deprecated. Use "readalongs make-xml" instead.'
     )
-    make_xml.callback(**kwargs)
+    make_xml.callback(**kwargs)  # type: ignore
 
 
 @cli.command(  # type: ignore  # quench spurious mypy error: "Command" has no attribute "command"
@@ -561,7 +561,7 @@ def make_xml(**kwargs):
                 output_file=out_file,
             )
     except (RuntimeError, OSError) as e:
-        raise click.UsageError(e) from e
+        raise click.UsageError(str(e)) from e
 
     LOGGER.info("Wrote {}".format(out_file))
 

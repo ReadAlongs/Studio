@@ -77,7 +77,9 @@ else:
         ],
     )
 web_api_app.add_middleware(
-    CORSMiddleware, allow_methods=["GET", "POST", "OPTIONS"], **middleware_args
+    CORSMiddleware,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    **middleware_args,  # type: ignore
 )
 
 # Create the v1 version of the API

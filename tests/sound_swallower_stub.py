@@ -35,10 +35,10 @@ def SoundSwallowerStub(*segments):
     """
     try:
         saved_soundswallower_decoder = soundswallower.Decoder
-        soundswallower.Decoder = SoundSwallowerDecoderStub(*segments)
+        soundswallower.Decoder = SoundSwallowerDecoderStub(*segments)  # type: ignore
         yield
     finally:
-        soundswallower.Decoder = saved_soundswallower_decoder
+        soundswallower.Decoder = saved_soundswallower_decoder  # type: ignore
 
 
 class SoundSwallowerDecoderStub:

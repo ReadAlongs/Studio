@@ -74,7 +74,7 @@ from lxml import etree
 def sonoripy(word):  # noqa: C901
     def no_syll_no_vowel(ss):
         # no syllable if no vowel
-        nss = []
+        nss = []  # type: ignore
         front = ""
         for i, syll in enumerate(ss):
             # if following syllable doesn't have vowel,

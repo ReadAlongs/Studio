@@ -61,13 +61,13 @@ class TestDNAUtils(TestCase):
         # Function only accepts args in ms, so 1.0 and 2.0 are the same as 1 and 2 ms
         self.assertEqual(
             calculate_adjustment(
-                1.0, [{"begin": 1000, "end": 1100}, {"begin": 1500, "end": 1700}]
+                1, [{"begin": 1000, "end": 1100}, {"begin": 1500, "end": 1700}]
             ),
             0,
         )
         self.assertEqual(
             calculate_adjustment(
-                2.0, [{"begin": 1000, "end": 1100}, {"begin": 1500, "end": 2100}]
+                2, [{"begin": 1000, "end": 1100}, {"begin": 1500, "end": 2100}]
             ),
             0,
         )
@@ -101,11 +101,11 @@ class TestDNAUtils(TestCase):
         )
         # Function only accepts args in ms
         self.assertNotEqual(
-            correct_adjustments(0.950, 1.125, [{"begin": 1000, "end": 1100}]),
+            correct_adjustments(0.950, 1.125, [{"begin": 1000, "end": 1100}]),  # type: ignore
             (950, 1000),
         )
         self.assertNotEqual(
-            correct_adjustments(0.975, 1.150, [{"begin": 1000, "end": 1100}]),
+            correct_adjustments(0.975, 1.150, [{"begin": 1000, "end": 1100}]),  # type: ignore
             (1100, 1150),
         )
 

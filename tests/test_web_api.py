@@ -515,6 +515,7 @@ class TestWebApi(BasicTestCase):
             "Temporary directory: (.*)($|\r|\n)", "\n".join(log_cm.output)
         )
         self.assertIsNotNone(match)
+        assert match is not None
         self.assertFalse(os.path.isdir(match[1]))
 
     def test_cleanup_even_if_error(self):
@@ -559,6 +560,7 @@ class TestWebApi(BasicTestCase):
                 "Temporary directory: (.*)($|\r|\n)", "\n".join(log_cm.output)
             )
             self.assertIsNotNone(match)
+            assert match is not None
             self.assertFalse(os.path.isdir(match[1]))
 
     def test_convert_to_bad_format(self):

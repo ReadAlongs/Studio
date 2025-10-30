@@ -28,7 +28,7 @@ def write_file(filename: str, file_contents: str) -> str:
 class TestAlignCli(BasicTestCase):
     """Unit test suite for the readalongs align CLI command"""
 
-    def test_invoke_align(self):
+    def test_invoke_align(self) -> None:
         """Basic readalongs align invocation and some variants"""
         output = self.tempdir / "output"
         with open("image-for-page1.jpg", "wb"):
@@ -67,9 +67,10 @@ class TestAlignCli(BasicTestCase):
             "output_words.vtt",
             "www/readme.txt",
         ]
-        for f in expected_output_files:
+        for output_file in expected_output_files:
             self.assertTrue(
-                (output / f).exists(), f"successful alignment should have created {f}"
+                (output / output_file).exists(),
+                f"successful alignment should have created {output_file}",
             )
         with open(output / "www/index.html", encoding="utf8") as f:
             contents = f.read()

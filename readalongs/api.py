@@ -118,7 +118,7 @@ def align(
             output_base=output_base,
             language=language,
             output_formats=output_formats,
-            **kwargs,
+            **kwargs,  # type: ignore
         )
 
         cli.align.callback(**align_args)  # type: ignore
@@ -173,7 +173,7 @@ def make_xml(
                     language=JoinerCallbackForClick(get_langs_deferred())(
                         value_groups=language
                     ),
-                    **kwargs,
+                    **kwargs,  # type: ignore
                 )
                 cli.make_xml.callback(**make_xml_args)  # type: ignore
         except OSError as e:

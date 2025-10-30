@@ -28,6 +28,7 @@ class BasicTestCase(TestCase):
     """
 
     data_dir = Path(__file__).parent / "data"
+    tempdir: Path
 
     # Set this to True to keep the temp dirs after running, for manual inspection
     # but please don't push a commit setting this to True!
@@ -49,12 +50,12 @@ class BasicTestCase(TestCase):
             self.tempdirobj = tempfile.TemporaryDirectory(
                 prefix=tempdir_prefix, dir="."
             )
-            self.tempdir = self.tempdirobj.name
+            tempdir_name = self.tempdirobj.name
         else:
             # Alternative tempdir code keeps it after running, for manual inspection:
-            self.tempdir = tempfile.mkdtemp(prefix=tempdir_prefix, dir=".")
-            print("tmpdir={}".format(self.tempdir))
-        self.tempdir = Path(self.tempdir)
+            tempdir_name = tempfile.mkdtemp(prefix=tempdir_prefix, dir=".")
+            print("tmpdir={}".format(tempdir_name))
+        self.tempdir = Path(tempdir_name)
 
     def tearDown(self):
         """Clean up the temporary directory

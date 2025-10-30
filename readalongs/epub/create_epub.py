@@ -11,6 +11,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 import shutil
+from typing import Callable
 
 import chevron
 
@@ -135,11 +136,12 @@ def save_txt_to_dir(output_path, dest_path, txt):
     save_txt(os.path.join(output_path, dest_path), txt)
 
 
-def create_epub(input_path, output_path, unpacked=False):
+def create_epub(input_path: str, output_path: str, unpacked=False):
     if os.path.isdir(output_path):
         shutil.rmtree(output_path)
     ensure_dirs(output_path)
     input_dirname = os.path.dirname(input_path)
+    save: Callable
     if unpacked:
         os.mkdir(output_path)
         copy = copy_file_to_dir

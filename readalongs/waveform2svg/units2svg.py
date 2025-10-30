@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 ###################################################
 #
@@ -14,11 +13,10 @@
 #
 ###################################################
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import argparse
 import os
 from collections import OrderedDict
+from typing import Any
 
 import chevron
 import librosa  # type: ignore
@@ -60,7 +58,7 @@ def parse_smil(input_path):
     """Figure out the overall start and end of every unit, even if the whole
     sequence plays out over multiple audio files"""
     xml = load_xml(input_path)
-    data = {"audio_files": OrderedDict()}
+    data: dict[str, Any] = {"audio_files": OrderedDict()}
     dirname = os.path.dirname(input_path)
     current_time = 0.0
     for audio_node in xpath_default(xml, ".//i:audio"):
