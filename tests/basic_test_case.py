@@ -87,14 +87,17 @@ def silence_c_stderr():
     address our narrow needs, namely to silence stderr in a context manager.
     """
 
-    stderr_fileno = sys.stderr.fileno()
-    stderr_save = os.dup(stderr_fileno)
-    stderr_fd = os.open(os.devnull, os.O_RDWR)
-    os.dup2(stderr_fd, stderr_fileno)
-    yield
-    os.dup2(stderr_save, stderr_fileno)
-    os.close(stderr_save)
-    os.close(stderr_fd)
+    if os.name == "nt" and sys.version_info < (3, 10):
+        yield  # work around instability for this on Windows with Py 3.8/3.9
+    else:
+        stderr_fileno = sys.stderr.fileno()
+        stderr_save = os.dup(stderr_fileno)
+        stderr_fd = os.open(os.devnull, os.O_RDWR)
+        os.dup2(stderr_fd, stderr_fileno)
+        yield
+        os.dup2(stderr_save, stderr_fileno)
+        os.close(stderr_save)
+        os.close(stderr_fd)
 
 
 @contextmanager

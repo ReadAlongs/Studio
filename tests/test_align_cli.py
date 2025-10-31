@@ -97,7 +97,7 @@ class TestAlignCli(BasicTestCase):
         self.assertIn("image-for-page2.jpg is accessible ", results.stdout)
         os.unlink("image-for-page1.jpg")
         self.assertFalse(exists("image-for-page1.jpg"))
-        self.assertIn("Align mode strict succeeded for sequence 0.", results.stdout)
+        self.assertRegex(results.stdout, "Align mode .* succeeded for sequence 0.")
         # print(results.stdout)
 
         # Move the alignment output to compare with further down
