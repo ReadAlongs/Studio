@@ -138,7 +138,7 @@ def describe_values(values, title):
         "histogram (<=0, <=.25, <=.50, <=.75, <1, ==1):",
         ", ".join(str(n) for n in hist),
     )
-    print("histogram in fractions:", ", ".join([f"{n/count:.4f}" for n in hist]))
+    print("histogram in fractions:", ", ".join([f"{n / count:.4f}" for n in hist]))
     average = sum(values) / count
     print(f"sum: {sum(values):.2f} count: {count} avg: {average:.4f}")
     print()
