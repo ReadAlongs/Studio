@@ -48,7 +48,8 @@ jobs:
         #  - pympi-ling is MIT, but not auto-detected. https://github.com/dopefishh/pympi
         #  - text-unidecode is Artistic License or GPL (at our choice): MIT is
         #    compatible with the former. https://github.com/kmike/text-unidecode/
-        run: licensecheck --requirements-path pyproject.toml --zero --ignore-packages pympi-ling text-unidecode
+        #  - setuptools is MIT, but not always auto-detected.
+        run: licensecheck --requirements-path pyproject.toml --zero --ignore-packages pympi-ling text-unidecode setuptools
 
       - uses: codecov/codecov-action@v4
         with:
