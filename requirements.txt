@@ -44,7 +44,7 @@ coloredlogs==15.0.1
     # via
     #   hatch.envs.prod
     #   g2p
-editdistance==0.8.1
+ilt-editdistance==0.8.2
     # via panphon
 et-xmlfile==2.0.0
     # via openpyxl
@@ -76,7 +76,7 @@ openpyxl==3.1.5
     # via g2p
 packaging==25.0
     # via gunicorn
-panphon==0.21.2
+ilt-panphon==0.21.3
     # via
     #   hatch.envs.prod
     #   g2p
