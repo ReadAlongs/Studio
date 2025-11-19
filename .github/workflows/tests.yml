@@ -3,6 +3,7 @@ on:
   - pull_request
   - push
   - workflow_call
+  - workflow_dispatch
 
 jobs:
   test:
@@ -151,7 +152,8 @@ jobs:
           curl http://127.0.0.1:8000/api/v1/langs | grep Cree
           kill %1
 
+      - name: Install test dependency
+        run: pip install httpx
+
       - name: unit test the web API
-        run: |
-          pip install httpx
-          python tests/test_web_api.py
+        run: python tests/test_web_api.py
