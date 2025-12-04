@@ -74,7 +74,7 @@ heroku = [
     "readalongs[api]",
     # We don't actually use the panphon 0.22 improvements on heroku so stick to
     # 0.21 with its lighter weight dependencies
-    "panphon<0.22",
+    "ilt-panphon>=0.21.4,<0.22",
 ]
 
 ci = [
