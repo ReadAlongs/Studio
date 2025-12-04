@@ -16,7 +16,7 @@
 # - soundswallower~=0.6.0
 # - webvtt-py==0.5.1
 # - gunicorn>=23.0.0; platform_system != "Windows"
-# - panphon<0.22
+# - ilt-panphon<0.22,>=0.21.4
 # - uvicorn>=0.30.1
 #
 
@@ -75,7 +75,7 @@ openpyxl==3.1.5
     # via g2p
 packaging==25.0
     # via gunicorn
-ilt-panphon==0.21.3
+ilt-panphon==0.21.4
     # via
     #   hatch.envs.prod
     #   g2p
@@ -129,6 +129,3 @@ uvicorn==0.38.0
     # via hatch.envs.prod
 webvtt-py==0.5.1
     # via hatch.envs.prod
-
-# The following packages are considered to be unsafe in a requirements file:
-# setuptools
