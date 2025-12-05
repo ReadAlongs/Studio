@@ -272,9 +272,9 @@ async def assemble(
         if not valid:
             if non_convertible_words:
                 logs = (
-                    "These words could not be converted from text to phonemes by g2p: '"
-                    + "', '".join(non_convertible_words)
-                    + "'."
+                    "These words could not be converted from text to phonemes by g2p: ' "
+                    + " ', ' ".join(non_convertible_words)
+                    + " '."
                 )
             else:
                 logs = "Logs: " + captured_logs.getvalue()
