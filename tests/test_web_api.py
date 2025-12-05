@@ -219,9 +219,13 @@ class TestWebApi(BasicTestCase):
         with redirect_stderr(StringIO()):
             response = self.API_CLIENT.post("/api/v1/assemble", json=request)
         self.assertEqual(response.status_code, 422)
-        content_log = response.json()["detail"]
+        content = response.json()
+        content_log = content["detail"]
         for message_part in ["These words could not", "24", "23"]:
             self.assertIn(message_part, content_log)
+
+        self.assertEqual(content["g2p_error_words"], ["24", "23", "99", "1234"])
+        self.assertIn("partial_ras", content)
 
     def test_langs(self):
         # Test the langs endpoint
