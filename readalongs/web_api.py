@@ -36,7 +36,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 from fastapi import Body, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from lxml import etree
 from pydantic import BaseModel, Field
 from starlette.background import BackgroundTask
@@ -278,12 +278,14 @@ async def assemble(
                 )
             else:
                 logs = "Logs: " + captured_logs.getvalue()
-            raise HTTPException(
+            return JSONResponse(
                 status_code=422,
-                detail="g2p could not be performed, please check your text or your language code. "
-                + logs
-                + "PARTIAL RAS: "
-                + xml_to_string(g2ped),
+                content={
+                    "detail": "g2p could not be performed, please check your text or your language code. "
+                    + logs,
+                    "g2p_error_words": non_convertible_words,
+                    "partial_ras": xml_to_string(g2ped),
+                },
             )
         # create grammar
         dict_data, text_input = create_grammar(g2ped)
