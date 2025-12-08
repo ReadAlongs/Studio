@@ -123,7 +123,7 @@ typing-extensions==4.15.0
     #   pydantic-core
 unicodecsv==0.14.1
     # via panphon
-urllib3==2.5.0
+urllib3==2.6.0
     # via requests
 uvicorn==0.38.0
     # via hatch.envs.prod
