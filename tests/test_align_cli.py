@@ -11,12 +11,13 @@ from os.path import exists, join
 from pathlib import Path
 from unittest import main
 
-from .basic_test_case import BasicTestCase
 from lxml.html import fromstring
-from .sound_swallower_stub import SoundSwallowerStub
 
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.cli import align, langs
+
+from .basic_test_case import BasicTestCase
+from .sound_swallower_stub import SoundSwallowerStub
 
 
 def write_file(filename: str, file_contents: str) -> str:
@@ -617,7 +618,9 @@ class TestAlignCli(BasicTestCase):
             with open(filename, "r", encoding=encoding) as f:
                 return f.read()
 
-        base_file = write_file(self.tempdir / "add-bom-input.txt", "Random Text été")
+        base_file = write_file(
+            str(self.tempdir / "add-bom-input.txt"), "Random Text été"
+        )
         bom_file = self.add_bom(base_file)
         self.assertEqual(
             slurp_text(base_file, "utf-8"), slurp_text(bom_file, "utf-8-sig")

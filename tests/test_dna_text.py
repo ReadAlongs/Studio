@@ -6,12 +6,13 @@ from contextlib import redirect_stderr
 from io import StringIO
 from unittest import main
 
-from .basic_test_case import BasicTestCase
 from lxml import etree
 
 from readalongs.text import tokenize_xml
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.util import parse_xml
+
+from .basic_test_case import BasicTestCase
 
 
 class TestDNAText(BasicTestCase):

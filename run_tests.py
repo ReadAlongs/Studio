@@ -19,6 +19,7 @@ import re
 import sys
 from unittest import TestLoader, TestSuite, TextTestRunner
 
+from readalongs.log import LOGGER
 from tests.test_align_cli import TestAlignCli
 from tests.test_anchors import TestAnchors
 from tests.test_api import TestAlignApi
@@ -38,8 +39,6 @@ from tests.test_temp_file import TestTempFile
 from tests.test_tokenize_cli import TestTokenizeCli
 from tests.test_tokenize_xml import TestTokenizer
 from tests.test_web_api import TestWebApi
-
-from readalongs.log import LOGGER
 
 LOADER = TestLoader()
 

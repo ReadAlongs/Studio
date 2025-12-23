@@ -7,9 +7,9 @@ Unit test suite for the smil writing and parsing utilities
 from textwrap import dedent
 from unittest import main
 
-from .basic_test_case import BasicTestCase
-
 from readalongs.text.make_smil import make_smil, parse_smil
+
+from .basic_test_case import BasicTestCase
 
 
 class TestSmilUtilities(BasicTestCase):
