@@ -11,9 +11,9 @@ from os.path import exists, join
 from pathlib import Path
 from unittest import main
 
-from basic_test_case import BasicTestCase
+from .basic_test_case import BasicTestCase
 from lxml.html import fromstring
-from sound_swallower_stub import SoundSwallowerStub
+from .sound_swallower_stub import SoundSwallowerStub
 
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.cli import align, langs

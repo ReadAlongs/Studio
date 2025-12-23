@@ -7,7 +7,7 @@ from pathlib import Path
 from subprocess import run
 from unittest import main
 
-from basic_test_case import BasicTestCase
+from .basic_test_case import BasicTestCase
 
 from readalongs.audio_utils import (
     extract_section,

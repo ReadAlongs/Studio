@@ -6,7 +6,7 @@ from contextlib import redirect_stderr
 from io import StringIO
 from unittest import main
 
-from basic_test_case import BasicTestCase
+from .basic_test_case import BasicTestCase
 from lxml import etree
 
 from readalongs.text import tokenize_xml

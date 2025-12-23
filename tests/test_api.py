@@ -11,8 +11,8 @@ from io import StringIO
 from unittest import main
 
 import click
-from basic_test_case import BasicTestCase, silence_logs
-from sound_swallower_stub import SoundSwallowerStub
+from .basic_test_case import BasicTestCase, silence_logs
+from .sound_swallower_stub import SoundSwallowerStub
 
 from readalongs import api
 from readalongs.log import LOGGER

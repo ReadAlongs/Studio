@@ -5,7 +5,7 @@
 import os
 from unittest import main
 
-from basic_test_case import BasicTestCase
+from .basic_test_case import BasicTestCase
 from pydub import AudioSegment
 
 from readalongs.cli import align

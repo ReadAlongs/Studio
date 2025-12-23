@@ -12,7 +12,7 @@ from contextlib import redirect_stderr
 from io import StringIO
 from tempfile import TemporaryDirectory
 
-from basic_test_case import BasicTestCase, silence_c_stderr
+from .basic_test_case import BasicTestCase, silence_c_stderr
 from lxml import etree
 from soundswallower import get_model_path
 

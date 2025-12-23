@@ -10,7 +10,7 @@ from time import perf_counter
 from unittest import main
 from unittest.mock import patch
 
-from basic_test_case import BasicTestCase
+from .basic_test_case import BasicTestCase
 
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.log import LOGGER

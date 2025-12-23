@@ -7,7 +7,7 @@ from contextlib import redirect_stderr
 from io import StringIO
 from unittest import main
 
-from basic_test_case import BasicTestCase, silence_c_stderr
+from .basic_test_case import BasicTestCase, silence_c_stderr
 
 from readalongs.align import align_audio
 from readalongs.log import LOGGER

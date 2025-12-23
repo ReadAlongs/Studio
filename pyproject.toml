@@ -113,6 +113,9 @@ include = [
 [tool.hatch.env]
 requires = [ "hatch-pip-compile" ]
 
+[tool.hatch.envs.hatch-test]
+features = [ "dev" ]
+
 [tool.hatch.envs.prod]
 features = [ "heroku" ]
 type = "pip-compile"
