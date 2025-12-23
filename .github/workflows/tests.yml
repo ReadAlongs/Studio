@@ -37,7 +37,7 @@ jobs:
           coverage combine
           coverage xml
 
-      - run: cd tests && coverage report
+      - run: coverage report
 
       - name: Make sure pre-commit hooks pass
         uses: pre-commit/action@v3.0.1
@@ -155,4 +155,4 @@ jobs:
         run: pip install httpx
 
       - name: unit test the web API
-        run: python tests/test_web_api.py
+        run: python -m tests.test_web_api
