@@ -4,7 +4,6 @@
 Test suite for the API way to call align
 """
 
-import os
 import re
 from contextlib import redirect_stderr
 from io import StringIO
@@ -94,7 +93,7 @@ class TestAlignApi(BasicTestCase):
 
     def test_deprecated_prepare(self):
         with self.assertLogs(LOGGER, level="WARNING") as cm:
-            api.prepare(self.data_dir / "ej-fra.txt", os.devnull, ("fra",))
+            api.prepare(self.data_dir / "ej-fra.txt", self.tempdir / "foo", ("fra",))
         self.assertIn("deprecated", "\n".join(cm.output))
 
     sentences_to_convert = [
