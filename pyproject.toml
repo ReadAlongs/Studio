@@ -135,3 +135,8 @@ ignore_missing_imports = true
 
 [tool.isort]
 profile = "black"
+
+[tool.pytest]
+filterwarnings = [
+    "ignore:'audioop' is deprecated and slated for removal in Python 3.13:DeprecationWarning",
+]
