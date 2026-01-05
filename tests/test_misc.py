@@ -8,10 +8,8 @@ import zipfile
 from unittest import main
 
 import click
-from basic_test_case import BasicTestCase
 from lxml import etree
 from pep440 import is_canonical
-from test_dna_utils import segments_from_pairs
 
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.align import split_silences
@@ -28,6 +26,8 @@ from readalongs.text.util import (
     save_xml,
 )
 from readalongs.util import JoinerCallbackForClick
+from tests.basic_test_case import BasicTestCase
+from tests.test_dna_utils import segments_from_pairs
 
 
 class TestMisc(BasicTestCase):

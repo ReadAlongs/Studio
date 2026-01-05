@@ -4,18 +4,17 @@
 Test suite for the API way to call align
 """
 
-import os
 import re
 from contextlib import redirect_stderr
 from io import StringIO
 from unittest import main
 
 import click
-from basic_test_case import BasicTestCase, silence_logs
-from sound_swallower_stub import SoundSwallowerStub
 
 from readalongs import api
 from readalongs.log import LOGGER
+from tests.basic_test_case import BasicTestCase, silence_logs
+from tests.sound_swallower_stub import SoundSwallowerStub
 
 
 class TestAlignApi(BasicTestCase):
@@ -94,7 +93,7 @@ class TestAlignApi(BasicTestCase):
 
     def test_deprecated_prepare(self):
         with self.assertLogs(LOGGER, level="WARNING") as cm:
-            api.prepare(self.data_dir / "ej-fra.txt", os.devnull, ("fra",))
+            api.prepare(self.data_dir / "ej-fra.txt", self.tempdir / "foo", ("fra",))
         self.assertIn("deprecated", "\n".join(cm.output))
 
     sentences_to_convert = [

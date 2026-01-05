@@ -19,27 +19,26 @@ import re
 import sys
 from unittest import TestLoader, TestSuite, TextTestRunner
 
-from test_align_cli import TestAlignCli
-from test_anchors import TestAnchors
-from test_api import TestAlignApi
-from test_audio import TestAudio
-from test_config import TestConfig
-from test_dna_text import TestDNAText
-from test_dna_utils import TestDNAUtils
-from test_dtd import TestDTD
-from test_force_align import TestForceAlignment, TestXHTML
-from test_g2p_cli import TestG2pCli
-from test_make_xml_cli import TestMakeXMLCli
-from test_misc import TestMisc
-from test_package_urls import TestPackageURLs
-from test_silence import TestSilence
-from test_smil import TestSmilUtilities
-from test_temp_file import TestTempFile
-from test_tokenize_cli import TestTokenizeCli
-from test_tokenize_xml import TestTokenizer
-from test_web_api import TestWebApi
-
 from readalongs.log import LOGGER
+from tests.test_align_cli import TestAlignCli
+from tests.test_anchors import TestAnchors
+from tests.test_api import TestAlignApi
+from tests.test_audio import TestAudio
+from tests.test_config import TestConfig
+from tests.test_dna_text import TestDNAText
+from tests.test_dna_utils import TestDNAUtils
+from tests.test_dtd import TestDTD
+from tests.test_force_align import TestForceAlignment, TestXHTML
+from tests.test_g2p_cli import TestG2pCli
+from tests.test_make_xml_cli import TestMakeXMLCli
+from tests.test_misc import TestMisc
+from tests.test_package_urls import TestPackageURLs
+from tests.test_silence import TestSilence
+from tests.test_smil import TestSmilUtilities
+from tests.test_temp_file import TestTempFile
+from tests.test_tokenize_cli import TestTokenizeCli
+from tests.test_tokenize_xml import TestTokenizer
+from tests.test_web_api import TestWebApi
 
 LOADER = TestLoader()
 

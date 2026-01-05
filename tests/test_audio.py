@@ -7,8 +7,6 @@ from pathlib import Path
 from subprocess import run
 from unittest import main
 
-from basic_test_case import BasicTestCase
-
 from readalongs.audio_utils import (
     extract_section,
     join_section,
@@ -18,6 +16,7 @@ from readalongs.audio_utils import (
     write_audio_to_file,
 )
 from readalongs.log import LOGGER
+from tests.basic_test_case import BasicTestCase
 
 
 class TestAudio(BasicTestCase):

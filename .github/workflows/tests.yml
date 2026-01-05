@@ -32,13 +32,12 @@ jobs:
 
       - name: Run tests
         run: |
-          cd tests
-          coverage run --parallel-mode run.py prod
-          DEVELOPMENT=1 coverage run --parallel-mode test_web_api.py
+          coverage run --parallel-mode run_tests.py prod
+          DEVELOPMENT=1 coverage run --parallel-mode -m tests.test_web_api
           coverage combine
           coverage xml
 
-      - run: cd tests && coverage report
+      - run: coverage report
 
       - name: Make sure pre-commit hooks pass
         uses: pre-commit/action@v3.0.1
@@ -109,7 +108,7 @@ jobs:
           pip install -e .[all]
 
       - name: Run tests on Windows
-        run: cd tests && python run.py prod
+        run: python run_tests.py prod
 
       - name: Make sure the CLI outputs utf8 on Windows
         # Note: we're checking something CLI specific, from a prompt, so we don't want to run
@@ -156,4 +155,4 @@ jobs:
         run: pip install httpx
 
       - name: unit test the web API
-        run: python tests/test_web_api.py
+        run: python -m tests.test_web_api

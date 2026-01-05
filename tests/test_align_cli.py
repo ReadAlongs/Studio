@@ -9,21 +9,22 @@ import subprocess
 import tempfile
 from os.path import exists, join
 from pathlib import Path
+from typing import Union
 from unittest import main
 
-from basic_test_case import BasicTestCase
 from lxml.html import fromstring
-from sound_swallower_stub import SoundSwallowerStub
 
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.cli import align, langs
+from tests.basic_test_case import BasicTestCase
+from tests.sound_swallower_stub import SoundSwallowerStub
 
 
-def write_file(filename: str, file_contents: str) -> str:
+def write_file(filename: Union[str, Path], file_contents: str) -> str:
     """Write file_contents to file filename, and return its name (filename)"""
     with open(filename, mode="w", encoding="utf8") as f:
         f.write(file_contents)
-    return filename
+    return str(filename)
 
 
 class TestAlignCli(BasicTestCase):
@@ -245,7 +246,7 @@ class TestAlignCli(BasicTestCase):
         """Validates that the lexicon-based g2p works for English language alignment"""
 
         input_filename = write_file(
-            join(self.tempdir, "input"),
+            self.tempdir / "input",
             "This is some text that we will run through the English lexicon "
             "grapheme to morpheme approach.",
         )
@@ -405,7 +406,7 @@ class TestAlignCli(BasicTestCase):
         """align -i is obsolete, now we infer plain text vs XML; test that!"""
 
         # plain text with guess by contents
-        infile1 = write_file(join(self.tempdir, "infile1"), "some plain text")
+        infile1 = write_file(self.tempdir / "infile1", "some plain text")
         with SoundSwallowerStub("word:0:1"):
             results = self.runner.invoke(
                 align,
@@ -420,7 +421,7 @@ class TestAlignCli(BasicTestCase):
         self.assertIn("No input language specified for plain text", results.output)
 
         # plain text by extension
-        infile2 = write_file(join(self.tempdir, "infile2.txt"), "<?xml but .txt")
+        infile2 = write_file(self.tempdir / "infile2.txt", "<?xml but .txt")
         with SoundSwallowerStub("word:0:1"):
             results = self.runner.invoke(
                 align,
@@ -437,7 +438,7 @@ class TestAlignCli(BasicTestCase):
         # XML with guess by contents
         infile3 = self.add_bom(
             write_file(
-                join(self.tempdir, "infile3"),
+                self.tempdir / "infile3",
                 "<?xml version='1.0' encoding='utf-8'?><text>blah blah</text>",
             )
         )
@@ -454,7 +455,7 @@ class TestAlignCli(BasicTestCase):
 
         # XML with guess by contents, but with content error
         infile4 = write_file(
-            join(self.tempdir, "infile4"),
+            self.tempdir / "infile4",
             "<?xml version='1.0' encoding='utf-8'?><text>blah blah</bad_tag>",
         )
         with SoundSwallowerStub("word:0:1"):
@@ -470,7 +471,7 @@ class TestAlignCli(BasicTestCase):
         self.assertIn("Error parsing XML", results.output)
 
         # XML by file extension
-        infile5 = write_file(join(self.tempdir, "infile5.readalong"), "Not XML!")
+        infile5 = write_file(self.tempdir / "infile5.readalong", "Not XML!")
         with SoundSwallowerStub("word:0:1"):
             results = self.runner.invoke(
                 align,

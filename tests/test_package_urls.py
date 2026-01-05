@@ -3,13 +3,13 @@
 from unittest import main
 
 import requests
-from basic_test_case import BasicTestCase, silence_logs
 
 from readalongs.text.make_package import (
     FONTS_BUNDLE_URL,
     JS_BUNDLE_URL,
     fetch_bundle_file,
 )
+from tests.basic_test_case import BasicTestCase, silence_logs
 
 
 class TestPackageURLs(BasicTestCase):

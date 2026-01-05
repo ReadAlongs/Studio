@@ -8,16 +8,16 @@ from contextlib import redirect_stderr
 from io import StringIO
 from unittest import main
 
-from basic_test_case import BasicTestCase
 from lxml import etree
-from sound_swallower_stub import SoundSwallowerStub
-from test_make_xml_cli import updateFormatVersion, updateStudioVersion
 
 from readalongs.align import align_audio
 from readalongs.cli import align, g2p, make_xml, tokenize
 from readalongs.log import LOGGER
 from readalongs.text.convert_xml import convert_xml
 from readalongs.text.util import parse_xml
+from tests.basic_test_case import BasicTestCase
+from tests.sound_swallower_stub import SoundSwallowerStub
+from tests.test_make_xml_cli import updateFormatVersion, updateStudioVersion
 
 
 def run_convert_xml(input_string):

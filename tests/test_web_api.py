@@ -10,8 +10,6 @@ from time import perf_counter
 from unittest import main
 from unittest.mock import patch
 
-from basic_test_case import BasicTestCase
-
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.log import LOGGER
 from readalongs.text.add_ids_to_xml import add_ids
@@ -20,6 +18,7 @@ from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import parse_xml
 from readalongs.util import get_langs
 from readalongs.web_api import OutputFormat, create_grammar, web_api_app
+from tests.basic_test_case import BasicTestCase
 
 
 class TestWebApi(BasicTestCase):

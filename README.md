@@ -132,25 +132,35 @@ To install the latest published version on PyPI:
 
     pip install readalongs
 
-To install the current development version, clone the repo and pip install it
-locally:
+To install the current development version, clone the repo and pip
+install it locally, either with [hatch](https://hatch.pypa.io) (this
+will open a new shell with the package installed inside it):
 
-```sh
-$ git clone https://github.com/ReadAlongs/Studio.git
-$ cd Studio
-$ pip install -e .
-```
+    git clone https://github.com/ReadAlongs/Studio.git
+    cd Studio
+    hatch shell
+
+or directly with `pip` (you should be using a [virtual
+environment](https://docs.python.org/3/library/venv.html) though!):
+
+    git clone https://github.com/ReadAlongs/Studio.git
+    cd Studio
+    pip install -e .
 
 ### Verifying your installation
 
 Run `readalongs -h` to confirm that installation was successful.
 
 If you installed the current development version with Git, you can also run the
-full test suite (requires installing the dev dependencies):
+full test suite, either with `hatch`:
+
+    hatch test
+
+or test the installed version (requires installing dev dependencies):
 
     pip install 'readalongs[dev]'  # if you installed from PyPI, or
     pip install -e '.[dev]'        # if you installed from a local clone
-    python tests/run.py dev
+    python run_tests.py dev
 
 And you can download our [open samples on GitHub](https://github.com/ReadAlongs/OpenSamples)
 to run your first alignments.
