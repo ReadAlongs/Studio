@@ -16,8 +16,7 @@ from readalongs.audio_utils import (
     write_audio_to_file,
 )
 from readalongs.log import LOGGER
-
-from .basic_test_case import BasicTestCase
+from tests.basic_test_case import BasicTestCase
 
 
 class TestAudio(BasicTestCase):

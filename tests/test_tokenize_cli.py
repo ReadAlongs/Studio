@@ -7,8 +7,7 @@ import os
 from unittest import main
 
 from readalongs.cli import make_xml, tokenize
-
-from .basic_test_case import BasicTestCase
+from tests.basic_test_case import BasicTestCase
 
 # from readalongs.log import LOGGER
 

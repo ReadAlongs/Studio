@@ -9,8 +9,7 @@ from pydub import AudioSegment
 
 from readalongs.cli import align
 from readalongs.text.util import load_xml
-
-from .basic_test_case import BasicTestCase
+from tests.basic_test_case import BasicTestCase
 
 
 class TestSilence(BasicTestCase):

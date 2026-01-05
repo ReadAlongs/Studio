@@ -26,9 +26,8 @@ from readalongs.text.util import (
     save_xml,
 )
 from readalongs.util import JoinerCallbackForClick
-
-from .basic_test_case import BasicTestCase
-from .test_dna_utils import segments_from_pairs
+from tests.basic_test_case import BasicTestCase
+from tests.test_dna_utils import segments_from_pairs
 
 
 class TestMisc(BasicTestCase):

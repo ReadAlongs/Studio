@@ -8,8 +8,7 @@ from textwrap import dedent
 from unittest import main
 
 from readalongs.text.make_smil import make_smil, parse_smil
-
-from .basic_test_case import BasicTestCase
+from tests.basic_test_case import BasicTestCase
 
 
 class TestSmilUtilities(BasicTestCase):

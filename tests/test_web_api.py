@@ -18,8 +18,7 @@ from readalongs.text.tokenize_xml import tokenize_xml
 from readalongs.text.util import parse_xml
 from readalongs.util import get_langs
 from readalongs.web_api import OutputFormat, create_grammar, web_api_app
-
-from .basic_test_case import BasicTestCase
+from tests.basic_test_case import BasicTestCase
 
 
 class TestWebApi(BasicTestCase):

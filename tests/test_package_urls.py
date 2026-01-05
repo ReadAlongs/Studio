@@ -9,8 +9,7 @@ from readalongs.text.make_package import (
     JS_BUNDLE_URL,
     fetch_bundle_file,
 )
-
-from .basic_test_case import BasicTestCase, silence_logs
+from tests.basic_test_case import BasicTestCase, silence_logs
 
 
 class TestPackageURLs(BasicTestCase):

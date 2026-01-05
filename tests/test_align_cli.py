@@ -15,9 +15,8 @@ from lxml.html import fromstring
 
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.cli import align, langs
-
-from .basic_test_case import BasicTestCase
-from .sound_swallower_stub import SoundSwallowerStub
+from tests.basic_test_case import BasicTestCase
+from tests.sound_swallower_stub import SoundSwallowerStub
 
 
 def write_file(filename: str, file_contents: str) -> str:

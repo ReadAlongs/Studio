@@ -11,8 +11,7 @@ from lxml import etree
 from readalongs.text import tokenize_xml
 from readalongs.text.add_ids_to_xml import add_ids
 from readalongs.text.util import parse_xml
-
-from .basic_test_case import BasicTestCase
+from tests.basic_test_case import BasicTestCase
 
 
 class TestDNAText(BasicTestCase):

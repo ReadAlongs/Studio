@@ -24,8 +24,7 @@ from readalongs.align_utils import (
 from readalongs.log import LOGGER
 from readalongs.portable_tempfile import PortableNamedTemporaryFile
 from readalongs.text.util import load_txt, load_xml, save_xml
-
-from .basic_test_case import BasicTestCase, silence_c_stderr
+from tests.basic_test_case import BasicTestCase, silence_c_stderr
 
 
 class TestForceAlignment(BasicTestCase):

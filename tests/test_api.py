@@ -14,9 +14,8 @@ import click
 
 from readalongs import api
 from readalongs.log import LOGGER
-
-from .basic_test_case import BasicTestCase, silence_logs
-from .sound_swallower_stub import SoundSwallowerStub
+from tests.basic_test_case import BasicTestCase, silence_logs
+from tests.sound_swallower_stub import SoundSwallowerStub
 
 
 class TestAlignApi(BasicTestCase):
