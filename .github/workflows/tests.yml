@@ -53,7 +53,6 @@ jobs:
 
       - uses: codecov/codecov-action@v5
         with:
-          directory: ./tests
           token: ${{ secrets.CODECOV_TOKEN }}  # optional but apparently makes upload more reliable
           fail_ci_if_error: false # too many upload errors to keep "true"
 
