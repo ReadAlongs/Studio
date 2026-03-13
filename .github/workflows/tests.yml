@@ -13,12 +13,12 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: FedericoCarboni/setup-ffmpeg@v2
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.9"
           cache: "pip"
@@ -51,7 +51,7 @@ jobs:
         #  - setuptools is MIT, but not always auto-detected.
         run: licensecheck --requirements-path pyproject.toml --zero --ignore-packages pympi-ling text-unidecode setuptools
 
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         with:
           directory: ./tests
           token: ${{ secrets.CODECOV_TOKEN }}  # optional but apparently makes upload more reliable
@@ -92,12 +92,12 @@ jobs:
     runs-on: windows-latest
     if: ${{ !contains(github.event.head_commit.message, '#no-ci') }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: FedericoCarboni/setup-ffmpeg@v2
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.9"
           cache: "pip"
@@ -126,7 +126,7 @@ jobs:
   test-heroku-env:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Read the Heroku run time env and cmd
         run: |
@@ -134,7 +134,7 @@ jobs:
           echo "RUNTIME_CMD=$(cat Procfile | grep web: | sed 's/web: *//')" >> $GITHUB_ENV
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "${{ env.PYTHON_VERSION }}"
           cache: "pip"
