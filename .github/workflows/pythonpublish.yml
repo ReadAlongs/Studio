@@ -25,10 +25,10 @@ jobs:
       contents: write  # allows creating a GitHub Release
       id-token: write  # allows signing the dists with Sigstore
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.x"
 
@@ -86,10 +86,10 @@ jobs:
     permissions:
       contents: write  # to push to the gh-pages branch
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0  # needed to get the gh-pages branch
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.10"
       - name: Install dependencies and Studio
