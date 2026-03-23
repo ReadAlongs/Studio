@@ -162,6 +162,10 @@ or test the installed version (requires installing dev dependencies):
     pip install -e '.[dev]'        # if you installed from a local clone
     python run_tests.py dev
 
+recently, we also made the project compatible with Pytest, so this will run the tests too:
+
+    pytest
+
 And you can download our [open samples on GitHub](https://github.com/ReadAlongs/OpenSamples)
 to run your first alignments.
 
