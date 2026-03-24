@@ -1,5 +1,9 @@
 # This workflows will upload a Python Package using Twine when a release is created
 # For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
+# To create a release:
+#  - make sure readalongs/_version.py has the new version number
+#  - create an annotated tag, e.g., run: git tag -a v1.2.3 -m"v1.2.3"
+#  - push the tag, which will trigger this workflow to publish on PyPI and GitHub
 
 name: Upload Python Package
 on:
@@ -47,7 +51,7 @@ jobs:
         run: python -m build --sdist --wheel
 
       - name: Sign the dists with Sigstore
-        uses: sigstore/gh-action-sigstore-python@v3.0.0
+        uses: sigstore/gh-action-sigstore-python@a5caf349bc536fbef3668a10ed7f5cd309a4b53d # v3.2.0
         with:
           inputs: >-
             ./dist/*.tar.gz
@@ -55,26 +59,22 @@ jobs:
 
       - name: Update CHANGELOG
         id: changelog
-        uses: requarks/changelog-action@v1
+        uses: requarks/changelog-action@b78a3354a01f4a1affb484b9264b506a815c46b1 # v1.10.3
         with:
           token: ${{ github.token }}
           tag: ${{ github.ref_name }}
 
       - name: Create a GitHub release
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # @v1.21.0
         with:
           tag: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
           body: ${{ steps.changelog.outputs.changes }}
           token: ${{ github.token }}
 
-      - name: Remove the sigstore files, not supported by pypa publish
-        run: rm -f ./dist/*.sigstore.json
-
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
           verbose: true
           attestations: true
 
