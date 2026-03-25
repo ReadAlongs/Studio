@@ -108,7 +108,7 @@ def encode_from_path(path: Union[str, os.PathLike]) -> str:
             url = img.get("url")
             if url.startswith("http"):
                 try:
-                    request_result = requests.get(url)
+                    request_result = requests.get(url, timeout=10)
                 except requests.exceptions.RequestException:
                     request_result = None
             else:
