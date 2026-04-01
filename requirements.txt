@@ -16,7 +16,8 @@
 # - requests>=2.31.0
 # - soundswallower~=0.6.0
 # - webvtt-py==0.5.1
-# - readalongs[api]
+# - gunicorn>=23.0.0; platform_system != "Windows"
+# - uvicorn>=0.30.1
 # - ilt-panphon<0.22,>=0.21.4
 #
 
@@ -33,33 +34,26 @@ certifi==2026.2.25
 charset-normalizer==3.4.6
     # via requests
 chevron==0.14.0
-    # via
-    #   hatch.envs.prod
-    #   readalongs
+    # via hatch.envs.prod
 click==8.1.8
     # via
     #   hatch.envs.prod
     #   g2p
-    #   readalongs
     #   uvicorn
 coloredlogs==15.0.1
     # via
     #   hatch.envs.prod
     #   g2p
-    #   readalongs
 et-xmlfile==2.0.0
     # via openpyxl
 fastapi==0.135.2
-    # via
-    #   hatch.envs.prod
-    #   readalongs
+    # via hatch.envs.prod
 g2p @ git+https://github.com/roedoejet/g2p.git@main
-    # Manual override: for deployment on Heroku, we want the latest g2p@main on GitHub
-    # via
-    #   hatch.envs.prod
-    #   readalongs
-gunicorn==25.3.0
-    # via readalongs
+# g2p==2.3.1
+	# Manual override: for deployment on Heroku, we want the latest g2p@main on GitHub
+    # via hatch.envs.prod
+gunicorn==25.3.0 ; platform_system != "Windows"
+    # via hatch.envs.prod
 h11==0.16.0
     # via uvicorn
 humanfriendly==10.0
@@ -75,16 +69,13 @@ ilt-panphon==0.21.4
     #   hatch.envs.prod
     #   g2p
 lxml==6.0.2
-    # via
-    #   hatch.envs.prod
-    #   readalongs
+    # via hatch.envs.prod
 munkres==1.1.4
     # via ilt-panphon
-numpy==2.4.3
+numpy==2.4.4
     # via
     #   hatch.envs.prod
     #   ilt-panphon
-    #   readalongs
 openpyxl==3.1.5
     # via g2p
 packaging==26.0
@@ -94,35 +85,27 @@ pydantic==2.12.5
     #   hatch.envs.prod
     #   fastapi
     #   g2p
-    #   readalongs
 pydantic-core==2.41.5
     # via pydantic
 pydub-ng==0.2.0 ; python_version >= "3.10"
-    # via
-    #   hatch.envs.prod
-    #   readalongs
+    # via hatch.envs.prod
 pympi-ling==1.71
-    # via
-    #   hatch.envs.prod
-    #   readalongs
+    # via hatch.envs.prod
 python-slugify==5.0.0
-    # via
-    #   hatch.envs.prod
-    #   readalongs
+    # via hatch.envs.prod
 pyyaml==6.0.3
     # via
     #   g2p
     #   ilt-panphon
-readalongs==1.2.2
-    # via hatch.envs.prod
-regex==2026.2.28
+regex==2026.3.32
     # via
     #   g2p
     #   ilt-panphon
-requests==2.33.0
-    # via
-    #   hatch.envs.prod
-    #   readalongs
+requests==2.33.1
+    # via hatch.envs.prod
+# soundswallower==0.6.7
+    # Manual override: soundswallower is not needed for the web API so ignore it.
+    # via hatch.envs.prod
 starlette==1.0.0
     # via fastapi
 text-unidecode==1.3
@@ -147,8 +130,6 @@ unicodecsv==0.14.1
 urllib3==2.6.3
     # via requests
 uvicorn==0.42.0
-    # via readalongs
+    # via hatch.envs.prod
 webvtt-py==0.5.1
-    # via
-    #   hatch.envs.prod
-    #   readalongs
+    # via hatch.envs.prod
