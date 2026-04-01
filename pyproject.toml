@@ -72,7 +72,6 @@ api = [
 ]
 
 heroku = [
-    "readalongs[api]",
     # We don't actually use the panphon 0.22 improvements on heroku so stick to
     # 0.21 with its lighter weight dependencies
     "ilt-panphon>=0.21.4,<0.22",
@@ -118,7 +117,7 @@ requires = [ "hatch-pip-compile" ]
 features = [ "dev" ]
 
 [tool.hatch.envs.prod]
-features = [ "heroku" ]
+features = [ "heroku", "api" ]
 type = "pip-compile"
 python = "3.13"
 lock-filename = "requirements.txt"
@@ -140,4 +139,5 @@ profile = "black"
 [tool.pytest]
 filterwarnings = [
     "ignore:'audioop' is deprecated and slated for removal in Python 3.13:DeprecationWarning",
+    "ignore:.*codecs.open.. is deprecated. Use open.. instead.*:DeprecationWarning",
 ]
