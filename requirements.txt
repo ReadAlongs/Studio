@@ -9,28 +9,29 @@
 # - lxml>=4.9.4
 # - numpy>=1.20.2
 # - pydantic<3,>=1.8.2
-# - pydub-ng==0.2.0
+# - pydub>=0.25.1; python_version < "3.10"
+# - pydub-ng==0.2.0; python_version >= "3.10"
 # - pympi-ling<2.0,>=1.69
 # - python-slugify==5.0.0
 # - requests>=2.31.0
 # - soundswallower~=0.6.0
 # - webvtt-py==0.5.1
 # - gunicorn>=23.0.0; platform_system != "Windows"
-# - ilt-panphon<0.22,>=0.21.4
 # - uvicorn>=0.30.1
+# - ilt-panphon<0.22,>=0.21.4
 #
 
-annotated-doc==0.0.3
+annotated-doc==0.0.4
     # via fastapi
 annotated-types==0.7.0
     # via pydantic
-anyio==4.11.0
+anyio==4.13.0
     # via starlette
-audioop-lts==0.2.2 ; python_version >= "3.13"
+audioop-lts==0.2.2
     # via pydub-ng
-certifi==2025.10.5
+certifi==2026.2.25
     # via requests
-charset-normalizer==3.4.4
+charset-normalizer==3.4.6
     # via requests
 chevron==0.14.0
     # via hatch.envs.prod
@@ -43,17 +44,15 @@ coloredlogs==15.0.1
     # via
     #   hatch.envs.prod
     #   g2p
-ilt-editdistance==0.8.2
-    # via panphon
 et-xmlfile==2.0.0
     # via openpyxl
-fastapi==0.120.2
+fastapi==0.135.2
     # via hatch.envs.prod
-# Manual override: for deployment on Heroku, we want the latest g2p@main on GitHub
 g2p @ git+https://github.com/roedoejet/g2p.git@main
-# g2p==2.2.2
+# g2p==2.3.1
+	# Manual override: for deployment on Heroku, we want the latest g2p@main on GitHub
     # via hatch.envs.prod
-gunicorn==23.0.0 ; platform_system != "Windows"
+gunicorn==25.3.0 ; platform_system != "Windows"
     # via hatch.envs.prod
 h11==0.16.0
     # via uvicorn
@@ -63,30 +62,32 @@ idna==3.11
     # via
     #   anyio
     #   requests
-lxml==6.0.2
-    # via hatch.envs.prod
-munkres==1.1.4
-    # via panphon
-numpy==2.3.4
-    # via
-    #   hatch.envs.prod
-    #   panphon
-openpyxl==3.1.5
-    # via g2p
-packaging==25.0
-    # via gunicorn
+ilt-editdistance==0.8.2
+    # via ilt-panphon
 ilt-panphon==0.21.4
     # via
     #   hatch.envs.prod
     #   g2p
-pydantic==2.8.2
+lxml==6.0.2
+    # via hatch.envs.prod
+munkres==1.1.4
+    # via ilt-panphon
+numpy==2.4.4
+    # via
+    #   hatch.envs.prod
+    #   ilt-panphon
+openpyxl==3.1.5
+    # via g2p
+packaging==26.0
+    # via gunicorn
+pydantic==2.12.5
     # via
     #   hatch.envs.prod
     #   fastapi
     #   g2p
-pydantic-core==2.20.1
+pydantic-core==2.41.5
     # via pydantic
-pydub-ng==0.2.0
+pydub-ng==0.2.0 ; python_version >= "3.10"
     # via hatch.envs.prod
 pympi-ling==1.71
     # via hatch.envs.prod
@@ -95,25 +96,23 @@ python-slugify==5.0.0
 pyyaml==6.0.3
     # via
     #   g2p
-    #   panphon
-regex==2025.10.23
+    #   ilt-panphon
+regex==2026.3.32
     # via
     #   g2p
-    #   panphon
-requests==2.33.0
+    #   ilt-panphon
+requests==2.33.1
     # via hatch.envs.prod
-sniffio==1.3.1
-    # via anyio
-# Manual override: soundswallower is not needed for the web API so ignore it.
-# soundswallower==0.6.5
+# soundswallower==0.6.7
+    # Manual override: soundswallower is not needed for the web API so ignore it.
     # via hatch.envs.prod
-starlette==0.49.1
+starlette==1.0.0
     # via fastapi
 text-unidecode==1.3
     # via
     #   g2p
     #   python-slugify
-tqdm==4.67.1
+tqdm==4.67.3
     # via g2p
 typing-extensions==4.15.0
     # via
@@ -121,11 +120,16 @@ typing-extensions==4.15.0
     #   g2p
     #   pydantic
     #   pydantic-core
+    #   typing-inspection
+typing-inspection==0.4.2
+    # via
+    #   fastapi
+    #   pydantic
 unicodecsv==0.14.1
-    # via panphon
+    # via ilt-panphon
 urllib3==2.6.3
     # via requests
-uvicorn==0.38.0
+uvicorn==0.42.0
     # via hatch.envs.prod
 webvtt-py==0.5.1
     # via hatch.envs.prod
