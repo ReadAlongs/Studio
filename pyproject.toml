@@ -41,7 +41,8 @@ dependencies = [
     "click>=8.0.4",
     "coloredlogs>=10.0",
     "fastapi>=0.103.0",
-    "g2p>=2.2.0, <3",
+    #"g2p>=2.2.0, <3",
+    "g2p@git+https://github.com/roedoejet/g2p.git@dev.ej/relax-click",
     "lxml>=4.9.4",
     "numpy>=1.20.2",
     "pydantic>=1.8.2,<3",
@@ -109,6 +110,9 @@ path = "readalongs/_version.py"
 include = [
     "/readalongs",
 ]
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.hatch.env]
 requires = [ "hatch-pip-compile" ]
