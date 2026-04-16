@@ -96,11 +96,11 @@ class TestAlignCli(BasicTestCase):
             (output / "www/assets/image-for-page1.jpg").exists(),
             "alignment with image files should have copied image-for-page1.jpg to assets",
         )
-        self.assertIn("image-for-page2.jpg is accessible ", results.stdout)
+        self.assertIn("image-for-page2.jpg is accessible ", results.output)
         os.unlink("image-for-page1.jpg")
         self.assertFalse(exists("image-for-page1.jpg"))
-        self.assertRegex(results.stdout, "Align mode .* succeeded for sequence 0.")
-        # print(results.stdout)
+        self.assertRegex(results.output, "Align mode .* succeeded for sequence 0.")
+        # print(results.output)
 
         # Move the alignment output to compare with further down
         # We cannot just output to a different name because changing the output file name
@@ -126,7 +126,7 @@ class TestAlignCli(BasicTestCase):
             ],
         )
         self.assertEqual(results_dna.exit_code, 0)
-        # print(results_dna.stdout)
+        # print(results_dna.output)
         self.assertTrue(
             (output / "www/output.readalong").exists(),
             "successful alignment with DNA should have created output.readalong",
@@ -135,13 +135,13 @@ class TestAlignCli(BasicTestCase):
             (output / "output.xhtml").exists(),
             "successful alignment with -o xhtml should have created output.xhtml",
         )
-        self.assertIn("Please copy image-for-page1.jpg to ", results_dna.stdout)
+        self.assertIn("Please copy image-for-page1.jpg to ", results_dna.output)
         self.assertFalse(
             (output / "www/assets/image-for-page1.jpg").exists(),
             "image-for-page1.jpg was not on disk, cannot have been copied",
         )
         self.assertIn(
-            "Align mode moderate succeeded for sequence 0.", results_dna.stdout
+            "Align mode moderate succeeded for sequence 0.", results_dna.output
         )
 
         # We test error situations in the same test case, since we reuse the same outputs
@@ -153,6 +153,7 @@ class TestAlignCli(BasicTestCase):
                 str(output),
             ],
         )
+        print("dir(result)", dir(results_output_exists))
         self.assertNotEqual(results_output_exists.exit_code, 0)
         self.assertIn(
             "already exists, use -f to overwrite", results_output_exists.output
@@ -237,10 +238,10 @@ class TestAlignCli(BasicTestCase):
         """Validates that readalongs langs lists all in-langs that can map to eng-arpabet"""
         results = self.runner.invoke(langs)
         self.assertEqual(results.exit_code, 0)
-        self.assertIn("crg-tmd", results.stdout)
-        self.assertIn("crg-dv ", results.stdout)
-        self.assertNotIn("crg ", results.stdout)
-        self.assertNotIn("fn-unicode", results.stdout)
+        self.assertIn("crg-tmd", results.output)
+        self.assertIn("crg-dv ", results.output)
+        self.assertNotIn("crg ", results.output)
+        self.assertNotIn("fn-unicode", results.output)
 
     def test_align_english(self):
         """Validates that the lexicon-based g2p works for English language alignment"""
@@ -310,7 +311,7 @@ class TestAlignCli(BasicTestCase):
                 join(self.tempdir, "out-invalid-config-1"),
             ],
         )
-        self.assertIn("must be in JSON format", result.stdout)
+        self.assertIn("must be in JSON format", result.output)
 
         # --config parameters needs to contain valid json, test with garbage
         config_file = join(self.tempdir, "bad-config.json")
@@ -326,7 +327,7 @@ class TestAlignCli(BasicTestCase):
                 join(self.tempdir, "out-invalid-config-2"),
             ],
         )
-        self.assertIn("is not in valid JSON format", result.stdout)
+        self.assertIn("is not in valid JSON format", result.output)
 
     def test_bad_anchors(self):
         """Make sure invalid anchors yield appropriate errors"""
@@ -356,7 +357,7 @@ class TestAlignCli(BasicTestCase):
             "Could not parse all anchors",
             "Aborting.",
         ]:
-            self.assertIn(msg, bad_anchors_result.stdout)
+            self.assertIn(msg, bad_anchors_result.output)
 
     def test_misc_align_errors(self):
         """Test calling readalongs align with misc CLI errors"""

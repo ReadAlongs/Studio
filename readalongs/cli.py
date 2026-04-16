@@ -147,6 +147,7 @@ LANGUAGES_DETAILS = (
     "--config",
     type=click.Path(exists=True),
     help="Use ReadAlong-Studio configuration file (in JSON format)",
+    default=None,
 )
 @click.option(
     "-o",
