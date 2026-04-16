@@ -38,7 +38,7 @@ classifiers = [
 
 dependencies = [
     "chevron==0.14.0",
-    "click>=8.0.4,<8.2.0",
+    "click>=8.0.4",
     "coloredlogs>=10.0",
     "fastapi>=0.103.0",
     "g2p>=2.2.0, <3",

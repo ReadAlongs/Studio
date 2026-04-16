@@ -47,7 +47,7 @@ class TestMakeXMLCli(BasicTestCase):
             ["-l", "atj", "-d", self.empty_file, os.path.join(self.tempdir, "delme")],
         )
         self.assertEqual(results.exit_code, 0)
-        self.assertRegex(results.stdout, "Running readalongs make-xml")
+        self.assertRegex(results.output, "Running readalongs make-xml")
 
     def test_no_lang(self):
         """Error case: readalongs make-xml without the mandatory -l switch"""
@@ -55,13 +55,13 @@ class TestMakeXMLCli(BasicTestCase):
             make_xml, [self.empty_file, self.empty_file + ".readalong"]
         )
         self.assertNotEqual(results.exit_code, 0)
-        self.assertRegex(results.stdout, "Missing.*language")
+        self.assertRegex(results.output, "Missing.*language")
 
     def test_inputfile_not_exist(self):
         """Error case: input file does not exist"""
         results = self.runner.invoke(make_xml, "-l atj /file/does/not/exist delme")
         self.assertNotEqual(results.exit_code, 0)
-        self.assertRegex(results.stdout, "No such file or directory")
+        self.assertRegex(results.output, "No such file or directory")
 
     def test_outputfile_exists(self):
         """Existing output file should not be overwritten by readalongs make-xml by default"""
@@ -74,7 +74,7 @@ class TestMakeXMLCli(BasicTestCase):
             ["-l", "atj", self.empty_file, os.path.join(self.tempdir, "exists")],
         )
         self.assertNotEqual(results.exit_code, 0)
-        self.assertRegex(results.stdout, "exists.*overwrite")
+        self.assertRegex(results.output, "exists.*overwrite")
 
     def test_output_exists(self):
         """Make sure readalongs make-xml create the expected output file"""
@@ -124,7 +124,7 @@ class TestMakeXMLCli(BasicTestCase):
         # LOGGER.warning("Output: {}".format(results.output))
         # LOGGER.warning("Exception: {}".format(results.exception))
         self.assertEqual(results.exit_code, 0)
-        self.assertRegex(results.stdout, "Wrote.*someinput[.]readalong")
+        self.assertRegex(results.output, "Wrote.*someinput[.]readalong")
         self.assertTrue(
             os.path.exists(os.path.join(self.tempdir, "someinput.readalong"))
         )
