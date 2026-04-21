@@ -68,7 +68,7 @@ ilt-panphon==0.21.4
     # via
     #   hatch.envs.prod
     #   g2p
-lxml==6.0.2
+lxml==6.1.0
     # via hatch.envs.prod
 munkres==1.1.4
     # via ilt-panphon
