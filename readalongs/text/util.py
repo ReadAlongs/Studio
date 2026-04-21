@@ -147,9 +147,9 @@ def load_xml_zip(zip_path, input_path) -> etree.ElementTree:
 
 
 def write_xml(output_filelike, xml):
-    """Write XML to already opened file-like object"""
+    """Write XML to already opened binary-mode file-like object"""
     output_filelike.write(etree.tostring(xml, encoding="utf-8", xml_declaration=True))
-    output_filelike.write("\n".encode("utf-8"))
+    output_filelike.write(b"\n")
 
 
 def save_xml(output_path, xml):
@@ -173,7 +173,7 @@ def save_xml_zip(zip_path, output_path, xml):
 
 
 def load_txt(input_path):
-    with open(input_path, "r", encoding="utf-8-sig") as fin:
+    with open(input_path, encoding="utf-8-sig") as fin:
         return fin.read()
 
 
@@ -197,7 +197,7 @@ def save_txt_zip(zip_path, output_path, txt):
 
 
 def load_json(input_path):
-    with open(input_path, "r", encoding="utf-8-sig") as fin:
+    with open(input_path, encoding="utf-8-sig") as fin:
         return json.load(fin, object_pairs_hook=OrderedDict)
 
 
@@ -383,7 +383,7 @@ def save_readme_txt(
 ):
     # setup path for default WordPress upload directory
     today = datetime.now()
-    wp_upload_folder = "/wp-content/uploads/{:%Y/%m}/".format(today)
+    wp_upload_folder = f"/wp-content/uploads/{today:%Y/%m}/"
     with open(output_path, "w", encoding="utf-8") as fout:
         fout.write(
             TEMPLATE_README_TXT.format(

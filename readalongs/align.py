@@ -248,7 +248,7 @@ def read_noisedict(asr_config: soundswallower.Config) -> Set[str]:
 
     def load_noisedict(fdict):
         try:
-            with open(fdict, "rt", encoding="utf-8") as dictfh:
+            with open(fdict, encoding="utf-8") as dictfh:
                 noisewords = set()
                 for line in dictfh:
                     if line.startswith("##") or line.startswith(";;"):

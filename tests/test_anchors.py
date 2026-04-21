@@ -83,7 +83,7 @@ class TestAnchors(BasicTestCase):
             </body></doc>
         """
         xml_file = os.path.join(self.tempdir, "text-with-anchors.readalong")
-        with open(xml_file, "wt", encoding="utf8") as f:
+        with open(xml_file, "w", encoding="utf8") as f:
             print(xml_with_anchors, file=f)
         with self.assertLogs(LOGGER, level="INFO") as cm:
             with silence_c_stderr(), redirect_stderr(StringIO()):

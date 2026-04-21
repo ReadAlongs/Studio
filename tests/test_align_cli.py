@@ -88,7 +88,6 @@ class TestAlignCli(BasicTestCase):
         )
         with open(
             output / "tempfiles/output.tokenized.readalong",
-            "r",
             encoding="utf-8",
         ) as f:
             self.assertNotIn("\ufeff", f.read())
@@ -292,7 +291,7 @@ class TestAlignCli(BasicTestCase):
         tokenized_file = join(
             self.tempdir, "eng-output", "tempfiles", "eng-output.g2p.readalong"
         )
-        with open(tokenized_file, "r", encoding="utf8") as f:
+        with open(tokenized_file, encoding="utf8") as f:
             tok_output = f.read()
 
         self.assertIn(g2p_ref, tok_output)
@@ -616,7 +615,7 @@ class TestAlignCli(BasicTestCase):
                 return f.read()
 
         def slurp_text(filename, encoding):
-            with open(filename, "r", encoding=encoding) as f:
+            with open(filename, encoding=encoding) as f:
                 return f.read()
 
         base_file = write_file(self.tempdir / "add-bom-input.txt", "Random Text été")

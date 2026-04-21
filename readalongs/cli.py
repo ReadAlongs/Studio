@@ -564,7 +564,7 @@ def make_xml(**kwargs):
     except (RuntimeError, OSError) as e:
         raise click.UsageError(str(e)) from e
 
-    LOGGER.info("Wrote {}".format(out_file))
+    LOGGER.info(f"Wrote {out_file}")
 
 
 @cli.command(  # type: ignore  # quench spurious mypy error: "Command" has no attribute "command"
@@ -637,7 +637,7 @@ def tokenize(**kwargs):
         write_xml(sys.stdout.buffer, xml)
     else:
         save_xml(output_path, xml)
-    LOGGER.info("Wrote {}".format(output_path))
+    LOGGER.info(f"Wrote {output_path}")
 
 
 @cli.command(  # type: ignore  # quench spurious mypy error: "Command" has no attribute "command"
@@ -759,7 +759,7 @@ def g2p(**kwargs):
         write_xml(sys.stdout.buffer, xml)
     else:
         save_xml(output_path, xml)
-        LOGGER.info("Wrote {}".format(output_path))
+        LOGGER.info(f"Wrote {output_path}")
 
     if not valid:
         LOGGER.error(
