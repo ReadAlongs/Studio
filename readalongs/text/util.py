@@ -7,13 +7,10 @@
 # TODO: Add Google standard format docstrings
 ############################################
 
-import json
 import os
 import re
 import zipfile
-from collections import OrderedDict
 from datetime import datetime
-from io import TextIOWrapper
 from typing import IO, Union
 
 from lxml import etree
@@ -140,12 +137,6 @@ def parse_xml(xml_text: Union[str, bytes]) -> etree.ElementTree:
     )
 
 
-def load_xml_zip(zip_path, input_path) -> etree.ElementTree:
-    with zipfile.ZipFile(zip_path, "r") as fin_zip:
-        with fin_zip.open(input_path, "r") as fin:
-            return load_xml(fin)
-
-
 def write_xml(output_filelike, xml):
     """Write XML to already opened binary-mode file-like object"""
     output_filelike.write(etree.tostring(xml, encoding="utf-8", xml_declaration=True))
@@ -163,25 +154,9 @@ def xml_to_string(xml) -> str:
     return etree.tostring(xml, encoding="utf-8", xml_declaration=True).decode()
 
 
-def save_xml_zip(zip_path, output_path, xml):
-    ensure_dirs(zip_path)
-    with zipfile.ZipFile(zip_path, "a", compression=zipfile.ZIP_DEFLATED) as fout_zip:
-        fout_zip.writestr(
-            output_path,
-            etree.tostring(xml, encoding="utf-8", xml_declaration=True) + "\n",
-        )
-
-
 def load_txt(input_path):
     with open(input_path, encoding="utf-8-sig") as fin:
         return fin.read()
-
-
-def load_txt_zip(zip_path, input_path):
-    with zipfile.ZipFile(zip_path, "r") as fin_zip:
-        with fin_zip.open(input_path, "r") as fin:
-            fin_utf8 = TextIOWrapper(fin, encoding="utf-8")
-            return fin_utf8.read()
 
 
 def save_txt(output_path, txt):
@@ -193,31 +168,6 @@ def save_txt(output_path, txt):
 def save_txt_zip(zip_path, output_path, txt):
     ensure_dirs(zip_path)
     with zipfile.ZipFile(zip_path, "a", compression=zipfile.ZIP_DEFLATED) as fout_zip:
-        fout_zip.writestr(output_path, txt.encode("utf-8"))
-
-
-def load_json(input_path):
-    with open(input_path, encoding="utf-8-sig") as fin:
-        return json.load(fin, object_pairs_hook=OrderedDict)
-
-
-def load_json_zip(zip_path, input_path):
-    with zipfile.ZipFile(zip_path, "r") as fin_zip:
-        with fin_zip.open(input_path, "r") as fin:
-            fin_utf8 = TextIOWrapper(fin, encoding="utf-8")
-            return json.loads(fin_utf8.read(), object_pairs_hook=OrderedDict)
-
-
-def save_json(output_path, obj):
-    ensure_dirs(output_path)
-    with open(output_path, "w", encoding="utf-8") as fout:
-        fout.write(unicode(json.dumps(obj, ensure_ascii=False, indent=4)))
-
-
-def save_json_zip(zip_path, output_path, obj):
-    ensure_dirs(zip_path)
-    txt = unicode(json.dumps(obj, ensure_ascii=False, indent=4))
-    with zipfile.ZipFile(zip_path, "a") as fout_zip:
         fout_zip.writestr(output_path, txt.encode("utf-8"))
 
 
