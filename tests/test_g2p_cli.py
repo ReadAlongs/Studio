@@ -338,7 +338,7 @@ class TestG2pCli(BasicTestCase):
                 _ = align_audio(
                     text_file, audio_file, save_temps=os.path.join(self.tempdir, "foo")
                 )
-        with open(os.path.join(self.tempdir, "foo.dict"), "r", encoding="utf8") as f:
+        with open(os.path.join(self.tempdir, "foo.dict"), encoding="utf8") as f:
             dict_file = f.read()
             self.assertIn("S AH S IY", dict_file)  # "ceci" in fra
             self.assertIn("DH IH S", dict_file)  # "this" in eng
