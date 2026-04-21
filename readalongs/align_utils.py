@@ -2,7 +2,6 @@
 Functions for saving alignments in various file formats.
 """
 
-import io
 from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
@@ -399,7 +398,7 @@ def create_input_ras(**kwargs):
     try:
         if kwargs.get("input_file_name", False):
             filename = kwargs["input_file_name"]
-            with io.open(kwargs["input_file_name"], encoding="utf-8-sig") as f:
+            with open(kwargs["input_file_name"], encoding="utf-8-sig") as f:
                 text = f.readlines()
         elif kwargs.get("input_file_handle", False):
             filename = kwargs["input_file_handle"].name
@@ -418,10 +417,10 @@ def create_input_ras(**kwargs):
     save_temps = kwargs.get("save_temps", None)
     if kwargs.get("output_file", False):
         filename = kwargs["output_file"]
-        outfile = io.open(filename, "wb")
+        outfile = open(filename, "wb")
     elif save_temps is not None:
         filename = save_temps + ".input.readalong"
-        outfile = io.open(filename, "wb")
+        outfile = open(filename, "wb")
     else:
         outfile = PortableNamedTemporaryFile(
             prefix="readalongs_xml_", suffix=".readalong", delete=True

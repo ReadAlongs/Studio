@@ -546,7 +546,7 @@ def make_xml(**kwargs):
             _, filename = create_input_ras(
                 input_file_handle=input_file, text_languages=languages
             )
-            with io.open(filename, encoding="utf-8-sig") as f:
+            with open(filename, encoding="utf-8-sig") as f:
                 sys.stdout.write(f.read())
         else:
             if not str(out_file).endswith(".readalong"):

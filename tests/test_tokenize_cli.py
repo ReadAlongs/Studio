@@ -2,7 +2,6 @@
 
 """Test suite for readalongs tokenize"""
 
-import io
 import os
 from unittest import main
 
@@ -43,7 +42,7 @@ class TestTokenizeCli(BasicTestCase):
 
     def test_with_stdin(self):
         """Test readalongs reading from stdin and writing to stdout"""
-        with io.open(self.rasfile, encoding="utf8") as f:
+        with open(self.rasfile, encoding="utf8") as f:
             inputtext = f.read()
         results = self.runner.invoke(tokenize, "-", input=inputtext)
         self.assertEqual(results.exit_code, 0)
