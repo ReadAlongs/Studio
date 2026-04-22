@@ -132,7 +132,7 @@ class TestForceAlignment(BasicTestCase):
         with TemporaryDirectory(prefix="readalongs_am_") as tempdir:
             custom_am_path = os.path.join(tempdir, "en-us")
             shutil.copytree(get_model_path("en-us"), custom_am_path)
-            with open(os.path.join(custom_am_path, "noisedict"), "at") as fh:
+            with open(os.path.join(custom_am_path, "noisedict"), "a") as fh:
                 fh.write(";; here is a comment\n")
                 fh.write("[BOGUS] SIL\n")
             with redirect_stderr(StringIO()):

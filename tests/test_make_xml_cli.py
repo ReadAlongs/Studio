@@ -29,7 +29,7 @@ class TestMakeXMLCli(BasicTestCase):
     def setUp(self):
         super().setUp()
         self.empty_file = os.path.join(self.tempdir, "empty.txt")
-        with io.open(self.empty_file, "wb"):
+        with open(self.empty_file, "wb"):
             pass
 
     def test_invoke_prepare(self):

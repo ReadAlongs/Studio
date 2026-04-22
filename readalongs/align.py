@@ -1,7 +1,6 @@
 """Main readalongs module for aligning text and audio."""
 
 import copy
-import io
 import os
 import shutil
 import sys
@@ -249,7 +248,7 @@ def read_noisedict(asr_config: soundswallower.Config) -> Set[str]:
 
     def load_noisedict(fdict):
         try:
-            with open(fdict, "rt", encoding="utf-8") as dictfh:
+            with open(fdict, encoding="utf-8") as dictfh:
                 noisewords = set()
                 for line in dictfh:
                     if line.startswith("##") or line.startswith(";;"):
@@ -364,7 +363,7 @@ def align_sequence(
     # Generate dictionary and FSG for the current sequence of words
     dict_data = make_dict(word_sequence.words, xml_path, unit=unit)
     if save_temps is not None:
-        dict_file = io.open(save_temps + ".dict" + i_suffix, "wb")
+        dict_file = open(save_temps + ".dict" + i_suffix, "wb")
     else:
         dict_file = PortableNamedTemporaryFile(prefix="readalongs_dict_", delete=True)
     dict_file.write(dict_data.encode("utf-8"))
@@ -372,7 +371,7 @@ def align_sequence(
 
     fsg_data = make_fsg(word_sequence.words, xml_path)
     if save_temps is not None:
-        fsg_file = io.open(save_temps + ".fsg" + i_suffix, "wb")
+        fsg_file = open(save_temps + ".fsg" + i_suffix, "wb")
     else:
         fsg_file = PortableNamedTemporaryFile(prefix="readalongs_fsg_", delete=True)
     fsg_file.write(fsg_data.encode("utf-8"))
