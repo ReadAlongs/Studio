@@ -37,4 +37,4 @@ jobs:
         run: |
           pip install -e .[all]
       - name: Run tests
-        run: python run_tests.py prod
+        run: python run_tests.py all

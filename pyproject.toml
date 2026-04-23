@@ -129,6 +129,16 @@ Repository = "https://github.com/ReadAlongs/Studio"
 Issues = "https://github.com/ReadAlongs/Studio/issues"
 Changelog = "https://github.com/ReadAlongs/Studio/releases"
 
+[tool.coverage.run]
+source_pkgs = ["readalongs"]
+branch = true
+parallel = true
+omit = ["readalongs/waveform2svg/*", "readalongs/epub/*"]
+exclude_also = ["if 0:", "if __name__ == .__main__.:"]
+
+[tool.coverage.report]
+precision = 2
+
 [tool.mypy]
 plugins = ["pydantic.mypy"]
 ignore_missing_imports = true
@@ -140,4 +150,5 @@ profile = "black"
 filterwarnings = [
     "ignore:'audioop' is deprecated and slated for removal in Python 3.13:DeprecationWarning",
     "ignore:.*codecs.open.. is deprecated. Use open.. instead.*:DeprecationWarning",
+    "ignore:.*Module already imported so cannot be rewritten; anyio.*",
 ]
