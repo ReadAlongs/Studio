@@ -4,8 +4,10 @@
 Unit test suite for the smil writing and parsing utilities
 """
 
+import sys
 from textwrap import dedent
-from unittest import main
+
+from pytest import main
 
 from readalongs.text.make_smil import make_smil, parse_smil
 from tests.basic_test_case import BasicTestCase
@@ -104,4 +106,4 @@ class TestSmilUtilities(BasicTestCase):
 
 
 if __name__ == "__main__":
-    main()
+    main([__file__, *sys.argv])

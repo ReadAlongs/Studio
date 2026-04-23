@@ -3,12 +3,14 @@
 import json
 import os
 import re
+import sys
 from contextlib import redirect_stderr
 from io import StringIO
 from textwrap import dedent
 from time import perf_counter
-from unittest import main
 from unittest.mock import patch
+
+from pytest import main
 
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.log import LOGGER
@@ -593,4 +595,4 @@ class TestWebApi(BasicTestCase):
 
 
 if __name__ == "__main__":
-    main()
+    main([__file__, *sys.argv])

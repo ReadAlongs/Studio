@@ -4,7 +4,9 @@
 
 import io
 import os
-from unittest import main
+import sys
+
+from pytest import main
 
 from readalongs.cli import make_xml, tokenize
 from tests.basic_test_case import BasicTestCase
@@ -67,4 +69,4 @@ class TestTokenizeCli(BasicTestCase):
 
 
 if __name__ == "__main__":
-    main()
+    main([__file__, *sys.argv])

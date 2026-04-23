@@ -6,13 +6,14 @@ Unit test suite for the readalongs align CLI command
 
 import os
 import subprocess
+import sys
 import tempfile
 from os.path import exists, join
 from pathlib import Path
 from typing import Union
-from unittest import main
 
 from lxml.html import fromstring
+from pytest import main
 
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.cli import align, langs
@@ -153,7 +154,6 @@ class TestAlignCli(BasicTestCase):
                 str(output),
             ],
         )
-        print("dir(result)", dir(results_output_exists))
         self.assertNotEqual(results_output_exists.exit_code, 0)
         self.assertIn(
             "already exists, use -f to overwrite", results_output_exists.output
@@ -652,4 +652,4 @@ class TestAlignCli(BasicTestCase):
 
 
 if __name__ == "__main__":
-    main()
+    main([__file__, *sys.argv])

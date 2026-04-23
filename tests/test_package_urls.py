@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-from unittest import main
+import sys
 
 import requests
+from pytest import main
 
 from readalongs.text.make_package import (
     FONTS_BUNDLE_URL,
@@ -46,4 +47,4 @@ class TestPackageURLs(BasicTestCase):
 
 
 if __name__ == "__main__":
-    main()
+    main([__file__, *sys.argv])

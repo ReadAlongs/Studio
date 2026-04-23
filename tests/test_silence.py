@@ -3,9 +3,10 @@
 """Test suite for inserting silences into a readalong"""
 
 import os
-from unittest import main
+import sys
 
 from pydub import AudioSegment
+from pytest import main
 
 from readalongs.cli import align
 from readalongs.text.util import load_xml
@@ -83,4 +84,4 @@ class TestSilence(BasicTestCase):
 
 
 if __name__ == "__main__":
-    main()
+    main([__file__, *sys.argv])

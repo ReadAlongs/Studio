@@ -2,11 +2,13 @@
 
 """Unit test suite for our XML tokenizer module"""
 
+import sys
 from contextlib import redirect_stderr
 from io import StringIO
-from unittest import TestCase, main
+from unittest import TestCase
 
 from lxml import etree
+from pytest import main
 
 from readalongs.text import tokenize_xml
 from readalongs.text.util import parse_xml
@@ -85,4 +87,4 @@ class TestTokenizer(TestCase):
 
 
 if __name__ == "__main__":
-    main()
+    main([__file__, *sys.argv])
