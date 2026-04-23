@@ -3,9 +3,11 @@
 """Unit testing for the anchors functionality in readalongs align"""
 
 import os
+import sys
 from contextlib import redirect_stderr
 from io import StringIO
-from unittest import main
+
+from pytest import main
 
 from readalongs.align import align_audio
 from readalongs.log import LOGGER
@@ -101,4 +103,4 @@ class TestAnchors(BasicTestCase):
 
 
 if __name__ == "__main__":
-    main()
+    main([__file__, *sys.argv])

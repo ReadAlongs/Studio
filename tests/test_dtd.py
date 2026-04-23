@@ -3,10 +3,12 @@
 """Test our XML DTD to make sure all valid examples validate and invalid ones don't"""
 
 import os
+import sys
 from os.path import dirname
-from unittest import TestCase, main
+from unittest import TestCase
 
 from lxml import etree
+from pytest import main
 
 from readalongs.text.util import load_xml
 
@@ -111,4 +113,4 @@ class TestDTD(TestCase):
 
 
 if __name__ == "__main__":
-    main()
+    main([__file__, *sys.argv])

@@ -3,9 +3,11 @@
 """Test suite for various audio contents handling methods"""
 
 import os
+import sys
 from pathlib import Path
 from subprocess import run
-from unittest import main
+
+from pytest import main
 
 from readalongs.audio_utils import (
     extract_section,
@@ -165,4 +167,4 @@ class TestAudio(BasicTestCase):
 
 
 if __name__ == "__main__":
-    main()
+    main([__file__, *sys.argv])

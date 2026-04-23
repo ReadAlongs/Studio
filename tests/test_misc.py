@@ -4,12 +4,13 @@
 
 import itertools
 import os
+import sys
 import zipfile
-from unittest import main
 
 import click
 from lxml import etree
 from pep440 import is_canonical
+from pytest import main
 
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.align import split_silences
@@ -308,4 +309,4 @@ class TestMisc(BasicTestCase):
 
 
 if __name__ == "__main__":
-    main()
+    main([__file__, *sys.argv])

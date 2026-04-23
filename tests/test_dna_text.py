@@ -2,11 +2,12 @@
 
 """Test handling of DNA text in tokenization"""
 
+import sys
 from contextlib import redirect_stderr
 from io import StringIO
-from unittest import main
 
 from lxml import etree
+from pytest import main
 
 from readalongs.text import tokenize_xml
 from readalongs.text.add_ids_to_xml import add_ids
@@ -163,4 +164,4 @@ class TestDNAText(BasicTestCase):
 
 
 if __name__ == "__main__":
-    main()
+    main([__file__, *sys.argv])

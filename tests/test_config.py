@@ -4,10 +4,12 @@
 
 import io
 import os
+import sys
 from contextlib import redirect_stderr
-from unittest import TestCase, main
+from unittest import TestCase
 
 from lxml import etree
+from pytest import main
 
 from readalongs.text.add_elements_to_xml import add_images, add_supplementary_xml
 from readalongs.text.util import load_xml
@@ -79,4 +81,4 @@ class TestConfig(TestCase):
 
 
 if __name__ == "__main__":
-    main()
+    main([__file__, *sys.argv])

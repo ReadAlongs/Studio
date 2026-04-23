@@ -5,11 +5,12 @@ Test suite for the API way to call align
 """
 
 import re
+import sys
 from contextlib import redirect_stderr
 from io import StringIO
-from unittest import main
 
 import click
+from pytest import main
 
 from readalongs import api
 from readalongs.log import LOGGER
@@ -219,4 +220,4 @@ class TestAlignApi(BasicTestCase):
 
 
 if __name__ == "__main__":
-    main()
+    main([__file__, *sys.argv])

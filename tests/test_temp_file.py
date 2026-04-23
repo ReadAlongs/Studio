@@ -3,14 +3,17 @@
 """Test PortableNamedTemporaryFile class"""
 
 import os
-import unittest
+import sys
 from tempfile import NamedTemporaryFile
+from unittest import TestCase
+
+from pytest import main
 
 from readalongs.log import LOGGER
 from readalongs.portable_tempfile import PortableNamedTemporaryFile
 
 
-class TestTempFile(unittest.TestCase):
+class TestTempFile(TestCase):
     """Test PortableNamedTemporaryFile class"""
 
     def test_basic_file(self):
@@ -98,4 +101,4 @@ class TestTempFile(unittest.TestCase):
 
 if __name__ == "__main__":
     LOGGER.setLevel("DEBUG")
-    unittest.main()
+    main([__file__, *sys.argv])
