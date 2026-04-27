@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: FedericoCarboni/setup-ffmpeg@v2
+      - uses: FedericoCarboni/setup-ffmpeg@37062fbf7149fc5578d6c57e08aed62458b375d6 # @v3.1, with tool cache
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -100,7 +100,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: FedericoCarboni/setup-ffmpeg@v2
+      - uses: FedericoCarboni/setup-ffmpeg@37062fbf7149fc5578d6c57e08aed62458b375d6 # @v3.1, with tool cache
 
       - name: Set up Python
         uses: actions/setup-python@v6
