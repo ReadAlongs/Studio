@@ -6,13 +6,14 @@ Test force-alignment with SoundSwallower FSG search from Python API
 
 import os
 import shutil
-import unittest
+import sys
 import wave
 from contextlib import redirect_stderr
 from io import StringIO
 from tempfile import TemporaryDirectory
 
 from lxml import etree
+from pytest import main
 from soundswallower import get_model_path
 
 from readalongs.align import align_audio
@@ -213,4 +214,4 @@ class TestXHTML(BasicTestCase):
 
 if __name__ == "__main__":
     LOGGER.setLevel("DEBUG")
-    unittest.main()
+    main([__file__, *sys.argv])

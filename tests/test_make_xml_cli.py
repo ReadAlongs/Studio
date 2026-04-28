@@ -5,8 +5,10 @@
 import io
 import os
 import re
+import sys
 from shutil import copyfile
-from unittest import main
+
+from pytest import main
 
 # from readalongs.log import LOGGER
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
@@ -299,4 +301,4 @@ def text2lines(text: str):
 
 
 if __name__ == "__main__":
-    main()
+    main([__file__, *sys.argv])

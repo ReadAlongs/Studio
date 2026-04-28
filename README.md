@@ -160,7 +160,7 @@ or test the installed version (requires installing dev dependencies):
 
     pip install 'readalongs[dev]'  # if you installed from PyPI, or
     pip install -e '.[dev]'        # if you installed from a local clone
-    python run_tests.py dev
+    python run_tests.py
 
 recently, we also made the project compatible with Pytest, so this will run the tests too:
 

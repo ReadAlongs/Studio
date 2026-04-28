@@ -4,11 +4,12 @@
 
 import os
 import re
+import sys
 from contextlib import redirect_stderr
 from io import StringIO
-from unittest import main
 
 from lxml import etree
+from pytest import main
 
 from readalongs.align import align_audio
 from readalongs.cli import align, g2p, make_xml, tokenize
@@ -489,4 +490,4 @@ class TestG2pCli(BasicTestCase):
 
 
 if __name__ == "__main__":
-    main()
+    main([__file__, *sys.argv])

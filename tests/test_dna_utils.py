@@ -2,7 +2,10 @@
 
 """Test suite for DNA segment manupulation methods"""
 
-from unittest import TestCase, main
+import sys
+from unittest import TestCase
+
+from pytest import main
 
 from readalongs.dna_utils import (
     calculate_adjustment,
@@ -175,4 +178,4 @@ class TestDNAUtils(TestCase):
 
 
 if __name__ == "__main__":
-    main()
+    main([__file__, *sys.argv])
