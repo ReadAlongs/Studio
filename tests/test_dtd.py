@@ -43,7 +43,7 @@ class TestDTD(TestCase):
     """Test the XML DTD"""
 
     def setUp(self):
-        with open(DTDPATH, "rt") as infh:
+        with open(DTDPATH) as infh:
             self.dtd = etree.DTD(infh)
 
     def test_valid_inputs(self):
@@ -96,7 +96,6 @@ class TestDTD(TestCase):
             os.path.join(
                 dirname(__file__), "..", "readalongs", "static", "read-along-1.0.dtd"
             ),
-            "rt",
         ) as dtdFile:
             dtd = etree.DTD(dtdFile)
             with open(

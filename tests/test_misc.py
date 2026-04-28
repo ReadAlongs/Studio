@@ -5,7 +5,6 @@
 import itertools
 import os
 import sys
-import zipfile
 
 import click
 from lxml import etree
@@ -20,7 +19,6 @@ from readalongs.text.util import (
     get_lang_attrib,
     get_word_text,
     load_xml,
-    load_xml_zip,
     parse_time,
     parse_xml,
     save_txt,
@@ -275,15 +273,6 @@ class TestMisc(BasicTestCase):
         save_txt(filename, xml_text)
         loaded_xml = load_xml(filename)
         self.assertEqual(etree.tostring(loaded_xml), xml_text.encode(encoding="ascii"))
-
-    def test_load_xml_zip(self):
-        xml_text = '<foo attrib="value">text</foo>'
-        with zipfile.ZipFile(self.tempdir / "file.zip", "w") as myzip:
-            myzip.writestr("file.readalong", xml_text)
-        self.assertEqual(
-            etree.tostring(load_xml_zip(self.tempdir / "file.zip", "file.readalong")),
-            xml_text.encode(encoding="ascii"),
-        )
 
     def test_capture_logs(self):
         with capture_logs() as captured_logs:

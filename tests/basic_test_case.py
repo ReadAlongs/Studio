@@ -54,7 +54,7 @@ class BasicTestCase(TestCase):
         else:
             # Alternative tempdir code keeps it after running, for manual inspection:
             tempdir_name = tempfile.mkdtemp(prefix=tempdir_prefix, dir=".")
-            print("tmpdir={}".format(tempdir_name))
+            print(f"tmpdir={tempdir_name}")
         self.tempdir = Path(tempdir_name)
 
     def tearDown(self):
