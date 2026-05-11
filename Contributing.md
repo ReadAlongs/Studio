@@ -17,15 +17,16 @@ Run these commands in each of your sandboxes to enable our pre-commit hooks and 
 
 ```sh
 pip install -e '.[dev]'
-pre-commit install
+prek install
 gitlint install-hook
 ```
 
 ## Pre-commit hooks
 
 The ReadAlong Studio team has agreed to systematically use a number of pre-commit hooks to
-normalize formatting of code. You need to install and enable pre-commit to have these used
-automatically when you do your own commits.
+normalize formatting of code. You need to install and enable `prek` (equivalent to
+`pre-commit`, but `prek` is faster) to have these used automatically when you do
+your own commits.
 
 Pre-commit hooks enabled:
 - check-yaml validates YAML files
@@ -44,8 +45,8 @@ Pre-commit hooks enabled:
 
 ### Enabling pre-commit hooks
 
-All the pre-commit hooks are executed using a tool called
-[pre-commit](https://pre-commit.com/). Once you enable pre-commit, it will run all the
+All the pre-commit hooks are executed using either [prek](https://prek.j178.dev/) (recommended), or
+[pre-commit](https://pre-commit.com/) (equivalent but slower). Once you enable either, it will run all the
 hooks each time you try to commit anything in this repo.
 
 We've listed all the developper dependencies for the project in
@@ -53,7 +54,7 @@ We've listed all the developper dependencies for the project in
 
 ```sh
 pip install -e '.[dev]'
-pre-commit install
+prek install
 ```
 
 Note that you have to run the second command in every Studio sandbox you create, so please
