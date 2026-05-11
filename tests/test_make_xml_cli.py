@@ -301,4 +301,4 @@ def text2lines(text: str):
 
 
 if __name__ == "__main__":
-    main([__file__, *sys.argv])
+    main(sys.argv)

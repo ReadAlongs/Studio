@@ -134,10 +134,10 @@ source_pkgs = ["readalongs"]
 branch = true
 parallel = true
 omit = ["readalongs/waveform2svg/*", "readalongs/epub/*"]
-exclude_also = ["if 0:", "if __name__ == .__main__.:"]
 
 [tool.coverage.report]
 precision = 2
+exclude_also = ["if 0:", "if __name__ == .__main__.:"]
 
 [tool.mypy]
 plugins = ["pydantic.mypy"]

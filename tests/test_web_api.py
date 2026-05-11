@@ -595,4 +595,4 @@ class TestWebApi(BasicTestCase):
 
 
 if __name__ == "__main__":
-    main([__file__, *sys.argv])
+    main(sys.argv)
