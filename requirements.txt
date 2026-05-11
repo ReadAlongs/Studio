@@ -127,7 +127,7 @@ typing-inspection==0.4.2
     #   pydantic
 unicodecsv==0.14.1
     # via ilt-panphon
-urllib3==2.6.3
+urllib3==2.7.0
     # via requests
 uvicorn==0.42.0
     # via hatch.envs.prod
