@@ -58,7 +58,7 @@ h11==0.16.0
     # via uvicorn
 humanfriendly==10.0
     # via coloredlogs
-idna==3.11
+idna==3.15
     # via
     #   anyio
     #   requests
