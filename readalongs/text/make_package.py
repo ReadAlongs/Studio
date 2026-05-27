@@ -33,6 +33,8 @@ FONTS_BUNDLE_URL = f"https://unpkg.com/@readalongs/web-component@^{CURRENT_WEB_A
 BASIC_HTML = """
 <!DOCTYPE html>
 
+<!-- DO NOT USE THIS VERSION ON A WEBSITE. See Web Publication Instructions below -->
+
 <!--
 
                     Instructions for Opening this File
@@ -47,11 +49,27 @@ displaying your readalong.
 To view the file:
 
 1. Download the file to your computer -- there should be a download button
-    visible or hidden in the three dot menu in your cloud storage service.
+   visible or hidden in the three dot menu in your cloud storage service.
 
 2. Once downloaded, open the file in a web browser. You can do this by
-    double-clicking it in your file explorer or in your browser's downloaded
-    files list.
+   double-clicking it in your file explorer or in your browser's downloaded
+   files list.
+
+-->
+
+<!--
+
+                       Web Publication Instructions
+
+Before publishing this ReadAlong on a web site, please convert it to a Web
+Bundle. This monolithic format is intended for editing and for offline use,
+but it is not optimized for publication on a web site.
+
+Use the ReadAlong Studio Editor to convert this to a Web Bundle zip file:
+https://readalong-studio.mothertongues.org/#/editor
+Load it in the Editor and download it back using the "Web Bundle" Output Format.
+
+Publication instructions are in file "www/readme.txt" in the bundle.
 
 -->
 
