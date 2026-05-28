@@ -26,9 +26,19 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: FedericoCarboni/setup-ffmpeg@37062fbf7149fc5578d6c57e08aed62458b375d6 # @v3.1, with tool cache
-        if : runner.os != 'macOS'
+        if: runner.os != 'macOS'
+        id: ffmpeg
+        continue-on-error: true
       - run: brew install ffmpeg
-        if : runner.os == 'macOS'
+        if: runner.os == 'macOS'
+      - name: Alternate way to install ffmpeg on Linux, if needed
+        if: steps.ffmpeg.outcome == 'failure' && runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install ffmpeg
+      - name: We don't have an alternate ffmpeg install on Windows
+        if: steps.ffmpeg.outcome == 'failure' && runner.os == 'Windows'
+        run: |
+          echo "Error setting up ffmpeg, please rerun the workflow."
+          false
       - name: Set up Python
         uses: actions/setup-python@v6
         with:

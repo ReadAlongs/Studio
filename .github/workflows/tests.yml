@@ -23,6 +23,12 @@ jobs:
       - uses: actions/checkout@v6
 
       - uses: FedericoCarboni/setup-ffmpeg@37062fbf7149fc5578d6c57e08aed62458b375d6 # @v3.1, with tool cache
+        id: ffmpeg
+        continue-on-error: true
+
+      - name: Alternate way to install ffmpeg on Linux, if needed
+        if: steps.ffmpeg.outcome == 'failure'
+        run: sudo apt-get update && sudo apt-get install ffmpeg
 
       - name: Set up Python
         uses: actions/setup-python@v6
