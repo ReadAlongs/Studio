@@ -60,7 +60,7 @@ Optionally a book can be generated as a standalone HTML page, XHTML, Praat TextG
 
 ### The short version
 
-Install [FFmpeg](https://ffmpeg.org/) and Python 3.8 or higher.
+Install [FFmpeg](https://ffmpeg.org/) and Python 3.9 or higher.
 
 Run:
 
@@ -72,7 +72,7 @@ Run:
 
 Before you can install the ReadAlong Studio, you will need to install these dependencies:
 
- - Python, version 3.8 or higher,
+ - Python, version 3.9 or higher,
  - [FFmpeg](https://ffmpeg.org/),
  - a C compiler (sometimes required for some dependant libraries),
  - Git (optional, needed to get the current development version).
