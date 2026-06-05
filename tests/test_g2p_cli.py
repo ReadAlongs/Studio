@@ -76,9 +76,10 @@ class TestG2pCli(BasicTestCase):
         self.assertTrue(os.path.exists(g2p_file))
 
         ref_file = os.path.join(self.data_dir, "mixed-langs.g2p.readalong")
-        with open(g2p_file, encoding="utf8") as output_f, open(
-            ref_file, encoding="utf8"
-        ) as ref_f:
+        with (
+            open(g2p_file, encoding="utf8") as output_f,
+            open(ref_file, encoding="utf8") as ref_f,
+        ):
             self.maxDiff = None
             # update version info
             ref_list = list(ref_f)
