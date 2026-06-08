@@ -119,7 +119,7 @@ features = [ "dev" ]
 [tool.hatch.envs.prod]
 features = [ "heroku", "api" ]
 type = "pip-compile"
-python = "3.13"
+python = "3.14"
 lock-filename = "requirements.txt"
 
 [project.urls]
