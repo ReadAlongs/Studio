@@ -95,9 +95,10 @@ class TestMakeXMLCli(BasicTestCase):
         self.assertEqual(results.exit_code, 0)
 
         ref_file = os.path.join(self.data_dir, "fra-prepared.readalong")
-        with open(xml_file, encoding="utf8") as output_f, open(
-            ref_file, encoding="utf8"
-        ) as ref_f:
+        with (
+            open(xml_file, encoding="utf8") as output_f,
+            open(ref_file, encoding="utf8") as ref_f,
+        ):
             self.maxDiff = None
             # update version info
             ref_list = list(ref_f)
