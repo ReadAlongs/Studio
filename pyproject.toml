@@ -58,7 +58,8 @@ dependencies = [
 dev = [
     "readalongs[api]",
     "gitlint-core>=0.17.0",
-    "httpx>=0.24.1",
+    "httpx>=0.24.1",  # for testing with starlette<1.2
+    "httpx2",  # for testing with starlette>=1.2
     "pep440>=0.1.2",
     "prek",
     "pytest",
