@@ -21,7 +21,7 @@ from readalongs._version import VERSION
 # too many times, so define it anyway.
 unicode = str
 # TODO: auto sync with web component major and minor releases
-CURRENT_WEB_APP_VERSION = "1.5.x"
+CURRENT_WEB_APP_VERSION = "1.6.x"
 
 
 def ensure_dirs(path):
