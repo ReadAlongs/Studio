@@ -59,8 +59,8 @@ class TestAlignApi(BasicTestCase):
 
         with redirect_stderr(StringIO()):
             (status, exception, log) = api.align("", "", self.tempdir / "errors")
-        self.assertNotEqual(status, 0)
-        self.assertFalse(exception is None)
+        assert status != 0
+        assert exception is not None
 
     def test_call_make_xml(self):
         with redirect_stderr(StringIO()):
@@ -81,7 +81,7 @@ class TestAlignApi(BasicTestCase):
             self.tempdir / "bad.readalong",
             ("fra", "not-a-lang"),
         )
-        self.assertNotEqual(status, 0)
+        assert status != 0
         assert isinstance(exception, click.BadParameter)
 
         (status, exception, log) = api.make_xml(
@@ -89,7 +89,7 @@ class TestAlignApi(BasicTestCase):
             self.tempdir / "none.readalong",
             ("fra",),
         )
-        self.assertNotEqual(status, 0)
+        assert status != 0
         assert isinstance(exception, click.UsageError)
 
     def test_deprecated_prepare(self):
@@ -179,8 +179,8 @@ class TestAlignApi(BasicTestCase):
         assert "<span slot='read-along-subheader'>by Jove!</span>" in html
 
         # Make sure the bundles got cached
-        self.assertIsNotNone(make_package.fonts_bundle_contents)
-        self.assertIsNotNone(make_package.js_bundle_contents)
+        assert make_package.fonts_bundle_contents is not None
+        assert make_package.js_bundle_contents is not None
 
         # And convert again, this time it's going to use the cached bundles.
         html2, _ = api.convert_prealigned_text_to_offline_html(
@@ -201,8 +201,8 @@ class TestAlignApi(BasicTestCase):
             subheader="by Jove!",
         )
         assert make_package._prev_fonts_status_code == "TIMEOUT"
-        self.assertIsNotNone(make_package.fonts_bundle_contents)
-        self.assertIsNotNone(make_package.js_bundle_contents)
+        assert make_package.fonts_bundle_contents is not None
+        assert make_package.js_bundle_contents is not None
 
     def test_extract_version_from_url(self):
         from readalongs.text.make_package import extract_version_from_url

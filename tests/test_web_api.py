@@ -10,7 +10,7 @@ from textwrap import dedent
 from time import perf_counter
 from unittest.mock import patch
 
-from pytest import main
+from pytest import main, raises
 
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.log import LOGGER
@@ -157,9 +157,9 @@ class TestWebApi(BasicTestCase):
         ids_added = add_ids(tokenized)
         # This convert_xml call takes about 0.2s on my machine, so 1ms is guaranteed to be
         # too short on any hardware.
-        with self.assertRaises(TimeLimitException):
+        with raises(TimeLimitException):
             _ = convert_xml(ids_added, time_limit=0.001)
-        with self.assertRaises(TimeLimitException):
+        with raises(TimeLimitException):
             _ = convert_xml(
                 ids_added, time_limit=1.001, start_time=perf_counter() - 1.0
             )
@@ -380,7 +380,7 @@ class TestWebApi(BasicTestCase):
             )
         assert response.status_code == 200
         assert "aligned.TextGrid" in response.headers["content-disposition"]
-        self.assertNotIn("xmax = 83.100000", response.text)
+        assert "xmax = 83.100000" not in response.text
 
     def test_convert_to_eaf(self):
         request = {
@@ -519,9 +519,9 @@ class TestWebApi(BasicTestCase):
         match = re.search(
             "Temporary directory: (.*)($|\r|\n)", "\n".join(log_cm.output)
         )
-        self.assertIsNotNone(match)
         assert match is not None
-        self.assertFalse(os.path.isdir(match[1]))
+        assert match is not None
+        assert not os.path.isdir(match[1])
 
     def test_cleanup_even_if_error(self):
         # This is seriously white-box testing... overlapping words
@@ -564,9 +564,9 @@ class TestWebApi(BasicTestCase):
             match = re.search(
                 "Temporary directory: (.*)($|\r|\n)", "\n".join(log_cm.output)
             )
-            self.assertIsNotNone(match)
             assert match is not None
-            self.assertFalse(os.path.isdir(match[1]))
+            assert match is not None
+            assert not os.path.isdir(match[1])
 
     def test_convert_to_bad_format(self):
         request = {

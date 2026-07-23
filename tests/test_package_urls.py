@@ -41,7 +41,7 @@ class TestPackageURLs(BasicTestCase):
         with silence_logs():
             status, contents, _ = fetch_bundle_file(bad_url, "bundle.js", None)
         # print(status, len(contents))
-        self.assertNotEqual(status, 200)
+        assert status != 200
         self.assertIsInstance(status, str)
         assert ref_length == len(contents)
 

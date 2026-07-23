@@ -79,7 +79,7 @@ class TestSilence(BasicTestCase):
                 str(output),
             ],
         )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "Could not parse all duration attributes" in results.output
 
 

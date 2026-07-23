@@ -31,12 +31,12 @@ class TestAnchors(BasicTestCase):
         assert len(words) == 99
 
         # Make sure the aligned segments stay on the right side of their anchors
-        self.assertLessEqual(words[0]["end"], 1.62)
-        self.assertGreaterEqual(words[1]["start"], 1.62)
-        self.assertLessEqual(words[8]["end"], 3.81)
-        self.assertGreaterEqual(words[9]["start"], 3.82)
-        self.assertLessEqual(words[21]["end"], 6.74)
-        self.assertGreaterEqual(words[22]["start"], 6.74)
+        assert words[0]["end"] <= 1.62
+        assert words[1]["start"] >= 1.62
+        assert words[8]["end"] <= 3.81
+        assert words[9]["start"] >= 3.81
+        assert words[21]["end"] <= 6.74
+        assert words[22]["start"] >= 6.74
 
     def test_anchors_outer_too(self):
         """Test aligning with anchors defining DNA segments at start and end too"""

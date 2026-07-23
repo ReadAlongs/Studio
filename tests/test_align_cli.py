@@ -359,7 +359,7 @@ class TestAlignCli(BasicTestCase):
                 join(self.tempdir, "out-missing-l"),
             ],
         )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "No input language specified" in results.output
 
         with SoundSwallowerStub("[NOISE]:0:1"):
@@ -371,7 +371,7 @@ class TestAlignCli(BasicTestCase):
                     join(self.tempdir, "noise-only"),
                 ],
             )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "produced 0 segments" in results.output
 
         with SoundSwallowerStub(
@@ -407,7 +407,7 @@ class TestAlignCli(BasicTestCase):
                     join(self.tempdir, "outdir1"),
                 ],
             )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         # This error message confirms it's being processed as plain text
         assert "No input language specified for plain text" in results.output
 
@@ -422,7 +422,7 @@ class TestAlignCli(BasicTestCase):
                     join(self.tempdir, "outdir2"),
                 ],
             )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         # This error message confirms it's being processed as plain text
         assert "No input language specified for plain text" in results.output
 
@@ -458,7 +458,7 @@ class TestAlignCli(BasicTestCase):
                     join(self.tempdir, "outdir4"),
                 ],
             )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "Error parsing XML" in results.output
 
         # XML by file extension
@@ -472,7 +472,7 @@ class TestAlignCli(BasicTestCase):
                     join(self.tempdir, "outdir5"),
                 ],
             )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "Error parsing XML" in results.output
 
     def test_obsolete_switches(self):
@@ -487,7 +487,7 @@ class TestAlignCli(BasicTestCase):
                     join(self.tempdir, "outdir6"),
                 ],
             )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "is obsolete." in results.output
 
         # Giving --g2p-verbose switch generates an obsolete-switch error message
@@ -501,7 +501,7 @@ class TestAlignCli(BasicTestCase):
                     join(self.tempdir, "outdir7"),
                 ],
             )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "is obsolete." in results.output
 
         # Giving --g2p-fallback switch generates an obsolete-switch error message
@@ -516,7 +516,7 @@ class TestAlignCli(BasicTestCase):
                     join(self.tempdir, "outdir8"),
                 ],
             )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "is obsolete." in results.output
 
     def test_oo_option(self):
@@ -545,7 +545,7 @@ class TestAlignCli(BasicTestCase):
                     join(self.tempdir, "outdir10"),
                 ],
             )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "Could not g2p" in results.output
         assert "not-an-alphabet" in results.output
 
@@ -560,7 +560,7 @@ class TestAlignCli(BasicTestCase):
                     join(self.tempdir, "outdir11"),
                 ],
             )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "Could not g2p" in results.output
         assert "no path" in results.output
 
@@ -577,7 +577,7 @@ class TestAlignCli(BasicTestCase):
                     join(self.tempdir, "outdir12"),
                 ],
             )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "Could not g2p" in results.output
         assert 'no path from "eng" to ' in results.output
 
@@ -617,7 +617,7 @@ class TestAlignCli(BasicTestCase):
         self.assertEqual(
             slurp_text(bom_file, "utf-8"), "\ufeff" + slurp_text(base_file, "utf-8")
         )
-        self.assertNotEqual(slurp_bin(base_file), slurp_bin(bom_file))
+        assert slurp_bin(base_file) != slurp_bin(bom_file)
         assert b"\xef\xbb\xbf" + slurp_bin(base_file) == slurp_bin(bom_file)
 
         bom_file_pathlib = self.add_bom(Path(base_file))

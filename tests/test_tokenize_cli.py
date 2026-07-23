@@ -55,13 +55,13 @@ class TestTokenizeCli(BasicTestCase):
     def test_file_already_exists(self):
         """Test that readalongs tokenize does not overwrite existing files by default"""
         results = self.runner.invoke(tokenize, [self.rasfile, self.rasfile])
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "use -f to overwrite" in results.output
 
     def test_bad_input(self):
         """Test readalongs tokenize with invalid XML as input"""
         results = self.runner.invoke(tokenize, "- -", input="this is not XML!")
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "Error parsing" in results.output
         # LOGGER.warning("Output: {}".format(results.output))
         # LOGGER.warning("Exception: {}".format(results.exception))

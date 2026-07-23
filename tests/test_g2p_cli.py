@@ -51,7 +51,7 @@ class TestG2pCli(BasicTestCase):
         # otherwise we have a different tempdir and the file won't already exist
         results = self.runner.invoke(g2p, [input_file, g2p_file])
         # print(f"g2p results.output='{results.output}'")
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "use -f to overwrite" in results.output
 
         # And add -f to force the overwrite
@@ -63,7 +63,7 @@ class TestG2pCli(BasicTestCase):
         """readalongs g2p with invalid XML input"""
         input_file = os.path.join(self.data_dir, "ej-fra.txt")
         results = self.runner.invoke(g2p, ["--debug", input_file, "-"])
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "Error parsing input file" in results.output
 
     def test_mixed_langs(self):
@@ -99,12 +99,12 @@ class TestG2pCli(BasicTestCase):
         results = self.runner.invoke(
             g2p, ["--g2p-fallback", "fra:und", input_file, g2p_file]
         )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "is obsolete" in results.output
 
         g2p_file = os.path.join(self.tempdir, "obsolete2.readalong")
         results = self.runner.invoke(g2p, ["--g2p-verbose", input_file, g2p_file])
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "is obsolete" in results.output
 
     # Write text to a temp file, pass it through make-xml -l lang, and then tokenize,
@@ -137,7 +137,7 @@ class TestG2pCli(BasicTestCase):
                 f"results.output='{results.output}' "
                 f"results.exception={results.exception!r}"
             )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "could not be g2p" in results.output
         # assert isinstance(results.exception, KeyError)
 
@@ -169,7 +169,7 @@ class TestG2pCli(BasicTestCase):
                 f"results.output='{results.output}' "
                 f"results.exception={results.exception!r}"
             )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "could not be g2p" in results.output
 
         # with a fall back to und, it works
@@ -204,8 +204,8 @@ class TestG2pCli(BasicTestCase):
             )
         assert results.exit_code == 0
         assert os.path.exists(g2p_file)
-        self.assertNotIn("not recognized as IPA", results.output)
-        self.assertNotIn("not fully valid eng-arpabet", results.output)
+        assert "not recognized as IPA" not in results.output
+        assert "not fully valid eng-arpabet" not in results.output
 
         # Run with verbose output and look for the warning messages
         results = self.runner.invoke(
@@ -249,9 +249,9 @@ class TestG2pCli(BasicTestCase):
                 f"results.output='{results.output}' "
                 f"results.exception={results.exception!r}"
             )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "could not be g2p" in results.output
-        self.assertNotIn("Number of aligned segments", results.output)
+        assert "Number of aligned segments" not in results.output
 
         with SoundSwallowerStub("t0b0d0p0s0w0:920:1620", "t0b0d0p0s1w0:1620:1690"):
             results = self.runner.invoke(
@@ -275,7 +275,7 @@ class TestG2pCli(BasicTestCase):
             )
         assert "Trying fallback: French" in results.output
         assert "Trying fallback: Inuktitut" in results.output
-        self.assertNotIn("could not be g2p", results.output)
+        assert "could not be g2p" not in results.output
         assert "Number of aligned segments" in results.output
 
     def test_with_stdin(self):
@@ -299,7 +299,7 @@ class TestG2pCli(BasicTestCase):
             print(txt, file=f)
 
         results = self.runner.invoke(g2p, [input_file, "-"])
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         # print(results.output)
         assert "could not be g2p" in results.output
         assert '<w id="s0w0" ARPABET="W OW D D">word</w>' in results.output
@@ -463,7 +463,7 @@ class TestG2pCli(BasicTestCase):
         self.assertEqual(
             etree.tounicode(c_xml), '<s><w ARPABET="invalid">invalid</w></s>'
         )
-        self.assertFalse(valid, "convert_xml with invalid pre-g2p'd text")
+        assert not valid, "convert_xml with invalid pre-g2p'd text"
 
     def test_invalid_langs_in_xml(self):
         xml = parse_xml(
@@ -476,7 +476,7 @@ class TestG2pCli(BasicTestCase):
         )
         with self.assertLogs(LOGGER, level="WARNING") as cm:
             c_xml, valid, _ = convert_xml(xml, verbose_warnings=True)
-        self.assertFalse(valid)
+        assert not valid
         logger_output = "\n".join(cm.output)
         assert "No lang" in logger_output
         assert "foo" in logger_output
@@ -486,7 +486,7 @@ class TestG2pCli(BasicTestCase):
         xml = parse_xml("<s><w>43:23</w><w>65:67</w><w>43:23</w></s>")
         with self.assertLogs(LOGGER, level="WARNING"):
             g2p_xml, valid, non_convertible_words = convert_xml(xml)
-        self.assertFalse(valid)
+        assert not valid
         self.assertEqual(non_convertible_words, ["43:23", "65:67"])
 
 

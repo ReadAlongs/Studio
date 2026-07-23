@@ -9,7 +9,7 @@ from contextlib import redirect_stderr
 from unittest import TestCase
 
 from lxml import etree
-from pytest import main
+from pytest import main, raises
 
 from readalongs.text.add_elements_to_xml import add_images, add_supplementary_xml
 from readalongs.text.util import load_xml
@@ -27,22 +27,22 @@ class TestConfig(TestCase):
 
     def test_image(self) -> None:
         """Test images are added correctly"""
-        with self.assertRaises(KeyError):
+        with raises(KeyError):
             new_xml = add_images(self.readalong, {})
         new_xml = add_images(self.readalong, {"images": {"0": "test.jpg"}})
         assert len(new_xml.xpath("//graphic")) == 1
-        with self.assertRaises(TypeError):
+        with raises(TypeError):
             new_xml = add_images(self.readalong, {"images": [{"0": "test.jpg"}]})
-        with self.assertRaises(ValueError):
+        with raises(ValueError):
             new_xml = add_images(self.readalong, {"images": {"a": "test.jpg"}})
-        with self.assertRaises(IndexError):
+        with raises(IndexError):
             new_xml = add_images(
                 self.readalong, {"images": {"0": "test.jpg", "999": "out_of_range.jpg"}}
             )
 
     def test_arbitrary_xml(self):
         """Test arbitrary xml is added correctly"""
-        with self.assertRaises(KeyError):
+        with raises(KeyError):
             new_xml = add_supplementary_xml(self.readalong, {})
         new_xml = add_supplementary_xml(
             self.readalong,
@@ -58,7 +58,7 @@ class TestConfig(TestCase):
         assert len(new_xml.xpath("//test")) == 1
 
         # bad xml raises lxml.etree.XMLSyntaxError
-        with self.assertRaises(etree.XMLSyntaxError):
+        with raises(etree.XMLSyntaxError):
             new_xml = add_supplementary_xml(
                 self.readalong, {"xml": [{"xpath": "//div[1]", "value": "bloop"}]}
             )

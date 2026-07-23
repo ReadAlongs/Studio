@@ -9,7 +9,7 @@ import sys
 import click
 from lxml import etree
 from pep440 import is_canonical
-from pytest import main
+from pytest import main, raises
 
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.align import split_silences
@@ -177,7 +177,7 @@ class TestMisc(BasicTestCase):
         cb = JoinerCallbackForClick(iter("qwer"))  # iterable over four characters
         self.assertEqual(cb(None, None, ["e:r"]), ["e", "r"])
         self.assertEqual(cb(None, None, ["q,w"]), ["q", "w"])
-        with self.assertRaises(click.BadParameter):
+        with raises(click.BadParameter):
             cb(None, None, ["q:e", "a,w"])
         self.assertEqual(cb(None, None, ["r:q", "w"]), ["r", "q", "w"])
 
@@ -215,18 +215,18 @@ class TestMisc(BasicTestCase):
 
     def test_load_xml_errors(self):
         # non-existent file
-        with self.assertRaises(OSError):
+        with raises(OSError):
             load_xml("file-does-not-exist.readalong")
 
         # invalid XML file
         bad_file = self.tempdir / "bad.readalong"
         with open(bad_file, "w") as f:
             print("This is not XML", file=f)
-        with self.assertRaises(etree.ParseError):
+        with raises(etree.ParseError):
             load_xml(bad_file)
 
         # empty file is also invalid
-        with self.assertRaises(etree.ParseError):
+        with raises(etree.ParseError):
             load_xml(os.devnull)
 
         # make sure we're not vulnerable to XML bombs
@@ -256,7 +256,7 @@ class TestMisc(BasicTestCase):
         assert etree.tostring(xml) == etree.tostring(xml2)
 
         malformed_xml_text = "<foo attrib="
-        with self.assertRaises(etree.ParseError):
+        with raises(etree.ParseError):
             xml = parse_xml(malformed_xml_text)
 
     def test_save_xml(self):
@@ -291,7 +291,7 @@ class TestMisc(BasicTestCase):
             LOGGER.info("This text is included in root")
             assert "propagate" in captured_logs.getvalue()
         assert "included" in "".join(cm.output)
-        self.assertNotIn("propagate", "".join(cm.output))
+        assert "propagate" not in "".join(cm.output)
 
     def test_version_is_pep440_compliant(self):
         assert is_canonical(VERSION)

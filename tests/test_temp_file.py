@@ -23,7 +23,7 @@ class TestTempFile(TestCase):
         f.close()
         assert os.path.exists("delme_test_temp_file")
         os.unlink("delme_test_temp_file")
-        self.assertFalse(os.path.exists("delme_test_temp_file"))
+        assert not os.path.exists("delme_test_temp_file")
 
     def test_ntf(self):
         """Regular usage of tempfile.NamedTemporaryFile from the standard library"""
@@ -84,7 +84,7 @@ class TestTempFile(TestCase):
             readf.close()
             assert text == "Some text"
             assert os.path.exists(filename)
-        self.assertFalse(os.path.exists(filename))
+        assert not os.path.exists(filename)
 
     def test_seek(self):
         """read/write operations should work on a PortableNamedTemporaryFile"""

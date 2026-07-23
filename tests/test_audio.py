@@ -58,7 +58,7 @@ class TestAudio(BasicTestCase):
     def test_remove_section(self):
         """Should remove section of audio"""
         removed_segment = remove_section(self.audio_segment, 1000, 2000)
-        self.assertNotEqual(len(removed_segment), len(self.audio_segment))
+        assert len(removed_segment) != len(self.audio_segment)
         assert len(removed_segment) == len(self.audio_segment) - 1000
 
     def test_rejoin_section(self):
@@ -88,7 +88,7 @@ class TestAudio(BasicTestCase):
             "if dependencies changed.",
         )
         # Make sure ss logs are disabled
-        self.assertNotIn("Current configuration", process.stderr)
+        assert "Current configuration" not in process.stderr
 
     def test_align_removed(self):
         """Try aligning section with removed audio"""

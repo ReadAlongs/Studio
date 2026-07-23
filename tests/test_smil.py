@@ -7,7 +7,7 @@ Unit test suite for the smil writing and parsing utilities
 import sys
 from textwrap import dedent
 
-from pytest import main
+from pytest import main, raises
 
 from readalongs.text.make_smil import make_smil, parse_smil
 from tests.basic_test_case import BasicTestCase
@@ -56,7 +56,7 @@ class TestSmilUtilities(BasicTestCase):
         assert words == self.words
 
     def test_parse_bad_smil(self):
-        with self.assertRaises(ValueError):
+        with raises(ValueError):
             _ = parse_smil("this is not XML")
 
         missing_id = dedent(
@@ -71,7 +71,7 @@ class TestSmilUtilities(BasicTestCase):
             </smil>
             """
         )
-        with self.assertRaises(ValueError):
+        with raises(ValueError):
             _ = parse_smil(missing_id)
 
         missing_clip_end = dedent(
@@ -86,7 +86,7 @@ class TestSmilUtilities(BasicTestCase):
             </smil>
             """
         )
-        with self.assertRaises(ValueError):
+        with raises(ValueError):
             _ = parse_smil(missing_clip_end)
 
         bad_float = dedent(
@@ -101,7 +101,7 @@ class TestSmilUtilities(BasicTestCase):
             </smil>
             """
         )
-        with self.assertRaises(ValueError):
+        with raises(ValueError):
             _ = parse_smil(bad_float)
 
 

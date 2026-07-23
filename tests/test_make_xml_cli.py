@@ -8,7 +8,7 @@ import re
 import sys
 from shutil import copyfile
 
-from pytest import main
+from pytest import main, raises
 
 # from readalongs.log import LOGGER
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
@@ -56,13 +56,13 @@ class TestMakeXMLCli(BasicTestCase):
         results = self.runner.invoke(
             make_xml, [self.empty_file, self.empty_file + ".readalong"]
         )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         self.assertRegex(results.output, "Missing.*language")
 
     def test_inputfile_not_exist(self):
         """Error case: input file does not exist"""
         results = self.runner.invoke(make_xml, "-l atj /file/does/not/exist delme")
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         self.assertRegex(results.output, "No such file or directory")
 
     def test_outputfile_exists(self):
@@ -75,7 +75,7 @@ class TestMakeXMLCli(BasicTestCase):
             make_xml,
             ["-l", "atj", self.empty_file, os.path.join(self.tempdir, "exists")],
         )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         self.assertRegex(results.output, "exists.*overwrite")
 
     def test_output_exists(self):
@@ -191,11 +191,11 @@ class TestMakeXMLCli(BasicTestCase):
         # These used to be RuntimeError, but that was not right: *programmer*
         # errors can and should dump stack traces, unlike *user* errors, which
         # warrant nice friendly messages.
-        with self.assertRaises(AssertionError):
+        with raises(AssertionError):
             # missing input_file_name or input_file_handle
             _, _ = create_input_ras()
 
-        with self.assertRaises(AssertionError):
+        with raises(AssertionError):
             # missing text_languages
             _, _ = create_input_ras(
                 input_file_name=os.path.join(self.data_dir, "fra.txt")
@@ -223,7 +223,7 @@ class TestMakeXMLCli(BasicTestCase):
         results = self.runner.invoke(
             make_xml, ["-l", "fra:notalang:und", input_file, "-"]
         )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         self.assertRegex(results.output, r"Invalid value.*'notalang'")
 
     def test_make_xml_invalid_utf8_input(self):
@@ -231,7 +231,7 @@ class TestMakeXMLCli(BasicTestCase):
 
         # Read noise.mp3 as if it was utf8 text, via create_input_ras(input_file_handle)
         results = self.runner.invoke(make_xml, ["-l", "fra", noise_file, "-"])
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "provide a correctly encoded utf-8" in results.output
 
         # Read noise.mp3 as if it was utf8 text, via create_input_ras(input_file_name)
@@ -239,7 +239,7 @@ class TestMakeXMLCli(BasicTestCase):
             make_xml,
             ["-l", "fra", noise_file, os.path.join(self.tempdir, "noise.readalong")],
         )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "provide a correctly encoded utf-8" in results.output
 
         # align also calls create_input_ras(input_file_name)
@@ -253,7 +253,7 @@ class TestMakeXMLCli(BasicTestCase):
                 os.path.join(self.tempdir, "noise-out"),
             ],
         )
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         assert "provide a correctly encoded utf-8" in results.output
 
     def test_blank_lines_stripped(self):
