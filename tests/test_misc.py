@@ -87,7 +87,7 @@ class TestMisc(BasicTestCase):
                 ("5", 5.000, 6.050),
             )
         ]
-        self.assertEqual(words, ref)
+        assert words == ref
 
     def test_get_attrib_recursive(self):
         raw_xml = """<read-along version="%s">
@@ -253,7 +253,7 @@ class TestMisc(BasicTestCase):
         xml_text = '<foo attrib="value">text</foo>'
         xml = parse_xml(xml_text)
         xml2 = parse_xml(bytes(xml_text, encoding="latin1"))
-        self.assertEqual(etree.tostring(xml), etree.tostring(xml2))
+        assert etree.tostring(xml) == etree.tostring(xml2)
 
         malformed_xml_text = "<foo attrib="
         with self.assertRaises(etree.ParseError):
@@ -265,36 +265,36 @@ class TestMisc(BasicTestCase):
         filename = self.tempdir / "foo.readalong"
         save_xml(filename, xml)
         loaded_xml = load_xml(filename)
-        self.assertEqual(etree.tostring(loaded_xml), xml_text.encode(encoding="ascii"))
+        assert etree.tostring(loaded_xml) == xml_text.encode(encoding="ascii")
 
     def test_save_txt(self):
         xml_text = '<foo attrib="value">text</foo>'
         filename = self.tempdir / "foo.txt"
         save_txt(filename, xml_text)
         loaded_xml = load_xml(filename)
-        self.assertEqual(etree.tostring(loaded_xml), xml_text.encode(encoding="ascii"))
+        assert etree.tostring(loaded_xml) == xml_text.encode(encoding="ascii")
 
     def test_capture_logs(self):
         with capture_logs() as captured_logs:
             LOGGER.info("foo bar baz")
-        self.assertIn("foo bar baz", captured_logs.getvalue())
+        assert "foo bar baz" in captured_logs.getvalue()
 
     def test_capture_logs_some_more(self):
         with capture_logs() as captured_logs:
             LOGGER.info("this will be captured")
-        self.assertIn("this will be captured", captured_logs.getvalue())
+        assert "this will be captured" in captured_logs.getvalue()
         with self.assertLogs(LOGGER):
             LOGGER.info("blah")
         with self.assertLogs(LOGGER) as cm:
             with capture_logs() as captured_logs:
                 LOGGER.info("This text does not propagate to root")
             LOGGER.info("This text is included in root")
-            self.assertIn("propagate", captured_logs.getvalue())
-        self.assertIn("included", "".join(cm.output))
+            assert "propagate" in captured_logs.getvalue()
+        assert "included" in "".join(cm.output)
         self.assertNotIn("propagate", "".join(cm.output))
 
     def test_version_is_pep440_compliant(self):
-        self.assertTrue(is_canonical(VERSION))
+        assert is_canonical(VERSION)
 
 
 if __name__ == "__main__":

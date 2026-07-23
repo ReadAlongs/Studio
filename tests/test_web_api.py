@@ -55,20 +55,20 @@ class TestWebApi(BasicTestCase):
             response = self.API_CLIENT.post("/api/v1/assemble", json=request)
 
         resp_dict = json.loads(response.content.decode("utf-8"))
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(resp_dict["processed_ras"].find("<?xml") >= 0)
+        assert response.status_code == 200
+        assert resp_dict["processed_ras"].find("<?xml") >= 0
 
     def test_bad_path(self):
         # Test a request to a path that doesn't exist
         with redirect_stderr(StringIO()):
             response = self.API_CLIENT.get("/pathdoesntexist")
-        self.assertEqual(response.status_code, 404)
+        assert response.status_code == 404
 
     def test_bad_method(self):
         # Test a request to a valid path with a bad method
         with redirect_stderr(StringIO()):
             response = self.API_CLIENT.get("/api/v1/assemble")
-        self.assertEqual(response.status_code, 405)
+        assert response.status_code == 405
 
     def test_assemble_from_xml(self):
         # Test the assemble endpoint with XML
@@ -80,7 +80,7 @@ class TestWebApi(BasicTestCase):
         }
         with redirect_stderr(StringIO()):
             response = self.API_CLIENT.post("/api/v1/assemble", json=request)
-        self.assertEqual(response.status_code, 200)
+        assert response.status_code == 200
 
     def test_illformed_xml(self):
         # Test the assemble endpoint with ill-formed XML
@@ -91,7 +91,7 @@ class TestWebApi(BasicTestCase):
         }
         with redirect_stderr(StringIO()):
             response = self.API_CLIENT.post("/api/v1/assemble", json=request)
-        self.assertEqual(response.status_code, 422)
+        assert response.status_code == 422
 
     def test_invalid_ras(self):
         # Test the assemble endpoint with invalid RAS XML
@@ -102,7 +102,7 @@ class TestWebApi(BasicTestCase):
         }
         with redirect_stderr(StringIO()):
             response = self.API_CLIENT.post("/api/v1/assemble", json=request)
-        self.assertEqual(response.status_code, 422)
+        assert response.status_code == 422
 
     def test_create_grammar(self):
         # Test the create grammar function
@@ -113,9 +113,9 @@ class TestWebApi(BasicTestCase):
         g2ped, valid, _ = convert_xml(ids_added)
 
         word_dict, text = create_grammar(g2ped)
-        self.assertTrue(valid)
-        self.assertEqual(len(word_dict), len(text.split()))
-        self.assertEqual(len(word_dict), 99)
+        assert valid
+        assert len(word_dict) == len(text.split())
+        assert len(word_dict) == 99
 
     def test_g2p_exceeds_time_limit(self):
         # preprocessing takes about 5 ms, g2p about 200 ms, use 50 ms is nicely between
@@ -129,10 +129,10 @@ class TestWebApi(BasicTestCase):
             }
             with redirect_stderr(StringIO()):
                 response = self.API_CLIENT.post("/api/v1/assemble", json=request)
-            self.assertEqual(response.status_code, 422)
+            assert response.status_code == 422
             # But still let the test pass if it's the preprocessing that fails by
             # asserting the common substring of the two possible failure messages.
-            self.assertIn("exceeded time limit", response.json()["detail"])
+            assert "exceeded time limit" in response.json()["detail"]
 
     def test_prepro_exceeds_time_limit(self):
         # preprocessing takes about 5 ms, so 1 micros is guaranteed to be too short on any hardware.
@@ -145,7 +145,7 @@ class TestWebApi(BasicTestCase):
             }
             with redirect_stderr(StringIO()):
                 response = self.API_CLIENT.post("/api/v1/assemble", json=request)
-            self.assertEqual(response.status_code, 422)
+            assert response.status_code == 422
             self.assertIn(
                 "Preprocessing the input exceeded time limit", response.json()["detail"]
             )
@@ -167,9 +167,9 @@ class TestWebApi(BasicTestCase):
         _, valid, _ = convert_xml(
             ids_added, time_limit=100, start_time=perf_counter() - 1.0
         )
-        self.assertTrue(valid)
+        assert valid
         _, valid, _ = convert_xml(ids_added, time_limit=100)
-        self.assertTrue(valid)
+        assert valid
 
     def test_bad_g2p(self):
         # Test the assemble endpoint with invalid g2p languages
@@ -180,8 +180,8 @@ class TestWebApi(BasicTestCase):
         }
         with redirect_stderr(StringIO()):
             response = self.API_CLIENT.post("/api/v1/assemble", json=request)
-        self.assertIn("No language called", response.json()["detail"])
-        self.assertEqual(response.status_code, 422)
+        assert "No language called" in response.json()["detail"]
+        assert response.status_code == 422
 
     def test_g2p_faiture(self):
         # Test the assemble endpoint where g2p actually fails
@@ -192,9 +192,9 @@ class TestWebApi(BasicTestCase):
         }
         with redirect_stderr(StringIO()):
             response = self.API_CLIENT.post("/api/v1/assemble", json=request)
-        self.assertEqual(response.status_code, 422)
+        assert response.status_code == 422
         content = response.json()
-        self.assertIn("These words could not", content["detail"])
+        assert "These words could not" in content["detail"]
 
     def test_no_words(self):
         # Test the assemble endpoint with no actual words in the text
@@ -205,9 +205,9 @@ class TestWebApi(BasicTestCase):
         }
         with redirect_stderr(StringIO()):
             response = self.API_CLIENT.post("/api/v1/assemble", json=request)
-        self.assertEqual(response.status_code, 422)
+        assert response.status_code == 422
         content = response.json()
-        self.assertIn("Could not find any words", content["detail"])
+        assert "Could not find any words" in content["detail"]
 
     def test_empty_g2p(self):
         # When the input has numbers of non-g2p-able stuff, let's give the user
@@ -219,22 +219,22 @@ class TestWebApi(BasicTestCase):
         }
         with redirect_stderr(StringIO()):
             response = self.API_CLIENT.post("/api/v1/assemble", json=request)
-        self.assertEqual(response.status_code, 422)
+        assert response.status_code == 422
         content = response.json()
         content_log = content["detail"]
         for message_part in ["These words could not", "24", "23"]:
-            self.assertIn(message_part, content_log)
+            assert message_part in content_log
 
         self.assertEqual(content["g2p_error_words"], ["24", "23", "99", "1234"])
-        self.assertIn("partial_ras", content)
+        assert "partial_ras" in content
 
     def test_langs(self):
         # Test the langs endpoint
         with redirect_stderr(StringIO()):
             response = self.API_CLIENT.get("/api/v1/langs")
         codes = [x["code"] for x in response.json()]
-        self.assertEqual(set(codes), set(get_langs()[0]))
-        self.assertEqual(codes, list(sorted(codes)))
+        assert set(codes) == set(get_langs()[0])
+        assert codes == list(sorted(codes))
         self.assertEqual(
             dict((x["code"], x["names"]["_"]) for x in response.json()), get_langs()[1]
         )
@@ -251,7 +251,7 @@ class TestWebApi(BasicTestCase):
             response = self.API_CLIENT.post("/api/v1/assemble", json=request)
         content = response.json()
         # print("Content", content)
-        self.assertIn('Could not g2p "ña" as French', content["log"])
+        assert 'Could not g2p "ña" as French' in content["log"]
 
     def test_debug(self):
         # Test the assemble endpoint with debug mode on
@@ -264,7 +264,7 @@ class TestWebApi(BasicTestCase):
         with redirect_stderr(StringIO()):
             response = self.API_CLIENT.post("/api/v1/assemble", json=request)
         content = response.json()
-        self.assertEqual(content["input"], request)
+        assert content["input"] == request
         self.assertGreater(len(content["tokenized"]), 10)
         self.assertGreater(len(content["parsed"]), 10)
         self.assertGreater(len(content["g2ped"]), 10)
@@ -313,8 +313,8 @@ class TestWebApi(BasicTestCase):
             response = self.API_CLIENT.post(
                 "/api/v1/convert_alignment/textgrid", json=request
             )
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("aligned.TextGrid", response.headers["content-disposition"])
+        assert response.status_code == 200
+        assert "aligned.TextGrid" in response.headers["content-disposition"]
         self.assertEqual(
             response.text,
             dedent(
@@ -378,8 +378,8 @@ class TestWebApi(BasicTestCase):
             response = self.API_CLIENT.post(
                 "/api/v1/convert_alignment/textgrid", json=request
             )
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("aligned.TextGrid", response.headers["content-disposition"])
+        assert response.status_code == 200
+        assert "aligned.TextGrid" in response.headers["content-disposition"]
         self.assertNotIn("xmax = 83.100000", response.text)
 
     def test_convert_to_eaf(self):
@@ -391,9 +391,9 @@ class TestWebApi(BasicTestCase):
             response = self.API_CLIENT.post(
                 "/api/v1/convert_alignment/eaf", json=request
             )
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("<ANNOTATION_DOCUMENT", response.text)
-        self.assertIn("aligned.eaf", response.headers["content-disposition"])
+        assert response.status_code == 200
+        assert "<ANNOTATION_DOCUMENT" in response.text
+        assert "aligned.eaf" in response.headers["content-disposition"]
 
     def test_convert_to_srt(self):
         request = {
@@ -404,8 +404,8 @@ class TestWebApi(BasicTestCase):
             response = self.API_CLIENT.post(
                 "/api/v1/convert_alignment/srt", json=request
             )
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("aligned_sentences.srt", response.headers["content-disposition"])
+        assert response.status_code == 200
+        assert "aligned_sentences.srt" in response.headers["content-disposition"]
         self.assertEqual(
             response.text.replace("\r", "").strip(),  # CRLF->LF, for Windows.
             dedent(
@@ -421,8 +421,8 @@ class TestWebApi(BasicTestCase):
             response = self.API_CLIENT.post(
                 "/api/v1/convert_alignment/srt?tier=word", json=request
             )
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("aligned_words.srt", response.headers["content-disposition"])
+        assert response.status_code == 200
+        assert "aligned_words.srt" in response.headers["content-disposition"]
         self.assertEqual(
             response.text.replace("\r", "").strip(),  # CRLF->LF, for Windows
             dedent(
@@ -448,8 +448,8 @@ class TestWebApi(BasicTestCase):
             response = self.API_CLIENT.post(
                 "/api/v1/convert_alignment/vtt?tier=sentence", json=request
             )
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("aligned_sentences.vtt", response.headers["content-disposition"])
+        assert response.status_code == 200
+        assert "aligned_sentences.vtt" in response.headers["content-disposition"]
         self.assertEqual(
             response.text.replace("\r", ""),  # CRLF->LF, in case we're on Windows.
             dedent(
@@ -466,8 +466,8 @@ class TestWebApi(BasicTestCase):
             response = self.API_CLIENT.post(
                 "/api/v1/convert_alignment/vtt?tier=word", json=request
             )
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("aligned_words.vtt", response.headers["content-disposition"])
+        assert response.status_code == 200
+        assert "aligned_words.vtt" in response.headers["content-disposition"]
         self.assertEqual(
             response.text.replace("\r", ""),  # CRLF->LF, in case we're on Windows.
             dedent(
@@ -514,7 +514,7 @@ class TestWebApi(BasicTestCase):
             response = self.API_CLIENT.post(
                 "/api/v1/convert_alignment/textgrid", json=request
             )
-        self.assertEqual(response.status_code, 200)
+        assert response.status_code == 200
         # print(log_cm.output)
         match = re.search(
             "Temporary directory: (.*)($|\r|\n)", "\n".join(log_cm.output)
@@ -559,7 +559,7 @@ class TestWebApi(BasicTestCase):
                 response = self.API_CLIENT.post(
                     f"/api/v1/convert_alignment/{format_name.value}", json=request
                 )
-            self.assertEqual(response.status_code, 422)
+            assert response.status_code == 422
             # print(log_cm.output)
             match = re.search(
                 "Temporary directory: (.*)($|\r|\n)", "\n".join(log_cm.output)
@@ -577,7 +577,7 @@ class TestWebApi(BasicTestCase):
             response = self.API_CLIENT.post(
                 "/api/v1/convert_alignment/badformat", json=request
             )
-        self.assertEqual(response.status_code, 422)
+        assert response.status_code == 422
 
         request = {
             "dur": 83.1,
@@ -585,13 +585,13 @@ class TestWebApi(BasicTestCase):
         }
         with redirect_stderr(StringIO()):
             response = self.API_CLIENT.post("/api/v1/convert_alignment", json=request)
-        self.assertEqual(response.status_code, 404)
+        assert response.status_code == 404
 
         with redirect_stderr(StringIO()):
             response = self.API_CLIENT.post(
                 "/api/v1/convert_alignment/vtt?tier=badtier", json=request
             )
-        self.assertEqual(response.status_code, 422)
+        assert response.status_code == 422
 
 
 if __name__ == "__main__":

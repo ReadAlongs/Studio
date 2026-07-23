@@ -49,11 +49,11 @@ class TestSmilUtilities(BasicTestCase):
         text_path = "my_text_path"
         audio_path = "my_audio_path"
         smil = make_smil(text_path, audio_path, self.words)
-        self.assertEqual(smil, self.smil)
+        assert smil == self.smil
 
     def test_parse_smil(self):
         words = parse_smil(self.smil)
-        self.assertEqual(words, self.words)
+        assert words == self.words
 
     def test_parse_bad_smil(self):
         with self.assertRaises(ValueError):

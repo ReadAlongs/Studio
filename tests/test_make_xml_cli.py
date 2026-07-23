@@ -40,7 +40,7 @@ class TestMakeXMLCli(BasicTestCase):
             make_xml,
             ["-l", "atj", "-d", self.empty_file, os.path.join(self.tempdir, "delme")],
         )
-        self.assertEqual(results.exit_code, 0)
+        assert results.exit_code == 0
 
     def test_invoke_make_xml(self):
         """Basic usage of readalongs make-xml"""
@@ -48,7 +48,7 @@ class TestMakeXMLCli(BasicTestCase):
             make_xml,
             ["-l", "atj", "-d", self.empty_file, os.path.join(self.tempdir, "delme")],
         )
-        self.assertEqual(results.exit_code, 0)
+        assert results.exit_code == 0
         self.assertRegex(results.output, "Running readalongs make-xml")
 
     def test_no_lang(self):
@@ -84,15 +84,15 @@ class TestMakeXMLCli(BasicTestCase):
         results = self.runner.invoke(
             make_xml, ["-l", "fra", os.path.join(self.data_dir, "fra.txt"), xmlfile]
         )
-        self.assertEqual(results.exit_code, 0)
-        self.assertTrue(os.path.exists(xmlfile), "output xmlfile did not get created")
+        assert results.exit_code == 0
+        assert os.path.exists(xmlfile), "output xmlfile did not get created"
 
     def test_output_correct(self):
         """Make sure the contents of readalongs make-xml's output file is correct."""
         input_file = os.path.join(self.data_dir, "fra.txt")
         xml_file = os.path.join(self.tempdir, "fra.readalong")
         results = self.runner.invoke(make_xml, ["-l", "fra", input_file, xml_file])
-        self.assertEqual(results.exit_code, 0)
+        assert results.exit_code == 0
 
         ref_file = os.path.join(self.data_dir, "fra-prepared.readalong")
         with (
@@ -115,9 +115,9 @@ class TestMakeXMLCli(BasicTestCase):
         results = self.runner.invoke(make_xml, "-l fra -", input="Ceci est un test.")
         # LOGGER.warning("Output: {}".format(results.output))
         # LOGGER.warning("Exception: {}".format(results.exception))
-        self.assertEqual(results.exit_code, 0)
-        self.assertIn("<s>Ceci est un test", results.stdout)
-        self.assertIn('<text xml:lang="fra"', results.stdout)
+        assert results.exit_code == 0
+        assert "<s>Ceci est un test" in results.stdout
+        assert '<text xml:lang="fra"' in results.stdout
 
     def test_generate_output_name(self):
         """Validate readalongs make-xml generating the output file name"""
@@ -126,7 +126,7 @@ class TestMakeXMLCli(BasicTestCase):
         results = self.runner.invoke(make_xml, ["-l", "fra", input_file])
         # LOGGER.warning("Output: {}".format(results.output))
         # LOGGER.warning("Exception: {}".format(results.exception))
-        self.assertEqual(results.exit_code, 0)
+        assert results.exit_code == 0
         self.assertRegex(results.output, "Wrote.*someinput[.]readalong")
         self.assertTrue(
             os.path.exists(os.path.join(self.tempdir, "someinput.readalong"))
@@ -207,15 +207,15 @@ class TestMakeXMLCli(BasicTestCase):
         results = self.runner.invoke(
             make_xml, ["-l", "fra", "-l", "iku:und", input_file, "-"]
         )
-        self.assertEqual(results.exit_code, 0)
+        assert results.exit_code == 0
         self.assertIn('<text xml:lang="fra" fallback-langs="iku,und">', results.output)
         results = self.runner.invoke(make_xml, ["-l", "fra,iku:und", input_file, "-"])
-        self.assertEqual(results.exit_code, 0)
+        assert results.exit_code == 0
         self.assertIn('<text xml:lang="fra" fallback-langs="iku,und">', results.output)
         results = self.runner.invoke(
             make_xml, ["-l", "fra:iku", "-l", "und", input_file, "-"]
         )
-        self.assertEqual(results.exit_code, 0)
+        assert results.exit_code == 0
         self.assertIn('<text xml:lang="fra" fallback-langs="iku,und">', results.output)
 
     def test_make_xml_invalid_lang(self):
@@ -232,7 +232,7 @@ class TestMakeXMLCli(BasicTestCase):
         # Read noise.mp3 as if it was utf8 text, via create_input_ras(input_file_handle)
         results = self.runner.invoke(make_xml, ["-l", "fra", noise_file, "-"])
         self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("provide a correctly encoded utf-8", results.output)
+        assert "provide a correctly encoded utf-8" in results.output
 
         # Read noise.mp3 as if it was utf8 text, via create_input_ras(input_file_name)
         results = self.runner.invoke(
@@ -240,7 +240,7 @@ class TestMakeXMLCli(BasicTestCase):
             ["-l", "fra", noise_file, os.path.join(self.tempdir, "noise.readalong")],
         )
         self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("provide a correctly encoded utf-8", results.output)
+        assert "provide a correctly encoded utf-8" in results.output
 
         # align also calls create_input_ras(input_file_name)
         results = self.runner.invoke(
@@ -254,7 +254,7 @@ class TestMakeXMLCli(BasicTestCase):
             ],
         )
         self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("provide a correctly encoded utf-8", results.output)
+        assert "provide a correctly encoded utf-8" in results.output
 
     def test_blank_lines_stripped(self):
         """Blank lines for paragraph and page breaks are allowed to have whitespace"""

@@ -28,7 +28,7 @@ class TestAnchors(BasicTestCase):
             )
         words = results["words"]
         # The input text file has 99 words, so should the aligned segments.
-        self.assertEqual(len(words), 99)
+        assert len(words) == 99
 
         # Make sure the aligned segments stay on the right side of their anchors
         self.assertLessEqual(words[0]["end"], 1.62)
@@ -51,7 +51,7 @@ class TestAnchors(BasicTestCase):
             )
         words = results["words"]
         # The input text file has 99 words, so should the aligned segments.
-        self.assertEqual(len(words), 99)
+        assert len(words) == 99
 
         # Make sure the aligned segments stay on the right side of their anchors,
         # including the initial and final ones inserted into anchors2.readalong
@@ -94,12 +94,12 @@ class TestAnchors(BasicTestCase):
                     os.path.join(self.data_dir, "noise.mp3"),
                 )
         words = results["words"]
-        self.assertEqual(len(words), 10)
+        assert len(words) == 10
         logger_output = "\n".join(cm.output)
-        self.assertIn("Align mode strict succeeded for sequence 0.", logger_output)
-        self.assertIn("Align mode strict failed for sequence 1.", logger_output)
-        self.assertIn("Align mode moderate failed for sequence 1.", logger_output)
-        self.assertIn("Align mode loose succeeded for sequence 1.", logger_output)
+        assert "Align mode strict succeeded for sequence 0." in logger_output
+        assert "Align mode strict failed for sequence 1." in logger_output
+        assert "Align mode moderate failed for sequence 1." in logger_output
+        assert "Align mode loose succeeded for sequence 1." in logger_output
 
 
 if __name__ == "__main__":

@@ -19,7 +19,7 @@ class TestPackageURLs(BasicTestCase):
         for endpoint in [FONTS_BUNDLE_URL, JS_BUNDLE_URL]:
             try:
                 res = requests.get(endpoint, timeout=10)
-                self.assertEqual(res.status_code, 200)
+                assert res.status_code == 200
             except requests.exceptions.ReadTimeout:
                 # Don't fail on a timeout, sometimes unpkg can be slow
                 pass
@@ -31,8 +31,8 @@ class TestPackageURLs(BasicTestCase):
             JS_BUNDLE_URL, "bundle.js", "SomeError"
         )
         # print(status, len(contents))
-        self.assertEqual(status, "SomeError")
-        self.assertEqual(js_bundle_version, "unknown")
+        assert status == "SomeError"
+        assert js_bundle_version == "unknown"
         ref_length = len(contents)
 
         # Try with a bad URL
@@ -43,7 +43,7 @@ class TestPackageURLs(BasicTestCase):
         # print(status, len(contents))
         self.assertNotEqual(status, 200)
         self.assertIsInstance(status, str)
-        self.assertEqual(ref_length, len(contents))
+        assert ref_length == len(contents)
 
 
 if __name__ == "__main__":

@@ -39,12 +39,12 @@ class TestSilence(BasicTestCase):
                 str(output),
             ],
         )
-        self.assertEqual(results.exit_code, 0)
-        self.assertTrue((output / "www/silence.m4a").exists())
+        assert results.exit_code == 0
+        assert (output / "www/silence.m4a").exists()
         # test silence spans in output xml
         root = load_xml(output / "www/silence.readalong")
         silence_spans = root.xpath("//silence")
-        self.assertEqual(len(silence_spans), 3)
+        assert len(silence_spans) == 3
         # test audio has correct amount of silence added
         original_audio = AudioSegment.from_file(
             os.path.join(self.data_dir, "ej-fra.m4a")
@@ -80,7 +80,7 @@ class TestSilence(BasicTestCase):
             ],
         )
         self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("Could not parse all duration attributes", results.output)
+        assert "Could not parse all duration attributes" in results.output
 
 
 if __name__ == "__main__":

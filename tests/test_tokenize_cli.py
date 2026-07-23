@@ -31,13 +31,13 @@ class TestTokenizeCli(BasicTestCase):
         results = self.runner.invoke(
             tokenize, [self.rasfile, os.path.join(self.tempdir, "delme")]
         )
-        self.assertEqual(results.exit_code, 0)
-        self.assertTrue(os.path.exists(os.path.join(self.tempdir, "delme.readalong")))
+        assert results.exit_code == 0
+        assert os.path.exists(os.path.join(self.tempdir, "delme.readalong"))
 
     def test_generate_output_name(self):
         """Test letting readalongs tokenize generate the output filename"""
         results = self.runner.invoke(tokenize, ["--debug", self.rasfile])
-        self.assertEqual(results.exit_code, 0)
+        assert results.exit_code == 0
         self.assertTrue(
             os.path.exists(os.path.join(self.tempdir, "fra.tokenized.readalong"))
         )
@@ -47,7 +47,7 @@ class TestTokenizeCli(BasicTestCase):
         with open(self.rasfile, encoding="utf8") as f:
             inputtext = f.read()
         results = self.runner.invoke(tokenize, "-", input=inputtext)
-        self.assertEqual(results.exit_code, 0)
+        assert results.exit_code == 0
         self.assertIn(
             "<s><w>Ceci</w> <w>est</w> <w>une</w> <w>phrase</w>", results.output
         )
@@ -56,13 +56,13 @@ class TestTokenizeCli(BasicTestCase):
         """Test that readalongs tokenize does not overwrite existing files by default"""
         results = self.runner.invoke(tokenize, [self.rasfile, self.rasfile])
         self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("use -f to overwrite", results.output)
+        assert "use -f to overwrite" in results.output
 
     def test_bad_input(self):
         """Test readalongs tokenize with invalid XML as input"""
         results = self.runner.invoke(tokenize, "- -", input="this is not XML!")
         self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("Error parsing", results.output)
+        assert "Error parsing" in results.output
         # LOGGER.warning("Output: {}".format(results.output))
         # LOGGER.warning("Exception: {}".format(results.exception))
 

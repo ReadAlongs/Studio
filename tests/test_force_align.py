@@ -43,9 +43,9 @@ class TestForceAlignment(BasicTestCase):
         xml = load_xml(converted_path)
         words = results["words"]
         xml_words = xml.xpath(".//w")
-        self.assertEqual(len(words), len(xml_words))
+        assert len(words) == len(xml_words)
         for w, xw in zip(words, xml_words):
-            self.assertEqual(xw.attrib["id"], w["id"])
+            assert xw.attrib["id"] == w["id"]
 
     def test_align_text(self):
         """Basic alignment test case with plain text input"""
@@ -62,17 +62,17 @@ class TestForceAlignment(BasicTestCase):
         xml = load_xml(converted_path)
         words = results["words"]
         xml_words = xml.xpath(".//w")
-        self.assertEqual(len(words), len(xml_words))
+        assert len(words) == len(xml_words)
         for w, xw in zip(words, xml_words):
-            self.assertEqual(xw.attrib["id"], w["id"])
+            assert xw.attrib["id"] == w["id"]
 
         # White-box testing to make sure srt, TextGrid and vtt output will have the
         # sentences collected correctly.
         words, sentences = get_word_texts_and_sentences(
             results["words"], results["tokenized"]
         )
-        self.assertEqual(len(sentences), 7)
-        self.assertEqual(len(words), 99)
+        assert len(sentences) == 7
+        assert len(words) == 99
 
         def make_element(tag, text="", tail=""):
             """Convenient Element constructor wrapper"""
@@ -157,9 +157,9 @@ class TestForceAlignment(BasicTestCase):
         xml = load_xml(converted_path)
         words = results["words"]
         xml_words = xml.xpath(".//w")
-        self.assertEqual(len(words), len(xml_words))
+        assert len(words) == len(xml_words)
         for w, xw in zip(words, xml_words):
-            self.assertEqual(xw.attrib["id"], w["id"])
+            assert xw.attrib["id"] == w["id"]
 
     def test_align_fail(self):
         """Alignment test case with bad audio that should fail."""

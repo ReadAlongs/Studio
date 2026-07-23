@@ -30,7 +30,7 @@ class TestConfig(TestCase):
         with self.assertRaises(KeyError):
             new_xml = add_images(self.readalong, {})
         new_xml = add_images(self.readalong, {"images": {"0": "test.jpg"}})
-        self.assertTrue(len(new_xml.xpath("//graphic")) == 1)
+        assert len(new_xml.xpath("//graphic")) == 1
         with self.assertRaises(TypeError):
             new_xml = add_images(self.readalong, {"images": [{"0": "test.jpg"}]})
         with self.assertRaises(ValueError):
@@ -55,7 +55,7 @@ class TestConfig(TestCase):
                 ]
             },
         )
-        self.assertTrue(len(new_xml.xpath("//test")) == 1)
+        assert len(new_xml.xpath("//test")) == 1
 
         # bad xml raises lxml.etree.XMLSyntaxError
         with self.assertRaises(etree.XMLSyntaxError):
@@ -76,8 +76,8 @@ class TestConfig(TestCase):
                     ]
                 },
             )
-        self.assertIn("No elements found at //bloop", log_output.getvalue())
-        self.assertTrue(len(new_xml.xpath("//shmoop")) == 0)
+        assert "No elements found at //bloop" in log_output.getvalue()
+        assert len(new_xml.xpath("//shmoop")) == 0
 
 
 if __name__ == "__main__":

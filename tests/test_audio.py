@@ -59,14 +59,14 @@ class TestAudio(BasicTestCase):
         """Should remove section of audio"""
         removed_segment = remove_section(self.audio_segment, 1000, 2000)
         self.assertNotEqual(len(removed_segment), len(self.audio_segment))
-        self.assertEqual(len(removed_segment), len(self.audio_segment) - 1000)
+        assert len(removed_segment) == len(self.audio_segment) - 1000
 
     def test_rejoin_section(self):
         """Should rejoin removed/muted sections"""
         removed_section = self.audio_segment[1000:2000]
         removed_segment = remove_section(self.audio_segment, 1000, 2000)
         rejoined_segment = join_section(removed_segment, removed_section, 1000)
-        self.assertEqual(len(rejoined_segment), len(self.audio_segment))
+        assert len(rejoined_segment) == len(self.audio_segment)
 
     def test_align_sample(self):
         """Sanity check that test audio should align"""
@@ -115,7 +115,7 @@ class TestAudio(BasicTestCase):
             "if dependencies changed.",
         )
         # Make sure ss logs are enabled
-        self.assertIn("Current configuration", process.stderr)
+        assert "Current configuration" in process.stderr
 
     def test_align_muted(self):
         """Try aligning section with muted audio"""
@@ -156,7 +156,7 @@ class TestAudio(BasicTestCase):
         section = extract_section(self.audio_segment, 1000, 2000)
         output_path = os.path.join(self.tempdir, "section_output.mp3")
         write_audio_to_file(section, output_path)
-        self.assertTrue(os.path.exists(output_path))
+        assert os.path.exists(output_path)
         reloaded_section = read_audio_from_file(output_path)
         self.assertAlmostEqual(
             len(section),

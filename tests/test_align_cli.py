@@ -5,6 +5,7 @@ Unit test suite for the readalongs align CLI command
 """
 
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -57,7 +58,7 @@ class TestAlignCli(BasicTestCase):
             ],
         )
         # print(results.output)
-        self.assertEqual(results.exit_code, 0)
+        assert results.exit_code == 0
         expected_output_files = [
             "www/output.readalong",
             "www/output.m4a",
@@ -71,10 +72,9 @@ class TestAlignCli(BasicTestCase):
             "www/readme.txt",
         ]
         for output_file in expected_output_files:
-            self.assertTrue(
-                (output / output_file).exists(),
-                f"successful alignment should have created {output_file}",
-            )
+            assert (
+                output / output_file
+            ).exists(), f"successful alignment should have created {output_file}"
         with open(output / "www/index.html", encoding="utf8") as f:
             contents = f.read()
             for snippet in (
@@ -82,24 +82,24 @@ class TestAlignCli(BasicTestCase):
                 'href="output.readalong"',
                 'audio="output.m4a"',
             ):
-                self.assertIn(snippet, contents)
-        self.assertTrue(
-            (output / "tempfiles/output.tokenized.readalong").exists(),
-            "alignment with -s should have created tempfiles/output.tokenized.readalong",
+                assert snippet in contents
+        assert (
+            output / "tempfiles/output.tokenized.readalong"
+        ).exists(), (
+            "alignment with -s should have created tempfiles/output.tokenized.readalong"
         )
         with open(
             output / "tempfiles/output.tokenized.readalong",
             encoding="utf-8",
         ) as f:
-            self.assertNotIn("\ufeff", f.read())
-        self.assertTrue(
-            (output / "www/assets/image-for-page1.jpg").exists(),
-            "alignment with image files should have copied image-for-page1.jpg to assets",
-        )
-        self.assertIn("image-for-page2.jpg is accessible ", results.output)
+            assert "\ufeff" not in f.read()
+        assert (
+            output / "www/assets/image-for-page1.jpg"
+        ).exists(), "alignment with image files should have copied image-for-page1.jpg to assets"
+        assert "image-for-page2.jpg is accessible " in results.output
         os.unlink("image-for-page1.jpg")
-        self.assertFalse(exists("image-for-page1.jpg"))
-        self.assertRegex(results.output, "Align mode .* succeeded for sequence 0.")
+        assert not exists("image-for-page1.jpg")
+        assert "succeeded for sequence 0." in results.output
         # print(results.output)
 
         # Move the alignment output to compare with further down
@@ -107,7 +107,7 @@ class TestAlignCli(BasicTestCase):
         # changes the contents of the output.
         output1 = str(output) + "1"
         os.rename(output, output1)
-        self.assertFalse(output.exists(), "os.rename() should have moved dir")
+        assert not output.exists(), "os.rename() should have moved dir"
 
         # Run align again, but on an XML input file with various added DNA text
         results_dna = self.runner.invoke(
@@ -125,24 +125,21 @@ class TestAlignCli(BasicTestCase):
                 str(output),
             ],
         )
-        self.assertEqual(results_dna.exit_code, 0)
+        assert results_dna.exit_code == 0
         # print(results_dna.output)
-        self.assertTrue(
-            (output / "www/output.readalong").exists(),
-            "successful alignment with DNA should have created output.readalong",
+        assert (
+            output / "www/output.readalong"
+        ).exists(), "successful alignment with DNA should have created output.readalong"
+        assert (
+            output / "output.xhtml"
+        ).exists(), (
+            "successful alignment with -o xhtml should have created output.xhtml"
         )
-        self.assertTrue(
-            (output / "output.xhtml").exists(),
-            "successful alignment with -o xhtml should have created output.xhtml",
-        )
-        self.assertIn("Please copy image-for-page1.jpg to ", results_dna.output)
-        self.assertFalse(
-            (output / "www/assets/image-for-page1.jpg").exists(),
-            "image-for-page1.jpg was not on disk, cannot have been copied",
-        )
-        self.assertIn(
-            "Align mode moderate succeeded for sequence 0.", results_dna.output
-        )
+        assert "Please copy image-for-page1.jpg to " in results_dna.output
+        assert not (
+            output / "www/assets/image-for-page1.jpg"
+        ).exists(), "image-for-page1.jpg was not on disk, cannot have been copied"
+        assert "Align mode moderate succeeded for sequence 0." in results_dna.output
 
         # We test error situations in the same test case, since we reuse the same outputs
         results_output_exists = self.runner.invoke(
@@ -153,10 +150,8 @@ class TestAlignCli(BasicTestCase):
                 str(output),
             ],
         )
-        self.assertNotEqual(results_output_exists.exit_code, 0)
-        self.assertIn(
-            "already exists, use -f to overwrite", results_output_exists.output
-        )
+        assert results_output_exists.exit_code != 0
+        assert "already exists, use -f to overwrite" in results_output_exists.output
 
         # Output path exists as a regular file
         results_output_is_regular_file = self.runner.invoke(
@@ -167,10 +162,10 @@ class TestAlignCli(BasicTestCase):
                 str(output / "www/output.readalong"),
             ],
         )
-        self.assertNotEqual(results_output_is_regular_file, 0)
-        self.assertIn(
-            "already exists but is a not a directory",
-            results_output_is_regular_file.output,
+        assert results_output_is_regular_file != 0
+        assert (
+            "already exists but is a not a directory"
+            in results_output_is_regular_file.output
         )
 
     def test_align_with_package(self):
@@ -191,22 +186,18 @@ class TestAlignCli(BasicTestCase):
                 ],
             )
         # print(results_html.output)
-        self.assertEqual(results_html.exit_code, 0)
-        self.assertTrue(
-            exists(join(output, "Offline-HTML", "html.html")),
-            "successful html alignment should have created html/Offline-HTML/html.html",
-        )
+        assert results_html.exit_code == 0
+        assert exists(
+            join(output, "Offline-HTML", "html.html")
+        ), "successful html alignment should have created html/Offline-HTML/html.html"
 
         with open(join(output, "Offline-HTML", "html.html"), "rb") as fhtml:
             path_bytes = fhtml.read()
         htmldoc = fromstring(path_bytes)
         b64_pattern = r"data:[\w\/\-\+]*;base64,\w*"
-        self.assertRegex(
-            htmldoc.body.xpath("//read-along")[0].attrib["href"], b64_pattern
-        )
-        self.assertRegex(
-            htmldoc.body.xpath("//read-along")[0].attrib["audio"], b64_pattern
-        )
+        read_along = htmldoc.body.xpath("//read-along")[0]
+        assert re.search(b64_pattern, read_along.attrib["href"])
+        assert re.search(b64_pattern, read_along.attrib["audio"])
 
     def not_test_permission_denied(self):
         """Non-portable test to make sure denied permission triggers an error -- disabled"""
@@ -230,17 +221,17 @@ class TestAlignCli(BasicTestCase):
                 dirname,
             ],
         )
-        self.assertNotEqual(results, 0)
-        self.assertIn("Cannot write into output folder", results.output)
+        assert results != 0
+        assert "Cannot write into output folder" in results.output
 
     def test_langs_cmd(self):
         """Validates that readalongs langs lists all in-langs that can map to eng-arpabet"""
         results = self.runner.invoke(langs)
-        self.assertEqual(results.exit_code, 0)
-        self.assertIn("crg-tmd", results.output)
-        self.assertIn("crg-dv ", results.output)
-        self.assertNotIn("crg ", results.output)
-        self.assertNotIn("fn-unicode", results.output)
+        assert results.exit_code == 0
+        assert "crg-tmd" in results.output
+        assert "crg-dv " in results.output
+        assert "crg " not in results.output
+        assert "fn-unicode" not in results.output
 
     def test_align_english(self):
         """Validates that the lexicon-based g2p works for English language alignment"""
@@ -294,7 +285,7 @@ class TestAlignCli(BasicTestCase):
         with open(tokenized_file, encoding="utf8") as f:
             tok_output = f.read()
 
-        self.assertIn(g2p_ref, tok_output)
+        assert g2p_ref in tok_output
 
     def test_invalid_config(self):
         """unit testing for invalid config specifications"""
@@ -310,7 +301,7 @@ class TestAlignCli(BasicTestCase):
                 join(self.tempdir, "out-invalid-config-1"),
             ],
         )
-        self.assertIn("must be in JSON format", result.output)
+        assert "must be in JSON format" in result.output
 
         # --config parameters needs to contain valid json, test with garbage
         config_file = join(self.tempdir, "bad-config.json")
@@ -326,7 +317,7 @@ class TestAlignCli(BasicTestCase):
                 join(self.tempdir, "out-invalid-config-2"),
             ],
         )
-        self.assertIn("is not in valid JSON format", result.output)
+        assert "is not in valid JSON format" in result.output
 
     def test_bad_anchors(self):
         """Make sure invalid anchors yield appropriate errors"""
@@ -356,7 +347,7 @@ class TestAlignCli(BasicTestCase):
             "Could not parse all anchors",
             "Aborting.",
         ]:
-            self.assertIn(msg, bad_anchors_result.output)
+            assert msg in bad_anchors_result.output
 
     def test_misc_align_errors(self):
         """Test calling readalongs align with misc CLI errors"""
@@ -369,7 +360,7 @@ class TestAlignCli(BasicTestCase):
             ],
         )
         self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("No input language specified", results.output)
+        assert "No input language specified" in results.output
 
         with SoundSwallowerStub("[NOISE]:0:1"):
             results = self.runner.invoke(
@@ -381,7 +372,7 @@ class TestAlignCli(BasicTestCase):
                 ],
             )
         self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("produced 0 segments", results.output)
+        assert "produced 0 segments" in results.output
 
         with SoundSwallowerStub(
             "[NOISE]:0:1", "w0:1:1000", "<sil>:1000:1100", "w1:1100:2000"
@@ -396,7 +387,7 @@ class TestAlignCli(BasicTestCase):
             )
         # print(results.output)
         # We don't check results.exit_code since that's a soft warning, not a hard error
-        self.assertIn("produced 2 segments", results.output)
+        assert "produced 2 segments" in results.output
         self.assertIn(
             "Alignment produced a different number of segments and tokens than were in the input.",
             results.output,
@@ -418,7 +409,7 @@ class TestAlignCli(BasicTestCase):
             )
         self.assertNotEqual(results.exit_code, 0)
         # This error message confirms it's being processed as plain text
-        self.assertIn("No input language specified for plain text", results.output)
+        assert "No input language specified for plain text" in results.output
 
         # plain text by extension
         infile2 = write_file(self.tempdir / "infile2.txt", "<?xml but .txt")
@@ -433,7 +424,7 @@ class TestAlignCli(BasicTestCase):
             )
         self.assertNotEqual(results.exit_code, 0)
         # This error message confirms it's being processed as plain text
-        self.assertIn("No input language specified for plain text", results.output)
+        assert "No input language specified for plain text" in results.output
 
         # XML with guess by contents
         infile3 = self.add_bom(
@@ -451,7 +442,7 @@ class TestAlignCli(BasicTestCase):
                     join(self.tempdir, "outdir3"),
                 ],
             )
-        self.assertEqual(results.exit_code, 0)
+        assert results.exit_code == 0
 
         # XML with guess by contents, but with content error
         infile4 = write_file(
@@ -468,7 +459,7 @@ class TestAlignCli(BasicTestCase):
                 ],
             )
         self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("Error parsing XML", results.output)
+        assert "Error parsing XML" in results.output
 
         # XML by file extension
         infile5 = write_file(self.tempdir / "infile5.readalong", "Not XML!")
@@ -482,7 +473,7 @@ class TestAlignCli(BasicTestCase):
                 ],
             )
         self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("Error parsing XML", results.output)
+        assert "Error parsing XML" in results.output
 
     def test_obsolete_switches(self):
         # Giving -i switch generates an obsolete-switch error message
@@ -497,7 +488,7 @@ class TestAlignCli(BasicTestCase):
                 ],
             )
         self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("is obsolete.", results.output)
+        assert "is obsolete." in results.output
 
         # Giving --g2p-verbose switch generates an obsolete-switch error message
         with SoundSwallowerStub("word:0:1"):
@@ -511,7 +502,7 @@ class TestAlignCli(BasicTestCase):
                 ],
             )
         self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("is obsolete.", results.output)
+        assert "is obsolete." in results.output
 
         # Giving --g2p-fallback switch generates an obsolete-switch error message
         with SoundSwallowerStub("word:0:1"):
@@ -526,7 +517,7 @@ class TestAlignCli(BasicTestCase):
                 ],
             )
         self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("is obsolete.", results.output)
+        assert "is obsolete." in results.output
 
     def test_oo_option(self):
         """Exercise the hidden -oo / --output-orth option"""
@@ -541,7 +532,7 @@ class TestAlignCli(BasicTestCase):
                     join(self.tempdir, "outdir9"),
                 ],
             )
-        self.assertEqual(results.exit_code, 0)
+        assert results.exit_code == 0
 
         with SoundSwallowerStub("word:0:1"):
             results = self.runner.invoke(
@@ -555,8 +546,8 @@ class TestAlignCli(BasicTestCase):
                 ],
             )
         self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("Could not g2p", results.output)
-        self.assertIn("not-an-alphabet", results.output)
+        assert "Could not g2p" in results.output
+        assert "not-an-alphabet" in results.output
 
         with SoundSwallowerStub("word:0:1"):
             results = self.runner.invoke(
@@ -570,8 +561,8 @@ class TestAlignCli(BasicTestCase):
                 ],
             )
         self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("Could not g2p", results.output)
-        self.assertIn("no path", results.output)
+        assert "Could not g2p" in results.output
+        assert "no path" in results.output
 
         with SoundSwallowerStub("word:0:1"):
             results = self.runner.invoke(
@@ -587,8 +578,8 @@ class TestAlignCli(BasicTestCase):
                 ],
             )
         self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("Could not g2p", results.output)
-        self.assertIn('no path from "eng" to ', results.output)
+        assert "Could not g2p" in results.output
+        assert 'no path from "eng" to ' in results.output
 
     def add_bom(self, filename):
         """Create a temporary copy of filename with the a BOM in it, in self.tempdir"""
@@ -627,7 +618,7 @@ class TestAlignCli(BasicTestCase):
             slurp_text(bom_file, "utf-8"), "\ufeff" + slurp_text(base_file, "utf-8")
         )
         self.assertNotEqual(slurp_bin(base_file), slurp_bin(bom_file))
-        self.assertEqual(b"\xef\xbb\xbf" + slurp_bin(base_file), slurp_bin(bom_file))
+        assert b"\xef\xbb\xbf" + slurp_bin(base_file) == slurp_bin(bom_file)
 
         bom_file_pathlib = self.add_bom(Path(base_file))
         self.assertEqual(
