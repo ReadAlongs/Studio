@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from subprocess import run
 
-from pytest import main
+from pytest import approx, main
 
 from readalongs.audio_utils import (
     extract_section,
@@ -50,10 +50,10 @@ class TestAudio(BasicTestCase):
         muted_segment = mute_section(self.audio_segment, 1000, 2000)
         muted_section = muted_segment[1000:2000]
         # This worked with pydub 0.23.1, but it does not work with 0.25.1
-        # self.assertLessEqual(muted_section.max, 1)
+        # assert muted_sectino.max <= 1
         # Muting applies a gain of -120, so the results is not necessarily 0,
         # it's just much smaller.
-        self.assertLessEqual(muted_section.max, max_before / 1000)
+        assert muted_section.max <= max_before / 1000
 
     def test_remove_section(self):
         """Should remove section of audio"""
@@ -81,8 +81,7 @@ class TestAudio(BasicTestCase):
         # Check Result
         raspath = Path(output_path) / "www"
         ras_files = raspath.glob("*.readalong")
-        self.assertTrue(
-            next(ras_files, False),
+        assert next(ras_files, False), (
             "No *.readalong files found; "
             "pip install --force-reinstall --upgrade might be required "
             "if dependencies changed.",
@@ -108,8 +107,7 @@ class TestAudio(BasicTestCase):
         # Check Result
         raspath = Path(output_path) / "www"
         ras_files = raspath.glob("*.readalong")
-        self.assertTrue(
-            next(ras_files, False),
+        assert next(ras_files, False), (
             "No *.readalong files found; "
             "pip install --force-reinstall --upgrade might be required "
             "if dependencies changed.",
@@ -135,8 +133,7 @@ class TestAudio(BasicTestCase):
         # Check Result
         raspath = Path(output_path) / "www"
         ras_files = raspath.glob("*.readalong")
-        self.assertTrue(
-            next(ras_files, False),
+        assert next(ras_files, False), (
             "No *.readalong files found; "
             "pip install --force-reinstall --upgrade might be required "
             "if dependencies changed.",
@@ -144,11 +141,11 @@ class TestAudio(BasicTestCase):
 
     def test_extract_section(self):
         """Unit test extract_section()"""
-        self.assertEqual(len(extract_section(self.audio_segment, 1000, 2000)), 1000)
-        self.assertEqual(len(extract_section(self.audio_segment, None, 500)), 500)
-        self.assertEqual(
-            len(extract_section(self.audio_segment, 1000, None)),
-            len(self.audio_segment) - 1000,
+        assert len(extract_section(self.audio_segment, 1000, 2000)) == 1000
+        assert len(extract_section(self.audio_segment, None, 500)) == 500
+        assert (
+            len(extract_section(self.audio_segment, 1000, None))
+            == len(self.audio_segment) - 1000
         )
 
     def test_write_audio_to_file(self):
@@ -158,12 +155,9 @@ class TestAudio(BasicTestCase):
         write_audio_to_file(section, output_path)
         assert os.path.exists(output_path)
         reloaded_section = read_audio_from_file(output_path)
-        self.assertAlmostEqual(
-            len(section),
-            len(reloaded_section),
-            msg="reloaded audio file is more than 50ms shorter or longer",
-            delta=50,
-        )
+        assert len(section) == approx(
+            len(reloaded_section), abs=50
+        ), "reloaded audio file is more than 50ms shorter or longer"
 
 
 if __name__ == "__main__":

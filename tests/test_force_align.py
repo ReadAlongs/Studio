@@ -13,7 +13,7 @@ from io import StringIO
 from tempfile import TemporaryDirectory
 
 from lxml import etree
-from pytest import main
+from pytest import main, raises
 from soundswallower import get_model_path
 
 from readalongs.align import align_audio
@@ -113,16 +113,13 @@ class TestForceAlignment(BasicTestCase):
         _, sentences = get_word_texts_and_sentences(
             results["words"], results["tokenized"]
         )
-        self.assertEqual(
-            [w["text"] for w in sentences[1]],
-            [
-                "Je stuff",
-                "subwordtext",
-                "syl;syl;syl;",
-                "head text;syllable text;syl tail;",
-                "Joanissyl;sub;tail;another syl;",
-            ],
-        )
+        assert [w["text"] for w in sentences[1]] == [
+            "Je stuff",
+            "subwordtext",
+            "syl;syl;syl;",
+            "head text;syllable text;syl tail;",
+            "Joanissyl;sub;tail;another syl;",
+        ]
 
     def test_align_switch_am(self):
         """Alignment test case with an alternate acoustic model and custom
@@ -170,11 +167,11 @@ class TestForceAlignment(BasicTestCase):
                 writer.setsampwidth(2)
                 writer.setframerate(16000)
                 writer.writeframes(b"\x00\x00")
-            with self.assertRaises(RuntimeError), redirect_stderr(StringIO()):
+            with raises(RuntimeError), redirect_stderr(StringIO()):
                 _ = align_audio(xml_path, tf.name, unit="w")
 
     def test_bad_align_mode(self):
-        with self.assertRaises(AssertionError), redirect_stderr(StringIO()):
+        with raises(AssertionError), redirect_stderr(StringIO()):
             _ = align_audio(
                 os.path.join(self.data_dir, "ej-fra.readalong"),
                 os.path.join(self.data_dir, "noise.mp3"),
@@ -194,8 +191,8 @@ class TestXHTML(BasicTestCase):
             save_xml(tf.name, xml)
             txt = load_txt(tf.name)
             self.maxDiff = None
-            self.assertEqual(
-                txt, load_txt(os.path.join(self.data_dir, "ej-fra-converted.xhtml"))
+            assert txt == load_txt(
+                os.path.join(self.data_dir, "ej-fra-converted.xhtml")
             )
 
     def test_convert_no_version(self):
@@ -207,8 +204,8 @@ class TestXHTML(BasicTestCase):
             save_xml(tf.name, xml)
             txt = load_txt(tf.name)
             self.maxDiff = None
-            self.assertEqual(
-                txt, load_txt(os.path.join(self.data_dir, "ej-fra-converted.xhtml"))
+            assert txt == load_txt(
+                os.path.join(self.data_dir, "ej-fra-converted.xhtml")
             )
 
 

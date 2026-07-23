@@ -53,9 +53,7 @@ class TestDTD(TestCase):
             with open(path, "rb") as infh:
                 try:
                     parsed = load_xml(infh)
-                    self.assertTrue(
-                        self.dtd.validate(parsed), f"{name} does not validate"
-                    )
+                    assert self.dtd.validate(parsed), f"{name} does not validate"
                 except etree.ParseError as e:
                     self.fail("Error parsing XML input file %s: %s." % (path, e))
 
@@ -65,9 +63,9 @@ class TestDTD(TestCase):
             with open(path, "rb") as infh:
                 try:
                     parsed = load_xml(infh)
-                    self.assertFalse(
-                        self.dtd.validate(parsed), f"{name} validates but shouldn't"
-                    )
+                    assert not self.dtd.validate(
+                        parsed
+                    ), f"{name} validates but shouldn't"
                 except etree.ParseError as e:
                     self.fail("Error parsing XML input file %s: %s." % (path, e))
 
@@ -84,9 +82,7 @@ class TestDTD(TestCase):
             with open(path, "rb") as infh:
                 try:
                     parsed = load_xml(infh)
-                    self.assertTrue(
-                        self.dtd.validate(parsed), f"{name} does not validate"
-                    )
+                    assert self.dtd.validate(parsed), f"{name} does not validate"
                 except etree.ParseError as e:
                     self.fail("Error parsing XML input file %s: %s." % (path, e))
 
@@ -103,10 +99,9 @@ class TestDTD(TestCase):
             ) as rasFile:
                 try:
                     parsed = load_xml(rasFile)
-                    self.assertFalse(
-                        dtd.validate(parsed),
-                        f"{versions[1]} validates with 1.0 but shouldn't",
-                    )
+                    assert not dtd.validate(
+                        parsed
+                    ), f"{versions[1]} validates with 1.0 but shouldn't"
                 except etree.ParseError as e:
                     self.fail("Error parsing XML input file %s: %s." % (rasFile, e))
 

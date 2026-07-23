@@ -388,9 +388,9 @@ class TestAlignCli(BasicTestCase):
         # print(results.output)
         # We don't check results.exit_code since that's a soft warning, not a hard error
         assert "produced 2 segments" in results.output
-        self.assertIn(
-            "Alignment produced a different number of segments and tokens than were in the input.",
-            results.output,
+        assert (
+            "Alignment produced a different number of segments and tokens than were in the input."
+            in results.output
         )
 
     def test_infer_plain_text_or_xml(self):
@@ -611,18 +611,16 @@ class TestAlignCli(BasicTestCase):
 
         base_file = write_file(self.tempdir / "add-bom-input.txt", "Random Text été")
         bom_file = self.add_bom(base_file)
-        self.assertEqual(
-            slurp_text(base_file, "utf-8"), slurp_text(bom_file, "utf-8-sig")
-        )
-        self.assertEqual(
-            slurp_text(bom_file, "utf-8"), "\ufeff" + slurp_text(base_file, "utf-8")
+        assert slurp_text(base_file, "utf-8") == slurp_text(bom_file, "utf-8-sig")
+        assert slurp_text(bom_file, "utf-8") == "\ufeff" + slurp_text(
+            base_file, "utf-8"
         )
         assert slurp_bin(base_file) != slurp_bin(bom_file)
         assert b"\xef\xbb\xbf" + slurp_bin(base_file) == slurp_bin(bom_file)
 
         bom_file_pathlib = self.add_bom(Path(base_file))
-        self.assertEqual(
-            slurp_text(base_file, "utf-8"), slurp_text(bom_file_pathlib, "utf-8-sig")
+        assert slurp_text(base_file, "utf-8") == slurp_text(
+            bom_file_pathlib, "utf-8-sig"
         )
 
     def test_ffmpeg_is_present(self):
@@ -636,9 +634,9 @@ class TestAlignCli(BasicTestCase):
                 result = subprocess.run(
                     [ff_program, "-version"], capture_output=True, check=True
                 )
-                self.assertEqual(result.returncode, 0, failure_message)
+                assert result.returncode == 0, failure_message
             except Exception:
-                self.fail(failure_message)
+                assert False, failure_message
 
 
 if __name__ == "__main__":

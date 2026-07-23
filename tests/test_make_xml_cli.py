@@ -49,7 +49,7 @@ class TestMakeXMLCli(BasicTestCase):
             ["-l", "atj", "-d", self.empty_file, os.path.join(self.tempdir, "delme")],
         )
         assert results.exit_code == 0
-        self.assertRegex(results.output, "Running readalongs make-xml")
+        assert "Running readalongs make-xml" in results.output
 
     def test_no_lang(self):
         """Error case: readalongs make-xml without the mandatory -l switch"""
@@ -57,13 +57,13 @@ class TestMakeXMLCli(BasicTestCase):
             make_xml, [self.empty_file, self.empty_file + ".readalong"]
         )
         assert results.exit_code != 0
-        self.assertRegex(results.output, "Missing.*language")
+        assert re.search("Missing.*language", results.output)
 
     def test_inputfile_not_exist(self):
         """Error case: input file does not exist"""
         results = self.runner.invoke(make_xml, "-l atj /file/does/not/exist delme")
         assert results.exit_code != 0
-        self.assertRegex(results.output, "No such file or directory")
+        assert "No such file or directory" in results.output
 
     def test_outputfile_exists(self):
         """Existing output file should not be overwritten by readalongs make-xml by default"""

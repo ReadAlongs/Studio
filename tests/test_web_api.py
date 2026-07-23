@@ -265,9 +265,9 @@ class TestWebApi(BasicTestCase):
             response = self.API_CLIENT.post("/api/v1/assemble", json=request)
         content = response.json()
         assert content["input"] == request
-        self.assertGreater(len(content["tokenized"]), 10)
-        self.assertGreater(len(content["parsed"]), 10)
-        self.assertGreater(len(content["g2ped"]), 10)
+        assert len(content["tokenized"]) > 10
+        assert len(content["parsed"]) > 10
+        assert len(content["g2ped"]) > 10
 
         # Test that debug mode is off by default
         request = {
@@ -278,10 +278,10 @@ class TestWebApi(BasicTestCase):
         with redirect_stderr(StringIO()):
             response = self.API_CLIENT.post("/api/v1/assemble", json=request)
         content = response.json()
-        self.assertIsNone(content["input"])
-        self.assertIsNone(content["tokenized"])
-        self.assertIsNone(content["parsed"])
-        self.assertIsNone(content["g2ped"])
+        assert content["input"] is None
+        assert content["tokenized"] is None
+        assert content["parsed"] is None
+        assert content["g2ped"] is None
 
     hej_verden_xml = dedent(
         """<?xml version='1.0' encoding='utf-8'?>

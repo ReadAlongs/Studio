@@ -7,7 +7,7 @@ from contextlib import redirect_stderr
 from io import StringIO
 
 from lxml import etree
-from pytest import main
+from pytest import main, raises
 
 from readalongs.text import tokenize_xml
 from readalongs.text.add_ids_to_xml import add_ids
@@ -151,7 +151,8 @@ class TestDNAText(BasicTestCase):
         xml = parse_xml(txt)
         with redirect_stderr(StringIO()):
             tokenized = tokenize_xml.tokenize_xml(xml)
-        self.assertRaises(RuntimeError, add_ids, tokenized)
+        with raises(RuntimeError, match=r"Found <w> element with.*This is not allowed"):
+            add_ids(tokenized)
 
     def test_dna_word_nested(self):
         """You also can't have a <w> element inside a DNA element"""
@@ -160,7 +161,10 @@ class TestDNAText(BasicTestCase):
         xml = parse_xml(txt)
         with redirect_stderr(StringIO()):
             tokenized = tokenize_xml.tokenize_xml(xml)
-        self.assertRaises(RuntimeError, add_ids, tokenized)
+        with raises(
+            RuntimeError, match=r"Found <w> nested inside.*This is not allowed"
+        ):
+            add_ids(tokenized)
 
 
 if __name__ == "__main__":

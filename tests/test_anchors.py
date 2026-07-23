@@ -55,26 +55,22 @@ class TestAnchors(BasicTestCase):
 
         # Make sure the aligned segments stay on the right side of their anchors,
         # including the initial and final ones inserted into anchors2.readalong
-        self.assertGreaterEqual(words[0]["start"], 0.5)
-        self.assertLessEqual(words[0]["end"], 1.2)
-        self.assertGreaterEqual(words[1]["start"], 1.2)
-        self.assertLessEqual(words[8]["end"], 3.6)
-        self.assertGreaterEqual(words[9]["start"], 3.9)
-        self.assertLessEqual(words[21]["end"], 7.0)
-        self.assertGreaterEqual(words[22]["start"], 7.0)
-        self.assertLessEqual(words[-1]["end"], 33.2)
+        assert words[0]["start"] >= 0.5
+        assert words[0]["end"] <= 1.2
+        assert words[1]["start"] >= 1.2
+        assert words[8]["end"] <= 3.6
+        assert words[9]["start"] >= 3.9
+        assert words[21]["end"] <= 7.0
+        assert words[22]["start"] >= 7.0
+        assert words[-1]["end"] <= 33.2
 
         # Make sure the audio segment temp files were written and are not empty
         for suff in ("", ".2", ".3", ".4"):
             partial_wav_file = save_temps_prefix + ".wav" + suff
-            self.assertTrue(
-                os.path.exists(partial_wav_file), f"{partial_wav_file} should exist"
-            )
-            self.assertGreater(
-                os.path.getsize(partial_wav_file),
-                0,
-                f"{partial_wav_file} should not be empty",
-            )
+            assert os.path.exists(partial_wav_file), f"{partial_wav_file} should exist"
+            assert (
+                os.path.getsize(partial_wav_file) > 0
+            ), f"{partial_wav_file} should not be empty"
 
     def test_anchors_align_modes(self):
         xml_with_anchors = """<doc xml:lang="fra"><body>

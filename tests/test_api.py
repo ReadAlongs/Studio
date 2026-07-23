@@ -47,13 +47,10 @@ class TestAlignApi(BasicTestCase):
             "Offline-HTML/output.html",
         )
         for f in expected_output_files:
-            self.assertTrue(
-                (self.tempdir / "output" / f).exists(),
+            assert (self.tempdir / "output" / f).exists(), (
                 f"successful alignment should have created {f}",
             )
-        self.assertEqual(
-            list(langs),
-            ["fra"],
+        assert list(langs) == ["fra"], (
             "Make sure the API call doesn't not modify my variables",
         )
 
@@ -74,7 +71,7 @@ class TestAlignApi(BasicTestCase):
         assert "Wrote " in log
         with open(self.tempdir / "prepared.readalong") as f:
             xml_text = f.read()
-            self.assertIn('xml:lang="fra" fallback-langs="eng,und"', xml_text)
+            assert 'xml:lang="fra" fallback-langs="eng,und"' in xml_text
 
         (status, exception, log) = api.make_xml(
             self.data_dir / "ej-fra.txt",
