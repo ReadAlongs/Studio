@@ -1,8 +1,6 @@
 """Common base class for the ReadAlongs test suites"""
 
 import logging
-import os
-import sys
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
@@ -72,34 +70,6 @@ class BasicTestCase(TestCase):
             # Some test cases can set the logging level to DEBUG when they pass
             # --debug to a CLI command, but don't let that affect subsequent tests.
             LOGGER.setLevel(logging.INFO)
-
-
-@contextmanager
-def silence_c_stderr():
-    """Capture stderr from C output, e.g., from SoundSwallower.
-
-    Note: to capture stderr for both C and Python code, combine this with
-    redirect_stderr(), but you must use capture_c_stderr() first:
-        with capture_c_stderr(), redirect_stderr(io.StringIO()):
-            # code
-
-    Loosely inspired by https://stackoverflow.com/a/24277852, but much simplified to
-    address our narrow needs, namely to silence stderr in a context manager.
-    """
-
-    if "pytest" in sys.modules or os.name == "nt" and sys.version_info < (3, 10):
-        # Incompatible and pointless with pytest since it captures all output
-        # Also work around instability for this on Windows with Py 3.8/3.9
-        yield
-    else:
-        stderr_fileno = sys.stderr.fileno()
-        stderr_save = os.dup(stderr_fileno)
-        stderr_fd = os.open(os.devnull, os.O_RDWR)
-        os.dup2(stderr_fd, stderr_fileno)
-        yield
-        os.dup2(stderr_save, stderr_fileno)
-        os.close(stderr_save)
-        os.close(stderr_fd)
 
 
 @contextmanager

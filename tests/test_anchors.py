@@ -11,7 +11,7 @@ from pytest import main
 
 from readalongs.align import align_audio
 from readalongs.log import LOGGER
-from tests.basic_test_case import BasicTestCase, silence_c_stderr
+from tests.basic_test_case import BasicTestCase
 
 
 class TestAnchors(BasicTestCase):
@@ -88,7 +88,7 @@ class TestAnchors(BasicTestCase):
         with open(xml_file, "w", encoding="utf8") as f:
             print(xml_with_anchors, file=f)
         with self.assertLogs(LOGGER, level="INFO") as cm:
-            with silence_c_stderr(), redirect_stderr(StringIO()):
+            with redirect_stderr(StringIO()):
                 results = align_audio(
                     xml_file,
                     os.path.join(self.data_dir, "noise.mp3"),

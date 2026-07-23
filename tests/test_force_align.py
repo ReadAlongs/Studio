@@ -25,7 +25,7 @@ from readalongs.align_utils import (
 from readalongs.log import LOGGER
 from readalongs.portable_tempfile import PortableNamedTemporaryFile
 from readalongs.text.util import load_txt, load_xml, save_xml
-from tests.basic_test_case import BasicTestCase, silence_c_stderr
+from tests.basic_test_case import BasicTestCase
 
 
 class TestForceAlignment(BasicTestCase):
@@ -35,7 +35,7 @@ class TestForceAlignment(BasicTestCase):
         """Basic alignment test case with XML input"""
         xml_path = os.path.join(self.data_dir, "ej-fra.readalong")
         wav_path = os.path.join(self.data_dir, "ej-fra.m4a")
-        with silence_c_stderr(), redirect_stderr(StringIO()):
+        with redirect_stderr(StringIO()):
             results = align_audio(xml_path, wav_path, unit="w", debug_aligner=True)
 
         # Verify that the same IDs are in the output
