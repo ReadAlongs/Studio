@@ -146,8 +146,9 @@ class TestWebApi(BasicTestCase):
             with redirect_stderr(StringIO()):
                 response = self.API_CLIENT.post("/api/v1/assemble", json=request)
             assert response.status_code == 422
-            self.assertIn(
-                "Preprocessing the input exceeded time limit", response.json()["detail"]
+            assert (
+                "Preprocessing the input exceeded time limit"
+                in response.json()["detail"]
             )
 
     def test_convert_time_limit(self):
@@ -225,7 +226,7 @@ class TestWebApi(BasicTestCase):
         for message_part in ["These words could not", "24", "23"]:
             assert message_part in content_log
 
-        self.assertEqual(content["g2p_error_words"], ["24", "23", "99", "1234"])
+        assert content["g2p_error_words"] == ["24", "23", "99", "1234"]
         assert "partial_ras" in content
 
     def test_langs(self):
@@ -235,8 +236,9 @@ class TestWebApi(BasicTestCase):
         codes = [x["code"] for x in response.json()]
         assert set(codes) == set(get_langs()[0])
         assert codes == list(sorted(codes))
-        self.assertEqual(
-            dict((x["code"], x["names"]["_"]) for x in response.json()), get_langs()[1]
+        assert (
+            dict((x["code"], x["names"]["_"]) for x in response.json())
+            == get_langs()[1]
         )
 
     def test_logs(self):
@@ -284,9 +286,10 @@ class TestWebApi(BasicTestCase):
         assert content["g2ped"] is None
 
     hej_verden_xml = dedent(
-        """<?xml version='1.0' encoding='utf-8'?>
+        """\
+        <?xml version='1.0' encoding='utf-8'?>
         <read-along version="%s">
-    <meta name="generator" content="@readalongs/studio (cli) %s"/>
+            <meta name="generator" content="@readalongs/studio (cli) %s"/>
             <text xml:lang="dan" fallback-langs="und" id="t0">
                 <body id="t0b0">
                     <div type="page" id="t0b0d0">
@@ -315,10 +318,8 @@ class TestWebApi(BasicTestCase):
             )
         assert response.status_code == 200
         assert "aligned.TextGrid" in response.headers["content-disposition"]
-        self.assertEqual(
-            response.text,
-            dedent(
-                """\
+        assert response.text == dedent(
+            """\
                 File type = "ooTextFile"
                 Object class = "TextGrid"
 
@@ -368,7 +369,6 @@ class TestWebApi(BasicTestCase):
                             xmax = 83.100000
                             text = ""
                 """
-            ),
         )
         # Test default duration
         request = {
@@ -406,15 +406,17 @@ class TestWebApi(BasicTestCase):
             )
         assert response.status_code == 200
         assert "aligned_sentences.srt" in response.headers["content-disposition"]
-        self.assertEqual(
-            response.text.replace("\r", "").strip(),  # CRLF->LF, for Windows.
-            dedent(
+        # The tests in this file use replace("\r", "") to convert CRLF to LF,
+        # for when we are testing on Windows.
+        assert (
+            response.text.replace("\r", "").strip()
+            == dedent(
                 """\
                 1
                 00:00:17,745 --> 00:01:22,190
                 hej é verden à
                 """
-            ).strip(),
+            ).strip()
         )
 
         with redirect_stderr(StringIO()):
@@ -423,9 +425,9 @@ class TestWebApi(BasicTestCase):
             )
         assert response.status_code == 200
         assert "aligned_words.srt" in response.headers["content-disposition"]
-        self.assertEqual(
-            response.text.replace("\r", "").strip(),  # CRLF->LF, for Windows
-            dedent(
+        assert (
+            response.text.replace("\r", "").strip()
+            == dedent(
                 """\
                 1
                 00:00:17,745 --> 00:00:58,600
@@ -435,7 +437,7 @@ class TestWebApi(BasicTestCase):
                 00:00:58,600 --> 00:01:22,190
                 verden à
                 """
-            ).strip(),
+            ).strip()
         )
 
     def test_convert_to_vtt(self):
@@ -450,16 +452,13 @@ class TestWebApi(BasicTestCase):
             )
         assert response.status_code == 200
         assert "aligned_sentences.vtt" in response.headers["content-disposition"]
-        self.assertEqual(
-            response.text.replace("\r", ""),  # CRLF->LF, in case we're on Windows.
-            dedent(
-                """\
-                WEBVTT
+        assert response.text.replace("\r", "") == dedent(
+            """\
+            WEBVTT
 
-                00:00:17.745 --> 00:01:22.190
-                hej é verden à
-                """
-            ),
+            00:00:17.745 --> 00:01:22.190
+            hej é verden à
+            """
         )
 
         with redirect_stderr(StringIO()):
@@ -468,19 +467,16 @@ class TestWebApi(BasicTestCase):
             )
         assert response.status_code == 200
         assert "aligned_words.vtt" in response.headers["content-disposition"]
-        self.assertEqual(
-            response.text.replace("\r", ""),  # CRLF->LF, in case we're on Windows.
-            dedent(
-                """\
-                WEBVTT
+        assert response.text.replace("\r", "") == dedent(
+            """\
+            WEBVTT
 
-                00:00:17.745 --> 00:00:58.600
-                hej é
+            00:00:17.745 --> 00:00:58.600
+            hej é
 
-                00:00:58.600 --> 00:01:22.190
-                verden à
-                """
-            ),
+            00:00:58.600 --> 00:01:22.190
+            verden à
+            """
         )
 
     def test_convert_to_TextGrid_errors(self):
@@ -492,7 +488,7 @@ class TestWebApi(BasicTestCase):
             response = self.API_CLIENT.post(
                 "/api/v1/convert_alignment/textgrid", json=request
             )
-        self.assertEqual(response.status_code, 422, "Invalid XML should fail.")
+        assert response.status_code == 422, "Invalid XML should fail."
 
         request = {
             "dur": -10.0,
@@ -502,7 +498,7 @@ class TestWebApi(BasicTestCase):
             response = self.API_CLIENT.post(
                 "/api/v1/convert_alignment/textgrid", json=request
             )
-        self.assertEqual(response.status_code, 422, "Negative duration should fail.")
+        assert response.status_code == 422, "Negative duration should fail."
 
     def test_cleanup_temp_dir(self):
         """Make sure convert's temporary directory actually gets deleted."""
@@ -530,22 +526,23 @@ class TestWebApi(BasicTestCase):
         # that exception in a sane way, with a 422 status code, while
         # also making sure the temporary directory gets deleted.
         overlap_xml = dedent(
-            """<?xml version='1.0' encoding='utf-8'?>
-        <read-along version="%s">
-    <meta name="generator" content="@readalongs/studio (cli) %s"/>
-            <text xml:lang="dan" fallback-langs="und" id="t0">
-                <body id="t0b0">
-                    <div type="page" id="t0b0d0">
-                        <p id="t0b0d0p0">
-                            <s id="t0b0d0p0s0">
-                                <w id="wé0" time="17.745" dur="999.999" ARPABET="HH EH Y">hej é</w>
-                                <w id="wé1" time="58.6" dur="23.59" ARPABET="V Y D EH N">verden à</w>
-                            </s>
-                        </p>
-                    </div>
-                </body>
-            </text>
-        </read-along>
+            """\
+            <?xml version='1.0' encoding='utf-8'?>
+            <read-along version="%s">
+                <meta name="generator" content="@readalongs/studio (cli) %s"/>
+                <text xml:lang="dan" fallback-langs="und" id="t0">
+                    <body id="t0b0">
+                        <div type="page" id="t0b0d0">
+                            <p id="t0b0d0p0">
+                                <s id="t0b0d0p0s0">
+                                    <w id="wé0" time="17.745" dur="999.999" ARPABET="HH EH Y">hej é</w>
+                                    <w id="wé1" time="58.6" dur="23.59" ARPABET="V Y D EH N">verden à</w>
+                                </s>
+                            </p>
+                        </div>
+                    </body>
+                </text>
+            </read-along>
             """
             % (READALONG_FILE_FORMAT_VERSION, VERSION)
         )

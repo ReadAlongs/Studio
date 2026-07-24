@@ -42,7 +42,7 @@ class TestPackageURLs(BasicTestCase):
             status, contents, _ = fetch_bundle_file(bad_url, "bundle.js", None)
         # print(status, len(contents))
         assert status != 200
-        self.assertIsInstance(status, str)
+        assert isinstance(status, str)
         assert ref_length == len(contents)
 
 

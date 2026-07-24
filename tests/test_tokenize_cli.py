@@ -38,9 +38,7 @@ class TestTokenizeCli(BasicTestCase):
         """Test letting readalongs tokenize generate the output filename"""
         results = self.runner.invoke(tokenize, ["--debug", self.rasfile])
         assert results.exit_code == 0
-        self.assertTrue(
-            os.path.exists(os.path.join(self.tempdir, "fra.tokenized.readalong"))
-        )
+        assert os.path.exists(os.path.join(self.tempdir, "fra.tokenized.readalong"))
 
     def test_with_stdin(self):
         """Test readalongs reading from stdin and writing to stdout"""
@@ -48,9 +46,7 @@ class TestTokenizeCli(BasicTestCase):
             inputtext = f.read()
         results = self.runner.invoke(tokenize, "-", input=inputtext)
         assert results.exit_code == 0
-        self.assertIn(
-            "<s><w>Ceci</w> <w>est</w> <w>une</w> <w>phrase</w>", results.output
-        )
+        assert "<s><w>Ceci</w> <w>est</w> <w>une</w> <w>phrase</w>" in results.output
 
     def test_file_already_exists(self):
         """Test that readalongs tokenize does not overwrite existing files by default"""

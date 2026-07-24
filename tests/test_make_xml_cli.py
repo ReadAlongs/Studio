@@ -76,7 +76,7 @@ class TestMakeXMLCli(BasicTestCase):
             ["-l", "atj", self.empty_file, os.path.join(self.tempdir, "exists")],
         )
         assert results.exit_code != 0
-        self.assertRegex(results.output, "exists.*overwrite")
+        assert re.search("exists.*overwrite", results.output)
 
     def test_output_exists(self):
         """Make sure readalongs make-xml create the expected output file"""
@@ -104,11 +104,9 @@ class TestMakeXMLCli(BasicTestCase):
             ref_list = list(ref_f)
             ref_list[1] = updateFormatVersion(ref_list[1])
             ref_list[2] = updateStudioVersion(ref_list[2])
-            self.assertListEqual(
-                list(output_f),
-                ref_list,
-                f"output {xml_file} and reference {ref_file} differ.",
-            )
+            assert (
+                list(output_f) == ref_list
+            ), f"output {xml_file} and reference {ref_file} differ."
 
     def test_input_is_stdin(self):
         """Validate that readalongs make-xml can use stdin as input"""
@@ -127,10 +125,8 @@ class TestMakeXMLCli(BasicTestCase):
         # LOGGER.warning("Output: {}".format(results.output))
         # LOGGER.warning("Exception: {}".format(results.exception))
         assert results.exit_code == 0
-        self.assertRegex(results.output, "Wrote.*someinput[.]readalong")
-        self.assertTrue(
-            os.path.exists(os.path.join(self.tempdir, "someinput.readalong"))
-        )
+        assert re.search(r"Wrote.*someinput\.readalong", results.output)
+        assert os.path.exists(os.path.join(self.tempdir, "someinput.readalong"))
 
     def test_make_xml_with_different_newlines(self):
         """readalongs make-xml handling single and double blank lines for paragraphs and pages"""
@@ -143,11 +139,11 @@ class TestMakeXMLCli(BasicTestCase):
         linux_output = linux_results.output
         # The "Linux" output is the reference output, but we validate it a bit
         # too, with a regex: it has to have 2 pages and 3 paragraphs
-        self.assertRegex(
-            linux_output,
+        assert re.search(
             re.compile(
                 '<div type="page">.*<p>.*<p>.*<div type="page">.*<p>', re.DOTALL
             ),
+            linux_output,
         )
 
         no_eol_file = os.path.join(self.tempdir, "no_eol")
@@ -156,11 +152,9 @@ class TestMakeXMLCli(BasicTestCase):
             f.write(file_contents.encode("ascii"))
         no_eol_results = self.runner.invoke(make_xml, ["-l", "fra", no_eol_file, "-"])
         no_eol_output = no_eol_results.output
-        self.assertEqual(
-            linux_output,
-            no_eol_output,
-            "An absent final newline should not affect make-xml",
-        )
+        assert (
+            linux_output == no_eol_output
+        ), "An absent final newline should not affect make-xml"
 
         dos_file = os.path.join(self.tempdir, "dos_file")
         with open(dos_file, mode="wb") as f:
@@ -168,11 +162,9 @@ class TestMakeXMLCli(BasicTestCase):
             f.write(file_contents.encode("ascii"))
         dos_results = self.runner.invoke(make_xml, ["-l", "fra", dos_file, "-"])
         dos_output = dos_results.output
-        self.assertEqual(
-            linux_output,
-            dos_output,
-            "Using DOS-style newlines should not affect make-xml",
-        )
+        assert (
+            linux_output == dos_output
+        ), "Using DOS-style newlines should not affect make-xml"
 
         mac_file = os.path.join(self.tempdir, "mac_file")
         with open(mac_file, mode="wb") as f:
@@ -180,11 +172,9 @@ class TestMakeXMLCli(BasicTestCase):
             f.write(file_contents.encode("ascii"))
         mac_results = self.runner.invoke(make_xml, ["-l", "fra", mac_file, "-"])
         mac_output = mac_results.output
-        self.assertEqual(
-            linux_output,
-            mac_output,
-            "Using old Mac-style newlines should not affect make-xml",
-        )
+        assert (
+            linux_output == mac_output
+        ), "Using old Mac-style newlines should not affect make-xml"
 
     def test_create_input_ras_errors(self):
         """create_input_ras should raise a AssertionError when parameters are missing."""
@@ -208,15 +198,15 @@ class TestMakeXMLCli(BasicTestCase):
             make_xml, ["-l", "fra", "-l", "iku:und", input_file, "-"]
         )
         assert results.exit_code == 0
-        self.assertIn('<text xml:lang="fra" fallback-langs="iku,und">', results.output)
+        assert '<text xml:lang="fra" fallback-langs="iku,und">' in results.output
         results = self.runner.invoke(make_xml, ["-l", "fra,iku:und", input_file, "-"])
         assert results.exit_code == 0
-        self.assertIn('<text xml:lang="fra" fallback-langs="iku,und">', results.output)
+        assert '<text xml:lang="fra" fallback-langs="iku,und">' in results.output
         results = self.runner.invoke(
             make_xml, ["-l", "fra:iku", "-l", "und", input_file, "-"]
         )
         assert results.exit_code == 0
-        self.assertIn('<text xml:lang="fra" fallback-langs="iku,und">', results.output)
+        assert '<text xml:lang="fra" fallback-langs="iku,und">' in results.output
 
     def test_make_xml_invalid_lang(self):
         input_file = os.path.join(self.data_dir, "fra.txt")
@@ -224,7 +214,7 @@ class TestMakeXMLCli(BasicTestCase):
             make_xml, ["-l", "fra:notalang:und", input_file, "-"]
         )
         assert results.exit_code != 0
-        self.assertRegex(results.output, r"Invalid value.*'notalang'")
+        assert re.search(r"Invalid value.*'notalang'", results.output)
 
     def test_make_xml_invalid_utf8_input(self):
         noise_file = os.path.join(self.data_dir, "noise.mp3")
@@ -261,10 +251,9 @@ class TestMakeXMLCli(BasicTestCase):
         input_text_with_spaces = "Ceci est un test\n \nParagraphe\n\t \n \nPage\n"
         input_text_stripped = "Ceci est un test\n\nParagraphe\n\n\nPage\n"
 
-        self.assertEqual(
-            create_ras_from_text(text2lines(input_text_with_spaces), ["fra"]),
-            create_ras_from_text(text2lines(input_text_stripped), ["fra"]),
-        )
+        assert create_ras_from_text(
+            text2lines(input_text_with_spaces), ["fra"]
+        ) == create_ras_from_text(text2lines(input_text_stripped), ["fra"])
 
     def test_ignore_superfluous_blank_lines(self):
         """Don't insert blank pages when there are more blank lines than required."""
@@ -274,25 +263,22 @@ class TestMakeXMLCli(BasicTestCase):
         input_text_stripped = "Page1\n\n\nPage2\n\n\nPage3"
 
         self.maxDiff = None
-        self.assertEqual(
-            create_ras_from_text(text2lines(input_text_with_extra_nls), ["eng"]),
-            create_ras_from_text(text2lines(input_text_stripped), ["eng"]),
-        )
+        assert create_ras_from_text(
+            text2lines(input_text_with_extra_nls), ["eng"]
+        ) == create_ras_from_text(text2lines(input_text_stripped), ["eng"])
 
         for n in range(3, 10):
-            self.assertEqual(
-                create_ras_from_text(text2lines("Page1" + "\n" * n + "Page2"), ["eng"]),
-                create_ras_from_text(text2lines("Page1" + "\n" * 3 + "Page2"), ["eng"]),
-            )
+            assert create_ras_from_text(
+                text2lines("Page1" + "\n" * n + "Page2"), ["eng"]
+            ) == create_ras_from_text(text2lines("Page1" + "\n" * 3 + "Page2"), ["eng"])
 
     def test_split_vs_readlines(self):
         """Calling create_ras_from_text should work any way we split the lines"""
         # string.split("\n") strips newlines and might not be identical to readlines(),
         # but that should make no difference to create_tei_from_text
         text = "Blah\nBlah\n\nFoo \n\n \nBar"
-        self.assertEqual(
-            create_ras_from_text(text.split("\n"), ["eng"]),
-            create_ras_from_text(text2lines(text), ["eng"]),
+        assert create_ras_from_text(text.split("\n"), ["eng"]) == create_ras_from_text(
+            text2lines(text), ["eng"]
         )
 
 
