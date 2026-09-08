@@ -28,8 +28,7 @@ def updateStudioVersion(input):
 class TestMakeXMLCli(BasicTestCase):
     """Test suite for the readalongs make-xml CLI command"""
 
-    def setUp(self):
-        super().setUp()
+    def _setUp(self):
         self.empty_file = os.path.join(self.tempdir, "empty.txt")
         with open(self.empty_file, "wb"):
             pass

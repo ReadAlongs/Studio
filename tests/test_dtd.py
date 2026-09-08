@@ -5,10 +5,9 @@
 import os
 import sys
 from os.path import dirname
-from unittest import TestCase
 
+import pytest
 from lxml import etree
-from pytest import main
 
 from readalongs.text.util import load_xml
 
@@ -39,10 +38,11 @@ ej-fra-invalid.readalong
 """.strip().split()
 
 
-class TestDTD(TestCase):
+class TestDTD:
     """Test the XML DTD"""
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _pytest_setup(self):
         with open(DTDPATH) as infh:
             self.dtd = etree.DTD(infh)
 
@@ -55,7 +55,7 @@ class TestDTD(TestCase):
                     parsed = load_xml(infh)
                     assert self.dtd.validate(parsed), f"{name} does not validate"
                 except etree.ParseError as e:
-                    self.fail("Error parsing XML input file %s: %s." % (path, e))
+                    pytest.fail("Error parsing XML input file %s: %s." % (path, e))
 
     def test_invalid_inputs(self):
         for name in INVALID_RAS:
@@ -67,7 +67,7 @@ class TestDTD(TestCase):
                         parsed
                     ), f"{name} validates but shouldn't"
                 except etree.ParseError as e:
-                    self.fail("Error parsing XML input file %s: %s." % (path, e))
+                    pytest.fail("Error parsing XML input file %s: %s." % (path, e))
 
     def test_backwards_compatibility(self):
         # the DTD needs to be backwards compatible as long as the major version does not change
@@ -84,7 +84,7 @@ class TestDTD(TestCase):
                     parsed = load_xml(infh)
                     assert self.dtd.validate(parsed), f"{name} does not validate"
                 except etree.ParseError as e:
-                    self.fail("Error parsing XML input file %s: %s." % (path, e))
+                    pytest.fail("Error parsing XML input file %s: %s." % (path, e))
 
         # test that previous DTD fails current version
         # test DTD 1.0 with format 1.1
@@ -103,8 +103,8 @@ class TestDTD(TestCase):
                         parsed
                     ), f"{versions[1]} validates with 1.0 but shouldn't"
                 except etree.ParseError as e:
-                    self.fail("Error parsing XML input file %s: %s." % (rasFile, e))
+                    pytest.fail("Error parsing XML input file %s: %s." % (rasFile, e))
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    pytest.main(sys.argv)

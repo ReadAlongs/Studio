@@ -8,8 +8,8 @@ from contextlib import redirect_stderr
 from io import StringIO
 from textwrap import dedent
 from time import perf_counter
-from unittest.mock import patch
 
+import pytest
 from pytest import main, raises
 
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
@@ -121,7 +121,10 @@ class TestWebApi(BasicTestCase):
         # preprocessing takes about 5 ms, g2p about 200 ms, use 50 ms is nicely between
         # so we know it'll fail in g2p.
         text = self.slurp_data_file("ej-fra.txt")
-        with patch("readalongs.web_api.ASSEMBLE_TIME_LIMIT_IN_SECONDS", 0.05):
+        with pytest.MonkeyPatch.context() as monkeypatch:
+            monkeypatch.setattr(
+                "readalongs.web_api.ASSEMBLE_TIME_LIMIT_IN_SECONDS", 0.05
+            )
             request = {
                 "input": text,
                 "type": "text/plain",
@@ -137,7 +140,10 @@ class TestWebApi(BasicTestCase):
     def test_prepro_exceeds_time_limit(self):
         # preprocessing takes about 5 ms, so 1 micros is guaranteed to be too short on any hardware.
         text = self.slurp_data_file("ej-fra.txt")
-        with patch("readalongs.web_api.ASSEMBLE_TIME_LIMIT_IN_SECONDS", 0.000001):
+        with pytest.MonkeyPatch.context() as monkeypatch:
+            monkeypatch.setattr(
+                "readalongs.web_api.ASSEMBLE_TIME_LIMIT_IN_SECONDS", 0.000001
+            )
             request = {
                 "input": text,
                 "type": "text/plain",
@@ -500,26 +506,24 @@ class TestWebApi(BasicTestCase):
             )
         assert response.status_code == 422, "Negative duration should fail."
 
-    def test_cleanup_temp_dir(self):
+    def test_cleanup_temp_dir(self, caplog):
         """Make sure convert's temporary directory actually gets deleted."""
         request = {
             "dur": 83.1,
             "ras": self.hej_verden_xml,
         }
-        with self.assertLogs(LOGGER, "INFO") as log_cm:
-            response = self.API_CLIENT.post(
-                "/api/v1/convert_alignment/textgrid", json=request
-            )
+        caplog.set_level("INFO", logger=LOGGER.name)
+        response = self.API_CLIENT.post(
+            "/api/v1/convert_alignment/textgrid", json=request
+        )
         assert response.status_code == 200
         # print(log_cm.output)
-        match = re.search(
-            "Temporary directory: (.*)($|\r|\n)", "\n".join(log_cm.output)
-        )
+        match = re.search("Temporary directory: (.*)($|\r|\n)", caplog.text)
         assert match is not None
-        assert match is not None
+        assert match[1] is not None
         assert not os.path.isdir(match[1])
 
-    def test_cleanup_even_if_error(self):
+    def test_cleanup_even_if_error(self, caplog):
         # This is seriously white-box testing... overlapping words
         # will cause an exception deeper in the code after the
         # temporary directory is created. We exercise here catching
@@ -552,15 +556,14 @@ class TestWebApi(BasicTestCase):
         }
 
         for format_name in OutputFormat:
-            with self.assertLogs(LOGGER, "INFO") as log_cm:
-                response = self.API_CLIENT.post(
-                    f"/api/v1/convert_alignment/{format_name.value}", json=request
-                )
+            caplog.clear()
+            caplog.set_level("INFO", logger=LOGGER.name)
+            response = self.API_CLIENT.post(
+                f"/api/v1/convert_alignment/{format_name.value}", json=request
+            )
             assert response.status_code == 422
             # print(log_cm.output)
-            match = re.search(
-                "Temporary directory: (.*)($|\r|\n)", "\n".join(log_cm.output)
-            )
+            match = re.search("Temporary directory: (.*)($|\r|\n)", caplog.text)
             assert match is not None
             assert match is not None
             assert not os.path.isdir(match[1])

@@ -16,8 +16,7 @@ from tests.basic_test_case import BasicTestCase
 class TestSmilUtilities(BasicTestCase):
     """Unit test suite for the smil writing and parsing utilities"""
 
-    def setUp(self):
-        super().setUp()
+    def _setUp(self):
         self.words = [
             {"id": "w1", "start": 0.01, "end": 0.75},
             {"id": "w2", "start": 0.8, "end": 1.04},

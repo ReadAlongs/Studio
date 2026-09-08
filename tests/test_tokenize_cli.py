@@ -16,9 +16,8 @@ from tests.basic_test_case import BasicTestCase
 class TestTokenizeCli(BasicTestCase):
     """Test suite for the readalongs tokenize CLI command"""
 
-    def setUp(self):
-        """setUp() creates self.tempdir and makes an XML file for use in other tests"""
-        super().setUp()
+    def _setUp(self):
+        """Create the XML file used by the tests."""
 
         self.rasfile = os.path.join(self.tempdir, "fra.readalong")
         _ = self.runner.invoke(

@@ -3,7 +3,6 @@
 """Test suite for DNA segment manupulation methods"""
 
 import sys
-from unittest import TestCase
 
 from pytest import main
 
@@ -26,7 +25,7 @@ def segments_from_pairs(*pairs):
     return list({"begin": b, "end": e} for b, e in pairs)
 
 
-class TestDNAUtils(TestCase):
+class TestDNAUtils:
     """Test suite for dna segment manipulation methods in dna_utils.py"""
 
     def test_sort_and_join_dna_segments(self):

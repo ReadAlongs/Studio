@@ -72,7 +72,7 @@ class TestAnchors(BasicTestCase):
                 os.path.getsize(partial_wav_file) > 0
             ), f"{partial_wav_file} should not be empty"
 
-    def test_anchors_align_modes(self):
+    def test_anchors_align_modes(self, caplog):
         xml_with_anchors = """<doc xml:lang="fra"><body>
             <s>Bonjour.</s>
             <anchor time="1.62s"/>
@@ -83,15 +83,15 @@ class TestAnchors(BasicTestCase):
         xml_file = os.path.join(self.tempdir, "text-with-anchors.readalong")
         with open(xml_file, "w", encoding="utf8") as f:
             print(xml_with_anchors, file=f)
-        with self.assertLogs(LOGGER, level="INFO") as cm:
-            with redirect_stderr(StringIO()):
-                results = align_audio(
-                    xml_file,
-                    os.path.join(self.data_dir, "noise.mp3"),
-                )
+        caplog.set_level("INFO", logger=LOGGER.name)
+        with redirect_stderr(StringIO()):
+            results = align_audio(
+                xml_file,
+                os.path.join(self.data_dir, "noise.mp3"),
+            )
         words = results["words"]
         assert len(words) == 10
-        logger_output = "\n".join(cm.output)
+        logger_output = caplog.text
         assert "Align mode strict succeeded for sequence 0." in logger_output
         assert "Align mode strict failed for sequence 1." in logger_output
         assert "Align mode moderate failed for sequence 1." in logger_output

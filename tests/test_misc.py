@@ -252,19 +252,18 @@ class TestMisc(BasicTestCase):
             LOGGER.info("foo bar baz")
         assert "foo bar baz" in captured_logs.getvalue()
 
-    def test_capture_logs_some_more(self):
+    def test_capture_logs_some_more(self, caplog):
         with capture_logs() as captured_logs:
             LOGGER.info("this will be captured")
         assert "this will be captured" in captured_logs.getvalue()
-        with self.assertLogs(LOGGER):
-            LOGGER.info("blah")
-        with self.assertLogs(LOGGER) as cm:
-            with capture_logs() as captured_logs:
-                LOGGER.info("This text does not propagate to root")
-            LOGGER.info("This text is included in root")
-            assert "propagate" in captured_logs.getvalue()
-        assert "included" in "".join(cm.output)
-        assert "propagate" not in "".join(cm.output)
+        caplog.set_level("INFO", logger=LOGGER.name)
+        LOGGER.info("blah")
+        with capture_logs() as captured_logs:
+            LOGGER.info("This text does not propagate to root")
+        LOGGER.info("This text is included in root")
+        assert "propagate" in captured_logs.getvalue()
+        assert "included" in caplog.text
+        assert "propagate" not in caplog.text
 
     def test_version_is_pep440_compliant(self):
         assert is_canonical(VERSION)

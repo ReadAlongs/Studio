@@ -14,7 +14,7 @@ from pytest import main
 
 from readalongs import api
 from readalongs.log import LOGGER
-from tests.basic_test_case import BasicTestCase, silence_logs
+from tests.basic_test_case import BasicTestCase
 from tests.sound_swallower_stub import SoundSwallowerStub
 
 
@@ -89,10 +89,10 @@ class TestAlignApi(BasicTestCase):
         assert status != 0
         assert isinstance(exception, click.UsageError)
 
-    def test_deprecated_prepare(self):
-        with self.assertLogs(LOGGER, level="WARNING") as cm:
-            api.prepare(self.data_dir / "ej-fra.txt", self.tempdir / "foo", ("fra",))
-        assert "deprecated" in "\n".join(cm.output)
+    def test_deprecated_prepare(self, caplog):
+        caplog.set_level("WARNING", logger=LOGGER.name)
+        api.prepare(self.data_dir / "ej-fra.txt", self.tempdir / "foo", ("fra",))
+        assert "deprecated" in caplog.text
 
     sentences_to_convert = [
         [
@@ -211,8 +211,7 @@ class TestAlignApi(BasicTestCase):
 
         # Test with a URL that doesn't contain a version
         url = "https://unpkg.com/@readalongs/web-component/dist/bundle.js"
-        with silence_logs():
-            version = extract_version_from_url(url)
+        version = extract_version_from_url(url)
         assert version == "unknown"
 
 

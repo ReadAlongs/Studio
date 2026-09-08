@@ -5,7 +5,6 @@
 import sys
 from contextlib import redirect_stderr
 from io import StringIO
-from unittest import TestCase
 
 from lxml import etree
 from pytest import main
@@ -14,7 +13,7 @@ from readalongs.text import tokenize_xml
 from readalongs.text.util import parse_xml
 
 
-class TestTokenizer(TestCase):
+class TestTokenizer:
     """Test the tokenize_xml function"""
 
     def test_simple(self):

@@ -386,7 +386,7 @@ class TestG2pCli(BasicTestCase):
         )
         assert compact_arpabet(converted_1) == compact_arpabet(converted_2)
 
-    def test_convert_xml_subwords(self):
+    def test_convert_xml_subwords(self, caplog):
         """Unit testing for reintroducing subword units"""
         assert (
             run_convert_xml(
@@ -435,11 +435,10 @@ class TestG2pCli(BasicTestCase):
             <document xml:lang="fra" fallback-langs="dan"><s>
               <w><part lang="fra">ceci</part><part lang="iku">not_really_iku</part></w>
             </s></document>"""
-        with self.assertLogs(LOGGER, level="WARNING") as cm:
-            result = run_convert_xml(example_with_fallback_lang)
+        caplog.set_level("WARNING", logger=LOGGER.name)
+        result = run_convert_xml(example_with_fallback_lang)
         assert "S AH S IY N AO T _ZH EH AE L L UW _IY K UW" in result
-        logger_output = "\n".join(cm.output)
-        assert 'No valid g2p conversion found for "not_really_iku"' in logger_output
+        assert 'No valid g2p conversion found for "not_really_iku"' in caplog.text
 
     def test_convert_xml_invalid(self):
         """test readalongs.text.convert_xml.convert_xml() with invalid input"""
@@ -454,7 +453,7 @@ class TestG2pCli(BasicTestCase):
         assert etree.tounicode(c_xml) == '<s><w ARPABET="invalid">invalid</w></s>'
         assert not valid, "convert_xml with invalid pre-g2p'd text"
 
-    def test_invalid_langs_in_xml(self):
+    def test_invalid_langs_in_xml(self, caplog):
         xml = parse_xml(
             """
             <s>
@@ -463,18 +462,17 @@ class TestG2pCli(BasicTestCase):
             </s>
         """
         )
-        with self.assertLogs(LOGGER, level="WARNING") as cm:
-            c_xml, valid, _ = convert_xml(xml, verbose_warnings=True)
+        caplog.set_level("WARNING", logger=LOGGER.name)
+        c_xml, valid, _ = convert_xml(xml, verbose_warnings=True)
         assert not valid
-        logger_output = "\n".join(cm.output)
+        logger_output = caplog.text
         assert "No lang" in logger_output
         assert "foo" in logger_output
         assert 'no path from "crx-syl"' in logger_output
 
     def test_non_convertible_words(self):
         xml = parse_xml("<s><w>43:23</w><w>65:67</w><w>43:23</w></s>")
-        with self.assertLogs(LOGGER, level="WARNING"):
-            g2p_xml, valid, non_convertible_words = convert_xml(xml)
+        g2p_xml, valid, non_convertible_words = convert_xml(xml)
         assert not valid
         assert non_convertible_words == ["43:23", "65:67"]
 

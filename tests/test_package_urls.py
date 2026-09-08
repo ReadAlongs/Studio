@@ -10,7 +10,7 @@ from readalongs.text.make_package import (
     JS_BUNDLE_URL,
     fetch_bundle_file,
 )
-from tests.basic_test_case import BasicTestCase, silence_logs
+from tests.basic_test_case import BasicTestCase
 
 
 class TestPackageURLs(BasicTestCase):
@@ -38,8 +38,7 @@ class TestPackageURLs(BasicTestCase):
         # Try with a bad URL
         bad_url = JS_BUNDLE_URL.replace("unpkg.com", "not-a-server.zzz")
         # print(bad_url)
-        with silence_logs():
-            status, contents, _ = fetch_bundle_file(bad_url, "bundle.js", None)
+        status, contents, _ = fetch_bundle_file(bad_url, "bundle.js", None)
         # print(status, len(contents))
         assert status != 200
         assert isinstance(status, str)

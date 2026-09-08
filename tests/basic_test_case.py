@@ -1,11 +1,10 @@
-"""Common base class for the ReadAlongs test suites"""
+﻿"""Common base class for the ReadAlongs test suites"""
 
 import logging
 import tempfile
-from contextlib import contextmanager
 from pathlib import Path
-from unittest import TestCase
 
+import pytest
 from click.testing import CliRunner
 
 import readalongs.text.make_package as make_package
@@ -14,8 +13,8 @@ from readalongs.log import LOGGER
 make_package.FETCH_BUNDLE_TIMEOUT_SECONDS = 5  # shorter timeout for testing
 
 
-class BasicTestCase(TestCase):
-    """A Basic Unittest build block class that comes bundled with
+class BasicTestCase:
+    """A pytest building block class that comes bundled with
     a temporary directory (self.tempdir), the path to the test data (self.data_dir)
 
     For convenience, self.tempdir and self.data_dir are pathlib.Path objects
@@ -35,13 +34,9 @@ class BasicTestCase(TestCase):
     #     self.keep_temp_dir_after_running = True
     keep_temp_dir_after_running = False
 
-    def setUp(self):
-        """Create a temporary directory, self.tempdir, and a test runner, self.runner
-
-        If a subclass needs its own setUp() function, make sure to call
-            super().setUp()
-        at the beginning of it.
-        """
+    @pytest.fixture(autouse=True)
+    def _pytest_setup(self):
+        """Create per-test temporary state and run an optional subclass hook."""
         self.runner = CliRunner()
         tempdir_prefix = f"tmpdir_{type(self).__name__}_"
         if not self.keep_temp_dir_after_running:
@@ -55,13 +50,12 @@ class BasicTestCase(TestCase):
             print(f"tmpdir={tempdir_name}")
         self.tempdir = Path(tempdir_name)
 
-    def tearDown(self):
-        """Clean up the temporary directory
+        setup = getattr(self, "_setUp", None)
+        if setup is not None:
+            setup()
 
-        If a subclass needs its own tearDown() function, make sure to call
-            super().tearDown()
-        at the end of it.
-        """
+        yield
+
         if not self.keep_temp_dir_after_running:
             self.tempdirobj.cleanup()
 
@@ -70,10 +64,3 @@ class BasicTestCase(TestCase):
             # Some test cases can set the logging level to DEBUG when they pass
             # --debug to a CLI command, but don't let that affect subsequent tests.
             LOGGER.setLevel(logging.INFO)
-
-
-@contextmanager
-def silence_logs():
-    LOGGER.disabled = True
-    yield
-    LOGGER.disabled = False

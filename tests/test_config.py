@@ -6,22 +6,22 @@ import io
 import os
 import sys
 from contextlib import redirect_stderr
-from unittest import TestCase
 
 from lxml import etree
-from pytest import main, raises
+from pytest import fixture, main, raises
 
 from readalongs.text.add_elements_to_xml import add_images, add_supplementary_xml
 from readalongs.text.util import load_xml
 
 
-class TestConfig(TestCase):
+class TestConfig:
     """Test suite for loading the config.json configuration file for readalongs align"""
 
     readalong: etree
 
+    @fixture(autouse=True, scope="class")
     @classmethod
-    def setUpClass(cls) -> None:
+    def _pytest_setup(cls) -> None:
         data_dir = os.path.join(os.path.dirname(__file__), "data")
         cls.readalong = load_xml(os.path.join(data_dir, "ej-fra.readalong"))
 

@@ -24,8 +24,7 @@ from tests.basic_test_case import BasicTestCase
 class TestAudio(BasicTestCase):
     """Test suite for various audio contents handling methods"""
 
-    def setUp(self):
-        super().setUp()
+    def _setUp(self):
         self.audio_segment = read_audio_from_file(
             os.path.join(self.data_dir, "audio_sample.ogg")
         )
