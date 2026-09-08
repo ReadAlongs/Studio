@@ -12,8 +12,8 @@ from contextlib import redirect_stderr
 from io import StringIO
 from tempfile import TemporaryDirectory
 
+import pytest
 from lxml import etree
-from pytest import main, raises
 from soundswallower import get_model_path
 
 from readalongs.align import align_audio
@@ -167,11 +167,11 @@ class TestForceAlignment(BasicTestCase):
                 writer.setsampwidth(2)
                 writer.setframerate(16000)
                 writer.writeframes(b"\x00\x00")
-            with raises(RuntimeError), redirect_stderr(StringIO()):
+            with pytest.raises(RuntimeError), redirect_stderr(StringIO()):
                 _ = align_audio(xml_path, tf.name, unit="w")
 
     def test_bad_align_mode(self):
-        with raises(AssertionError), redirect_stderr(StringIO()):
+        with pytest.raises(AssertionError), redirect_stderr(StringIO()):
             _ = align_audio(
                 os.path.join(self.data_dir, "ej-fra.readalong"),
                 os.path.join(self.data_dir, "noise.mp3"),
@@ -211,4 +211,4 @@ class TestXHTML(BasicTestCase):
 
 if __name__ == "__main__":
     LOGGER.setLevel("DEBUG")
-    main(sys.argv)
+    pytest.main(sys.argv)

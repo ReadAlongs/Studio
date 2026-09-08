@@ -10,7 +10,6 @@ from textwrap import dedent
 from time import perf_counter
 
 import pytest
-from pytest import main, raises
 
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.log import LOGGER
@@ -164,9 +163,9 @@ class TestWebApi(BasicTestCase):
         ids_added = add_ids(tokenized)
         # This convert_xml call takes about 0.2s on my machine, so 1ms is guaranteed to be
         # too short on any hardware.
-        with raises(TimeLimitException):
+        with pytest.raises(TimeLimitException):
             _ = convert_xml(ids_added, time_limit=0.001)
-        with raises(TimeLimitException):
+        with pytest.raises(TimeLimitException):
             _ = convert_xml(
                 ids_added, time_limit=1.001, start_time=perf_counter() - 1.0
             )
@@ -595,4 +594,4 @@ class TestWebApi(BasicTestCase):
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    pytest.main(sys.argv)

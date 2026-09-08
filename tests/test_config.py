@@ -7,8 +7,8 @@ import os
 import sys
 from contextlib import redirect_stderr
 
+import pytest
 from lxml import etree
-from pytest import fixture, main, raises
 
 from readalongs.text.add_elements_to_xml import add_images, add_supplementary_xml
 from readalongs.text.util import load_xml
@@ -19,7 +19,7 @@ class TestConfig:
 
     readalong: etree
 
-    @fixture(autouse=True, scope="class")
+    @pytest.fixture(autouse=True, scope="class")
     @classmethod
     def _pytest_setup(cls) -> None:
         data_dir = os.path.join(os.path.dirname(__file__), "data")
@@ -27,22 +27,22 @@ class TestConfig:
 
     def test_image(self) -> None:
         """Test images are added correctly"""
-        with raises(KeyError):
+        with pytest.raises(KeyError):
             new_xml = add_images(self.readalong, {})
         new_xml = add_images(self.readalong, {"images": {"0": "test.jpg"}})
         assert len(new_xml.xpath("//graphic")) == 1
-        with raises(TypeError):
+        with pytest.raises(TypeError):
             new_xml = add_images(self.readalong, {"images": [{"0": "test.jpg"}]})
-        with raises(ValueError):
+        with pytest.raises(ValueError):
             new_xml = add_images(self.readalong, {"images": {"a": "test.jpg"}})
-        with raises(IndexError):
+        with pytest.raises(IndexError):
             new_xml = add_images(
                 self.readalong, {"images": {"0": "test.jpg", "999": "out_of_range.jpg"}}
             )
 
     def test_arbitrary_xml(self):
         """Test arbitrary xml is added correctly"""
-        with raises(KeyError):
+        with pytest.raises(KeyError):
             new_xml = add_supplementary_xml(self.readalong, {})
         new_xml = add_supplementary_xml(
             self.readalong,
@@ -58,7 +58,7 @@ class TestConfig:
         assert len(new_xml.xpath("//test")) == 1
 
         # bad xml raises lxml.etree.XMLSyntaxError
-        with raises(etree.XMLSyntaxError):
+        with pytest.raises(etree.XMLSyntaxError):
             new_xml = add_supplementary_xml(
                 self.readalong, {"xml": [{"xpath": "//div[1]", "value": "bloop"}]}
             )
@@ -81,4 +81,4 @@ class TestConfig:
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    pytest.main(sys.argv)

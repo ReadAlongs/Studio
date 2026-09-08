@@ -7,9 +7,9 @@ import os
 import sys
 
 import click
+import pytest
 from lxml import etree
 from pep440 import is_canonical
-from pytest import main, raises
 
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.align import split_silences
@@ -55,7 +55,7 @@ class TestMisc(BasicTestCase):
     def test_parse_time_errors(self):
         """Test readalongs.text.util.parse_time() with invalid inputs"""
         for err_time_str in ("3.4.5 ms", ".", "", "asdf", " 0 h z ", "nm"):
-            with raises(ValueError):
+            with pytest.raises(ValueError):
                 _ = parse_time(err_time_str)
 
     def test_split_silences(self):
@@ -166,7 +166,7 @@ class TestMisc(BasicTestCase):
         cb = JoinerCallbackForClick(iter("qwer"))  # iterable over four characters
         assert cb(None, None, ["e:r"]) == ["e", "r"]
         assert cb(None, None, ["q,w"]) == ["q", "w"]
-        with raises(click.BadParameter):
+        with pytest.raises(click.BadParameter):
             cb(None, None, ["q:e", "a,w"])
         assert cb(None, None, ["r:q", "w"]) == ["r", "q", "w"]
 
@@ -191,18 +191,18 @@ class TestMisc(BasicTestCase):
 
     def test_load_xml_errors(self):
         # non-existent file
-        with raises(OSError):
+        with pytest.raises(OSError):
             load_xml("file-does-not-exist.readalong")
 
         # invalid XML file
         bad_file = self.tempdir / "bad.readalong"
         with open(bad_file, "w") as f:
             print("This is not XML", file=f)
-        with raises(etree.ParseError):
+        with pytest.raises(etree.ParseError):
             load_xml(bad_file)
 
         # empty file is also invalid
-        with raises(etree.ParseError):
+        with pytest.raises(etree.ParseError):
             load_xml(os.devnull)
 
         # make sure we're not vulnerable to XML bombs
@@ -229,7 +229,7 @@ class TestMisc(BasicTestCase):
         assert etree.tostring(xml) == etree.tostring(xml2)
 
         malformed_xml_text = "<foo attrib="
-        with raises(etree.ParseError):
+        with pytest.raises(etree.ParseError):
             xml = parse_xml(malformed_xml_text)
 
     def test_save_xml(self):
@@ -270,4 +270,4 @@ class TestMisc(BasicTestCase):
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    pytest.main(sys.argv)

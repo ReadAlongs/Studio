@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from subprocess import run
 
-from pytest import approx, main
+import pytest
 
 from readalongs.audio_utils import (
     extract_section,
@@ -154,10 +154,10 @@ class TestAudio(BasicTestCase):
         write_audio_to_file(section, output_path)
         assert os.path.exists(output_path)
         reloaded_section = read_audio_from_file(output_path)
-        assert len(section) == approx(
+        assert len(section) == pytest.approx(
             len(reloaded_section), abs=50
         ), "reloaded audio file is more than 50ms shorter or longer"
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    pytest.main(sys.argv)

@@ -5,8 +5,8 @@
 import os
 import sys
 
+import pytest
 from pydub import AudioSegment
-from pytest import approx, main
 
 from readalongs.cli import align
 from readalongs.text.util import load_xml
@@ -50,7 +50,7 @@ class TestSilence(BasicTestCase):
             os.path.join(self.data_dir, "ej-fra.m4a")
         )
         new_audio = AudioSegment.from_file(output / "www/silence.m4a", format="m4a")
-        assert len(new_audio) - len(original_audio) == approx(
+        assert len(new_audio) - len(original_audio) == pytest.approx(
             2882, abs=50
         ), "silence-added audio file is more than 50ms shorter or longer"
 
@@ -81,4 +81,4 @@ class TestSilence(BasicTestCase):
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    pytest.main(sys.argv)

@@ -8,7 +8,7 @@ import re
 import sys
 from shutil import copyfile
 
-from pytest import main, raises
+import pytest
 
 # from readalongs.log import LOGGER
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
@@ -180,11 +180,11 @@ class TestMakeXMLCli(BasicTestCase):
         # These used to be RuntimeError, but that was not right: *programmer*
         # errors can and should dump stack traces, unlike *user* errors, which
         # warrant nice friendly messages.
-        with raises(AssertionError):
+        with pytest.raises(AssertionError):
             # missing input_file_name or input_file_handle
             _, _ = create_input_ras()
 
-        with raises(AssertionError):
+        with pytest.raises(AssertionError):
             # missing text_languages
             _, _ = create_input_ras(
                 input_file_name=os.path.join(self.data_dir, "fra.txt")
@@ -287,4 +287,4 @@ def text2lines(text: str):
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    pytest.main(sys.argv)

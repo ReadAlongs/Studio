@@ -8,8 +8,8 @@ import sys
 from contextlib import redirect_stderr
 from io import StringIO
 
+import pytest
 from lxml import etree
-from pytest import main, raises
 
 from readalongs.align import align_audio
 from readalongs.cli import align, g2p, make_xml, tokenize
@@ -306,7 +306,7 @@ class TestG2pCli(BasicTestCase):
 
         audio_file = os.path.join(self.data_dir, "ej-fra.m4a")
         with redirect_stderr(StringIO()):
-            with raises(RuntimeError, match="could not be g2p'd"):
+            with pytest.raises(RuntimeError, match="could not be g2p'd"):
                 results = align_audio(input_file, audio_file)
 
     def test_align_with_preg2p(self):
@@ -478,4 +478,4 @@ class TestG2pCli(BasicTestCase):
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    pytest.main(sys.argv)
