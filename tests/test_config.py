@@ -19,9 +19,8 @@ class TestConfig:
 
     readalong: etree
 
-    @pytest.fixture(autouse=True, scope="class")
     @classmethod
-    def _pytest_setup(cls) -> None:
+    def setup_class(cls) -> None:
         data_dir = os.path.join(os.path.dirname(__file__), "data")
         cls.readalong = load_xml(os.path.join(data_dir, "ej-fra.readalong"))
 

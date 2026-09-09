@@ -41,8 +41,7 @@ ej-fra-invalid.readalong
 class TestDTD:
     """Test the XML DTD"""
 
-    @pytest.fixture(autouse=True)
-    def _pytest_setup(self):
+    def setup_method(self) -> None:
         with open(DTDPATH) as infh:
             self.dtd = etree.DTD(infh)
 
