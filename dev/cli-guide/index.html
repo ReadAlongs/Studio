@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
       
 
@@ -1072,25 +1072,25 @@ found in the ReadAlong Studio source code under
 <p>There are two types of "do-not-align" (DNA) content: DNA audio and DNA text.</p>
 <p>To use DNA text, add <code>do-not-align</code> as an attribute to any
 element in the xml (word, sentence, paragraph, or page).</p>
-<div class="highlight"><pre><span></span><code>&lt;w do-not-align=&quot;true&quot; id=&quot;t0b0d0p0s0w0&quot;&gt;dog&lt;/w&gt;
+<div class="highlight"><pre><span></span><code>&lt;w do-not-align="true" id="t0b0d0p0s0w0"&gt;dog&lt;/w&gt;
 </code></pre></div>
 <p>If you have already run <code>readalongs make-xml</code>, there will be
 documentation for DNA text in comments at the beginning of the generated
 xml file.</p>
-<div class="highlight"><pre><span></span><code>&lt;!-- To exclude any element from alignment, add the do-not-align=&quot;true&quot; attribute to
-     it, e.g., &lt;p do-not-align=&quot;true&quot;&gt;...&lt;/p&gt;, or
-     &lt;s&gt;Some text &lt;foo do-not-align=&quot;true&quot;&gt;do not align this&lt;/foo&gt; more text&lt;/s&gt; --&gt;
+<div class="highlight"><pre><span></span><code>&lt;!-- To exclude any element from alignment, add the do-not-align="true" attribute to
+     it, e.g., &lt;p do-not-align="true"&gt;...&lt;/p&gt;, or
+     &lt;s&gt;Some text &lt;foo do-not-align="true"&gt;do not align this&lt;/foo&gt; more text&lt;/s&gt; --&gt;
 </code></pre></div>
 <p>To use DNA audio, you can specify a timeframe in milliseconds in the
 <code>config.json</code> file which you want the aligner to ignore.</p>
-<div class="highlight"><pre><span></span><code>&quot;do-not-align&quot;:
+<div class="highlight"><pre><span></span><code>"do-not-align":
     {
-    &quot;method&quot;: &quot;remove&quot;,
-    &quot;segments&quot;:
+    "method": "remove",
+    "segments":
     [
         {
-            &quot;begin&quot;: 1,
-            &quot;end&quot;: 17000
+            "begin": 1,
+            "end": 17000
         }
     ]
     }
@@ -1179,25 +1179,26 @@ fin         Finnish
 fra         French
 git         Gitksan
 gla         Scottish Gaelic
-gwi         Gwich&#39;in
+gwi         Gwich'in
 haa         Hän
 ikt         Inuktut, Western
 iku         Inuktitut Syllabics
 iku-sro     Inuktitut Romanized
 kkz         Kaska
-kwk-boas    Kwak&#39;wala (Boas orthography)
-kwk-napa    Kwak&#39;wala (NAPA orthography)
-kwk-umista  Kwak&#39;wala (U&#39;mista orthography)
+kwk-boas    Kwak'wala (Boas orthography)
+kwk-napa    Kwak'wala (NAPA orthography)
+kwk-umista  Kwak'wala (U'mista orthography)
 lml         Raga
-mic         Mi&#39;kmaq
+mic         Mi'kmaq
 moe         Innu-aimun
-moh         Kanien&#39;kéha
+moh         Kanien'kéha
 oji         Ojibwe
 oji-syl     Ojibwe Syllabics
 oka         nsyilxcən
+pol         Polish
 sal-apa     Salishan languages with APA-based writing systems
 see         Seneca
-srs         Tsuut&#39;ina
+srs         Tsuut'ina
 str         SENĆOŦEN
 tau         Upper Tanana
 tce         Southern Tutchone
@@ -1218,33 +1219,33 @@ images to your ReadAlongs, and DNA audio (see <a class="autorefs autorefs-intern
 <p>To add a title and headers to the output HTML, you can use the keys
 <code>"title"</code>, <code>"header"</code>, and <code>"subheader"</code>, for example:</p>
 <div class="highlight"><pre><span></span><code>{
-  &quot;title&quot;: &quot;My awesome read-along&quot;,
-  &quot;header&quot;: &quot;A story in my language&quot;,
-  &quot;subheader&quot;: &quot;Read by me&quot;
+  "title": "My awesome read-along",
+  "header": "A story in my language",
+  "subheader": "Read by me"
 }
 </code></pre></div>
 <p>To add images, indicate the page number as the key, and the name of the image
 file as the value, as an entry in the <code>"images"</code> dictionary.</p>
-<div class="highlight"><pre><span></span><code>{ &quot;images&quot;: { &quot;0&quot;: &quot;p1.jpg&quot;, &quot;1&quot;: &quot;p2.jpg&quot; } }
+<div class="highlight"><pre><span></span><code>{ "images": { "0": "p1.jpg", "1": "p2.jpg" } }
 </code></pre></div>
 <p>Both images and DNA audio can be specified in the same config file, such
 as in the example below:</p>
 <div class="highlight"><pre><span></span><code>{
-    &quot;images&quot;:
+    "images":
         {
-            &quot;0&quot;: &quot;image-for-page1.jpg&quot;,
-            &quot;1&quot;: &quot;image-for-page1.jpg&quot;,
-            &quot;2&quot;: &quot;image-for-page2.jpg&quot;,
-            &quot;3&quot;: &quot;image-for-page3.jpg&quot;
+            "0": "image-for-page1.jpg",
+            "1": "image-for-page1.jpg",
+            "2": "image-for-page2.jpg",
+            "3": "image-for-page3.jpg"
         },
 
-    &quot;do-not-align&quot;:
+    "do-not-align":
         {
-        &quot;method&quot;: &quot;remove&quot;,
-        &quot;segments&quot;:
+        "method": "remove",
+        "segments":
             [
-                {   &quot;begin&quot;: 1,     &quot;end&quot;: 17000   },
-                {   &quot;begin&quot;: 57456, &quot;end&quot;: 68000   }
+                {   "begin": 1,     "end": 17000   },
+                {   "begin": 57456, "end": 68000   }
             ]
         }
 }
@@ -1262,12 +1263,12 @@ so the system will not be able to proceed to alignment by the
 aligner, SoundSwallower.</p>
 <p>If you know the language for that text, you can mark it as such in the
 XML. E.g.:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">&lt;s</span><span class="w"> </span><span class="na">xml:lang=</span><span class="s">&quot;eng&quot;</span><span class="nt">&gt;</span>This<span class="w"> </span>sentence<span class="w"> </span>is<span class="w"> </span>in<span class="w"> </span>English.<span class="nt">&lt;/s&gt;</span>
+<div class="highlight"><pre><span></span><code><span class="nt">&lt;s</span><span class="w"> </span><span class="na">xml:lang=</span><span class="s">"eng"</span><span class="nt">&gt;</span>This<span class="w"> </span>sentence<span class="w"> </span>is<span class="w"> </span>in<span class="w"> </span>English.<span class="nt">&lt;/s&gt;</span>
 </code></pre></div>
 <p>The <code>xml:lang</code> attribute can be added to any element in the XML structure
 and will apply to text at any depth within that element, unless the
 attribute is specified again at a deeper level, e.g.:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">&lt;s</span><span class="w"> </span><span class="na">xml:lang=</span><span class="s">&quot;eng&quot;</span><span class="nt">&gt;</span>English<span class="w"> </span>mixed<span class="w"> </span>with<span class="w"> </span><span class="nt">&lt;foo</span><span class="w"> </span><span class="na">xml:lang=</span><span class="s">&quot;fra&quot;</span><span class="nt">&gt;</span>français<span class="nt">&lt;/foo&gt;</span>.<span class="nt">&lt;/s&gt;</span>
+<div class="highlight"><pre><span></span><code><span class="nt">&lt;s</span><span class="w"> </span><span class="na">xml:lang=</span><span class="s">"eng"</span><span class="nt">&gt;</span>English<span class="w"> </span>mixed<span class="w"> </span>with<span class="w"> </span><span class="nt">&lt;foo</span><span class="w"> </span><span class="na">xml:lang=</span><span class="s">"fra"</span><span class="nt">&gt;</span>français<span class="nt">&lt;/foo&gt;</span>.<span class="nt">&lt;/s&gt;</span>
 </code></pre></div>
 <p>There is also a simpler option available: the g2p cascade. When the g2p
 cascade is enabled, the g2p mapping will be done by first trying the
@@ -1281,7 +1282,7 @@ possible, are error message is printed and alignment is not attempted.</p>
 <p>To enable the g2p cascade, provide multiple languages via the <code>-l</code> switch
 (for plain text input) or add the <code>fallback-langs="l2,l3,...</code> attribute to
 any element in the XML file:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">&lt;s</span><span class="w"> </span><span class="na">xml:lang=</span><span class="s">&quot;eng&quot;</span><span class="w"> </span><span class="na">fallback-langs=</span><span class="s">&quot;fra,und&quot;</span><span class="nt">&gt;</span>English<span class="w"> </span>mixed<span class="w"> </span>with<span class="w"> </span>français.<span class="nt">&lt;/s&gt;</span>
+<div class="highlight"><pre><span></span><code><span class="nt">&lt;s</span><span class="w"> </span><span class="na">xml:lang=</span><span class="s">"eng"</span><span class="w"> </span><span class="na">fallback-langs=</span><span class="s">"fra,und"</span><span class="nt">&gt;</span>English<span class="w"> </span>mixed<span class="w"> </span>with<span class="w"> </span>français.<span class="nt">&lt;/s&gt;</span>
 </code></pre></div>
 <p>These command line examples will set the language to <code>fra</code>, with the g2p cascade
 falling back to <code>eng</code> and then <code>und</code> (see below) when needed.</p>
@@ -1344,18 +1345,18 @@ is the default) or milliseconds.</p>
 <p>Anchors can be placed anywhere in the XML file: between/before/after any
 element or text.</p>
 <p>Example:</p>
-<div class="highlight"><pre><span></span><code><span class="cp">&lt;?xml version=&#39;1.0&#39; encoding=&#39;utf-8&#39;?&gt;</span>
-<span class="nt">&lt;read-along</span><span class="w"> </span><span class="na">version=</span><span class="s">&quot;1.0&quot;</span><span class="nt">&gt;</span><span class="w"> </span><span class="nt">&lt;text</span><span class="w"> </span><span class="na">xml:lang=</span><span class="s">&quot;eng&quot;</span><span class="nt">&gt;</span><span class="w"> </span><span class="nt">&lt;body&gt;</span>
-<span class="w">    </span><span class="nt">&lt;anchor</span><span class="w"> </span><span class="na">time=</span><span class="s">&quot;143ms&quot;</span><span class="nt">/&gt;</span>
-<span class="w">    </span><span class="nt">&lt;div</span><span class="w"> </span><span class="na">type=</span><span class="s">&quot;page&quot;</span><span class="nt">&gt;</span>
+<div class="highlight"><pre><span></span><code><span class="cp">&lt;?xml version='1.0' encoding='utf-8'?&gt;</span>
+<span class="nt">&lt;read-along</span><span class="w"> </span><span class="na">version=</span><span class="s">"1.0"</span><span class="nt">&gt;</span><span class="w"> </span><span class="nt">&lt;text</span><span class="w"> </span><span class="na">xml:lang=</span><span class="s">"eng"</span><span class="nt">&gt;</span><span class="w"> </span><span class="nt">&lt;body&gt;</span>
+<span class="w">    </span><span class="nt">&lt;anchor</span><span class="w"> </span><span class="na">time=</span><span class="s">"143ms"</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;div</span><span class="w"> </span><span class="na">type=</span><span class="s">"page"</span><span class="nt">&gt;</span>
 <span class="w">    </span><span class="nt">&lt;p&gt;</span>
 <span class="w">        </span><span class="nt">&lt;s&gt;</span>Hello.<span class="nt">&lt;/s&gt;</span>
-<span class="w">        </span><span class="nt">&lt;anchor</span><span class="w"> </span><span class="na">time=</span><span class="s">&quot;1.62s&quot;</span><span class="nt">/&gt;</span>
-<span class="w">        </span><span class="nt">&lt;s&gt;</span>This<span class="w"> </span>is<span class="w"> </span><span class="nt">&lt;anchor</span><span class="w"> </span><span class="na">time=</span><span class="s">&quot;3.81s&quot;</span><span class="nt">/&gt;</span><span class="w"> </span><span class="nt">&lt;anchor</span><span class="w"> </span><span class="na">time=</span><span class="s">&quot;3.94s&quot;</span><span class="nt">/&gt;</span><span class="w"> </span>a<span class="w"> </span>test<span class="nt">&lt;/s&gt;</span>
-<span class="w">        </span><span class="nt">&lt;s&gt;&lt;anchor</span><span class="w"> </span><span class="na">time=</span><span class="s">&quot;4123ms&quot;</span><span class="nt">/&gt;</span>weirdword<span class="nt">&lt;anchor</span><span class="w"> </span><span class="na">time=</span><span class="s">&quot;4789ms&quot;</span><span class="nt">/&gt;&lt;/s&gt;</span>
+<span class="w">        </span><span class="nt">&lt;anchor</span><span class="w"> </span><span class="na">time=</span><span class="s">"1.62s"</span><span class="nt">/&gt;</span>
+<span class="w">        </span><span class="nt">&lt;s&gt;</span>This<span class="w"> </span>is<span class="w"> </span><span class="nt">&lt;anchor</span><span class="w"> </span><span class="na">time=</span><span class="s">"3.81s"</span><span class="nt">/&gt;</span><span class="w"> </span><span class="nt">&lt;anchor</span><span class="w"> </span><span class="na">time=</span><span class="s">"3.94s"</span><span class="nt">/&gt;</span><span class="w"> </span>a<span class="w"> </span>test<span class="nt">&lt;/s&gt;</span>
+<span class="w">        </span><span class="nt">&lt;s&gt;&lt;anchor</span><span class="w"> </span><span class="na">time=</span><span class="s">"4123ms"</span><span class="nt">/&gt;</span>weirdword<span class="nt">&lt;anchor</span><span class="w"> </span><span class="na">time=</span><span class="s">"4789ms"</span><span class="nt">/&gt;&lt;/s&gt;</span>
 <span class="w">    </span><span class="nt">&lt;/p&gt;</span>
 <span class="w">    </span><span class="nt">&lt;/div&gt;</span>
-<span class="w">    </span><span class="nt">&lt;anchor</span><span class="w"> </span><span class="na">time=</span><span class="s">&quot;6.74s&quot;</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;anchor</span><span class="w"> </span><span class="na">time=</span><span class="s">"6.74s"</span><span class="nt">/&gt;</span>
 <span class="nt">&lt;/body&gt;</span><span class="w"> </span><span class="nt">&lt;/text&gt;</span><span class="w"> </span><span class="nt">&lt;/read-along&gt;</span>
 </code></pre></div>
 <h3 id="anchor-semantics">Anchor semantics</h3>
@@ -1412,17 +1413,17 @@ The syntax is like the anchor syntax: <code>&lt;silence dur="4.2s"/&gt;</code> o
 <code>&lt;silence dur="100ms"/&gt;</code>. Like anchors, silence elements can be inserted
 anywhere.</p>
 <p>Example:</p>
-<div class="highlight"><pre><span></span><code><span class="cp">&lt;?xml version=&#39;1.0&#39; encoding=&#39;utf-8&#39;?&gt;</span>
-<span class="nt">&lt;read-along</span><span class="w"> </span><span class="na">version=</span><span class="s">&quot;1.0&quot;</span><span class="nt">&gt;</span><span class="w"> </span><span class="nt">&lt;text</span><span class="w"> </span><span class="na">xml:lang=</span><span class="s">&quot;eng&quot;</span><span class="nt">&gt;</span><span class="w"> </span><span class="nt">&lt;body&gt;</span>
-<span class="w">    </span><span class="nt">&lt;silence</span><span class="w"> </span><span class="na">dur=</span><span class="s">&quot;1s&quot;</span><span class="nt">/&gt;</span>
-<span class="w">    </span><span class="nt">&lt;div</span><span class="w"> </span><span class="na">type=</span><span class="s">&quot;page&quot;</span><span class="nt">&gt;</span>
+<div class="highlight"><pre><span></span><code><span class="cp">&lt;?xml version='1.0' encoding='utf-8'?&gt;</span>
+<span class="nt">&lt;read-along</span><span class="w"> </span><span class="na">version=</span><span class="s">"1.0"</span><span class="nt">&gt;</span><span class="w"> </span><span class="nt">&lt;text</span><span class="w"> </span><span class="na">xml:lang=</span><span class="s">"eng"</span><span class="nt">&gt;</span><span class="w"> </span><span class="nt">&lt;body&gt;</span>
+<span class="w">    </span><span class="nt">&lt;silence</span><span class="w"> </span><span class="na">dur=</span><span class="s">"1s"</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;div</span><span class="w"> </span><span class="na">type=</span><span class="s">"page"</span><span class="nt">&gt;</span>
 <span class="w">    </span><span class="nt">&lt;p&gt;</span>
 <span class="w">        </span><span class="nt">&lt;s&gt;</span>Hello.<span class="nt">&lt;/s&gt;</span>
-<span class="w">        </span><span class="nt">&lt;silence</span><span class="w"> </span><span class="na">dur=</span><span class="s">&quot;10s&quot;</span><span class="nt">/&gt;</span>
-<span class="w">        </span><span class="nt">&lt;s&gt;</span>After<span class="w"> </span>this<span class="w"> </span>pregnant<span class="w"> </span>pause,<span class="w"> </span><span class="nt">&lt;silence</span><span class="w"> </span><span class="na">dur=</span><span class="s">&quot;100ms&quot;</span><span class="nt">/&gt;</span><span class="w"> </span>we&#39;ll<span class="w"> </span>pause
-<span class="w">           </span>again<span class="w"> </span>before<span class="w"> </span>it&#39;s<span class="w"> </span>all<span class="w"> </span>over!<span class="nt">&lt;/s&gt;</span>
+<span class="w">        </span><span class="nt">&lt;silence</span><span class="w"> </span><span class="na">dur=</span><span class="s">"10s"</span><span class="nt">/&gt;</span>
+<span class="w">        </span><span class="nt">&lt;s&gt;</span>After<span class="w"> </span>this<span class="w"> </span>pregnant<span class="w"> </span>pause,<span class="w"> </span><span class="nt">&lt;silence</span><span class="w"> </span><span class="na">dur=</span><span class="s">"100ms"</span><span class="nt">/&gt;</span><span class="w"> </span>we'll<span class="w"> </span>pause
+<span class="w">           </span>again<span class="w"> </span>before<span class="w"> </span>it's<span class="w"> </span>all<span class="w"> </span>over!<span class="nt">&lt;/s&gt;</span>
 <span class="w">    </span><span class="nt">&lt;/p&gt;</span>
-<span class="w">    </span><span class="nt">&lt;silence</span><span class="w"> </span><span class="na">dur=</span><span class="s">&quot;1s&quot;</span><span class="nt">/&gt;</span>
+<span class="w">    </span><span class="nt">&lt;silence</span><span class="w"> </span><span class="na">dur=</span><span class="s">"1s"</span><span class="nt">/&gt;</span>
 <span class="w">    </span><span class="nt">&lt;/div&gt;</span>
 <span class="nt">&lt;/body&gt;</span><span class="w"> </span><span class="nt">&lt;/text&gt;</span><span class="w"> </span><span class="nt">&lt;/read-along&gt;</span>
 </code></pre></div>
@@ -1534,7 +1535,7 @@ anywhere.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy", "navigation.instant", "navigation.footer"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "stable", "provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../assets/_markdown_exec_pyodide.js"></script>
       
