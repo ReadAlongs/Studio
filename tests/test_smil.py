@@ -7,7 +7,7 @@ Unit test suite for the smil writing and parsing utilities
 import sys
 from textwrap import dedent
 
-from pytest import main
+import pytest
 
 from readalongs.text.make_smil import make_smil, parse_smil
 from tests.basic_test_case import BasicTestCase
@@ -16,8 +16,7 @@ from tests.basic_test_case import BasicTestCase
 class TestSmilUtilities(BasicTestCase):
     """Unit test suite for the smil writing and parsing utilities"""
 
-    def setUp(self):
-        super().setUp()
+    def _setUp(self):
         self.words = [
             {"id": "w1", "start": 0.01, "end": 0.75},
             {"id": "w2", "start": 0.8, "end": 1.04},
@@ -49,14 +48,14 @@ class TestSmilUtilities(BasicTestCase):
         text_path = "my_text_path"
         audio_path = "my_audio_path"
         smil = make_smil(text_path, audio_path, self.words)
-        self.assertEqual(smil, self.smil)
+        assert smil == self.smil
 
     def test_parse_smil(self):
         words = parse_smil(self.smil)
-        self.assertEqual(words, self.words)
+        assert words == self.words
 
     def test_parse_bad_smil(self):
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             _ = parse_smil("this is not XML")
 
         missing_id = dedent(
@@ -71,7 +70,7 @@ class TestSmilUtilities(BasicTestCase):
             </smil>
             """
         )
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             _ = parse_smil(missing_id)
 
         missing_clip_end = dedent(
@@ -86,7 +85,7 @@ class TestSmilUtilities(BasicTestCase):
             </smil>
             """
         )
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             _ = parse_smil(missing_clip_end)
 
         bad_float = dedent(
@@ -101,9 +100,9 @@ class TestSmilUtilities(BasicTestCase):
             </smil>
             """
         )
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             _ = parse_smil(bad_float)
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    pytest.main(sys.argv)

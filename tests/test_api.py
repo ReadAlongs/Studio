@@ -14,7 +14,7 @@ from pytest import main
 
 from readalongs import api
 from readalongs.log import LOGGER
-from tests.basic_test_case import BasicTestCase, silence_logs
+from tests.basic_test_case import BasicTestCase
 from tests.sound_swallower_stub import SoundSwallowerStub
 
 
@@ -34,9 +34,9 @@ class TestAlignApi(BasicTestCase):
                     langs,
                     output_formats=["html", "TextGrid", "srt"],
                 )
-        self.assertEqual(status, 0)
-        self.assertTrue(exception is None)
-        self.assertIn("Words (<w>) not present; tokenizing", log)
+        assert status == 0
+        assert exception is None
+        assert "Words (<w>) not present; tokenizing" in log
         expected_output_files = (
             "www/output.readalong",
             "www/output.m4a",
@@ -47,20 +47,17 @@ class TestAlignApi(BasicTestCase):
             "Offline-HTML/output.html",
         )
         for f in expected_output_files:
-            self.assertTrue(
-                (self.tempdir / "output" / f).exists(),
+            assert (self.tempdir / "output" / f).exists(), (
                 f"successful alignment should have created {f}",
             )
-        self.assertEqual(
-            list(langs),
-            ["fra"],
+        assert list(langs) == ["fra"], (
             "Make sure the API call doesn't not modify my variables",
         )
 
         with redirect_stderr(StringIO()):
             (status, exception, log) = api.align("", "", self.tempdir / "errors")
-        self.assertNotEqual(status, 0)
-        self.assertFalse(exception is None)
+        assert status != 0
+        assert exception is not None
 
     def test_call_make_xml(self):
         with redirect_stderr(StringIO()):
@@ -69,33 +66,33 @@ class TestAlignApi(BasicTestCase):
                 self.tempdir / "prepared.readalong",
                 ("fra", "eng"),
             )
-        self.assertEqual(status, 0)
-        self.assertTrue(exception is None)
-        self.assertIn("Wrote ", log)
+        assert status == 0
+        assert exception is None
+        assert "Wrote " in log
         with open(self.tempdir / "prepared.readalong") as f:
             xml_text = f.read()
-            self.assertIn('xml:lang="fra" fallback-langs="eng,und"', xml_text)
+            assert 'xml:lang="fra" fallback-langs="eng,und"' in xml_text
 
         (status, exception, log) = api.make_xml(
             self.data_dir / "ej-fra.txt",
             self.tempdir / "bad.readalong",
             ("fra", "not-a-lang"),
         )
-        self.assertNotEqual(status, 0)
-        self.assertTrue(isinstance(exception, click.BadParameter))
+        assert status != 0
+        assert isinstance(exception, click.BadParameter)
 
         (status, exception, log) = api.make_xml(
             self.data_dir / "file-not-found.txt",
             self.tempdir / "none.readalong",
             ("fra",),
         )
-        self.assertNotEqual(status, 0)
-        self.assertTrue(isinstance(exception, click.UsageError))
+        assert status != 0
+        assert isinstance(exception, click.UsageError)
 
-    def test_deprecated_prepare(self):
-        with self.assertLogs(LOGGER, level="WARNING") as cm:
-            api.prepare(self.data_dir / "ej-fra.txt", self.tempdir / "foo", ("fra",))
-        self.assertIn("deprecated", "\n".join(cm.output))
+    def test_deprecated_prepare(self, caplog):
+        caplog.set_level("WARNING", logger=LOGGER.name)
+        api.prepare(self.data_dir / "ej-fra.txt", self.tempdir / "foo", ("fra",))
+        assert "deprecated" in caplog.text
 
     sentences_to_convert = [
         [
@@ -152,7 +149,7 @@ class TestAlignApi(BasicTestCase):
         )
         readalong = re.sub(r"time=\".*?\"", 'time="ttt"', readalong)
         readalong = re.sub(r"dur=\".*?\"", 'dur="ddd"', readalong)
-        self.assertEqual(readalong, align_result)
+        assert readalong == align_result
 
     def test_convert_to_offline_html(self):
         import readalongs.text.make_package as make_package
@@ -170,17 +167,17 @@ class TestAlignApi(BasicTestCase):
         # with open("test.html", "w", encoding="utf8") as f:
         #     f.write(html)
         # print(html)
-        self.assertIn("<html", html)
-        self.assertIn("<body", html)
-        self.assertIn('<meta name="generator" content="@readalongs/studio (cli)', html)
-        self.assertIn('href="data:application/readalong+xml;base64', html)
-        self.assertIn('audio="data:audio/', html)
-        self.assertIn("<span slot='read-along-header'>", html)
-        self.assertIn("<span slot='read-along-subheader'>by Jove!</span>", html)
+        assert "<html" in html
+        assert "<body" in html
+        assert '<meta name="generator" content="@readalongs/studio (cli)' in html
+        assert 'href="data:application/readalong+xml;base64' in html
+        assert 'audio="data:audio/' in html
+        assert "<span slot='read-along-header'>" in html
+        assert "<span slot='read-along-subheader'>by Jove!</span>" in html
 
         # Make sure the bundles got cached
-        self.assertIsNotNone(make_package.fonts_bundle_contents)
-        self.assertIsNotNone(make_package.js_bundle_contents)
+        assert make_package.fonts_bundle_contents is not None
+        assert make_package.js_bundle_contents is not None
 
         # And convert again, this time it's going to use the cached bundles.
         html2, _ = api.convert_prealigned_text_to_offline_html(
@@ -188,7 +185,7 @@ class TestAlignApi(BasicTestCase):
             str(self.data_dir / "noise.mp3"),
             subheader="by Jove!",
         )
-        self.assertEqual(html, html2)
+        assert html == html2
 
         # Once more, this time pretend we could not fetch the first bundle
         make_package.fonts_bundle_contents = None
@@ -200,9 +197,9 @@ class TestAlignApi(BasicTestCase):
             str(self.data_dir / "noise.mp3"),
             subheader="by Jove!",
         )
-        self.assertEqual(make_package._prev_fonts_status_code, "TIMEOUT")
-        self.assertIsNotNone(make_package.fonts_bundle_contents)
-        self.assertIsNotNone(make_package.js_bundle_contents)
+        assert make_package._prev_fonts_status_code == "TIMEOUT"
+        assert make_package.fonts_bundle_contents is not None
+        assert make_package.js_bundle_contents is not None
 
     def test_extract_version_from_url(self):
         from readalongs.text.make_package import extract_version_from_url
@@ -210,13 +207,12 @@ class TestAlignApi(BasicTestCase):
         # Test that the version is extracted correctly from the URL
         url = "https://unpkg.com/@readalongs/web-component@1.2.3/dist/bundle.js"
         version = extract_version_from_url(url)
-        self.assertEqual(version, "1.2.3")
+        assert version == "1.2.3"
 
         # Test with a URL that doesn't contain a version
         url = "https://unpkg.com/@readalongs/web-component/dist/bundle.js"
-        with silence_logs():
-            version = extract_version_from_url(url)
-        self.assertEqual(version, "unknown")
+        version = extract_version_from_url(url)
+        assert version == "unknown"
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from subprocess import run
 
-from pytest import main
+import pytest
 
 from readalongs.audio_utils import (
     extract_section,
@@ -24,8 +24,7 @@ from tests.basic_test_case import BasicTestCase
 class TestAudio(BasicTestCase):
     """Test suite for various audio contents handling methods"""
 
-    def setUp(self):
-        super().setUp()
+    def _setUp(self):
         self.audio_segment = read_audio_from_file(
             os.path.join(self.data_dir, "audio_sample.ogg")
         )
@@ -50,23 +49,23 @@ class TestAudio(BasicTestCase):
         muted_segment = mute_section(self.audio_segment, 1000, 2000)
         muted_section = muted_segment[1000:2000]
         # This worked with pydub 0.23.1, but it does not work with 0.25.1
-        # self.assertLessEqual(muted_section.max, 1)
+        # assert muted_sectino.max <= 1
         # Muting applies a gain of -120, so the results is not necessarily 0,
         # it's just much smaller.
-        self.assertLessEqual(muted_section.max, max_before / 1000)
+        assert muted_section.max <= max_before / 1000
 
     def test_remove_section(self):
         """Should remove section of audio"""
         removed_segment = remove_section(self.audio_segment, 1000, 2000)
-        self.assertNotEqual(len(removed_segment), len(self.audio_segment))
-        self.assertEqual(len(removed_segment), len(self.audio_segment) - 1000)
+        assert len(removed_segment) != len(self.audio_segment)
+        assert len(removed_segment) == len(self.audio_segment) - 1000
 
     def test_rejoin_section(self):
         """Should rejoin removed/muted sections"""
         removed_section = self.audio_segment[1000:2000]
         removed_segment = remove_section(self.audio_segment, 1000, 2000)
         rejoined_segment = join_section(removed_segment, removed_section, 1000)
-        self.assertEqual(len(rejoined_segment), len(self.audio_segment))
+        assert len(rejoined_segment) == len(self.audio_segment)
 
     def test_align_sample(self):
         """Sanity check that test audio should align"""
@@ -81,14 +80,13 @@ class TestAudio(BasicTestCase):
         # Check Result
         raspath = Path(output_path) / "www"
         ras_files = raspath.glob("*.readalong")
-        self.assertTrue(
-            next(ras_files, False),
+        assert next(ras_files, False), (
             "No *.readalong files found; "
             "pip install --force-reinstall --upgrade might be required "
             "if dependencies changed.",
         )
         # Make sure ss logs are disabled
-        self.assertNotIn("Current configuration", process.stderr)
+        assert "Current configuration" not in process.stderr
 
     def test_align_removed(self):
         """Try aligning section with removed audio"""
@@ -108,14 +106,13 @@ class TestAudio(BasicTestCase):
         # Check Result
         raspath = Path(output_path) / "www"
         ras_files = raspath.glob("*.readalong")
-        self.assertTrue(
-            next(ras_files, False),
+        assert next(ras_files, False), (
             "No *.readalong files found; "
             "pip install --force-reinstall --upgrade might be required "
             "if dependencies changed.",
         )
         # Make sure ss logs are enabled
-        self.assertIn("Current configuration", process.stderr)
+        assert "Current configuration" in process.stderr
 
     def test_align_muted(self):
         """Try aligning section with muted audio"""
@@ -135,8 +132,7 @@ class TestAudio(BasicTestCase):
         # Check Result
         raspath = Path(output_path) / "www"
         ras_files = raspath.glob("*.readalong")
-        self.assertTrue(
-            next(ras_files, False),
+        assert next(ras_files, False), (
             "No *.readalong files found; "
             "pip install --force-reinstall --upgrade might be required "
             "if dependencies changed.",
@@ -144,11 +140,11 @@ class TestAudio(BasicTestCase):
 
     def test_extract_section(self):
         """Unit test extract_section()"""
-        self.assertEqual(len(extract_section(self.audio_segment, 1000, 2000)), 1000)
-        self.assertEqual(len(extract_section(self.audio_segment, None, 500)), 500)
-        self.assertEqual(
-            len(extract_section(self.audio_segment, 1000, None)),
-            len(self.audio_segment) - 1000,
+        assert len(extract_section(self.audio_segment, 1000, 2000)) == 1000
+        assert len(extract_section(self.audio_segment, None, 500)) == 500
+        assert (
+            len(extract_section(self.audio_segment, 1000, None))
+            == len(self.audio_segment) - 1000
         )
 
     def test_write_audio_to_file(self):
@@ -156,15 +152,12 @@ class TestAudio(BasicTestCase):
         section = extract_section(self.audio_segment, 1000, 2000)
         output_path = os.path.join(self.tempdir, "section_output.mp3")
         write_audio_to_file(section, output_path)
-        self.assertTrue(os.path.exists(output_path))
+        assert os.path.exists(output_path)
         reloaded_section = read_audio_from_file(output_path)
-        self.assertAlmostEqual(
-            len(section),
-            len(reloaded_section),
-            msg="reloaded audio file is more than 50ms shorter or longer",
-            delta=50,
-        )
+        assert len(section) == pytest.approx(
+            len(reloaded_section), abs=50
+        ), "reloaded audio file is more than 50ms shorter or longer"
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    pytest.main(sys.argv)

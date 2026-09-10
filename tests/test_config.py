@@ -6,43 +6,42 @@ import io
 import os
 import sys
 from contextlib import redirect_stderr
-from unittest import TestCase
 
+import pytest
 from lxml import etree
-from pytest import main
 
 from readalongs.text.add_elements_to_xml import add_images, add_supplementary_xml
 from readalongs.text.util import load_xml
 
 
-class TestConfig(TestCase):
+class TestConfig:
     """Test suite for loading the config.json configuration file for readalongs align"""
 
     readalong: etree
 
     @classmethod
-    def setUpClass(cls) -> None:
+    def setup_class(cls) -> None:
         data_dir = os.path.join(os.path.dirname(__file__), "data")
         cls.readalong = load_xml(os.path.join(data_dir, "ej-fra.readalong"))
 
     def test_image(self) -> None:
         """Test images are added correctly"""
-        with self.assertRaises(KeyError):
+        with pytest.raises(KeyError):
             new_xml = add_images(self.readalong, {})
         new_xml = add_images(self.readalong, {"images": {"0": "test.jpg"}})
-        self.assertTrue(len(new_xml.xpath("//graphic")) == 1)
-        with self.assertRaises(TypeError):
+        assert len(new_xml.xpath("//graphic")) == 1
+        with pytest.raises(TypeError):
             new_xml = add_images(self.readalong, {"images": [{"0": "test.jpg"}]})
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             new_xml = add_images(self.readalong, {"images": {"a": "test.jpg"}})
-        with self.assertRaises(IndexError):
+        with pytest.raises(IndexError):
             new_xml = add_images(
                 self.readalong, {"images": {"0": "test.jpg", "999": "out_of_range.jpg"}}
             )
 
     def test_arbitrary_xml(self):
         """Test arbitrary xml is added correctly"""
-        with self.assertRaises(KeyError):
+        with pytest.raises(KeyError):
             new_xml = add_supplementary_xml(self.readalong, {})
         new_xml = add_supplementary_xml(
             self.readalong,
@@ -55,10 +54,10 @@ class TestConfig(TestCase):
                 ]
             },
         )
-        self.assertTrue(len(new_xml.xpath("//test")) == 1)
+        assert len(new_xml.xpath("//test")) == 1
 
         # bad xml raises lxml.etree.XMLSyntaxError
-        with self.assertRaises(etree.XMLSyntaxError):
+        with pytest.raises(etree.XMLSyntaxError):
             new_xml = add_supplementary_xml(
                 self.readalong, {"xml": [{"xpath": "//div[1]", "value": "bloop"}]}
             )
@@ -76,9 +75,9 @@ class TestConfig(TestCase):
                     ]
                 },
             )
-        self.assertIn("No elements found at //bloop", log_output.getvalue())
-        self.assertTrue(len(new_xml.xpath("//shmoop")) == 0)
+        assert "No elements found at //bloop" in log_output.getvalue()
+        assert len(new_xml.xpath("//shmoop")) == 0
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    pytest.main(sys.argv)

@@ -120,7 +120,7 @@ jobs:
           pip install -e .[all]
 
       - name: Run tests on Windows
-        run: python run_tests.py all
+        run: pytest
 
       - name: Make sure the CLI outputs utf8 on Windows
         # Note: we're checking something CLI specific, from a prompt, so we don't want to run
@@ -167,4 +167,4 @@ jobs:
         run: pip install httpx pytest
 
       - name: unit test the web API
-        run: python -m tests.test_web_api
+        run: pytest tests/test_web_api.py

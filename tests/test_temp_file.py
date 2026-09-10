@@ -5,7 +5,6 @@
 import os
 import sys
 from tempfile import NamedTemporaryFile
-from unittest import TestCase
 
 from pytest import main
 
@@ -13,7 +12,7 @@ from readalongs.log import LOGGER
 from readalongs.portable_tempfile import PortableNamedTemporaryFile
 
 
-class TestTempFile(TestCase):
+class TestTempFile:
     """Test PortableNamedTemporaryFile class"""
 
     def test_basic_file(self):
@@ -21,9 +20,9 @@ class TestTempFile(TestCase):
         f = open("delme_test_temp_file", mode="w", encoding="utf8")
         f.write("some text")
         f.close()
-        self.assertTrue(os.path.exists("delme_test_temp_file"))
+        assert os.path.exists("delme_test_temp_file")
         os.unlink("delme_test_temp_file")
-        self.assertFalse(os.path.exists("delme_test_temp_file"))
+        assert not os.path.exists("delme_test_temp_file")
 
     def test_ntf(self):
         """Regular usage of tempfile.NamedTemporaryFile from the standard library"""
@@ -33,7 +32,7 @@ class TestTempFile(TestCase):
         tf.close()
         readf = open(tf.name, encoding="utf8")
         text = readf.readline()
-        self.assertEqual(text, "Some text")
+        assert text == "Some text"
         readf.close()
         os.unlink(tf.name)
 
@@ -48,7 +47,7 @@ class TestTempFile(TestCase):
         readf = open(tf.name, encoding="utf8")
         text = readf.readline()
         readf.close()
-        self.assertEqual(text, "Some text")
+        assert text == "Some text"
         os.unlink(tf.name)
 
     def test_typical_usage(self):
@@ -67,7 +66,7 @@ class TestTempFile(TestCase):
         readf = open(tf.name, encoding="utf8")
         text = readf.readline()
         readf.close()
-        self.assertEqual(text, "Some text")
+        assert text == "Some text"
 
     def test_using_with(self):
         """In a with statement, the file will be deleted when the with exits"""
@@ -82,9 +81,9 @@ class TestTempFile(TestCase):
             readf = open(tf.name, encoding="utf8")
             text = readf.readline()
             readf.close()
-            self.assertEqual(text, "Some text")
-            self.assertTrue(os.path.exists(filename))
-        self.assertFalse(os.path.exists(filename))
+            assert text == "Some text"
+            assert os.path.exists(filename)
+        assert not os.path.exists(filename)
 
     def test_seek(self):
         """read/write operations should work on a PortableNamedTemporaryFile"""
@@ -94,7 +93,7 @@ class TestTempFile(TestCase):
         tf.write("Some text")
         tf.seek(0)
         text = tf.readline()
-        self.assertEqual(text, "Some text")
+        assert text == "Some text"
         tf.close()
         os.unlink(tf.named_temporary_file.name)
 

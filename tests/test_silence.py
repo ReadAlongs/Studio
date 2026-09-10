@@ -5,8 +5,8 @@
 import os
 import sys
 
+import pytest
 from pydub import AudioSegment
-from pytest import main
 
 from readalongs.cli import align
 from readalongs.text.util import load_xml
@@ -39,23 +39,20 @@ class TestSilence(BasicTestCase):
                 str(output),
             ],
         )
-        self.assertEqual(results.exit_code, 0)
-        self.assertTrue((output / "www/silence.m4a").exists())
+        assert results.exit_code == 0
+        assert (output / "www/silence.m4a").exists()
         # test silence spans in output xml
         root = load_xml(output / "www/silence.readalong")
         silence_spans = root.xpath("//silence")
-        self.assertEqual(len(silence_spans), 3)
+        assert len(silence_spans) == 3
         # test audio has correct amount of silence added
         original_audio = AudioSegment.from_file(
             os.path.join(self.data_dir, "ej-fra.m4a")
         )
         new_audio = AudioSegment.from_file(output / "www/silence.m4a", format="m4a")
-        self.assertAlmostEqual(
-            len(new_audio) - len(original_audio),
-            2882,
-            msg="silence-added audio file is more than 50ms shorter or longer",
-            delta=50,
-        )
+        assert len(new_audio) - len(original_audio) == pytest.approx(
+            2882, abs=50
+        ), "silence-added audio file is more than 50ms shorter or longer"
 
     def test_bad_silence(self):
         output = self.tempdir / "bad_silence"
@@ -79,9 +76,9 @@ class TestSilence(BasicTestCase):
                 str(output),
             ],
         )
-        self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("Could not parse all duration attributes", results.output)
+        assert results.exit_code != 0
+        assert "Could not parse all duration attributes" in results.output
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    pytest.main(sys.argv)

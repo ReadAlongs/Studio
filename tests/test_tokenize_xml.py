@@ -5,7 +5,6 @@
 import sys
 from contextlib import redirect_stderr
 from io import StringIO
-from unittest import TestCase
 
 from lxml import etree
 from pytest import main
@@ -14,7 +13,7 @@ from readalongs.text import tokenize_xml
 from readalongs.text.util import parse_xml
 
 
-class TestTokenizer(TestCase):
+class TestTokenizer:
     """Test the tokenize_xml function"""
 
     def test_simple(self):
@@ -30,7 +29,7 @@ class TestTokenizer(TestCase):
         with redirect_stderr(StringIO()):
             tokenized = tokenize_xml.tokenize_xml(xml)
         # print(etree.tounicode(tokenized))
-        self.assertEqual(etree.tounicode(tokenized), ref)
+        assert etree.tounicode(tokenized) == ref
 
     def test_mixed_lang(self):
         """Tokenization test case with mixed languages"""
@@ -47,7 +46,7 @@ class TestTokenizer(TestCase):
         with redirect_stderr(StringIO()):
             tokenized = tokenize_xml.tokenize_xml(xml)
         # print(etree.tounicode(tokenized))
-        self.assertEqual(etree.tounicode(tokenized), ref)
+        assert etree.tounicode(tokenized) == ref
 
     def test_mixed_words(self):
         """Tokenization should be bypassed when <w> elements are already found in the input"""
@@ -64,7 +63,7 @@ class TestTokenizer(TestCase):
         with redirect_stderr(StringIO()):
             tokenized = tokenize_xml.tokenize_xml(xml)
         # print(etree.tounicode(tokenized))
-        self.assertEqual(etree.tounicode(tokenized), ref)
+        assert etree.tounicode(tokenized) == ref
 
     def test_comments(self):
         """Make sure tokenize_xml ignores stuff inside comments"""
@@ -83,7 +82,7 @@ class TestTokenizer(TestCase):
         with redirect_stderr(StringIO()):
             tokenized = tokenize_xml.tokenize_xml(xml)
         # print(etree.tounicode(tokenized))
-        self.assertEqual(etree.tounicode(tokenized), ref)
+        assert etree.tounicode(tokenized) == ref
 
 
 if __name__ == "__main__":

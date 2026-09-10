@@ -8,8 +8,8 @@ import sys
 from contextlib import redirect_stderr
 from io import StringIO
 
+import pytest
 from lxml import etree
-from pytest import main
 
 from readalongs.align import align_audio
 from readalongs.cli import align, g2p, make_xml, tokenize
@@ -44,27 +44,27 @@ class TestG2pCli(BasicTestCase):
         g2p_file = os.path.join(self.tempdir, "fra-g2p.readalong")
         results = self.runner.invoke(g2p, [input_file, g2p_file])
         # print(f"g2p results.output='{results.output}'")
-        self.assertEqual(results.exit_code, 0)
-        self.assertTrue(os.path.exists(os.path.join(self.tempdir, "fra-g2p.readalong")))
+        assert results.exit_code == 0
+        assert os.path.exists(os.path.join(self.tempdir, "fra-g2p.readalong"))
 
         # Testing that it fails when the file already exists has to be in the same test,
         # otherwise we have a different tempdir and the file won't already exist
         results = self.runner.invoke(g2p, [input_file, g2p_file])
         # print(f"g2p results.output='{results.output}'")
-        self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("use -f to overwrite", results.output)
+        assert results.exit_code != 0
+        assert "use -f to overwrite" in results.output
 
         # And add -f to force the overwrite
         results = self.runner.invoke(g2p, ["-f", input_file, g2p_file])
         # print(f"g2p results.output='{results.output}'")
-        self.assertEqual(results.exit_code, 0)
+        assert results.exit_code == 0
 
     def test_bad_xml_input(self):
         """readalongs g2p with invalid XML input"""
         input_file = os.path.join(self.data_dir, "ej-fra.txt")
         results = self.runner.invoke(g2p, ["--debug", input_file, "-"])
-        self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("Error parsing input file", results.output)
+        assert results.exit_code != 0
+        assert "Error parsing input file" in results.output
 
     def test_mixed_langs(self):
         """readalongs g2p with an input containing multiple languages"""
@@ -72,8 +72,8 @@ class TestG2pCli(BasicTestCase):
         g2p_file = os.path.join(self.tempdir, "mixed-langs.g2p.readalong")
         results = self.runner.invoke(g2p, [input_file, g2p_file])
         # print(f"g2p results.output='{results.output}'")
-        self.assertEqual(results.exit_code, 0)
-        self.assertTrue(os.path.exists(g2p_file))
+        assert results.exit_code == 0
+        assert os.path.exists(g2p_file)
 
         ref_file = os.path.join(self.data_dir, "mixed-langs.g2p.readalong")
         with (
@@ -85,11 +85,9 @@ class TestG2pCli(BasicTestCase):
             ref_list = list(ref_f)
             ref_list[1] = updateFormatVersion(ref_list[1])
             ref_list[2] = updateStudioVersion(ref_list[2])
-            self.assertListEqual(
-                list(output_f),
-                ref_list,
-                f"output {g2p_file} and reference {ref_file} differ.",
-            )
+            assert (
+                list(output_f) == ref_list
+            ), f"output {g2p_file} and reference {ref_file} differ."
 
     def test_invoke_with_obsolete_switches(self):
         """Using obsolete options should yield a helpful error message"""
@@ -99,13 +97,13 @@ class TestG2pCli(BasicTestCase):
         results = self.runner.invoke(
             g2p, ["--g2p-fallback", "fra:und", input_file, g2p_file]
         )
-        self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("is obsolete", results.output)
+        assert results.exit_code != 0
+        assert "is obsolete" in results.output
 
         g2p_file = os.path.join(self.tempdir, "obsolete2.readalong")
         results = self.runner.invoke(g2p, ["--g2p-verbose", input_file, g2p_file])
-        self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("is obsolete", results.output)
+        assert results.exit_code != 0
+        assert "is obsolete" in results.output
 
     # Write text to a temp file, pass it through make-xml -l lang, and then tokenize,
     # saving the final results into filename.
@@ -137,9 +135,9 @@ class TestG2pCli(BasicTestCase):
                 f"results.output='{results.output}' "
                 f"results.exception={results.exception!r}"
             )
-        self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("could not be g2p", results.output)
-        # self.assertTrue(isinstance(results.exception, KeyError))
+        assert results.exit_code != 0
+        assert "could not be g2p" in results.output
+        # assert isinstance(results.exception, KeyError)
 
         # with a fall back to und, it works
         tok_file_with_fallback = os.path.join(self.tempdir, "fallback.readalong")
@@ -153,7 +151,7 @@ class TestG2pCli(BasicTestCase):
                 f"results.output='{results.output}' "
                 f"results.exception={results.exception!r}"
             )
-        self.assertEqual(results.exit_code, 0)
+        assert results.exit_code == 0
 
     def test_french_oov(self):
         """readalongs g2p should handle French OOVs correctly"""
@@ -169,8 +167,8 @@ class TestG2pCli(BasicTestCase):
                 f"results.output='{results.output}' "
                 f"results.exception={results.exception!r}"
             )
-        self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("could not be g2p", results.output)
+        assert results.exit_code != 0
+        assert "could not be g2p" in results.output
 
         # with a fall back to und, it works
         tok_file2 = os.path.join(self.tempdir, "tok2.readalong")
@@ -185,7 +183,7 @@ class TestG2pCli(BasicTestCase):
                 f"results.output='{results.output}' "
                 f"results.exception={results.exception!r}"
             )
-        self.assertEqual(results.exit_code, 0)
+        assert results.exit_code == 0
 
     def test_three_way_fallback(self):
         """readalongs g2p --g2p-fallback with multi-step cascades"""
@@ -202,10 +200,10 @@ class TestG2pCli(BasicTestCase):
                 f"results.output='{results.output}' "
                 f"results.exception={results.exception!r}"
             )
-        self.assertEqual(results.exit_code, 0)
-        self.assertTrue(os.path.exists(g2p_file))
-        self.assertNotIn("not recognized as IPA", results.output)
-        self.assertNotIn("not fully valid eng-arpabet", results.output)
+        assert results.exit_code == 0
+        assert os.path.exists(g2p_file)
+        assert "not recognized as IPA" not in results.output
+        assert "not fully valid eng-arpabet" not in results.output
 
         # Run with verbose output and look for the warning messages
         results = self.runner.invoke(
@@ -217,9 +215,9 @@ class TestG2pCli(BasicTestCase):
                 f"results.output='{results.output}' "
                 f"results.exception={results.exception!r}"
             )
-        self.assertEqual(results.exit_code, 0)
-        self.assertIn("not recognized as IPA", results.output)
-        self.assertIn("not fully valid eng-arpabet", results.output)
+        assert results.exit_code == 0
+        assert "not recognized as IPA" in results.output
+        assert "not fully valid eng-arpabet" in results.output
 
         # this text also works with "und", now that we use unidecode
         tok_file2 = os.path.join(self.tempdir, "text.tokenized2.readalong")
@@ -227,8 +225,8 @@ class TestG2pCli(BasicTestCase):
             "In French été works but Nunavut ᓄᓇᕗᑦ does not.", "eng:und", tok_file2
         )
         results = self.runner.invoke(g2p, [tok_file2, "-"])
-        self.assertEqual(results.exit_code, 0)
-        self.assertIn("Trying fallback: Und", results.output)
+        assert results.exit_code == 0
+        assert "Trying fallback: Und" in results.output
 
     def test_align_with_error(self):
         """handling g2p errors in readalongs align with --g2p-fallback"""
@@ -249,9 +247,9 @@ class TestG2pCli(BasicTestCase):
                 f"results.output='{results.output}' "
                 f"results.exception={results.exception!r}"
             )
-        self.assertNotEqual(results.exit_code, 0)
-        self.assertIn("could not be g2p", results.output)
-        self.assertNotIn("Number of aligned segments", results.output)
+        assert results.exit_code != 0
+        assert "could not be g2p" in results.output
+        assert "Number of aligned segments" not in results.output
 
         with SoundSwallowerStub("t0b0d0p0s0w0:920:1620", "t0b0d0p0s1w0:1620:1690"):
             results = self.runner.invoke(
@@ -273,10 +271,10 @@ class TestG2pCli(BasicTestCase):
                 f"results.output='{results.output}' "
                 f"results.exception={results.exception!r}"
             )
-        self.assertIn("Trying fallback: French", results.output)
-        self.assertIn("Trying fallback: Inuktitut", results.output)
-        self.assertNotIn("could not be g2p", results.output)
-        self.assertIn("Number of aligned segments", results.output)
+        assert "Trying fallback: French" in results.output
+        assert "Trying fallback: Inuktitut" in results.output
+        assert "could not be g2p" not in results.output
+        assert "Number of aligned segments" in results.output
 
     def test_with_stdin(self):
         """readalongs g2p running with stdin as input"""
@@ -284,8 +282,8 @@ class TestG2pCli(BasicTestCase):
         with open(input_file, encoding="utf8") as f:
             inputtext = f.read()
         results = self.runner.invoke(g2p, "-", input=inputtext)
-        self.assertEqual(results.exit_code, 0)
-        self.assertIn("S AH S IY", results.output)
+        assert results.exit_code == 0
+        assert "S AH S IY" in results.output
 
     def test_align_with_invalid_preg2p(self):
         """readalongs g2p gracefully handling wrong inputs"""
@@ -299,18 +297,17 @@ class TestG2pCli(BasicTestCase):
             print(txt, file=f)
 
         results = self.runner.invoke(g2p, [input_file, "-"])
-        self.assertNotEqual(results.exit_code, 0)
+        assert results.exit_code != 0
         # print(results.output)
-        self.assertIn("could not be g2p", results.output)
-        self.assertIn('<w id="s0w0" ARPABET="W OW D D">word</w>', results.output)
-        self.assertIn('<w ARPABET="G OW D" id="s0w1">good</w>', results.output)
-        self.assertIn('<w ARPABET="NOT ARPABET" id="s0w2">error</w>', results.output)
+        assert "could not be g2p" in results.output
+        assert '<w id="s0w0" ARPABET="W OW D D">word</w>' in results.output
+        assert '<w ARPABET="G OW D" id="s0w1">good</w>' in results.output
+        assert '<w ARPABET="NOT ARPABET" id="s0w2">error</w>' in results.output
 
         audio_file = os.path.join(self.data_dir, "ej-fra.m4a")
         with redirect_stderr(StringIO()):
-            with self.assertRaises(RuntimeError) as e:
+            with pytest.raises(RuntimeError, match="could not be g2p'd"):
                 results = align_audio(input_file, audio_file)
-        self.assertIn("could not be g2p'd", str(e.exception))
 
     def test_align_with_preg2p(self):
         """readalongs align working on previously g2p'd text"""
@@ -341,10 +338,10 @@ class TestG2pCli(BasicTestCase):
                 )
         with open(os.path.join(self.tempdir, "foo.dict"), encoding="utf8") as f:
             dict_file = f.read()
-            self.assertIn("S AH S IY", dict_file)  # "ceci" in fra
-            self.assertIn("DH IH S", dict_file)  # "this" in eng
-            self.assertIn("HH EH Y", dict_file)  # "Hej" in dan
-            self.assertIn("D G IY T UW P IY D", dict_file)  # pre-g2p'd OOV
+            assert "S AH S IY" in dict_file  # "ceci" in fra
+            assert "DH IH S" in dict_file  # "this" in eng
+            assert "HH EH Y" in dict_file  # "Hej" in dan
+            assert "D G IY T UW P IY D" in dict_file  # pre-g2p'd OOV
 
     def test_convert_xml(self):
         """unit testing for readalongs.text.convert_xml.convert_xml()
@@ -352,22 +349,22 @@ class TestG2pCli(BasicTestCase):
         convert_xml() is the inner method in readalongs that calls g2p.
         It's not very well named, but it still needs unit testing. :)
         """
-        self.assertEqual(
-            run_convert_xml("<t><w>word</w><w></w><n>not word</n></t>"),
-            '<t><w ARPABET="W OW D D">word</w><w/><n>not word</n></t>',
+        assert (
+            run_convert_xml("<t><w>word</w><w></w><n>not word</n></t>")
+            == '<t><w ARPABET="W OW D D">word</w><w/><n>not word</n></t>'
         )
 
-        self.assertEqual(
+        assert (
             run_convert_xml(
                 '<s><w xml:lang="eng">Patrick</w><w xml:lang="kwk-umista">xtła̱n</w></s>'
-            ),
-            '<s><w xml:lang="eng" ARPABET="P AE T R IH K">Patrick</w>'
-            '<w xml:lang="kwk-umista" ARPABET="K Y T S AH N">xtła̱n</w></s>',
+            )
+            == '<s><w xml:lang="eng" ARPABET="P AE T R IH K">Patrick</w>'
+            '<w xml:lang="kwk-umista" ARPABET="K Y T S AH N">xtła̱n</w></s>'
         )
 
-        self.assertEqual(
-            run_convert_xml('<s><w xml:lang="und">Patrickxtła̱n</w></s>'),
-            '<s><w xml:lang="und" ARPABET="P AA T D IY CH K K T L AA N">Patrickxtła̱n</w></s>',
+        assert (
+            run_convert_xml('<s><w xml:lang="und">Patrickxtła̱n</w></s>')
+            == '<s><w xml:lang="und" ARPABET="P AA T D IY CH K K T L AA N">Patrickxtła̱n</w></s>'
         )
 
     def test_convert_xml_with_newlines(self):
@@ -387,42 +384,40 @@ class TestG2pCli(BasicTestCase):
         converted_2 = run_convert_xml(
             "<s><w><part>first part of the word</part><part>second part of the word</part></w></s>"
         )
-        self.assertEqual(compact_arpabet(converted_1), compact_arpabet(converted_2))
+        assert compact_arpabet(converted_1) == compact_arpabet(converted_2)
 
-    def test_convert_xml_subwords(self):
+    def test_convert_xml_subwords(self, caplog):
         """Unit testing for reintroducing subword units"""
-        self.assertEqual(
+        assert (
             run_convert_xml(
                 '<s><w><part xml:lang="eng">Patrick</part><part xml:lang="kwk-umista">xtła̱n</part></w></s>'
-            ),
-            '<s><w ARPABET="P AE T R IH K K Y T S AH N"><part xml:lang="eng">Patrick</part>'
-            '<part xml:lang="kwk-umista">xtła̱n</part></w></s>',
+            )
+            == '<s><w ARPABET="P AE T R IH K K Y T S AH N"><part xml:lang="eng">Patrick</part>'
+            '<part xml:lang="kwk-umista">xtła̱n</part></w></s>'
         )
 
-        self.assertEqual(
+        assert (
             run_convert_xml(
                 '<s><w>foo<syl xml:lang="eng">Patrick</syl>bar<syl xml:lang="kwk-umista">xtła̱n</syl>baz</w></s>'
-            ),
-            '<s><w ARPABET="F OW OW P AE T R IH K B AA D K Y T S AH N B AA Z">'
-            'foo<syl xml:lang="eng">Patrick</syl>bar<syl xml:lang="kwk-umista">xtła̱n</syl>baz</w></s>',
+            )
+            == '<s><w ARPABET="F OW OW P AE T R IH K B AA D K Y T S AH N B AA Z">'
+            'foo<syl xml:lang="eng">Patrick</syl>bar<syl xml:lang="kwk-umista">xtła̱n</syl>baz</w></s>'
         )
 
         converted_by_syllable = run_convert_xml(
             '<s><w xml:lang="und"><syl>abc</syl><syl>def</syl><syl>ghi</syl></w></s>'
         )
         converted_as_a_whole = run_convert_xml('<s><w xml:lang="und">abcdefghi</w></s>')
-        self.assertEqual(
-            two_xml_elements(converted_by_syllable),
-            two_xml_elements(converted_as_a_whole),
+        assert two_xml_elements(converted_by_syllable) == two_xml_elements(
+            converted_as_a_whole
         )
 
         moh_eg_with_highlights = "<s xml:lang='moh'><w><span class='pronoun'>tati</span><span class='root'>atkèn:se</span><span class='aspect'>hkwe'</span></w></s>"
         moh_eg_merged = "<s xml:lang='moh'><w>tatiatkèn:sehkwe'</w></s>"
-        self.assertEqual(two_xml_elements(moh_eg_merged), "<s xml:lang='moh'><w>")
-        self.assertEqual(
-            two_xml_elements(run_convert_xml(moh_eg_with_highlights)),
-            two_xml_elements(run_convert_xml(moh_eg_merged)),
-        )
+        assert two_xml_elements(moh_eg_merged) == "<s xml:lang='moh'><w>"
+        assert two_xml_elements(
+            run_convert_xml(moh_eg_with_highlights)
+        ) == two_xml_elements(run_convert_xml(moh_eg_merged))
 
         moh_example_input_full = """
             <document xml:lang='moh'>
@@ -440,32 +435,25 @@ class TestG2pCli(BasicTestCase):
             <document xml:lang="fra" fallback-langs="dan"><s>
               <w><part lang="fra">ceci</part><part lang="iku">not_really_iku</part></w>
             </s></document>"""
-        with self.assertLogs(LOGGER, level="WARNING") as cm:
-            result = run_convert_xml(example_with_fallback_lang)
-        self.assertIn("S AH S IY N AO T _ZH EH AE L L UW _IY K UW", result)
-        logger_output = "\n".join(cm.output)
-        self.assertIn(
-            'No valid g2p conversion found for "not_really_iku"', logger_output
-        )
+        caplog.set_level("WARNING", logger=LOGGER.name)
+        result = run_convert_xml(example_with_fallback_lang)
+        assert "S AH S IY N AO T _ZH EH AE L L UW _IY K UW" in result
+        assert 'No valid g2p conversion found for "not_really_iku"' in caplog.text
 
     def test_convert_xml_invalid(self):
         """test readalongs.text.convert_xml.convert_xml() with invalid input"""
         xml = parse_xml('<s><w ARPABET="V AA L IY D">valid</w></s>')
         c_xml, valid, _ = convert_xml(xml)
-        self.assertEqual(
-            etree.tounicode(c_xml), '<s><w ARPABET="V AA L IY D">valid</w></s>'
-        )
-        self.assertTrue(valid, "convert_xml with valid pre-g2p'd text")
+        assert etree.tounicode(c_xml) == '<s><w ARPABET="V AA L IY D">valid</w></s>'
+        assert valid, "convert_xml with valid pre-g2p'd text"
 
         xml = parse_xml('<s><w ARPABET="invalid">invalid</w></s>')
         with redirect_stderr(StringIO()):
             c_xml, valid, _ = convert_xml(xml)
-        self.assertEqual(
-            etree.tounicode(c_xml), '<s><w ARPABET="invalid">invalid</w></s>'
-        )
-        self.assertFalse(valid, "convert_xml with invalid pre-g2p'd text")
+        assert etree.tounicode(c_xml) == '<s><w ARPABET="invalid">invalid</w></s>'
+        assert not valid, "convert_xml with invalid pre-g2p'd text"
 
-    def test_invalid_langs_in_xml(self):
+    def test_invalid_langs_in_xml(self, caplog):
         xml = parse_xml(
             """
             <s>
@@ -474,21 +462,20 @@ class TestG2pCli(BasicTestCase):
             </s>
         """
         )
-        with self.assertLogs(LOGGER, level="WARNING") as cm:
-            c_xml, valid, _ = convert_xml(xml, verbose_warnings=True)
-        self.assertFalse(valid)
-        logger_output = "\n".join(cm.output)
-        self.assertIn("No lang", logger_output)
-        self.assertIn("foo", logger_output)
-        self.assertIn('no path from "crx-syl"', logger_output)
+        caplog.set_level("WARNING", logger=LOGGER.name)
+        c_xml, valid, _ = convert_xml(xml, verbose_warnings=True)
+        assert not valid
+        logger_output = caplog.text
+        assert "No lang" in logger_output
+        assert "foo" in logger_output
+        assert 'no path from "crx-syl"' in logger_output
 
     def test_non_convertible_words(self):
         xml = parse_xml("<s><w>43:23</w><w>65:67</w><w>43:23</w></s>")
-        with self.assertLogs(LOGGER, level="WARNING"):
-            g2p_xml, valid, non_convertible_words = convert_xml(xml)
-        self.assertFalse(valid)
-        self.assertEqual(non_convertible_words, ["43:23", "65:67"])
+        g2p_xml, valid, non_convertible_words = convert_xml(xml)
+        assert not valid
+        assert non_convertible_words == ["43:23", "65:67"]
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    pytest.main(sys.argv)

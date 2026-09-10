@@ -12,8 +12,8 @@ from contextlib import redirect_stderr
 from io import StringIO
 from tempfile import TemporaryDirectory
 
+import pytest
 from lxml import etree
-from pytest import main
 from soundswallower import get_model_path
 
 from readalongs.align import align_audio
@@ -25,7 +25,7 @@ from readalongs.align_utils import (
 from readalongs.log import LOGGER
 from readalongs.portable_tempfile import PortableNamedTemporaryFile
 from readalongs.text.util import load_txt, load_xml, save_xml
-from tests.basic_test_case import BasicTestCase, silence_c_stderr
+from tests.basic_test_case import BasicTestCase
 
 
 class TestForceAlignment(BasicTestCase):
@@ -35,7 +35,7 @@ class TestForceAlignment(BasicTestCase):
         """Basic alignment test case with XML input"""
         xml_path = os.path.join(self.data_dir, "ej-fra.readalong")
         wav_path = os.path.join(self.data_dir, "ej-fra.m4a")
-        with silence_c_stderr(), redirect_stderr(StringIO()):
+        with redirect_stderr(StringIO()):
             results = align_audio(xml_path, wav_path, unit="w", debug_aligner=True)
 
         # Verify that the same IDs are in the output
@@ -43,9 +43,9 @@ class TestForceAlignment(BasicTestCase):
         xml = load_xml(converted_path)
         words = results["words"]
         xml_words = xml.xpath(".//w")
-        self.assertEqual(len(words), len(xml_words))
+        assert len(words) == len(xml_words)
         for w, xw in zip(words, xml_words):
-            self.assertEqual(xw.attrib["id"], w["id"])
+            assert xw.attrib["id"] == w["id"]
 
     def test_align_text(self):
         """Basic alignment test case with plain text input"""
@@ -62,17 +62,17 @@ class TestForceAlignment(BasicTestCase):
         xml = load_xml(converted_path)
         words = results["words"]
         xml_words = xml.xpath(".//w")
-        self.assertEqual(len(words), len(xml_words))
+        assert len(words) == len(xml_words)
         for w, xw in zip(words, xml_words):
-            self.assertEqual(xw.attrib["id"], w["id"])
+            assert xw.attrib["id"] == w["id"]
 
         # White-box testing to make sure srt, TextGrid and vtt output will have the
         # sentences collected correctly.
         words, sentences = get_word_texts_and_sentences(
             results["words"], results["tokenized"]
         )
-        self.assertEqual(len(sentences), 7)
-        self.assertEqual(len(words), 99)
+        assert len(sentences) == 7
+        assert len(words) == 99
 
         def make_element(tag, text="", tail=""):
             """Convenient Element constructor wrapper"""
@@ -113,16 +113,13 @@ class TestForceAlignment(BasicTestCase):
         _, sentences = get_word_texts_and_sentences(
             results["words"], results["tokenized"]
         )
-        self.assertEqual(
-            [w["text"] for w in sentences[1]],
-            [
-                "Je stuff",
-                "subwordtext",
-                "syl;syl;syl;",
-                "head text;syllable text;syl tail;",
-                "Joanissyl;sub;tail;another syl;",
-            ],
-        )
+        assert [w["text"] for w in sentences[1]] == [
+            "Je stuff",
+            "subwordtext",
+            "syl;syl;syl;",
+            "head text;syllable text;syl tail;",
+            "Joanissyl;sub;tail;another syl;",
+        ]
 
     def test_align_switch_am(self):
         """Alignment test case with an alternate acoustic model and custom
@@ -157,9 +154,9 @@ class TestForceAlignment(BasicTestCase):
         xml = load_xml(converted_path)
         words = results["words"]
         xml_words = xml.xpath(".//w")
-        self.assertEqual(len(words), len(xml_words))
+        assert len(words) == len(xml_words)
         for w, xw in zip(words, xml_words):
-            self.assertEqual(xw.attrib["id"], w["id"])
+            assert xw.attrib["id"] == w["id"]
 
     def test_align_fail(self):
         """Alignment test case with bad audio that should fail."""
@@ -170,11 +167,11 @@ class TestForceAlignment(BasicTestCase):
                 writer.setsampwidth(2)
                 writer.setframerate(16000)
                 writer.writeframes(b"\x00\x00")
-            with self.assertRaises(RuntimeError), redirect_stderr(StringIO()):
+            with pytest.raises(RuntimeError), redirect_stderr(StringIO()):
                 _ = align_audio(xml_path, tf.name, unit="w")
 
     def test_bad_align_mode(self):
-        with self.assertRaises(AssertionError), redirect_stderr(StringIO()):
+        with pytest.raises(AssertionError), redirect_stderr(StringIO()):
             _ = align_audio(
                 os.path.join(self.data_dir, "ej-fra.readalong"),
                 os.path.join(self.data_dir, "noise.mp3"),
@@ -194,8 +191,8 @@ class TestXHTML(BasicTestCase):
             save_xml(tf.name, xml)
             txt = load_txt(tf.name)
             self.maxDiff = None
-            self.assertEqual(
-                txt, load_txt(os.path.join(self.data_dir, "ej-fra-converted.xhtml"))
+            assert txt == load_txt(
+                os.path.join(self.data_dir, "ej-fra-converted.xhtml")
             )
 
     def test_convert_no_version(self):
@@ -207,11 +204,11 @@ class TestXHTML(BasicTestCase):
             save_xml(tf.name, xml)
             txt = load_txt(tf.name)
             self.maxDiff = None
-            self.assertEqual(
-                txt, load_txt(os.path.join(self.data_dir, "ej-fra-converted.xhtml"))
+            assert txt == load_txt(
+                os.path.join(self.data_dir, "ej-fra-converted.xhtml")
             )
 
 
 if __name__ == "__main__":
     LOGGER.setLevel("DEBUG")
-    main(sys.argv)
+    pytest.main(sys.argv)

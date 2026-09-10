@@ -6,8 +6,8 @@ import sys
 from contextlib import redirect_stderr
 from io import StringIO
 
+import pytest
 from lxml import etree
-from pytest import main
 
 from readalongs.text import tokenize_xml
 from readalongs.text.add_ids_to_xml import add_ids
@@ -37,7 +37,7 @@ class TestDNAText(BasicTestCase):
 </document>"""
         # print('as_txt="' + as_txt +'"')
         # print('ref="' + ref +'"')
-        self.assertEqual(as_txt, ref)
+        assert as_txt == ref
 
         with_ids = add_ids(tokenized)
         ids_as_txt = etree.tounicode(with_ids)
@@ -46,7 +46,7 @@ class TestDNAText(BasicTestCase):
 <s id="s0"><w id="s0w0">Bonjour</w>! <w id="s0w1">Comment</w> <w id="s0w2">ça</w> <w id="s0w3">va</w>?</s>
 <s id="s1"><w id="s1w0">Voici</w> <w id="s1w1">une</w> <w id="s1w2">deuxième</w> <w id="s1w3">phrase</w>.</s>
 </document>"""
-        self.assertEqual(ids_as_txt, ref_with_ids)
+        assert ids_as_txt == ref_with_ids
 
     def test_tok_some_words(self):
         """do-not-align text is excluded from tokenization"""
@@ -69,7 +69,7 @@ class TestDNAText(BasicTestCase):
 <s do-not-align="TRUE">Voici une deuxième phrase.</s>
 <s><w>Un</w> <foo do-not-align="1">mot ou deux</foo> <w>à</w> <w>exclure</w>.</s>
 </document>"""
-        self.assertEqual(as_txt, ref)
+        assert as_txt == ref
 
         with_ids = add_ids(tokenized)
         ids_as_txt = etree.tounicode(with_ids)
@@ -80,7 +80,7 @@ class TestDNAText(BasicTestCase):
 <s do-not-align="TRUE">Voici une deuxième phrase.</s>
 <s id="s0"><w id="s0w0">Un</w> <foo do-not-align="1">mot ou deux</foo> <w id="s0w1">à</w> <w id="s0w2">exclure</w>.</s>
 </document>"""
-        self.assertEqual(ids_as_txt, ref_with_ids)
+        assert ids_as_txt == ref_with_ids
 
     def test_tok_div_p_s(self):
         """Text inside a DNA div, p or s does not get tokenized"""
@@ -121,7 +121,7 @@ class TestDNAText(BasicTestCase):
 <p> <s><w>Trois</w> <w>phrases</w>.</s> </p>
 </div>
 </document>"""
-        self.assertEqual(as_txt, ref)
+        assert as_txt == ref
 
         with_ids = add_ids(tokenized)
         ids_as_txt = etree.tounicode(with_ids)
@@ -142,7 +142,7 @@ class TestDNAText(BasicTestCase):
 <p id="d1p1"> <s id="d1p1s0"><w id="d1p1s0w0">Trois</w> <w id="d1p1s0w1">phrases</w>.</s> </p>
 </div>
 </document>"""
-        self.assertEqual(ids_as_txt, ref_with_ids)
+        assert ids_as_txt == ref_with_ids
 
     def test_dna_word(self):
         """You can't have a DNA <w> element, that's reserved for tokens to align"""
@@ -151,7 +151,10 @@ class TestDNAText(BasicTestCase):
         xml = parse_xml(txt)
         with redirect_stderr(StringIO()):
             tokenized = tokenize_xml.tokenize_xml(xml)
-        self.assertRaises(RuntimeError, add_ids, tokenized)
+        with pytest.raises(
+            RuntimeError, match=r"Found <w> element with.*This is not allowed"
+        ):
+            add_ids(tokenized)
 
     def test_dna_word_nested(self):
         """You also can't have a <w> element inside a DNA element"""
@@ -160,8 +163,11 @@ class TestDNAText(BasicTestCase):
         xml = parse_xml(txt)
         with redirect_stderr(StringIO()):
             tokenized = tokenize_xml.tokenize_xml(xml)
-        self.assertRaises(RuntimeError, add_ids, tokenized)
+        with pytest.raises(
+            RuntimeError, match=r"Found <w> nested inside.*This is not allowed"
+        ):
+            add_ids(tokenized)
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    pytest.main(sys.argv)
