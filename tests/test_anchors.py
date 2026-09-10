@@ -34,7 +34,7 @@ class TestAnchors(BasicTestCase):
         assert words[0]["end"] <= 1.62
         assert words[1]["start"] >= 1.62
         assert words[8]["end"] <= 3.81
-        assert words[9]["start"] >= 3.81
+        assert words[9]["start"] >= 3.82
         assert words[21]["end"] <= 6.74
         assert words[22]["start"] >= 6.74
 
