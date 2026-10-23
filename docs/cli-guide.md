@@ -192,17 +192,20 @@ file as the value, as an entry in the `"images"` dictionary.
 { "images": { "0": "p1.jpg", "1": "p2.jpg" } }
 ```
 
-Both images and DNA audio can be specified in the same config file, such
-as in the example below:
+Titles, headers, images, and DNA audio can all be combined in the same
+config file, as in this complete example:
 
 ```
 {
+    "title": "My awesome read-along",
+    "header": "A story in my language",
+    "subheader": "Read by me",
     "images":
         {
             "0": "image-for-page1.jpg",
-            "1": "image-for-page1.jpg",
-            "2": "image-for-page2.jpg",
-            "3": "image-for-page3.jpg"
+            "1": "image-for-page2.jpg",
+            "2": "image-for-page3.jpg",
+            "3": "image-for-page4.jpg"
         },
 
     "do-not-align":
