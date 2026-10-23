@@ -55,15 +55,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = [
-    "readalongs[api]",
-    "gitlint-core>=0.17.0",
-    "httpx>=0.24.1",  # for testing with starlette<1.2
-    "httpx2",  # for testing with starlette>=1.2
-    "pep440>=0.1.2",
-    "prek",
-    "pytest",
-]
+# Optional production dependency extras
 
 api = [
     # gunivorn is only available on *nix, but it's only required for production deployments
@@ -78,10 +70,31 @@ heroku = [
     "ilt-panphon>=0.21.4,<0.22",
 ]
 
-ci = [
+[dependency-groups]
+# Optional development dependency groups
+
+dev = [
+    {include-group = "test"},
+    {include-group = "lint"},
+]
+
+all = [
+    {include-group = "dev"},
+    {include-group = "ci"},
+    {include-group = "docs"},
+]
+
+test = [
     "readalongs[api]",
-    "coverage",
-    "licensecheck",
+    "httpx>=0.24.1",  # for testing with starlette<1.2
+    "httpx2",  # for testing with starlette>=1.2
+    "pep440>=0.1.2",
+    "pytest",
+]
+
+lint = [
+    "gitlint-core>=0.17.0",
+    "prek",
 ]
 
 docs = [
@@ -94,10 +107,10 @@ docs = [
     "mike>=2.1.1",
 ]
 
-all = [
-    "readalongs[dev]",
-    "readalongs[ci]",
-    "readalongs[docs]",
+ci = [
+    "readalongs[api]",
+    "coverage",
+    "licensecheck",
 ]
 
 [project.scripts]
@@ -115,7 +128,7 @@ include = [
 requires = [ "hatch-pip-compile" ]
 
 [tool.hatch.envs.hatch-test]
-features = [ "dev" ]
+dependency-groups = [ "dev" ]
 
 [tool.hatch.envs.prod]
 features = [ "heroku", "api" ]
