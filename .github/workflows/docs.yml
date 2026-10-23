@@ -18,7 +18,7 @@ jobs:
           python-version: "3.10"
       - name: Install dependencies and Studio
         run: |
-          pip install -e .[docs]
+          pip install --group docs -e .
       - name: Setup doc deploy
         run: |
             git config user.name 'github-actions[bot]'
