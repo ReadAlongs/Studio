@@ -151,15 +151,14 @@ environment](https://docs.python.org/3/library/venv.html) though!):
 
 Run `readalongs -h` to confirm that installation was successful.
 
-If you installed the current development version with Git, you can also run the
+If you installed the current development version from GitHub, you can also run the
 full test suite, either with `hatch`:
 
     hatch test
 
-or test the installed version (requires installing dev dependencies):
+or with pytest (requires installing dev dependencies):
 
-    pip install 'readalongs[dev]'  # if you installed from PyPI, or
-    pip install -e '.[dev]'        # if you installed from a local clone
+    pip install --group dev -e .
     pytest
 
 And you can download our [open samples on GitHub](https://github.com/ReadAlongs/OpenSamples)
@@ -259,8 +258,8 @@ This repo follows the [Contributor Covenant](http://contributor-covenant.org/ver
 You can install our standard Git hooks by running these commands in your sandbox:
 
 ```sh
-pip install -e '.[dev]'
-pre-commit install
+pip install --group dev -e .
+prek install
 gitlint install-hook
 ```
 
