@@ -130,6 +130,10 @@ requires = [ "hatch-pip-compile" ]
 [tool.hatch.envs.hatch-test]
 dependency-groups = [ "dev" ]
 
+[[tool.hatch.envs.hatch-test.matrix]]
+python = ["3.10", "3.11", "3.12", "3.13", "3.14"]
+# 3.9 no longer supported by hatch; use `uv run --python 3.9 pytest` instead
+
 [tool.hatch.envs.prod]
 features = [ "heroku", "api" ]
 type = "pip-compile"
