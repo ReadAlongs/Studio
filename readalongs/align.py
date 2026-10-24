@@ -11,6 +11,7 @@ from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 import soundswallower
 from pydub import AudioSegment
 from pydub.exceptions import CouldntEncodeError
+from slugify import slugify
 
 from readalongs.align_utils import (
     convert_to_xhtml,
@@ -844,7 +845,11 @@ def save_readalong(
 
     if "html" in output_formats:
         offline_html_dir = os.path.join(output_dir, "Offline-HTML")
-        html_out_path = os.path.join(offline_html_dir, output_basename + ".html")
+        title = config.get("title", DEFAULT_TITLE)
+        html_basename = slugify(title) if title and title != DEFAULT_TITLE else ""
+        html_out_path = os.path.join(
+            offline_html_dir, (html_basename or output_basename) + ".html"
+        )
         html_out = create_web_component_html(
             ras_path,
             audio_path,
