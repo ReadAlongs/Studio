@@ -4,6 +4,7 @@
 Unit test suite for the readalongs align CLI command
 """
 
+import json
 import os
 import re
 import subprocess
@@ -12,9 +13,10 @@ import tempfile
 from os.path import exists, join
 from pathlib import Path
 from typing import Union
+from unittest.mock import patch
 
 from lxml.html import fromstring
-from pytest import main
+from pytest import main, mark
 
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.cli import align, langs
@@ -287,10 +289,42 @@ class TestAlignCli(BasicTestCase):
 
         assert g2p_ref in tok_output
 
+    @mark.parametrize(
+        "filename", ["config.json", "config.JSON", "config.cfg", "config"]
+    )
+    @mark.parametrize("encoding", ["utf8", "utf-8-sig"])
+    def test_config_contents_determine_format(
+        self, filename: str, encoding: str
+    ) -> None:
+        """Valid JSON configuration reaches alignment regardless of its filename."""
+        config = {"title": "My read-along", "header": "My story", "theme": "dark"}
+        config_file = self.tempdir / filename
+        config_file.write_text(json.dumps(config), encoding=encoding)
+
+        # Configuration parsing does not need to export HTML or fetch its web bundles.
+        with (
+            patch("readalongs.align.save_readalong") as save_readalong,
+            SoundSwallowerStub("t0b0d0p0s0w0:920:1620", "t0b0d0p0s1w0:1620:1690"),
+        ):
+            result = self.runner.invoke(
+                align,
+                [
+                    "--config",
+                    str(config_file),
+                    str(self.data_dir / "ej-fra-package.readalong"),
+                    str(self.data_dir / "ej-fra.m4a"),
+                    str(self.tempdir / "output"),
+                ],
+            )
+
+        assert result.exit_code == 0, result.output
+        save_readalong.assert_called_once()
+        assert save_readalong.call_args.kwargs["config"] == config
+
     def test_invalid_config(self):
         """unit testing for invalid config specifications"""
 
-        # --config parameter needs to be <somefile>.json, text with .txt instead
+        # A non-JSON file must be rejected based on its contents.
         result = self.runner.invoke(
             align,
             [
@@ -301,7 +335,8 @@ class TestAlignCli(BasicTestCase):
                 join(self.tempdir, "out-invalid-config-1"),
             ],
         )
-        assert "must be in JSON format" in result.output
+        assert result.exit_code == 2
+        assert "is not in valid JSON format" in result.output
 
         # --config parameters needs to contain valid json, test with garbage
         config_file = join(self.tempdir, "bad-config.json")
@@ -317,6 +352,7 @@ class TestAlignCli(BasicTestCase):
                 join(self.tempdir, "out-invalid-config-2"),
             ],
         )
+        assert result.exit_code == 2
         assert "is not in valid JSON format" in result.output
 
     def test_bad_anchors(self):
