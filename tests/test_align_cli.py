@@ -4,6 +4,7 @@
 Unit test suite for the readalongs align CLI command
 """
 
+import json
 import os
 import re
 import subprocess
@@ -14,7 +15,7 @@ from pathlib import Path
 from typing import Union
 
 from lxml.html import fromstring
-from pytest import main
+from pytest import main, mark
 
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
 from readalongs.cli import align, langs
@@ -188,16 +189,54 @@ class TestAlignCli(BasicTestCase):
         # print(results_html.output)
         assert results_html.exit_code == 0
         assert exists(
-            join(output, "Offline-HTML", "html.html")
-        ), "successful html alignment should have created html/Offline-HTML/html.html"
+            join(output, "Offline-HTML", "my-awesome-read-along.html")
+        ), "successful html alignment should have created html/Offline-HTML/my-awesome-read-along.html"
 
-        with open(join(output, "Offline-HTML", "html.html"), "rb") as fhtml:
+        with open(
+            join(output, "Offline-HTML", "my-awesome-read-along.html"), "rb"
+        ) as fhtml:
             path_bytes = fhtml.read()
         htmldoc = fromstring(path_bytes)
         b64_pattern = r"data:[\w\/\-\+]*;base64,\w*"
         read_along = htmldoc.body.xpath("//read-along")[0]
         assert re.search(b64_pattern, read_along.attrib["href"])
         assert re.search(b64_pattern, read_along.attrib["audio"])
+
+    @mark.parametrize(
+        "title, filename",
+        [
+            ("My awesome read-along", "my-awesome-read-along.html"),
+            ("Échos / Stories!", "echos-stories.html"),
+            ("ReadAlong-Studio for Interactive Storytelling", "story.html"),
+            ("", "story.html"),
+            ("!!!", "story.html"),
+            (None, "story.html"),
+        ],
+    )
+    def test_offline_html_filename_from_title(self, title, filename):
+        """Use meaningful explicit titles for the offline HTML filename."""
+        output = self.tempdir / "story"
+        config = self.tempdir / "config.json"
+        config.write_text(json.dumps({} if title is None else {"title": title}))
+        with SoundSwallowerStub("t0b0d0p0s0w0:920:1620", "t0b0d0p0s1w0:1620:1690"):
+            result = self.runner.invoke(
+                align,
+                [
+                    str(self.data_dir / "ej-fra-package.readalong"),
+                    str(self.data_dir / "ej-fra.m4a"),
+                    str(output),
+                    "-o",
+                    "html",
+                    "--config",
+                    str(config),
+                ],
+            )
+        assert result.exit_code == 0, result.output
+        assert list((output / "Offline-HTML").iterdir()) == [
+            output / "Offline-HTML" / filename
+        ]
+        assert (output / "www/story.readalong").exists()
+        assert (output / "www/story.m4a").exists()
 
     def not_test_permission_denied(self):
         """Non-portable test to make sure denied permission triggers an error -- disabled"""
