@@ -2,6 +2,7 @@
 Functions for saving alignments in various file formats.
 """
 
+import re
 from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
@@ -324,6 +325,12 @@ RAS_TEMPLATE = """<?xml version='1.0' encoding='utf-8'?>
 """
 
 
+# XML 1.0 permits tab, line feed and carriage return, but not these characters.
+INVALID_XML_CHARACTERS = re.compile(
+    r"[\x00-\x08\x0b\x0c\x0e-\x1f\ud800-\udfff\ufffe\uffff]"
+)
+
+
 def create_ras_from_text(lines: Iterable[str], text_languages: Sequence[str]) -> str:
     """Create input xml in ReadAlong XML format (see static/read-along-1.2.dtd)
         Uses the line sequence to infer paragraph and sentence structure from plain text:
@@ -349,7 +356,7 @@ def create_ras_from_text(lines: Iterable[str], text_languages: Sequence[str]) ->
     paragraphs: List[dict] = []
     sentences: List[str] = []
     for line in lines:
-        stripped_line = line.strip()
+        stripped_line = INVALID_XML_CHARACTERS.sub("", line).strip()
         if stripped_line == "":
             if not sentences:
                 # The previous line was also blank, so this is a page break
