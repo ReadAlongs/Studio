@@ -150,14 +150,6 @@ def make_xml(
 
     Returns: (status, exception, log_text)
     """
-    # plaintextfile is not a file object if passed from click
-
-    plaintextfile = (
-        plaintextfile.name
-        if isinstance(plaintextfile, click.utils.LazyFile)
-        else plaintextfile
-    )
-    xmlfile = str(xmlfile) if isinstance(xmlfile, os.PathLike) else xmlfile
     logging_stream = io.StringIO()
     logging_handler = logging.StreamHandler(logging_stream)
     try:
@@ -169,7 +161,7 @@ def make_xml(
             with open(plaintextfile, encoding="utf-8-sig") as plaintextfile_handle:
                 make_xml_args.update(
                     plaintextfile=plaintextfile_handle,
-                    xmlfile=xmlfile,
+                    xmlfile=str(xmlfile),
                     language=JoinerCallbackForClick(get_langs_deferred())(
                         value_groups=language
                     ),
