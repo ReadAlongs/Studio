@@ -292,18 +292,13 @@ def align(**kwargs):  # noqa: C901  # some versions of flake8 need this here ins
     config_file = kwargs.get("config", None)
     config = None
     if config_file:
-        if str(config_file).endswith("json"):
-            try:
-                with open(config_file, encoding="utf-8-sig") as f:
-                    config = json.load(f)
-            except json.decoder.JSONDecodeError as e:
-                raise click.BadParameter(
-                    f"Config file at {config_file} is not in valid JSON format: {e}."
-                ) from e
-        else:
+        try:
+            with open(config_file, encoding="utf-8-sig") as f:
+                config = json.load(f)
+        except json.decoder.JSONDecodeError as e:
             raise click.BadParameter(
-                f"Config file '{config_file}' must be in JSON format"
-            )
+                f"Config file at {config_file} is not in valid JSON format: {e}."
+            ) from e
 
     output_dir = kwargs["output_base"]
     if os.path.exists(output_dir):
