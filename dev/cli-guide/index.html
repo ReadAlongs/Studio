@@ -1224,6 +1224,12 @@ images to your ReadAlongs, and DNA audio (see <a class="autorefs autorefs-intern
   "subheader": "Read by me"
 }
 </code></pre></div>
+<p>The <code>"title"</code> sets the HTML page title, which is shown in the browser tab.
+The <code>"header"</code> is the heading displayed above the read-along, and the
+<code>"subheader"</code> is displayed below that heading. These are separate settings
+in the CLI, so the browser tab and the visible heading can have different
+text. In Studio-Web, the page title is set from the header instead of being
+edited separately.</p>
 <p>To add images, indicate the page number as the key, and the name of the image
 file as the value, as an entry in the <code>"images"</code> dictionary.</p>
 <div class="highlight"><pre><span></span><code>{ "images": { "0": "p1.jpg", "1": "p2.jpg" } }
