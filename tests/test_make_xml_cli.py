@@ -9,6 +9,7 @@ import sys
 from shutil import copyfile
 
 import pytest
+from lxml import etree
 
 # from readalongs.log import LOGGER
 from readalongs._version import READALONG_FILE_FORMAT_VERSION, VERSION
@@ -270,6 +271,24 @@ class TestMakeXMLCli(BasicTestCase):
             assert create_ras_from_text(
                 text2lines("Page1" + "\n" * n + "Page2"), ["eng"]
             ) == create_ras_from_text(text2lines("Page1" + "\n" * 3 + "Page2"), ["eng"])
+
+    @pytest.mark.parametrize(
+        "invalid_char",
+        [chr(code) for code in range(32) if code not in (9, 10, 13)]
+        + ["\ud800", "\udfff", "\ufffe", "\uffff"],
+    )
+    def test_invalid_xml_characters_in_plain_text(self, invalid_char):
+        """Plain text must not introduce XML 1.0-invalid characters."""
+        xml = create_ras_from_text([f"Before{invalid_char}After"], ["eng"])
+        parsed = etree.fromstring(xml.encode("utf-8"))
+        assert parsed.xpath("string(//s)") == "BeforeAfter"
+
+    def test_xml_valid_unicode_and_escaping_are_preserved(self):
+        """Keep Indigenous-language characters, supplementary Unicode and XML escaping."""
+        text = "ʔé\u0301\tA & <B> 𐐀 \ufffd"
+        xml = create_ras_from_text([text], ["eng"])
+        parsed = etree.fromstring(xml.encode("utf-8"))
+        assert parsed.xpath("string(//s)") == text
 
     def test_split_vs_readlines(self):
         """Calling create_ras_from_text should work any way we split the lines"""
