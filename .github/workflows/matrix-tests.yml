@@ -31,14 +31,17 @@ jobs:
         continue-on-error: true
       - run: brew install ffmpeg
         if: runner.os == 'macOS'
-      - name: Alternate way to install ffmpeg on Linux, if needed
+      - name: Alternate way to install ffmpeg on Linux, if needed, with apt-get
         if: steps.ffmpeg.outcome == 'failure' && runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install ffmpeg
-      - name: We don't have an alternate ffmpeg install on Windows
+      - uses: prefix-dev/setup-pixi@v0.11.2  # Immutable
         if: steps.ffmpeg.outcome == 'failure' && runner.os == 'Windows'
-        run: |
-          echo "Error setting up ffmpeg, please rerun the workflow."
-          false
+        with:
+          run-install: false
+      - name: Alternate way to install ffmpeg on Windows, if needed, with pixi
+        if: steps.ffmpeg.outcome == 'failure' && runner.os == 'Windows'
+        run: pixi global install ffmpeg
+      - run: ffmpeg -version
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
