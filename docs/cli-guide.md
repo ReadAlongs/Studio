@@ -185,6 +185,13 @@ To add a title and headers to the output HTML, you can use the keys
 }
 ```
 
+The `"title"` sets the HTML page title, which is shown in the browser tab.
+The `"header"` is the heading displayed above the read-along, and the
+`"subheader"` is displayed below that heading. These are separate settings
+in the CLI, so the browser tab and the visible heading can have different
+text. In Studio-Web, the page title is set from the header instead of being
+edited separately.
+
 To add images, indicate the page number as the key, and the name of the image
 file as the value, as an entry in the `"images"` dictionary.
 
