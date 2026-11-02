@@ -96,34 +96,30 @@ The compiler should already be there, but run `<your package manager> install gc
 ##### The easy way, using conda
 
 The `conda` package manager can install Python 3 and the required compiler automatically for you,
-and simplifies ffmpeg and git installation. We recommend this solution.
+and simplifies ffmpeg and git installation.
 
-If the Anaconda Terms of Service are compatible with your organization, you can
-use Miniconda3: download and run the latest "Miniconda3 Windows 64-bit"
-installer from https://docs.conda.io/en/latest/miniconda.html.
-
-Fully open-source alternative, free for all organizations: Miniforge3.
 Download and run the latest "Miniforge3-Windows-x86_64" installer from
-https://github.com/conda-forge/miniforge.
+https://github.com/conda-forge/miniforge.  You can accept all the default options suggested by the installer.
 
-Either way, you can accept all the default options suggested by the installer.
-
-Launch an Anaconda Prompt or a Miniforge Prompt (this should be available from
+Launch a Miniforge Prompt (this should be available from
 your Start Menu after installation) and run:
 
     conda install ffmpeg
     conda install git
 
 You can then run the pip install and git commands below, and use readalongs, all
-from the Anaconda or Miniforge Prompt.
+from the Miniforge Prompt.
 
 ##### The hard way
 
 If you know what you're doing, you can install the dependencies directly on your machine:
 
  - Install Python3 for Windows.
- - Install [FFmpeg builds for Windows](https://ffmpeg.zeranoe.com/builds/) ([alternative instructions](https://windowsloop.com/install-ffmpeg-windows-10/)).
- - Install [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017) (search for "Build Tools", select C++ when prompted).
+ - Install ffmpeg one of these ways:
+    - Install [Pixi](https://pixi.prefix.dev/latest/installation/) and run `pixi global install ffmpeg`
+    - or download from the [Official FFmpeg source](https://ffmpeg.org/download.html#build-windows)
+    - or use [alternative instructions](https://windowsloop.com/install-ffmpeg-windows-10/).
+ - If the `pip install` commands below fail during a compilation step, install [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017) (search for "Build Tools", select C++ when prompted).
  - Install Git for Windows (optional).
 
 ### Installing ReadAlongs Studio itself
@@ -151,15 +147,14 @@ environment](https://docs.python.org/3/library/venv.html) though!):
 
 Run `readalongs -h` to confirm that installation was successful.
 
-If you installed the current development version with Git, you can also run the
+If you installed the current development version from GitHub, you can also run the
 full test suite, either with `hatch`:
 
     hatch test
 
-or test the installed version (requires installing dev dependencies):
+or with pytest (requires installing dev dependencies):
 
-    pip install 'readalongs[dev]'  # if you installed from PyPI, or
-    pip install -e '.[dev]'        # if you installed from a local clone
+    pip install --group dev -e .
     pytest
 
 And you can download our [open samples on GitHub](https://github.com/ReadAlongs/OpenSamples)
@@ -259,8 +254,8 @@ This repo follows the [Contributor Covenant](http://contributor-covenant.org/ver
 You can install our standard Git hooks by running these commands in your sandbox:
 
 ```sh
-pip install -e '.[dev]'
-pre-commit install
+pip install --group dev -e .
+prek install
 gitlint install-hook
 ```
 
